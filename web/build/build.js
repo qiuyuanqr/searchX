@@ -4,12 +4,15 @@ import {
 import { join } from "path";
 import { scanResearch } from "./scan.js";
 import { renderIndex } from "./render-index.js";
+import { injectConfig } from "./inject-config.js";
 
 export function build({
   root = "research",
   out = "web/dist",
   assets = "web/src/assets",
   template = "web/src/index.template.html",
+  submitTemplate = "web/src/submit.template.html",
+  config = "web/src/site.config.json",
 } = {}) {
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
@@ -27,6 +30,11 @@ export function build({
   const tpl = readFileSync(template, "utf8");
   writeFileSync(join(out, "index.html"), renderIndex(entries, tpl));
   cpSync(assets, join(out, "assets"), { recursive: true });
+
+  // 提交表单页（M2a）：把公开配置注入模板后写出
+  const submitTpl = readFileSync(submitTemplate, "utf8");
+  const cfg = JSON.parse(readFileSync(config, "utf8"));
+  writeFileSync(join(out, "submit.html"), injectConfig(submitTpl, cfg));
 
   return entries;
 }
