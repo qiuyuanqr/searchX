@@ -1,7 +1,7 @@
 # searchX 网站化 · 设计稿（spec）
 
 - 日期：2026-06-03（北京时间）
-- 状态：待用户评审
+- 状态：M1 已上线；自动上线已打通（SKILL Step 6）；**M2 设计已与用户敲定（2026-06-03），待写实施计划**
 - 关联：`CLAUDE.md`、`.claude/skills/research/SKILL.md`、记忆 `searchx-website-plan`
 
 ---
@@ -117,15 +117,25 @@ searchX 目前是跑在 Claude Code 上的本地深度调研引擎：`/research 
 - 通知走 **GitHub 原生**（建 Issue 即邮件提醒作者），零额外搭建。
 
 ### 6.3 审批闸（approve-before-spend）
+- **通知**：Worker 建 Issue 时 **@ 作者（或指派给作者）**，确保 GitHub 自动发邮件到作者邮箱（题目即邮件标题）。作者在**手机/电脑**上看 Issue 即可审批，**无需在 Mac 前**。
 - 作者看 Issue（只是题目 + 谁提的，**不是报告**），决定 👍 / 👎。
-- 同意 = 给 Issue 贴 `approved` 标签。**额度只从这一刻起才消耗。** 驳回 = 关 Issue，0 花费、0 上线。
+- 同意 = 给 Issue 贴 **`approved` 标签**（**已敲定**；评论 `approve` 作为可选备选）。**额度只从这一刻起才消耗。** 驳回 = 关 Issue，0 花费、0 上线。
+- 审批（任意处）与跑研究（Mac 前）**解耦**：可攒几条、回到 Mac 一次性跑。
 
-### 6.4 本机 Runner
-- 本机 Mac 上一个轻量"看守"（launchd / 定时 / 手动触发皆可）：轮询仓库里 `approved` 且未 `done` 的 Issue → 用本机 Claude Code 跑 `/research`（题目取自 Issue）→ 产出三件套写入 `research/` → 提交并 push → 给 Issue 贴 `done` → 触发 Emailer。
-- **API key / 额度全程不出本机。** 研究只在作者电脑开机时跑（对"先审后跑"场景足够，反正都要等审批）。
+### 6.4 本机 Runner（一键启动 · 已敲定）
+- **不是常驻守护进程，而是「一键启动」**：作者审批后回到 Mac，跑一条命令 `bun run runner`。它：
+  1. 用**受限 token** 拉取仓库里 `approved` 且未 `done` 的 Issue（本机无 `gh`，改用 **GitHub REST API + token**，bun 原生 `fetch`）；
+  2. 逐条把题目喂给本机 **Claude Code 跑 `/research`**（**轻量档**，见 §6.7）；
+  3. 产出三件套写入 `research/`；
+  4. commit + push（**复用 SKILL Step 6 的自动上线**）；
+  5. 给 Issue 贴 `done`；
+  6. 触发 Emailer（§7）。
+- **Claude 额度全程不出本机**；研究只在作者开机跑这条命令时发生（"先审后跑"场景足够）。
+- 失败/中断要可重入：以 Issue 的 `done` 标签为幂等标记，重跑只处理未完成的。
 
-### 6.5 自动发布
+### 6.5 自动发布（✅ 已实现 2026-06-03）
 - Runner 的 push 触发 §5.5 的 Action：自动构建 + 部署，新条目自动出现在信息流。
+- **`/research` SKILL 已加 Step 6**：构建门禁（`bun test && bun run web/build/cli.js`）→ 隐私终检 → 精准 `git add 本主题文件夹 + INDEX` → push main → Pages 自动部署。验证：单篇推送后约 16s 线上 200。Runner 直接复用，无需另写发布逻辑。
 
 ### 6.6 安全模型（纵深防御）
 - 公开面是静态文件（CDN 托管，无服务器可崩）。
@@ -134,9 +144,19 @@ searchX 目前是跑在 Claude Code 上的本地深度调研引擎：`/research 
 - 兜底：全局**硬预算上限** + 队列长度上限。
 - 密钥卫生：Claude API key 永不进任何公开前端；Worker 只持有"仅能建 Issue"的受限 GitHub token。
 
+### 6.7 Token 模型与轻量档（已敲定 · 省 token）
+- **唯一花 Claude 额度的地方 = 跑一次 `/research` 本身。** 其余全是确定性脚本、零 token：
+  - 网站/信息流页面/搜索索引 = `web/build/`（bun）确定性套模板生成，**零 token**（M1 已如此）；
+  - 报告外壳 `templates/report.html` = 固定文件，纯字符串替换，**零 token**；
+  - 报告**内容**由大模型在 `/research` 时**生成一次**，之后永远是静态文件被复用，不反复烧。
+- **朋友请求默认走「轻量研究档」**：相对作者自用的「全力档」减少并行子代理数、降低检索轮次、跳过对抗式交叉验证那一层，单条成本明显更低。作者可对个别题目手动升级为全力档。
+- **预算兜底**：队列长度上限 + 可选全局硬上限；审批闸已是花钱前的最强闸。
+- 实现提示：轻量档可通过 Runner 给 `/research` 传一个"轻量"信号（如 Issue 题目后缀或 runner 参数），SKILL 据此收敛检索/子代理规模——具体在写 plan 时定。
+
 ## 7. 第 3 期 · 邮件触达
 - 研究 `done` 后，Emailer 给提交者发一封**易读邮件**：核心结论摘要（TLDR + 关键发现）+ 网站链接（可选 PDF 附件），抄送作者。
 - 发送方式：先用**已连接的 Gmail**（低量够用）；量大再换专用发信服务（Resend/Postmark）。
+- **零 token（已敲定）**：Emailer 是纯 bun 脚本，读**已生成**的 TLDR + 关键发现 + 网址塞进固定模板发出，**不调用大模型**。极简邮件（一句话摘要 + 网站链接，抄送作者）即可——体验好且基本零成本。故"耗 token 就不发"这条规则下：它不耗、可以发。
 - 隐私：邮件内容遵守隐私红线，不含任何用户私人信息。
 
 ## 8. 贯穿约束（来自 CLAUDE.md，全程适用）
@@ -160,6 +180,12 @@ searchX 目前是跑在 Claude Code 上的本地深度调研引擎：`/research 
 2. 朋友用**站内友好表单**提交（无需 GitHub 账号）。
 3. GitHub 仓库**公开**。
 4. 邮件先走 **Gmail**。
+5. **Runner = 一键启动**（`bun run runner`），非常驻守护进程。（2026-06-03 敲定）
+6. **审批 = 加 `approved` 标签**（评论 `approve` 可选备选）。（2026-06-03 敲定）
+7. **朋友请求默认走轻量研究档**省 token，作者可手动升级单条。（2026-06-03 敲定）
+8. **发极简邮件**给提交者（纯脚本、零 token），抄送作者。（2026-06-03 敲定）
+9. 网站构建与邮件**均为确定性脚本、零 token**；唯一花额度处 = 跑一次 `/research`。（2026-06-03 厘清）
+10. **自动上线已实现**：SKILL Step 6（push main → Pages）。（2026-06-03 完成）
 
 ## 11. 推迟 / 未来
 - **B 模块·云端 runner**：常驻服务/Action 用 Claude API 无人值守跑研究（要 API 计费 + 硬额度闸）。本机版跑顺后再升级，其它单元可复用。
@@ -168,7 +194,10 @@ searchX 目前是跑在 Claude Code 上的本地深度调研引擎：`/research 
 
 ## 12. 构建顺序 / 里程碑
 - **M1（第 1 期）**：Feed Builder + Feed UI + Pagefind 搜索 + GitHub Pages 上线 → 朋友可浏览/搜索现有 4 篇。
-- **M2（第 2 期）**：提交表单 + Worker + Issue 队列 + 审批 + 本机 Runner + 自动发布。
+- **M2（第 2 期）**：拆成两段、各自独立可上线（M2 跨多子系统，故分解）：
+  - **M2a · 入队闭环**：提交表单（静态页，复用纸感主题）+ Cloudflare Worker（Turnstile + 限频 + 长度上限）+ 建 `pending` Issue + @作者。**验收**：站上提交 → 你邮箱收到通知 + 仓库出现 `pending` Issue，全程 0 花费、0 上线。
+  - **M2b · Runner**：`bun run runner` 取 `approved` 未 `done` 的 Issue → `/research` 轻量档 → push（自动上线已做）→ 贴 `done` → 触发 Emailer。**验收**：贴 `approved` → 跑一条命令 → 报告自动上线 + 提交者收到邮件。
+  - 顺序：**先 M2a（无花费、可独立验收）再 M2b**。自动发布已在 §6.5 完成。
 - **M3（第 3 期）**：Emailer 接 Gmail。
 
 ## 13. 验收标准（每期"完成"的定义）
