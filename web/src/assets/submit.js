@@ -63,10 +63,15 @@ if (typeof document !== "undefined") {
       });
       const data = await r.json().catch(() => ({ ok: false }));
       const out = describeResult(data);
-      setStatus(out.text, out.kind);
       if (out.kind === "success") {
-        form.reset();
-        if (window.turnstile) window.turnstile.reset();
+        // 成功：换成明显的确认卡，隐藏表单（避免“清空了像没反应”的错觉）
+        form.hidden = true;
+        const done = document.getElementById("submit-done");
+        if (done) done.hidden = false;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        // 失败：保留表单，内联提示，便于重试
+        setStatus(out.text, out.kind);
       }
     } catch {
       const out = describeResult({ ok: false });
