@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>股票的各种支撑位 · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* TL;DR */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 概念 / 方法论</div>
+    <h1>股票的各种支撑位</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-06-03（北京时间）</span>
+      <span><b>类型</b> 概念 / 方法论</span>
+      <span><b>关联板块</b> —</span>
+      <span><b>来源</b> 33 条</span>
+    </div>
+  </header>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    股票的"支撑位"不是一块物理地板，而是一张由<strong>订单聚集、套牢盘心理、以及"大家都在盯同一条线"的自我实现</strong>共同织成的概率网。它真正有硬证据的部分很窄——主要是整数关口附近因止损/止盈单堆积而产生的反转与突破加速；而"沿任意一条画线就能稳定获利"则缺乏经得起数据挖掘校正与交易成本检验的证据。务实的用法是把它当<strong>概率工具</strong>（多重共振 + 量能确认 + 永远带止损），而非当必然兑现的承诺。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>"支撑位"不是价格的物理地板，而是一个<strong>概率性的价格区间</strong>，由订单流聚集、套牢盘心理与自我实现预言共同撑起；唯一有一手硬证据的机制，是"价格倾向在整数关口附近聚集并产生反转/突破加速"——由纽约联储 Osler 用真实外汇订单流证实，而非"任意一条线都灵"。</li>
+      <li>五花八门的支撑位可按底层逻辑归成<strong>四大族</strong>：①价格记忆类（前低、颈线、箱体下沿）；②趋势均线类（趋势线、各周期均线）；③量价成本类（成交量分布 / A股筹码分布）；④数学心理类（整数关口、斐波那契、布林带、枢轴点）。同一价位被越多族"共振"，越值得当回事。</li>
+      <li>A股特有的<strong>"筹码分布 / 成本均线"</strong>（陈浩 1997 年发明的 CYQ 指标）本质是用<strong>换手率反推的估算值、不是真实持仓</strong>——交易所行情只有委托单号、无法还原每笔成交由谁持有、成本几何，理论上不可能精确。这是它与西方成交量分布最本质的区别，也是其最大争议点。</li>
+      <li>学术证据呈"<strong>正面占多数、但满身方法论保留</strong>"：Park &amp; Irwin（2007）综述 95 项现代研究为 56 正 / 20 负 / 19 混；但 Sullivan–Timmermann–White（1999）显示，经典正面结果（Brock 等 1992）在<strong>数据挖掘校正 + 样本外检验</strong>后基本消失，且多数研究未扣交易成本。</li>
+      <li>实战含义不是"信"或"不信"，而是：<strong>用区间而非精确价、要多重共振、必须配合量能确认、永远带止损</strong>——因为"假突破 / 诱多诱空"是常态而非例外，足够强的卖压会无视任何画线。</li>
+    </ul>
+  </div>
+
+  <main>
+
+    <h2>一、先把"支撑位"这个词摆正</h2>
+    <p>很多人把"支撑位"想象成河床——价格跌到这里就会被一块看不见的硬底接住。这个直觉是本次调研要先纠正的<strong>隐含错误前提</strong>。在技术分析的标准定义里，支撑只是<strong>"被认为买方需求强到足以阻止价格继续下跌的那个价位"</strong>（<a href="https://chartschool.stockcharts.com/table-of-contents/chart-analysis/support-and-resistance">StockCharts ChartSchool</a> 原文：<em>"Support is the price level at which demand is thought to be strong enough to prevent the price from declining further."</em>）。注意"被认为"（thought to be）三个字——它从一开始就是<strong>关于群体行为的概率判断，不是物理保证</strong>。</p>
+    <p>它背后真正运转的，是三股力量叠加：</p>
+    <ul>
+      <li><strong>需求—心理</strong>：价格越往下，买方越想捡便宜、卖方越不舍得割肉，供需在某价位附近重新平衡。</li>
+      <li><strong>订单记忆 / 角色反转</strong>：曾在某价位大量成交的筹码会"记住"这个价。一旦支撑被有效跌破，它会<strong>反转成压力</strong>——当初在这买入被套的人，等价格反弹回本时倾向"解套出逃"，制造上方抛压。</li>
+      <li><strong>自我实现</strong>：当足够多人盯着同一条线并在附近挂单，这条线就会因为"大家都在用"而真的变灵——但这也意味着它的有效性依赖共识，而非价格内含的稳定规律。</li>
+    </ul>
+    <p>还有两个常被忽略的前提：支撑是<strong>一个"区间"而非一个精确价</strong>（StockCharts 原文：<em>"creating support and resistance zones is useful"</em>，区间大、周期长时尤其要用带宽看）；以及"破位"是常态而非异常——任何足够强的卖压或利空都能无视任何画线。</p>
+
+    <div class="case">
+      <p><strong>角色反转的教科书样本（StockCharts 给出的 PeopleSoft）</strong>：该股在 1998 年 10 月至 1999 年 3 月间于 18 美元附近大量成交、形成支撑；当价格跌破 18 后再反弹回来，原来的支撑变成了顽固压力，<em>"from Jun-99 to Oct-99"</em> 都卡在 18 上不去——因为当初在 18 买入的"被套的多头"还拿着股票，反弹到成本价就想平本离场。<strong>同一个价位，破位前是地板，破位后是天花板。</strong>这就是订单记忆。来源：<a href="https://chartschool.stockcharts.com/table-of-contents/chart-analysis/support-and-resistance">StockCharts ChartSchool: Support and Resistance</a>。</p>
+    </div>
+
+    <h2>二、支撑位的"家谱"：按底层逻辑分四族</h2>
+    <p>市面上的支撑位名目繁多，但拆到底层只有四种"为什么这里会有支撑"的逻辑。理解了逻辑，就不用死记几十个名词。</p>
+
+    <h3>第一族 · 价格记忆类（横向 / 静态支撑）</h3>
+    <p>这一族最直观：<strong>前期低点（前低）、双底的底、头肩底 / 顶的颈线（neckline）、箱体或平台的下沿、整数心理价位</strong>——它们都是"历史上价格反复发生过交易的水平线"。机制就是上面说的需求 + 订单记忆。判别有效性的要点：</p>
+    <ul>
+      <li>看成交量：缩量回踩多为有效支撑；<strong>放量跌破</strong>才算真破位。真突破通常伴随放量在突破当时出现，缩量突破常常是<a href="https://chartschool.stockcharts.com/table-of-contents/chart-analysis/support-and-resistance">假动作</a>（"多头陷阱 / 空头陷阱"）。</li>
+      <li>颈线是形态成立的"判据线"：头肩顶在颈线（支撑）被有效跌破前，形态不算完成（<a href="https://chartschool.stockcharts.com/table-of-contents/chart-analysis/chart-patterns/head-and-shoulders-top">StockCharts: 头肩顶</a>）。</li>
+      <li>用区间、不用精确价：收盘价仅以极小幅度跌破，不应草率视为破位。</li>
+    </ul>
+
+    <h3>第二族 · 趋势与均线类（动态支撑）</h3>
+    <p>这一族的支撑会随时间移动。两个代表：</p>
+    <ul>
+      <li><strong>趋势线 / 通道下轨</strong>：上升趋势线由两个以上依次抬高的低点连成，<strong>两点画线、第三点确认</strong>；触碰点越多越有效，但<strong>线越陡越不可靠</strong>（急涨拉出的陡线即便有三个点也未必提供有意义的支撑）。跌破趋势线应只当<strong>预警</strong>、需其他工具佐证，而非单一信号定生死（<a href="https://chartschool.stockcharts.com/table-of-contents/chart-analysis/trend-lines">StockCharts: Trend Lines</a>）。</li>
+      <li><strong>移动均线（MA）</strong>：上升趋势中均线常作支撑，因为均线<strong>近似代表该周期持仓的平均成本</strong>，价格回踩成本线容易遇到买盘（<a href="https://chartschool.stockcharts.com/table-of-contents/trading-strategies-and-models/trading-strategies/moving-average-trading-strategies/finding-support-and-resistance-in-moving-averages">StockCharts: MA 作支撑/压力</a>）。200 日均线是机构基准；50 日与 200 日因"羊群效应"成为最热门的观察位。<a href="https://www.britannica.com/money/simple-vs-exponential-moving-averages">SMA 对全周期等权、更适合识别支撑位；EMA 加权近端、更敏感、转向更早</a>。</li>
+    </ul>
+    <p><strong>A股的本土叫法</strong>（约定俗成、非监管定义）：30 日均线常被称<a href="https://legulegu.com/stock/article/junxian/487">"生命线"</a>（中期趋势，常作止损位）；120 日叫半年线；<a href="https://wiki.mbalib.com/wiki/250%E6%97%A5%E5%9D%87%E7%BA%BF">250 日叫年线，被视为"牛熊分界线"</a>（近似全年平均成本，上升的年线对股价有支撑，有效跌破常被解读为牛转熊）。"多头排列"指均线从短到长依次向上发散（买方占优）；<a href="https://wiki.mbalib.com/wiki/%E4%B8%89%E7%BA%BF%E5%BC%80%E8%8A%B1">"三线开花"</a>指 20/120/250 日均线金叉后发散，但其买点须"放量确认"。<a href="https://www.britannica.com/money/golden-cross-vs-death-cross">金叉 / 死叉（50 上穿 / 下穿 200）是滞后信号，在横盘市极易产生假信号</a>——均线"粘合缠绕"期是这一族支撑最不可靠的时候。</p>
+
+    <h3>第三族 · 量价与成本类（筹码支撑）</h3>
+    <p>这一族把"哪个价位堆了最多成交 / 持仓"映射成支撑阻力。西方与中国走了两条路：</p>
+    <ul>
+      <li><strong>西方：成交量分布（Volume Profile）/ 市场轮廓（Market Profile）</strong>。把成交量按价格横向铺开，成交最多的价位叫<strong>控制点 POC</strong>，包含约 70% 成交量的区间叫<strong>价值区</strong>；高成交量节点（HVN）像磁铁、常成支撑阻力，低成交量节点（LVN）则容易被快速穿过（<a href="https://www.tradingview.com/support/solutions/43000502040-volume-profile-indicators-basic-concepts/">TradingView: Volume Profile</a>）。其源流是 <a href="https://en.wikipedia.org/wiki/Market_profile">J. Peter Steidlmayer 于 1980 年代初在芝加哥期货交易所开发的 Market Profile</a>（用 30 分钟字母 TPO 记录"价格在哪停留最久"）。HVN 成为阻力的机制，西方叫 <a href="https://realinvestmentadvice.com/resources/blog/volume-profiles-eyeing-resistance-from-trapped-longs/">"trapped longs / 回本心理"</a>——和中文的"套牢盘解套"是同一回事。</li>
+      <li><strong>中国：筹码分布 / 成本均线</strong>。<a href="https://baike.baidu.com/item/%E7%AD%B9%E7%A0%81%E5%88%86%E5%B8%83%E6%8C%87%E6%A0%87/10913464">由陈浩于 1997 年发明 CYQ 指标</a>（前身"成本均线 CYC"为陈浩与杨新宇 1996 年研发）。它把流通盘画成 100 条横线，黄线=获利盘、蓝线=套牢盘：<strong>下方密集峰=获利盘=支撑，上方密集峰=套牢盘=压力</strong>；常见形态有单峰密集、多峰发散（<a href="https://quant.10jqka.com.cn/view/article/2147">同花顺投教</a>）。逻辑和西方一致，区别在两点——它显式建模"老筹码逐日被换走"的衰减，还额外发明了"主力成本、洗盘吸筹、单/多峰"等带主观叙事的衍生概念。</li>
+    </ul>
+    <div class="callout">关键区别（也是最大争议）：西方 Volume Profile 用<strong>真实成交量</strong>；A股筹码分布用<strong>换手率反推的估算值</strong>——交易所行情只有委托单号，无法对应"这笔成交由谁发出、成本多少"，叠加对敲等行为，<strong>理论上任何软件都不可能算出准确的筹码分布</strong>，都是带分布形假设与衰减系数的拟合。把它当"上帝视角看主力成本"是误读；它顶多是辅助参考（<a href="https://www.zhihu.com/question/59689990">相关质疑</a>）。</div>
+
+    <h3>第四族 · 数学与心理类（计算 / 心理支撑）</h3>
+    <p>这一族用公式或心理常数算出价位。证据强弱差异巨大，必须分开看：</p>
+    <ul>
+      <li><strong>整数关口 / 心理价位</strong>——<strong>本族里唯一有硬证据的</strong>。整数（100 美元、A股<a href="https://www.thepaper.cn/newsDetail_forward_25085601">3000 点</a>）因锚定心理成为支撑阻力。Osler 用真实外汇订单流证明，止盈单恰好堆在整数位、止损单堆在整数位两侧——这就直接解释了"在整数位反转"和"突破整数位后加速"（详见第三节）。这种整数/心理屏障在<a href="https://www.sciencedirect.com/science/article/abs/pii/S1044028308000549">欧洲股票市场亦有实证</a>，并非外汇独有。</li>
+      <li><strong>斐波那契回撤</strong>：取摆动高低点之间 23.6% / 38.2% / 50% / 61.8% / 78.6% 作支撑（<a href="https://www.investopedia.com/terms/f/fibonacciretracement.asp">Investopedia</a>）。注意 50% 根本不是斐波那契比率、纯属经验传统。一项 2021 年同行评议研究在三个股市样本上检验，发现<strong>价格在斐波那契区反弹的概率与在随机价位反弹无统计差异</strong>（<a href="https://www.sciencedirect.com/science/article/abs/pii/S0957417421012495">ESWA, 2021</a>）；它"看起来灵"主要靠自我实现。</li>
+      <li><strong>布林带下轨</strong>：中轨 20 日均线 ± 2 倍标准差，下轨作动态支撑。但作者 <a href="https://www.bollingerbands.com/bollinger-band-rules">John Bollinger 本人明确反对"触下轨即买"</a>（原文：<em>"A tag of the lower Bollinger Band is NOT in-and-of-itself a buy signal"</em>）——趋势市里价格会"沿轨下行"，机械抄底会持续被套。</li>
+      <li><strong>枢轴点（Pivot Points）</strong>：PP=(前日高+低+收)/3，再推出 S1/S2/S3、R1/R2/R3，日内交易常用（<a href="https://www.heygotrade.com/en/blog/pivot-points-explained/">公式</a>）。纯数学外推、无内在经济含义，有效性同样靠自我实现。</li>
+      <li><strong>缺口支撑</strong>：突破缺口的突破点会变成新支撑（<a href="https://chartschool.stockcharts.com/table-of-contents/chart-analysis/gaps-and-gap-analysis">StockCharts: Gaps</a>）；但"缺口必补"被过度泛化——突破/持续缺口往往不补，得先判别缺口类型。</li>
+      <li><strong>江恩角度线 / 周期</strong>：用几何角度与螺旋数表投射支撑阻力，<a href="https://en.wikipedia.org/wiki/Gann_angles">自称建立在几何、天文、占星之上</a>，<strong>带明显玄学色彩、缺乏可重复的统计验证</strong>，应归为低可信度参考。</li>
+    </ul>
+
+    <h2>三、它们到底灵不灵？——把证据摊开</h2>
+    <p>这是整份报告最该读慢的一节。技术分析"支撑位"是否有效，是个被几十年学术研究反复检验、且结论充满保留的问题。诚实的答案分四层。</p>
+
+    <h3>真实机制（按证据强度排序）</h3>
+    <p><strong>订单流聚集 ＞ 自我实现 ≥ 锚定效应</strong>。最硬的一层来自纽约联储经济学家 Carol Osler 的系列研究：止盈单聚集在整数位（解释"在支撑/阻力反转"），止损单聚集在整数位之外（解释"突破后加速"），止损被触发还会引发<strong>价格瀑布（price cascades）</strong>式的正反馈（<a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/0022-1082.00592">Osler, Journal of Finance, 2003</a>；<a href="https://ideas.repec.org/a/eee/jimfin/v24y2005i2p219-241.html">Osler, JIMF, 2005</a>）。其理论根是 <a href="https://www.science.org/doi/10.1126/science.185.4157.1124">Tversky &amp; Kahneman（1974）的锚定—调整偏差</a>——但要注意，锚定讲的是认知偏差，并不直接等于"按支撑位交易能赚钱"。</p>
+
+    <div class="case">
+      <p><strong>整数关口的硬证据（Osler，纽约联储）</strong>：在一家做市机构的真实外汇订单数据中，约 <strong>10% 的止损/止盈单挂在以"00"结尾的整数汇率</strong>上（如 ¥123.00），而其他以"0"结尾的价位平均只有约 3%——整数位的订单密度约为普通价位的<strong>三倍</strong>。这是少数能用一手数据说清"为什么整数关口灵"的研究：不是市场神秘，而是真实订单确实堆在那里。来源：<a href="https://www.newyorkfed.org/medialibrary/media/research/staff_reports/sr125.pdf">FRBNY Staff Report 125</a> / 期刊版 <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/0022-1082.00592">Osler 2003 JF</a>。外汇整数位聚集也被 <a href="https://ideas.repec.org/a/eee/intfin/v16y2006i4p318-344.html">Mitchell &amp; Izan（2006）</a>独立证实。<em>（说明：该 Staff Report 一手 PDF 本轮被服务器拒绝抓取，上述精确比例依据其期刊正式版与多处权威转引，未独立逐页核对原始 PDF。）</em></p>
+    </div>
+
+    <h3>有没有硬证据支持"支撑/阻力位"</h3>
+    <ul>
+      <li><a href="https://www.newyorkfed.org/medialibrary/media/research/epr/00v06n2/0007osle.pdf">Osler（2000）"Support for Resistance"</a>：直接检验 6 家机构发布的支撑/阻力位，发现它们对<strong>日内汇率的趋势中断有显著（但因币种 / 机构而异）的预测力</strong>。这是少有的直接检验"已发布支撑位"的研究。</li>
+      <li><a href="https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04681.x">Brock, Lakonishok &amp; LeBaron（1992）</a>：道指 1897–1986，移动均线 + 交易区间突破规则产生的收益不符合随机游走等四个零模型。经典正面证据——<strong>但原文未扣交易成本</strong>。</li>
+      <li><a href="https://www.nber.org/papers/w7613">Lo, Mamaysky &amp; Wang（2000）"Foundations of Technical Analysis"</a>：用核回归自动识别头肩、双底等形态，发现部分形态对美股<strong>"确有增量信息、可能有一定实用价值"</strong>（措辞克制，非"普遍可获利"）。</li>
+      <li><a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1467-6419.2007.00519.x">Park &amp; Irwin（2007）综述</a>是衡量整体分寸最权威的标尺：95 项现代研究中 <strong>56 项正面、20 项负面、19 项混合</strong>，"至少到 1990 年代初，技术策略在多个投机市场持续产生经济利润"——但作者同时强调多数研究存在数据挖掘、事后选规则、风险与交易成本难估等缺陷。</li>
+    </ul>
+
+    <h3>反证与批判</h3>
+    <ul>
+      <li><strong>有效市场假说（弱式）</strong>：价格已反映全部历史价量信息，技术分析不能持续获取超额收益（<a href="https://ideas.repec.org/a/bla/jfinan/v25y1970i2p383-417.html">Fama, 1970</a>）——反方理论总纲。</li>
+      <li><strong>数据挖掘致命一击</strong>：<a href="https://onlinelibrary.wiley.com/doi/10.1111/0022-1082.00163">Sullivan, Timmermann &amp; White（1999）</a>用 White's Reality Check 把规则扩到全集并校正数据挖掘偏差后，<strong>Brock 等（1992）样本内看似显著的最优规则，在随后约十年的样本外不再有超额表现</strong>。这是本节最关键的反证。</li>
+      <li><strong>交易成本侵蚀</strong>：多数早期"获利"结论未扣成本，加上买卖价差和滑点后，许多正向结果显著缩水甚至消失。</li>
+      <li><strong>时变性 / 利润衰减</strong>：Park &amp; Irwin"至少到 1990 年代初"的措辞本身就暗示有效性随市场效率提升而衰减——被发现的规律会被交易掉。</li>
+    </ul>
+
+    <div class="case">
+      <p><strong>数据挖掘如何让"灵验"消失（BLLL 1992 → STW 1999）</strong>：Brock 等用道指近百年数据，证明均线和突破规则"跑赢随机"，曾被广泛引用为技术分析有效的硬证据。七年后，Sullivan 等指出：当年只检验了被人事后挑出来的少数"好规则"；把成百上千条规则全放进来、再用自助法校正"挑出最好那条"的运气成分，<strong>原本的超额收益在样本外就站不住了</strong>。教训：档位和参数足够多时，事后<strong>总能</strong>找到一条"灵验"的线——但事前你不知道是哪条。</p>
+    </div>
+
+    <h3>诚实分级：哪些可信，哪些不可信</h3>
+    <ul>
+      <li><strong>证据相对扎实（有微观结构 / 订单流硬数据）</strong>：整数 / 心理价位附近的聚集与反转加速（Osler 2000/2003、Mitchell &amp; Izan 2006）。但限于外汇日内、解释的是<strong>价格行为机制</strong>，不等于"按支撑位交易稳定赚钱"。</li>
+      <li><strong>部分有信息含量、措辞须克制</strong>：形态 / 突破规则在历史样本中确有非随机性（BLLL 1992、Lo-Mamaysky-Wang 2000），但未扣成本、经数据挖掘校正与样本外检验后大幅削弱（STW 1999）、且利润随时间衰减。</li>
+      <li><strong>主要靠自我实现</strong>：枢轴点、多数画线类——机制可信（订单聚集 + 锚定），但脆弱、时变、可被套利削弱。</li>
+      <li><strong>基本无独立统计支持（应明确点名）</strong>：斐波那契回撤、江恩角度线——本轮一手学术检索<strong>未找到任何同行评议研究给出其超越随机基准的稳健证据</strong>（这是"未检索到支持文献"的判断，斐波那契另有 2021 年研究直接证伪其非随机性）。</li>
+    </ul>
+
+    <h2>四、怎么用才不至于自欺</h2>
+    <p>把上面的证据落到操作上，结论不是"信"或"不信"，而是几条纪律：</p>
+    <ul>
+      <li><strong>当概率，不当承诺</strong>：支撑是"这里可能有买盘"，不是"这里一定接得住"。任何单一画线都可能被一根放量大阴线作废。</li>
+      <li><strong>用区间，不用精确价</strong>：给支撑画一条带，而不是一个点；小幅刺破不等于破位。</li>
+      <li><strong>找多重共振（confluence）</strong>：当前低、某条重要均线（如年线）、整数关口三者<strong>重合在同一价位</strong>时，这个"共振位"远比任何单一信号可靠——因为多族订单恰好都堆在这里。</li>
+      <li><strong>必须配合量能确认</strong>：缩量回踩多为有效支撑；放量跌破才算真破位。跌破后能否在数日内收回原位（retest），决定它是假摔还是角色反转。</li>
+      <li><strong>永远带止损、把假突破当常态</strong>：诱多 / 诱空（bull trap / bear trap）是市场常规操作，越多人盯的位越"灵"、也越容易被主力用来骗线。</li>
+    </ul>
+
+    <h2>五、实战监控清单（下次该盯什么）</h2>
+    <p>这是个偏静态的方法论概念，但落到一只你在跟踪的标的上，下面几个动态信号最值得固定观察：</p>
+    <ul>
+      <li><strong>量能</strong>：关注的支撑位被触及时盯成交量——缩量回踩 = 支撑可能有效；放量跌破 = 大概率真破位。</li>
+      <li><strong>回踩确认（retest）</strong>：跌破后 3–5 个交易日内能否收回原支撑上方；收不回，则该位由支撑反转为压力。</li>
+      <li><strong>共振位</strong>：主动寻找"前低 + 年线（250 日）+ 整数关口"三者重合的价格，把它设为重点观察位。</li>
+      <li><strong>大盘心理关口</strong>：上证 3000 / 3500 等整数关的"保卫战"会同步牵动个股情绪，是判断系统性支撑的锚。</li>
+      <li><strong>筹码峰的移动</strong>：单峰由低位逐步上抬 = 换手充分、支撑夯实；高位单峰密集 + 滞涨 = 派发警示。但务必记住这是<strong>换手率估算值</strong>，只作辅助。</li>
+    </ul>
+
+    <div class="limitation">
+      本报告的几处数据局限需明示：(1) <strong>A股"筹码分布 / 成本均线"的数据本质是用换手率反推的估算值、非真实持仓</strong>，理论上无法精确，文中相关结论均按"辅助参考"对待。(2) Osler 关于整数位订单聚集的精确比例（约 10% vs 3%）来自纽约联储 Staff Report，<strong>其一手 PDF 本轮被服务器拒绝抓取</strong>，比例依据该论文期刊正式版（Osler 2003, Journal of Finance）与多处权威转引，未独立逐页核对原始 PDF。(3) "生命线 / 半年线 / 年线 / 三线开花"等为 A股本土约定俗成叫法、无监管定义，亦无权威英文一手来源，按百科 / 投教层级处理。(4) "假突破出现频率"类具体数字在本轮检索中只见于交易类博客、无法回溯到同行评议来源，故正文未给出任何此类硬数字。时效以检索日 2026-06-03 为准。
+    </div>
+
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li><strong>不是物理地板</strong>：足够强的卖压或利空会无视任何画线，"破位"是常态而非异常；把支撑当成"一定接得住"是最常见的亏损来源。</li>
+      <li><strong>自我实现的双刃</strong>：越多人盯的位越"灵"，也越容易被主力用来诱多 / 诱空（假突破、陷阱）——有效性本身可被利用。</li>
+      <li><strong>数据挖掘陷阱</strong>：档位 / 参数太多，事后总能找到"灵验"的那条；STW（1999）显示 BLLL（1992）的正向结果经数据挖掘校正 + 样本外检验后基本消失。</li>
+      <li><strong>交易成本侵蚀</strong>：多数"获利"研究未扣成本，加上买卖价差与滑点后显著缩水。</li>
+      <li><strong>筹码分布的根本局限</strong>：数据来自换手率估算、非真实持仓，理论上不可能精确，易被当成"主力成本上帝视角"而误读。</li>
+      <li><strong>斐波那契 / 江恩缺乏独立统计支持</strong>：主要依附"自我实现"；斐波那契已被 2021 年研究证伪其非随机性，江恩更含占星等玄学成分。</li>
+      <li><strong>有效市场假说视角</strong>：弱式有效市场下，技术分析不能持续获取超额收益（Fama 1970）。</li>
+      <li><strong>时变性</strong>：有效性随市场效率提升而衰减，历史上"灵验"的规则未必在今天和未来继续有效。</li>
+    </ul>
+  </section>
+
+  <section class="sources">
+    <h2>来源清单（学术 / 央行研究在前；本主题以可检验的实证证据为最高权威）</h2>
+    <ol>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.newyorkfed.org/medialibrary/media/research/epr/00v06n2/0007osle.pdf">Osler, "Support for Resistance: Technical Analysis and Intraday Exchange Rates" (FRBNY Economic Policy Review)</a> <em>2000</em> — 已发布的支撑/阻力位对日内汇率趋势中断有显著（但不均一）预测力（本轮 PDF 被 403，结论以 RePEc 官方摘要核实）。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/0022-1082.00592">Osler, "Currency Orders and Exchange Rate Dynamics" (Journal of Finance 58:5)</a> <em>2003</em> — 止盈单聚集整数位解释"反转"、止损单聚集整数位外解释"突破后加速"：最硬的机制证据。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.newyorkfed.org/medialibrary/media/research/staff_reports/sr125.pdf">Osler, FRBNY Staff Report No. 125 — Currency Orders and Exchange-Rate Dynamics</a> <em>2000</em> — 整数位订单聚集约 10% vs 其他价位约 3% 的来源（一手 PDF 本轮 403，数字依期刊版与权威转引）。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://ideas.repec.org/a/eee/jimfin/v24y2005i2p219-241.html">Osler, "Stop-loss orders and price cascades in currency markets" (JIMF 24:2)</a> <em>2005</em> — 止损触发引发正反馈/价格瀑布，解释穿越聚集位后的快速移动。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04681.x">Brock, Lakonishok &amp; LeBaron, "Simple Technical Trading Rules and the Stochastic Properties of Stock Returns" (JF 47:5)</a> <em>1992</em> — 道指均线+突破规则收益不符随机游走（经典正面证据，未扣成本）。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.nber.org/papers/w7613">Lo, Mamaysky &amp; Wang, "Foundations of Technical Analysis" (NBER WP 7613 / JF 55:4)</a> <em>2000</em> — 核回归识别图形形态，部分形态对美股有"增量信息"。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1467-6419.2007.00519.x">Park &amp; Irwin, "What Do We Know About the Profitability of Technical Analysis?" (J. Economic Surveys 21:4)</a> <em>2007</em> — 95 项现代研究 56 正/20 负/19 混；正面占多数但满身方法论保留（已直接核实 56/20/19）。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://onlinelibrary.wiley.com/doi/10.1111/0022-1082.00163">Sullivan, Timmermann &amp; White, "Data-Snooping, Technical Trading Rule Performance, and the Bootstrap" (JF 54:5)</a> <em>1999</em> — 数据挖掘校正后 BLLL 最优规则样本外失效：本主题最关键反证。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://ideas.repec.org/a/bla/jfinan/v25y1970i2p383-417.html">Fama, "Efficient Capital Markets: A Review of Theory and Empirical Work" (JF 25:2)</a> <em>1970</em> — 弱式 EMH：历史价量已被 price-in，技术分析不能持续超额（反方理论总纲）。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.science.org/doi/10.1126/science.185.4157.1124">Tversky &amp; Kahneman, "Judgment under Uncertainty: Heuristics and Biases" (Science 185)</a> <em>1974</em> — 锚定—调整启发法，整数/心理价位叙事的理论根。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://ideas.repec.org/a/eee/intfin/v16y2006i4p318-344.html">Mitchell &amp; Izan, "Clustering and psychological barriers in exchange rates" (JIFMIM 16:4)</a> <em>2006</em> — 独立证实外汇整数位聚集/心理屏障（非 Osler 单一来源）。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.sciencedirect.com/science/article/abs/pii/S0957417421012495">"Automatic identification and evaluation of Fibonacci retracements: Empirical evidence from three equity markets" (ESWA)</a> <em>2021</em> — 斐波那契区与随机价位反弹概率统计不可区分（直接证伪其非随机性）。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.sciencedirect.com/science/article/abs/pii/S1044028308000549">"Psychological barriers in European stock markets: Where are they?" (J. Banking &amp; Finance)</a> <em>2008</em> — 整数/心理屏障在欧洲股市的实证与锚定根因。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://chartschool.stockcharts.com/table-of-contents/chart-analysis/support-and-resistance">StockCharts ChartSchool: Support and Resistance</a> <em>检索 2026-06-03</em> — 支撑定义、前低成因、角色反转（PeopleSoft 套牢盘）、用区间判别破位。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://chartschool.stockcharts.com/table-of-contents/chart-analysis/trend-lines">StockCharts ChartSchool: Trend Lines</a> <em>检索 2026-06-03</em> — 趋势线连低点、两点画线三点确认、越陡越无效、破位需他证。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://chartschool.stockcharts.com/table-of-contents/trading-strategies-and-models/trading-strategies/moving-average-trading-strategies/finding-support-and-resistance-in-moving-averages">StockCharts ChartSchool: Finding Support &amp; Resistance in Moving Averages</a> <em>检索 2026-06-03</em> — 均线作支撑/压力、20/50/200 日、回踩反弹机制。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://chartschool.stockcharts.com/table-of-contents/chart-analysis/chart-patterns/head-and-shoulders-top">StockCharts ChartSchool: Head and Shoulders Top</a> <em>检索 2026-06-03</em> — 颈线为支撑、未有效跌破颈线形态不成立。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://chartschool.stockcharts.com/table-of-contents/chart-analysis/gaps-and-gap-analysis">StockCharts ChartSchool: Gaps and Gap Analysis</a> <em>检索 2026-06-03</em> — 四类缺口、突破点变新支撑/阻力、"必补"仅部分成立。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.tradingview.com/support/solutions/43000502040-volume-profile-indicators-basic-concepts/">TradingView Help: Volume Profile basic concepts</a> <em>检索 2026-06-03</em> — VP/POC/价值区(70%)/HVN/LVN 官方定义。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://en.wikipedia.org/wiki/Market_profile">Wikipedia: Market profile</a> <em>检索 2026-06-03</em> — Steidlmayer/CBOT、1980 年代源流、TPO 机制。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://realinvestmentadvice.com/resources/blog/volume-profiles-eyeing-resistance-from-trapped-longs/">Real Investment Advice: Resistance From Trapped Longs</a> <em>检索 2026-06-03</em> — HVN 阻力的"回本心理"机制（套牢盘西方版）。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.investopedia.com/terms/f/fibonacciretracement.asp">Investopedia: Fibonacci Retracement</a> <em>检索 2026-06-03</em> — 档位与黄金比例定义；50% 非斐波那契比率。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.bollingerbands.com/bollinger-band-rules">bollingerbands.com: Bollinger Band Rules</a> <em>检索 2026-06-03</em> — 官方公式 + 作者"触轨非买入信号""沿轨行走"告诫。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.heygotrade.com/en/blog/pivot-points-explained/">Heygotrade: Pivot Points Explained</a> <em>检索 2026-06-03</em> — PP=(H+L+C)/3 及 S1–S3/R1–R3 经典公式与日内用法。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://en.wikipedia.org/wiki/Gann_angles">Wikipedia: Gann angles</a> <em>检索 2026-06-03</em> — 几何角度线投射支撑阻力；含占星/玄学、与弱式 EMH 相悖。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.britannica.com/money/golden-cross-vs-death-cross">Britannica Money: Golden Cross vs. Death Cross</a> <em>检索 2026-06-03</em> — 金叉死叉 50/200 日定义、滞后指标、横盘假信号。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.britannica.com/money/simple-vs-exponential-moving-averages">Britannica Money: Simple vs. Exponential Moving Averages</a> <em>检索 2026-06-03</em> — SMA 等权更适合定支撑、EMA 加权反应更快。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.thepaper.cn/newsDetail_forward_25085601">澎湃新闻《A股16年打了50次"3000点保卫战"》</a> <em>检索 2026-06-03</em> — A股 3000 点=整数/心理关口、"牛熊分界线"。</li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://baike.baidu.com/item/%E7%AD%B9%E7%A0%81%E5%88%86%E5%B8%83%E6%8C%87%E6%A0%87/10913464">百度百科：筹码分布指标(CYQ)</a> <em>检索 2026-06-03</em> — 陈浩 1997 发明 CYQ、100 线/获利套牢颜色。</li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://quant.10jqka.com.cn/view/article/2147">同花顺 SuperMind：一文搞懂筹码分布</a> <em>检索 2026-06-03</em> — 筹码分布定义、换手率衰减、成本/获利、单/多峰。</li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://www.zhihu.com/question/59689990">知乎：筹码分布图可信度与数据来源</a> <em>检索 2026-06-03</em> — 数据是换手率估算、非真实持仓的核心局限。</li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://wiki.mbalib.com/wiki/250%E6%97%A5%E5%9D%87%E7%BA%BF">MBA智库百科：250 日均线</a> <em>检索 2026-06-03</em> — 年线=250 日≈全年平均成本、"牛熊分界线"。</li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://wiki.mbalib.com/wiki/%E4%B8%89%E7%BA%BF%E5%BC%80%E8%8A%B1">MBA智库百科：三线开花</a> <em>检索 2026-06-03</em> — 20/120/250 日发散=多头排列、买点须放量确认。</li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://legulegu.com/stock/article/junxian/487">乐咕乐股网：生命线·30 日均线</a> <em>检索 2026-06-03</em> — 30 日均线=A股"生命线"、中期趋势、常作止损位。</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-06-03 · 内容定格于生成时点，更新请重跑生成新版本
+  </footer>
+
+</div>
+</body>
+</html>
