@@ -29,7 +29,10 @@ export function build({
 
   const tpl = readFileSync(template, "utf8");
   writeFileSync(join(out, "index.html"), renderIndex(entries, tpl));
-  cpSync(assets, join(out, "assets"), { recursive: true });
+  cpSync(assets, join(out, "assets"), {
+    recursive: true,
+    filter: (src) => !src.endsWith(".test.js"),
+  });
 
   // 提交表单页（M2a）：把公开配置注入模板后写出
   const submitTpl = readFileSync(submitTemplate, "utf8");
