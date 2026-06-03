@@ -14,7 +14,8 @@ export function maskEmail(email) {
 // 用代码围栏包裹用户内容，杜绝 markdown/HTML 注入。
 const fence = (label, text) => ["", `### ${label}`, "```", text, "```"];
 
-// clean.email 传入前已被调用方替换成打码值（见 handler）。
+// 公开仓库 → Issue 公开：这里**总是**内部打码（纵深防御，不依赖调用方先打码；
+// maskEmail 幂等，即使 handler 已先打码也安全）。
 export function formatIssue(clean, { author }) {
   const maskedEmail = maskEmail(clean.email);
   const lines = [
