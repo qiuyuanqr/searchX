@@ -38,3 +38,10 @@ test("parseNote 容错：缺字段不崩", () => {
   expect(e.boards).toEqual([]);
   expect(e.sourceCount).toBe(0);
 });
+
+test("parseNote 清洗 tldr 里的 markdown 噪声（纸感卡片用纯文本）", () => {
+  const raw = "---\ntype: 板块\n---\n\n# 标题\n\n" +
+    "> 衔接 [[other-note]] 的 **重点**，参考 `code` 与 [链接](https://x.com)。\n";
+  const e = parseNote(raw, "2026-06-03_demo");
+  expect(e.tldr).toBe("衔接 other-note 的 重点，参考 code 与 链接。");
+});
