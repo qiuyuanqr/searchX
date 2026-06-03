@@ -1,0 +1,40 @@
+// 构建时给报告副本（web/dist/r/<dir>/index.html）注入站点导航：
+// 一个常驻的「返回档案首页」按钮 + 一个滚动后出现的「回到顶部」按钮，
+// 圆形纸感样式复刻主页 .to-top，并复用报告自身的配色变量（自动适配深色模式）。
+// 注意：只注入到 dist 副本，原始 research/<dir>/report.html（归档/Obsidian 用）保持纯净。
+export function injectReportNav(html, { homeHref = "../../index.html" } = {}) {
+  const snippet = `
+<!-- searchX 站点导航（构建时注入，不写入归档 report.html） -->
+<style>
+.sx-nav-btn{position:fixed; right:20px; width:44px; height:44px; border-radius:50%;
+  background:var(--card); border:1px solid var(--rule); color:var(--seal); font-size:1.15rem;
+  display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:50;
+  text-decoration:none; box-shadow:0 4px 14px rgba(0,0,0,.1);
+  transition:opacity .3s ease, transform .3s ease, box-shadow .2s ease, border-color .2s ease}
+.sx-nav-btn:hover{transform:translateY(-3px); box-shadow:0 9px 22px rgba(0,0,0,.15); border-color:var(--seal-soft)}
+.sx-nav-btn:active{transform:translateY(-1px) scale(.95)}
+.sx-home{bottom:20px}
+.sx-home svg{width:19px; height:19px}
+.sx-top{bottom:74px; opacity:0; transform:translateY(10px); pointer-events:none}
+.sx-top.show{opacity:1; transform:none; pointer-events:auto}
+@media (prefers-reduced-motion: reduce){ .sx-nav-btn{transition:none !important} }
+</style>
+<a class="sx-nav-btn sx-home" href="${homeHref}" aria-label="返回调研档案首页" title="返回档案首页">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 9.8V19h13V9.8"/></svg>
+</a>
+<button type="button" class="sx-nav-btn sx-top" aria-label="回到顶部" title="回到顶部">↑</button>
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var top = document.querySelector(".sx-top");
+  function onScroll(){ (window.scrollY > 420) ? top.classList.add("show") : top.classList.remove("show"); }
+  window.addEventListener("scroll", onScroll, { passive:true });
+  onScroll();
+  top.addEventListener("click", function(){ window.scrollTo({ top:0, behavior: reduce ? "auto" : "smooth" }); });
+})();
+</script>`;
+
+  const m = html.match(/<\/body>/i);
+  if (m) return html.replace(m[0], snippet + "\n" + m[0]);
+  return html + snippet;
+}

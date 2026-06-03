@@ -101,9 +101,45 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .form-status[data-kind="pending"]{color:var(--muted)}
 .fineprint{font-family:var(--sans); font-size:.74rem; color:var(--muted); margin:0}
 @media (prefers-reduced-motion: reduce){ .submit-btn{transition:none !important} }
-.kicker .submit-link{margin-left:auto; font-size:.7rem; letter-spacing:.06em; text-transform:none;
-  color:var(--seal); text-decoration:none; border-bottom:1px solid transparent; transition:border-color .2s}
+.kicker .submit-link{margin-left:auto; font-family:var(--sans); font-size:.7rem; letter-spacing:.06em; text-transform:none;
+  color:var(--seal); background:none; border:0; padding:0; cursor:pointer; line-height:inherit;
+  border-bottom:1px solid transparent; transition:border-color .2s}
 .kicker .submit-link:hover{border-bottom-color:var(--seal-soft)}
+
+/* ── 提交弹窗（入口在首页内）── */
+.modal-backdrop{position:fixed; inset:0; z-index:100; background:rgba(20,16,10,.46);
+  -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px);
+  display:flex; align-items:flex-start; justify-content:center; padding:4.5vh 1rem; overflow-y:auto;
+  animation:backdropIn .22s ease}
+@keyframes backdropIn{from{opacity:0} to{opacity:1}}
+.modal-card{position:relative; width:min(34rem,100%); margin:0 auto;
+  background:var(--paper); border:1px solid var(--rule); border-radius:16px;
+  padding:1.7rem 1.7rem 1.5rem; box-shadow:0 24px 60px rgba(0,0,0,.28);
+  animation:riseIn .42s cubic-bezier(.2,.7,.2,1) backwards}
+.modal-close{position:absolute; top:.8rem; right:.85rem; width:2rem; height:2rem; border-radius:50%;
+  background:transparent; border:1px solid var(--rule); color:var(--ink-soft); font-size:.85rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:color .18s ease, border-color .18s ease, transform .25s ease}
+.modal-close:hover{color:var(--seal); border-color:var(--seal-soft); transform:rotate(90deg)}
+.modal-title{font-family:var(--serif); font-size:1.5rem; font-weight:600; letter-spacing:-.01em; margin:.4rem 0 0}
+.modal-lead{color:var(--ink-soft); font-size:.92rem; line-height:1.6; margin:.5rem 0 0}
+.modal-card .submit-form{margin-top:1.1rem}
+.ts-widget{min-height:65px}
+.linklike{background:none; border:0; padding:0; font:inherit; color:var(--seal); cursor:pointer}
+.linklike:hover{border-bottom:1px solid var(--seal-soft)}
+body.modal-lock{overflow:hidden}
+@media (max-width:520px){
+  .modal-backdrop{padding:2.4vh .6rem}
+  .modal-card{width:100%; padding:1.4rem 1rem 1.2rem}
+  .modal-title{font-size:1.32rem}
+}
+@media (max-width:344px){
+  .modal-card{padding:1.2rem .7rem 1.1rem}
+  .ts-widget{transform:scale(.86); transform-origin:left top}
+}
+@media (prefers-reduced-motion: reduce){
+  .modal-backdrop, .modal-card{animation:none !important}
+  .modal-close{transition:none !important}
+}
 
 /* 提交成功确认卡（M2a） */
 .submit-done{margin-top:2.2rem; text-align:center; animation:riseIn .5s cubic-bezier(.2,.7,.2,1) backwards}

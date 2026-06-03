@@ -1,3 +1,5 @@
+// 提交表单的纯逻辑：拼载荷 + 把响应映射成中文。
+// DOM 引导（打开/关闭弹窗、提交、Turnstile 渲染）统一由 feed.js 负责，feed.js 从这里 import 这两个纯函数。
 // 纯函数：从表单字段值 + turnstile token 拼 POST 载荷。
 export function buildPayload(fields, turnstileToken) {
   const s = (v) => (v == null ? "" : String(v)).trim();
@@ -28,54 +30,4 @@ export function describeResult(res) {
   };
   const code = res && res.error;
   return { kind: "error", text: map[code] || "提交失败，请稍后重试。" };
-}
-
-// DOM 引导：仅在浏览器运行（bun 测试环境无 document，自动跳过）。
-if (typeof document !== "undefined") {
-  const form = document.getElementById("submit-form");
-  const statusEl = document.getElementById("form-status");
-
-  const setStatus = (text, kind) => {
-    statusEl.textContent = text;
-    statusEl.dataset.kind = kind;
-    statusEl.hidden = false;
-  };
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const fd = new FormData(form);
-    const token = (fd.get("cf-turnstile-response") || "").toString();
-    const payload = buildPayload(
-      {
-        title: fd.get("title"),
-        focus: fd.get("focus"),
-        email: fd.get("email"),
-        message: fd.get("message"),
-      },
-      token
-    );
-    setStatus("提交中…", "pending");
-    try {
-      const r = await fetch(form.dataset.worker, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await r.json().catch(() => ({ ok: false }));
-      const out = describeResult(data);
-      if (out.kind === "success") {
-        // 成功：换成明显的确认卡，隐藏表单（避免“清空了像没反应”的错觉）
-        form.hidden = true;
-        const done = document.getElementById("submit-done");
-        if (done) done.hidden = false;
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        // 失败：保留表单，内联提示，便于重试
-        setStatus(out.text, out.kind);
-      }
-    } catch {
-      const out = describeResult({ ok: false });
-      setStatus(out.text, out.kind);
-    }
-  });
 }
