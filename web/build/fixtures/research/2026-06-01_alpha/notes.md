@@ -1,0 +1,11 @@
+---
+date: 2026-06-01
+type: 概念
+tags: [a]
+related: ["[[算力]]"]
+source_count: 5
+---
+
+# Alpha 概念
+
+> Alpha 的一句话结论。
