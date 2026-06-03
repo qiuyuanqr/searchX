@@ -1,5 +1,5 @@
 // services/runner/src/runner.js
-// 一次性编排：取 approved 未 done 的 Issue → 跑 /research（轻量档，含 Step6 自动上线）
+// 一次性编排：取 approved 未 done 的 Issue → 跑 /research（含 Step6 自动上线）
 // → 贴 done → 取提交者邮箱 → 发极简邮件（抄作者）→ 评论留痕。
 // 全部副作用经 deps 注入，离线可测。
 

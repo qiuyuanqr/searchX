@@ -1,6 +1,6 @@
 # searchX Runner（M2b · 一键跑研究 + 发信）
 
-作者审批后回到 Mac，跑**一条命令** `bun run runner`：它取队列里 `approved` 且未 `done` 的 Issue → 喂给本机 Claude Code 跑 `/research`（**轻量档**，含 Step 6 自动上线）→ 给 Issue 贴 `done` → 取提交者邮箱 → 发一封极简结果邮件（抄送作者）。
+作者审批后回到 Mac，跑**一条命令** `bun run runner`：它取队列里 `approved` 且未 `done` 的 Issue → 喂给本机 Claude Code 跑 `/research`（含 Step 6 自动上线）→ 给 Issue 贴 `done` → 取提交者邮箱 → 发一封极简结果邮件（抄送作者）。
 
 **唯一花 Claude 额度的地方 = 跑一次 `/research` 本身。** 取 Issue / 贴标签 / 发邮件 / 取邮箱全是确定性脚本、零 token。
 
@@ -10,7 +10,7 @@ GitHub Issues（M2a 入队的，作者已贴 approved）
    ▼
 对每条 approved 未 done 的 Issue：
    ├─ parseIssueRequest        题目=标题、侧重点=正文围栏
-   ├─ buildResearchPrompt      /research <题目> | <侧重点> [轻量]
+   ├─ buildResearchPrompt      /research <题目> | <侧重点>
    ├─ runResearch              Bun.spawn claude -p …（跑研究 + Step6 push 上线）
    ├─ diffNewDirs              跑前/跑后扫 research/ 对比 → 新文件夹
    │     └─ 无新文件夹 / claude 退出码≠0 → 不贴 done，留待重跑
@@ -35,7 +35,7 @@ GitHub Issues（M2a 入队的，作者已贴 approved）
 | `src/config.js` | `loadRunnerConfig(env)` 从 `process.env` 读配置、校验必填、去空白 |
 | `src/issues.js` | `listApprovedIssues` / `addLabel` / `commentIssue`（注入 fetch） |
 | `src/parse-issue.js` | `parseIssueRequest({title,body})` → `{topic,focus}`（CRLF 归一） |
-| `src/research-cmd.js` | `buildResearchPrompt({topic,focus})` → 带 `[轻量]` 的 /research 命令 |
+| `src/research-cmd.js` | `buildResearchPrompt({topic,focus})` → 拼 /research 命令 |
 | `src/research-output.js` | `diffNewDirs(before,after)` 识别本次新产出文件夹 |
 | `src/sub-fetch.js` | `fetchSubmitterEmail({workerUrl,secret,issueNumber})` 经 Worker 取邮箱 |
 | `src/email.js` | `composeEmail(...)` + `sendEmail(msg,{transport})`（注入 transport） |
@@ -121,7 +121,7 @@ RUNNER_SMTP_PASS=<Gmail 应用专用密码>
 ```bash
 bun run runner
 ```
-它会逐条：spawn `claude -p "/research <题目> … [轻量]"`（跑研究 + Step 6 `git push` 上线）→ 检测到新文件夹后贴 `done` + 评论链接 → 给提交者发「【调研完成】…」邮件（抄作者）。终端打印 `完成：处理 N、上线 N、发信 N、失败 N`。
+它会逐条：spawn `claude -p "/research <题目> …"`（跑研究 + Step 6 `git push` 上线）→ 检测到新文件夹后贴 `done` + 评论链接 → 给提交者发「【调研完成】…」邮件（抄作者）。终端打印 `完成：处理 N、上线 N、发信 N、失败 N`。
 
 ## 环境变量
 
