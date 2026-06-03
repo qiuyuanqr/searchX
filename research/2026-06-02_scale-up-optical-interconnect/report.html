@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>scale-up 光互连（XPU 间）· 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  table.cmp{width:100%; border-collapse:collapse; margin:1.3rem 0; font-size:.9rem;
+    font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif}
+  table.cmp th{text-align:left; padding:.5rem .55rem; border-bottom:2px solid var(--muted); color:var(--ink-soft); font-weight:600}
+  table.cmp td{padding:.5rem .55rem; border-bottom:1px solid var(--rule); vertical-align:top; line-height:1.45}
+  table.cmp td:first-child{font-weight:600; white-space:nowrap}
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} table.cmp{font-size:.82rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 概念</div>
+    <h1>scale-up 光互连（XPU 间）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-06-02（北京时间）</span>
+      <span><b>类型</b> 概念</span>
+      <span><b>关联板块</b> 光模块 · 算力 · AI应用</span>
+      <span><b>来源</b> 34 条</span>
+    </div>
+  </header>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    scale-up 光互连，是把"一柜 XPU 当成一颗超大 GPU 用"的紧耦合、内存语义互连，从铜升级到光的过程。它是光互连皇冠上"<strong>最大但最晚</strong>"的明珠：当下仍由铜主导（省电、零延迟、最可靠），只有当 scale-up 域要跨出单机柜、铜的约 2 米够不着时，光才被迫进场（英伟达把跨柜上光定在 2027、全光定在 2028）。它对可靠性的要求比现有可插拔光模块高约 100 倍——一次链路抖动就可能拖垮上千 GPU 的训练任务，这正是它"最后才上光"的根因，也是整条赛道（光模块 / CPO / 光 I/O / 光交换）下一波最大的增量空间。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li><strong>先分清两件事。</strong>scale-up = 把一柜 XPU 焊成"一颗大 GPU"，走<strong>内存语义（load/store）</strong>、超低时延、<strong>不容丢包</strong>；scale-out = 跨节点的以太网/InfiniBand，走"包"、可重传。本调研讲的是前者的"光"。</li>
+      <li><strong>关键前提：今天 scale-up 仍是"铜"的天下。</strong>英伟达 NVL72 整机柜用 <strong>5,184 根无源铜缆</strong>（约 2 英里）把 72 颗 GPU 连成 130 TB/s 的一个 NVLink 域。铜在机柜内省电、近零延迟、最可靠——别误以为光已主导。</li>
+      <li><strong>逼光上位的是"距离"。</strong>铜在 200/224G 速率下只能跑<strong>约 2 米</strong>，把一个高带宽 scale-up 域卡死在约一个机柜。要做 NVL576（8 柜 576 GPU，2027 下半年）、NVL1152（2028）这种跨柜大域，铜够不着，只能上光（CPO）。</li>
+      <li><strong>scale-up 是"最后才上光"的地方。</strong>它没有重传安全网，一次链路 flap 就可能拖垮上千 GPU 的训练（约 300 万 GPU 规模下平均每约 48 秒某处就抖一次；可插拔光模块 FIT 高达约 3 万）。可靠性门槛比现有可插拔高约 100 倍——这是黄仁勋、陈福阳（Hock Tan）都喊"能用铜就用铜"的根因。</li>
+      <li><strong>路线与标准都在混战。</strong>四条技术路线并行：封装内光 I/O（Ayar Labs）/ 光 interposer-fabric（Lightmatter、Celestial→Marvell）/ 光交换 OCS（谷歌）/ AEC 铜缆桥接（Credo）。协议上 NVLink(Fusion) vs UALink vs Scale-Up Ethernet 三分天下；2026-03 六巨头（含英伟达、AMD、博通）成立 <strong>OCI MSA</strong> 统一光物理层。</li>
+      <li><strong>中国被迫先走全光。</strong>因被卡先进制程，华为 CloudMatrix 384 反而靠<strong>全光互连</strong>（6,912 个光模块、灵衢总线）堆出超大 scale-up 域——代价是约 4 倍功耗、且约 68% 的故障来自光：一条用"规模"换"效率/可靠性"的路。</li>
+    </ul>
+  </div>
+
+  <main>
+
+    <h2>一、先划清边界：scale-up vs scale-out（必做的前提校正）</h2>
+    <p>这两个词天天混用，但物理意义完全不同，先讲清楚才不会被带偏：</p>
+    <ul>
+      <li><strong>scale-up（向上扩展 / 纵向）</strong>：把一柜里几十上千颗 XPU 焊成"<strong>一颗逻辑上的超大 GPU</strong>"。它们之间走<strong>内存语义</strong>——直接读写对方的显存（load/store），像同一块主板上的多核协作。要求超高带宽（TB/s 级）、超低时延（纳秒级）、并且<strong>几乎不容许丢包</strong>，因为没有传输层去重传。代表：英伟达 NVLink / NVSwitch、AMD Infinity Fabric、UALink、谷歌 TPU 的 ICI。</li>
+      <li><strong>scale-out（向外扩展 / 横向）</strong>：把许多"节点/机柜"用网络连成大集群，走<strong>包（packet）</strong>、用 RDMA/RoCE 语义，<strong>可以丢包重传</strong>。时延预算宽松得多。代表：以太网、InfiniBand。</li>
+    </ul>
+    <p>一个生动的对照：scale-up 像"同一栋楼里同事面对面递文件"——快、直接、丢一份就乱套；scale-out 像"跨城寄快递"——慢一点没关系，丢了再寄一次。<strong>scale-up 域能有多大（"world size"），直接决定了张量并行、MoE 专家并行的 all-to-all、KV-cache 内存池能铺多开</strong>，是大模型训练/推理性能的命门（参见 <a href="https://engineering.fb.com/2025/10/17/ai-research/scaling-llm-inference-innovations/">Meta 工程博客</a>）。</p>
+    <div class="callout">本报告标题里的"光互连（XPU 间）"特指 scale-up 域的光化。务必记住一个反直觉的事实：到 2026 年中，这个域<strong>主要还是铜</strong>，光是正在逼近的下一步——而非既成现实。下面两节解释为什么。</div>
+
+    <h2>二、为什么今天是"铜"的天下</h2>
+    <p>最有代表性的实物是英伟达 GB200 NVL72：72 颗 Blackwell GPU 用 NVLink 连成<strong>一个域</strong>，每颗 GPU 1.8 TB/s、整柜 130 TB/s 全互联——而这套 scale-up 主干<strong>全是无源铜</strong>：<strong>5,184 根铜缆</strong>、合计约 2 英里（约 3.2 km），盲插在背板上（<a href="https://www.theregister.com/2024/03/21/nvidia_dgx_gb200_nvk72/">The Register, 2024-03-21</a>）。黄仁勋反复为铜背书，原因是铜在机柜内有四个硬优势：</p>
+    <ul>
+      <li><strong>省电</strong>：无源铜几乎不耗电。SemiAnalysis 估算，若把 NVL72 这套铜主干换成光，光收发+重定时器要<strong>额外吃约 20 kW/机柜</strong>——这电省下来全给算力。</li>
+      <li><strong>零延迟</strong>：无源铜不做电光转换、不过 DSP，几乎不加时延；而光天然多一道"电→光→电"的工序。</li>
+      <li><strong>更可靠</strong>：铜更凉、更省电，于是更不容易"抖"（flap）和坏——这点对 scale-up 是决定性的（见第四节）。</li>
+      <li><strong>更便宜</strong>：铜远比等量的光收发器便宜。</li>
+    </ul>
+
+    <h2>三、铜的尽头：什么逼着光走进 scale-up</h2>
+    <p>铜的死穴是<strong>距离随速率坍缩</strong>："数据率翻倍，传输距离大约缩 30–50%"（<a href="https://www.marvell.com/blogs/nine-things-to-remember-about-the-future-of-copper-in-computing.html">Marvell</a>）。具体地：约 3 米@5G → 约 1 米@200G；到 <strong>224G SerDes，无源铜的可用距离不到 2 米</strong>。这在物理上把一个高带宽 scale-up 域<strong>卡死在约一个机柜（约 72 GPU）</strong>。主动电缆（AEC，在缆端加 DSP）能把距离拉长约 3 倍，但又把功耗、时延、故障率带了回来。</p>
+    <p>于是逼光上位的<strong>不是省电、而是"够不着"</strong>。当 scale-up 域要跨出单机柜——英伟达 <strong>Rubin Ultra NVL576</strong>（576 GPU 跨 8 个机柜连成一个 NVLink 域，2027 下半年）、再到 <strong>Feynman NVL1152</strong>（2028）——铜在跨柜距离上达不到所需带宽，只能上光。英伟达的原则被黄仁勋一句话说尽："<strong>能用铜就用铜，必须用光才用光</strong>"。所以 NVL576 是"柜内铜 + 跨柜 CPO"，到 NVL1152 才"基本全 CPO"（<a href="https://www.hpcwire.com/2026/03/17/huang-shares-nvidia-roadmap-showing-more-chips-nvl1152-scale-up-cpo/">HPCwire, 2026-03-17</a>）。</p>
+
+    <h2>四、scale-up 光互连最残酷的"及格线"</h2>
+    <p>为什么光在长距离、在 scale-out 交换机上早就用了，偏偏 scale-up 是<strong>最后一块</strong>？因为 scale-up 给光开出的及格线高得多：</p>
+    <ul>
+      <li><strong>可靠性（最关键）</strong>：scale-up 走内存语义、<strong>没有重传安全网</strong>，一根链路抖一下，整个紧耦合域、整个训练任务都可能崩。规模放大后这事变得恐怖——研究（arXiv《The Ghost in the Datacenter》, 2026-03）给出的尺度：2023 年 2 万 GPU 约每 3 小时一次 flap；2024 年 20 万 GPU 约每 12 分钟；<strong>2025 年约 300 万 GPU、超千万条光链路，平均每约 48 秒某处就抖一次</strong>。可插拔光模块 FIT 高达约 3 万，Credo 称其 AEC/ZeroFlap 可靠性比激光光学好 100–1000 倍。结论：scale-up 对光的可靠性要求比现有可插拔高约 <strong>100 倍</strong>。</li>
+      <li><strong>时延</strong>：纳秒级预算，要逼近铜的"近零附加时延"。</li>
+      <li><strong>带宽密度（shoreline）</strong>：每毫米芯片边缘要塞下 Tb/s 级。Blackwell 封装外密度约 0.4 Tbit/s/mm，目标要高数倍。</li>
+      <li><strong>能效</strong>：scale-up 目标 &lt;约 1 pJ/bit；对比可插拔约 20–22 pJ/bit、CPO 约 5–7 pJ/bit——要比无源铜还有竞争力，门槛极高。</li>
+      <li><strong>成本</strong>：海量激光器/光纤阵列要便宜。</li>
+    </ul>
+    <div class="callout">一个被 SemiAnalysis 点破的"反叙事"：在 scale-out 里，网络只占集群约 9% 功耗，CPO 全集群只省约 2–4% 电、3–7% TCO——所以 <strong>scale-up 上光的真正理由是"距离/带宽/可靠性"，不是省电</strong>。把"上光=为了省电"套到 scale-up 上是误读。</div>
+
+    <h2>五、四条技术路线（附对比）</h2>
+    <table class="cmp">
+      <thead><tr><th>路线</th><th>怎么做</th><th>代表</th><th>定位</th></tr></thead>
+      <tbody>
+        <tr><td>封装内光 I/O</td><td>光引擎作为 UCIe chiplet 摆在 XPU 裸片旁，每颗加速器直接出光</td><td>Ayar Labs TeraPHY（8 Tbps）</td><td>通用、可搭任何家芯片；最终形态</td></tr>
+        <tr><td>光 interposer / 光 fabric</td><td>在芯片下方/之间铺有源光层，把光送到裸片任意点</td><td>Lightmatter Passage（114T）、Celestial Photonic Fabric（→Marvell）</td><td>超高密度、可做内存解耦</td></tr>
+        <tr><td>光交换 OCS</td><td>用 MEMS/固态镜面物理重构光路，几乎零功耗、协议无关</td><td>谷歌 Apollo/Palomar、Lightmatter 固态 OCS</td><td>重构拓扑而非转发包；谷歌用它重构 TPU scale-up 域</td></tr>
+        <tr><td>AEC / 线性桥接</td><td>主动铜缆/线性光，近期把 scale-up 距离撑住</td><td>Credo ZeroFlap、Astera</td><td>2026–27 过渡主力，仍是铜为底</td></tr>
+      </tbody>
+    </table>
+    <p>要点：<strong>"封装内光 I/O"和"光 fabric"是终局，"AEC/线性"是当下的桥</strong>。英伟达自己也是这条路径——柜内铜撑到 NVL576（2027），scale-up CPO 留到 Feynman NVL1152（2028）。谷歌的 OCS 值得单独点破：它的 Palomar（176 片微镜 MEMS）<strong>重构的是 TPU 的 ICI（scale-up）拓扑</strong>——把 64 芯小立方拼成更大 3D 环面，因此 OCS 在 TPU 体系里更像"让 scale-up 域可重构"，模糊了 up/out 边界（<a href="https://newsletter.semianalysis.com/p/google-apollo-the-3-billion-game">SemiAnalysis</a>）。</p>
+
+    <h2>六、协议标准之战</h2>
+    <p>光是物理层，上面跑什么协议是另一场更激烈的战争。Bechtolsheim 在 OFC 2026 一句话概括格局："<strong>英伟达在一边，其他所有人在另一边</strong>"。</p>
+    <table class="cmp">
+      <thead><tr><th>阵营</th><th>主推方</th><th>状态（北京时间）</th></tr></thead>
+      <tbody>
+        <tr><td>NVLink / NVLink Fusion</td><td>英伟达（在位者）</td><td>NVLink Fusion 于 Computex 2025-05-18 开放给第三方定制芯片；NVLink 5→6→7→8 随 Blackwell→Rubin→Rubin Ultra→Feynman 演进</td></tr>
+        <tr><td>UALink</td><td>AMD、博通、谷歌、英特尔、微软等（无英伟达）</td><td>1.0 规范 2025-04-08 发布（200G/lane、至 1,024 加速器）；2026-04-07 出 2.0+ 三项新规；但<strong>交换芯片要 2026 下半年才到</strong></td></tr>
+        <tr><td>Scale-Up Ethernet（SUE→SUE-T）/ ESUN</td><td>博通牵头；OCP 工作组</td><td>SUE 1.0 于 2025-07-16 投给 OCP；2025-10-13 OCP 成立 ESUN（含英伟达），SUE 改名 SUE-T 做上层传输</td></tr>
+        <tr><td>OCI MSA（统一光物理层）</td><td>AMD、博通、英伟达、Meta、微软、OpenAI</td><td>2026-03-12 成立；定义<strong>协议无关</strong>的光 PHY，让 NVLink 与 UALink 共用同一束光；GEN1 4λ×50G NRZ=200G/向，目标 3.2 Tbps/纤、链路功耗约 30W→9W</td></tr>
+      </tbody>
+    </table>
+    <p>看点：<strong>英伟达被 UALink 排除在外，却参与了 Ethernet 的 ESUN 和光层的 OCI MSA</strong>——在协议上守 NVLink 城池，在光物理层上和对手坐到一桌（因为光 PHY 协议无关，谁都得用）。UALink 的软肋是<strong>交换芯片迟到</strong>，连 AMD 首批系统也先上以太网 scale-up、UALink 留作后续。</p>
+
+    <h2>七、关键玩家与真实案例</h2>
+
+    <div class="case">
+      <p><strong>英伟达 — NVLink 的"铜到光"路线图</strong></p>
+      <p>NVLink 5（Blackwell，1.8 TB/s/GPU）→ NVLink 6（Rubin，2026）→ NVLink 7（Rubin Ultra NVL576"Kyber"，约 600 kW，2027 下半年）→ NVLink 8（Feynman NVL1152，约 2028）。<strong>scale-up CPO 的真正落点是 2028 的 NVL1152</strong>；NVL576 仅"跨柜"用 CPO、柜内仍铜。注意别和它已出货的 <strong>scale-out CPO</strong>（Quantum-X / Spectrum-X Photonics，宣称 5× 能效、10× 韧性）混为一谈——后者更早、更低风险。NVLink Fusion（2025-05）则把 NVLink 开放给联发科、Marvell、Astera、富士通、高通等做"半定制"，把潜在叛逃者拉回自家光/电生态。</p>
+    </div>
+
+    <div class="case">
+      <p><strong>Marvell × Celestial AI — 把"光 fabric"买进门做 scale-up</strong></p>
+      <p>Marvell 于 2025-12-02 宣布、2026-02-02 完成收购 Celestial AI（<strong>预付约 32.5 亿美元</strong>：10 亿现金 + 约 2,720 万股；含对赌报道称总额最高约 55 亿）。Celestial 的 <strong>Photonic Fabric / OMIB</strong> 能把光送到裸片<strong>任意点</strong>（而非只在封装边缘），宣称带宽约 25×、时延/功耗较交换机 CPO 低 10× 以上，并主打<strong>内存解耦</strong>（HBM3e+DDR5，单 2U 约 33 TB 统一内存）。Marvell 还另推 UALink 定制方案，并是亚马逊 Trainium 的主力定制硅伙伴；英伟达也向 Marvell 投了约 20 亿美元。</p>
+    </div>
+
+    <h3>其他玩家速览</h3>
+    <ul>
+      <li><strong>AMD</strong>：Infinity Fabric + MI400 系列（MI455X）与 "<strong>Helios</strong>" 机柜（72 卡、31 TB HBM4、1.4 PB/s）；MI400 是<strong>首批兼容 UALink</strong> 的加速器，但 Helios 先上博通以太网 scale-up（HPE 首发、Oracle 旗舰客户），UALink 待交换芯片 2026 下半年。</li>
+      <li><strong>博通</strong>：Scale-Up Ethernet（SUE/SUE-Lite）+ <strong>Tomahawk Ultra</strong>（51.2T、250 ns 交换时延、SUE 下 XPU-to-XPU &lt;400 ns，2025-07 出货）；光侧 Bailly→Davisson CPO 路线，称 CPO 将是本十年 scale-up 网络的核心。</li>
+      <li><strong>Ayar Labs</strong>：TeraPHY UCIe 光 I/O chiplet（8 Tbps、SuperNova 16 波长激光）；2026-03 完成 5 亿美元 E 轮、估值 37.5 亿，英伟达、AMD 参投。</li>
+      <li><strong>Lightmatter</strong>：Passage M1000 光子超级芯片（114 Tbps、256 光纤、固态 OCS）；Series D 4 亿、估值 44 亿。</li>
+      <li><strong>Astera Labs</strong>：Scorpio 智能 fabric 交换（X 系列 320 lane、PCIe 6），当前以铜/PCIe 为主、路线图加"光直连加速器"；是 NVLink Fusion 伙伴。</li>
+      <li><strong>Credo</strong>：scale-up 近期桥接的 AEC 主力（ZeroFlap 1.6T/224G、可靠性 100–1000×），曾把英伟达 Kyber NVL576 整柜用 AEC 拉满；约 73% AEC 份额。</li>
+      <li><strong>Nubis（被 Ciena 以 2.7 亿美元收购，2025-09）、Xscape（多波长激光，2026-03 增资）、Enfabrica（3.2T SuperNIC）</strong>：补齐光引擎/激光/网卡的拼图。</li>
+    </ul>
+
+    <h2>八、中国生态：被迫先走全光</h2>
+    <div class="case">
+      <p><strong>华为 CloudMatrix 384 — 用"全光 + 堆量"对冲制程</strong></p>
+      <p>因拿不到最先进制程，华为反而在 scale-up 上比英伟达更"激进上光"：CloudMatrix 384 把 384 颗昇腾 910C + 192 颗鲲鹏 CPU 用 <strong>全光 mesh（灵衢 UnifiedBus）</strong>连成一个超节点，每芯 7×400G、<strong>全节点约 6,912 个光模块</strong>、卡间 2.8 Tbps、&lt;1µs。代价很直白：整机约 <strong>559 kW，约为 GB200 NVL72（约 145 kW）的 3.9 倍</strong>、单位能效约差 2.3 倍，但靠规模在总算力上反超——一条"算力受限、电与光不受限"的中国式取舍（<a href="https://www.tomshardware.com/tech-industry/artificial-intelligence/huaweis-new-ai-cloudmatrix-cluster-beats-nvidias-gb200-by-brute-force-uses-4x-the-power">Tom's Hardware</a>）。灵衢 2.0 规范已于 2025-09-18 华为全联接大会开放；roadmap 更狂：Atlas 950 超节点 8,192 卡（2026 Q4）、Atlas 960 超节点 15,488 卡（2027 Q4）。</p>
+    </div>
+    <ul>
+      <li><strong>光模块龙头的 scale-up 卡位</strong>：中际旭创（800G CPO 2025 底试产、1.6T CPO 2026、3.2T 原型送测）、新易盛（与英伟达合作 115.2T CPO 交换）、<strong>天孚通信</strong>（光引擎全球份额 &gt;60%、光引擎约占 CPO 模块价值 30–40%，最受益）、光迅科技（液冷+CPO 组件）。海外 1.6T 模块 2026 采购量从 1,000 万一路上调到约 2,000 万只。</li>
+      <li><strong>国产 GPU 超节点与光交换</strong>："<strong>光跃 LightSphere X</strong>"（上海仪电+曦智科技+壁仞+中兴，2025-07）是中国首个"光互连+光交换"GPU 超节点，核心是曦智的<strong>分布式光交换 dOCS</strong>。曦智科技（占中国独立 scale-up 光互连市场约 88%）2026-04 港股上市首日大涨约 380%。</li>
+      <li><strong>协议同样分立</strong>：华为灵衢 UB、阿里 ALink（磐久 AL128/UPN512）、腾讯/ODCC 的 ETH-X（以太网超节点，2025-04 首台原型）——国内尚无统一开放标准。券商测算国产超节点渗透率约 2027 年 45%、2028 年 72%。</li>
+    </ul>
+
+    <h2>九、节奏与市场预期（截至 2026-06）</h2>
+    <p><strong>时间线共识：西方阵营高量级的"光 scale-up"不会早于 2028。</strong>英伟达柜内铜撑到 Feynman（约 2028）才上 scale-up CPO；LightCounting 称 scale-up 的 LPO/CPO"2026–27 提速、2028 上量"；半导体工程界口径是"大规模光互连架构不太可能早于 2028"。唯一的例外是<strong>华为——已在 scale-up 上大规模用光</strong>（被制程逼出来的）。</p>
+    <p><strong>市场预测分歧极大</strong>，引用须谨慎：650 Group 估 2030 年 scale-up 互连里 NVLink &gt;250 亿、以太网 &gt;80 亿、PCIe/UALink &gt;30 亿美元；LightCounting 判断"<strong>scale-up 的光互连 TAM 将远超 scale-out</strong>、CPO 的 TAM 由 scale-up 主导"；而中国口径最猛——按弗若斯特沙利文（曦智招股书引用），<strong>中国 scale-up 光互连市场 2025 约 57 亿元 → 2030 约 1,805 亿元（CAGR 约 99.6%）</strong>。聚合类市调给的"光互连"整体 CAGR 只有约 10–15%，差距源于"铜还能在柜内撑多久"这个根本变量。</p>
+
+    <h2>十、与五大关注板块的关联</h2>
+    <ul>
+      <li><strong>光模块（最直接）</strong>：scale-up 上光是光模块/CPO/光引擎需求的下一个、也是更大的放量源。天孚（光引擎）、中际旭创/新易盛（CPO 模块）、光迅是直接标的；但放量节奏被"铜撑到几时"压着。</li>
+      <li><strong>算力（本体）</strong>：scale-up 域能多大，直接决定单个训练/推理"超节点"能堆多少 XPU、能跑多大的张量/专家并行——它就是算力的"内部血管"。</li>
+      <li><strong>AI 应用（下游）</strong>：更大的 scale-up 域 = 更大的 MoE、更长上下文、更省的推理，间接决定上层应用的能力上限。关联较间接但方向一致。</li>
+    </ul>
+    <p>（机器人、航天与本主题无实质关联，不强行挂链。）</p>
+
+    <div class="limitation">
+      本报告为概念类技术调研，<strong>非个股投资建议</strong>。scale-up 光互连处于路线/标准/时间表都未定型的高速演进期，文中产品规格、roadmap、出货/融资/市场规模数据均定格于 <strong>2026-06-02（北京时间）</strong>检索时点。三处需特别注意：①英伟达"已把 CPO 提前五年"与"能用铜就用铜"看似矛盾，实为两件事——scale-out CPO 已出货、scale-up CPO 留到 2028；②Marvell 收购 Celestial 的"32.5 亿（预付）"与"约 55 亿（含对赌总额）"两个口径都在流传，本文并列标注；③各机构对市场规模与渗透节奏的预测差异极大（10–15% vs 30–100% CAGR），高度依赖"铜在柜内撑到几时"的假设。少数英文权威页面有反爬，相关数据已交叉核对。中国部分含社区/券商口径，已标注来源层级。
+    </div>
+
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li><strong>可靠性 / FIT（头号风险）</strong>：scale-up 无重传安全网，一次链路 flap 可拖垮上千 GPU 的同步训练；约 300 万 GPU 规模下平均每约 48 秒某处一抖。华为 CloudMatrix 384 的实测侧证更刺眼——约 <strong>68% 的故障来自光</strong>（QSFPTEK 分析）。这正是 CPO（相对可插拔）和 AEC 拼命强调"低 FIT"的原因。</li>
+      <li><strong>"能用铜就用铜"在主动延后光</strong>：英伟达明确柜内铜撑到 Feynman（约 2028），只有跨柜铜够不着才上光。乐观（上光）与保守（守铜）两派在"拐点何时到"上分歧明显，共识是高量级光 scale-up 不早于 2028。</li>
+      <li><strong>时延与功耗</strong>：用今天的可插拔光去匹配 NVLink 带宽"成本和功耗都高得离谱、还加时延"；CPO/NPO 与 OCI 的 NRZ+WDM（约 9W vs 30W）就是为此，但量产未验证。</li>
+      <li><strong>成本、良率、可维护性</strong>：scale-up 光仍早期——CPO 良率、不可热插拔的维护性、散热集成都是未解题。</li>
+      <li><strong>标准碎片化 / 锁定</strong>：西方三四分天下（NVLink 围墙花园 vs UALink vs SUE/ESUN 以太 vs UEC），PHY、交换芯片、时间表各不同；UALink 缺交换芯片（最早 2026 下半年），连 AMD 都先上以太网。NVLink Fusion 被批为"软锁定"。OCI MSA 是唯一的统一力量，但 2026-03 才成立、尚无产品。</li>
+      <li><strong>中国特有风险</strong>：华为以约 4 倍功耗、光主导的故障率换规模，只在"电多、算力被卡"的国情下成立，非西方会照搬的范式；国内 UB/ALink/ETH-X 标准分立、且依赖仍在成熟的国产光交换硅。</li>
+    </ul>
+  </section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://nvidianews.nvidia.com/news/nvidia-nvlink-fusion-semi-custom-ai-infrastructure-partner-ecosystem">NVIDIA — NVLink Fusion for Semi-Custom AI Infrastructure</a> <em>2025-05-18</em> — NVLink 开放给第三方；NVLink 5=1.8TB/s/GPU；联发科/Marvell/Alchip/Astera/富士通/高通。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://developer.nvidia.com/blog/nvidia-vera-rubin-pod-seven-chips-five-rack-scale-systems-one-ai-supercomputer/">NVIDIA — Vera Rubin POD（NVL576）</a> <em>2026</em> — NVL576=8 柜×72 Rubin Ultra 连成一个 NVLink 域；柜内铜+跨柜直连光。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://developer.nvidia.com/blog/scaling-ai-inference-performance-and-flexibility-with-nvidia-nvlink-and-nvlink-fusion/">NVIDIA — Scaling AI Inference with NVLink and NVLink Fusion</a> <em>2025</em> — 内存语义 scale-up 定义；NVL72 130 TB/s。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.businesswire.com/news/home/20260312254951/en/">Optical Scale-up Consortium（OCI MSA）成立</a> <em>2026-03-12</em> — AMD/博通/Meta/微软/英伟达/OpenAI；GEN1 4λ×50G NRZ 200G/向、GEN2 400G BiDi、目标 3.2Tbps。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://ualinkconsortium.org/specifications/">UALink Consortium — 200G 1.0 Specification</a> <em>2025-04-08</em> — 200G/lane、至 1,024 加速器、基于 802.3 PHY。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.businesswire.com/news/home/20260407620696/en/">UALink — 发布四项规范（含 2.0 DL/PL、UCIe 3.0 chiplet）</a> <em>2026-04-07</em> — 新增网内计算、chiplet 定义、可管理性。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.opencompute.org/blog/introducing-esun-advancing-ethernet-for-scale-up-ai-infrastructure-at-ocp">OCP — Introducing ESUN（Ethernet for Scale-Up）</a> <em>2025-10-13</em> — ESUN 工作组；SUE 改名 SUE-T；12 家发起含英伟达。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.opencompute.org/documents/ocp-sue-spec-final-pdf-1">OCP — Scale-Up Ethernet (SUE) Spec v1.0.0</a> <em>2025-07-16</em> — 博通 SUE 1.0 投递。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://ultraethernet.org/ultra-ethernet-consortium-uec-launches-specification-1-0-transforming-ethernet-for-ai-and-hpc-at-scale/">Ultra Ethernet Consortium — UEC Spec 1.0</a> <em>2025-06-11</em> — 主打 scale-out；下一版瞄准 scale-up。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://investors.broadcom.com/news-releases/news-release-details/broadcom-ships-tomahawk-ultra-reimagining-ethernet-switch-hpc">Broadcom — Ships Tomahawk Ultra（scale-up 以太交换）</a> <em>2025-07-15</em> — 51.2T、250ns、SUE 下 XPU-to-XPU &lt;400ns。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://ayarlabs.com/news/ayar-labs-unveils-worlds-first-ucie-optical-chiplet-for-ai-scale-up-architectures/">Ayar Labs — World's First UCIe Optical Chiplet</a> <em>2025-03-31</em> — TeraPHY 8 Tbps、SuperNova 16 波长、UCIe。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://ayarlabs.com/news/ayar-labs-closes-500m-series-e-accelerates-volume-production-of-co-packaged-optics/">Ayar Labs — Closes $500M Series E</a> <em>2026-03-03</em> — 估值 37.5 亿、英伟达+AMD 参投。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://lightmatter.co/press-release/lightmatter-unveils-passage-m1000-photonic-superchip-worlds-fastest-ai-interconnect/">Lightmatter — Passage M1000 Photonic Superchip</a> <em>2025</em> — 114 Tbps、256 光纤、1,024 SerDes、固态 OCS。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://investor.marvell.com/news-events/press-releases/detail/1000/">Marvell — To Acquire Celestial AI（scale-up 光互连）</a> <em>2025-12-02</em> — 预付约 32.5 亿；Photonic Fabric。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.sec.gov/Archives/edgar/data/0001835632/000183563226000014/q127_8kx522026ex-991.htm">Marvell 8-K — Celestial AI 收购完成</a> <em>2026-02-02</em> — 约 32.5 亿（10 亿现金+约 2,720 万股）；交割。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://investor.marvell.com/2025-06-11-Marvell-Expands-Custom-Compute-Platform-with-UALink-Scale-up-Solution">Marvell — UALink Scale-up Solution</a> <em>2025-06-11</em> — UALink 控制器+定制交换；Trainium 定制硅。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.asteralabs.com/news/astera-labs-extends-leadership-in-open-ai-scale-up-networking-with-new-320-lane-scorpio-x-series-smart-fabric-switch/">Astera Labs — 320-Lane Scorpio X-Series Smart Fabric Switch</a> <em>2026-05-05</em> — PCIe6 scale-up 交换；光直连加速器路线图。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.hpe.com/us/en/newsroom/press-release/2025/12/hpe-accelerates-ai-deployments-with-first-amd-helios-ai-rack-scale-architecture-with-open-scale-up-networking-built-with-broadcom.html">HPE — 首发 AMD Helios（博通以太 scale-up）</a> <em>2025-12</em> — Helios 先上以太网 scale-up。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.ciena.com/about/newsroom/press-releases/ciena-to-acquire-nubis-communications">Ciena — To Acquire Nubis Communications</a> <em>2025-09-22</em> — 2.7 亿美元全现金；6.4 Tb/s CPO/NPO+ACC。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.businesswire.com/news/home/20260311692947/en/">Xscape — $37M 增资 + 8 波长 ELSFP 激光</a> <em>2026-03-11</em> — ChromX 多波长 fabric；英伟达投资人。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://newsletter.semianalysis.com/p/co-packaged-optics-cpo-book-scaling">SemiAnalysis — Co-Packaged Optics: Scaling with Light</a> <em>2026-01-01</em> — 铜 2m 极限、shoreline 密度、pJ/bit、scale-up 与 scale-out CPO 时序、MTBF。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://arxiv.org/html/2603.03736v1">arXiv — The Ghost in the Datacenter（链路 flap 尺度）</a> <em>2026-03</em> — 300 万 GPU 下每约 48 秒一次 flap；Meta LLaMA3 419 次中断。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://newsletter.semianalysis.com/p/nvidias-optical-boogeyman-nvl72-infiniband">SemiAnalysis — NVIDIA's Optical Boogeyman（NVL72 铜）</a> <em>2024</em> — 5,184 根铜缆、换光约+20kW/柜、224G &lt;2m、"能用铜就用铜"。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://newsletter.semianalysis.com/p/google-apollo-the-3-billion-game">SemiAnalysis — Google Apollo OCS: $3B Game-Changer</a> <em>2025</em> — Palomar MEMS OCS 重构 ICI（scale-up）；规模与省电。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.lightcounting.com/newsletter/en/july-2025-cloud-data-center-optics-330">LightCounting — Scale-up: a New Market for Optical Interconnects</a> <em>2025-07</em> — scale-up 光 TAM 远超 scale-out；$5B(2024)→$10B(2026)。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://650group.com/blog/in-the-ai-era-ethernet-set-to-surge-in-scale-out-and-ramp-in-scale-up/">650 Group — Ethernet to Surge in Scale-out, Ramp in Scale-up</a> <em>2025</em> — 2030 scale-up：NVLink &gt;$25B、以太 &gt;$8B、PCIe/UALink &gt;$3B。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://hyperframeresearch.com/2026/03/16/the-oci-msa-building-the-universal-optical-foundation-for-next-generation-ai-clusters/">HyperFRAME — OCI MSA 通用光基座</a> <em>2026-03-16</em> — 链路功耗约 30W→9W；NVLink+UALink 共用同一 PHY。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.theregister.com/2024/03/21/nvidia_dgx_gb200_nvk72/">The Register — NVL72 120kW 机柜拆解</a> <em>2024-03-21</em> — NVL72 约 2 英里铜、盲插背板、5,000+ 缆。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.theregister.com/2026/04/05/nvidia_optical_scale_up/">The Register — Nvidia embraces optical scale-up as copper reaches limits</a> <em>2026-04-05</em> — NVL576、224G &lt;2m、scale-up CPO 2027–28。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.tomshardware.com/tech-industry/artificial-intelligence/tech-titans-team-up-to-form-optical-interconnect-alliance">Tom's Hardware — 巨头组建光互连联盟（OCI MSA）</a> <em>2026-03-12</em> — 协议无关光 PHY、3.2 Tb/s。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.tomshardware.com/tech-industry/artificial-intelligence/amd-touts-instinct-mi430x-mi440x-and-mi455x-ai-accelerators-and-helios-rack-scale-ai-architecture-at-ces">Tom's Hardware — AMD MI400 + Helios（CES 2026）</a> <em>2026-01-06</em> — MI400 首批兼容 UALink；UALink 交换芯片 2H2026。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.tomshardware.com/tech-industry/artificial-intelligence/huaweis-new-ai-cloudmatrix-cluster-beats-nvidias-gb200-by-brute-force-uses-4x-the-power">Tom's Hardware — 华为 CloudMatrix 以"蛮力"超 GB200、4 倍功耗</a> <em>2025-04</em> — CM384 约 559kW vs GB200 约 145kW；全光、用光多于英伟达。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.marvell.com/blogs/nine-things-to-remember-about-the-future-of-copper-in-computing.html">Marvell — Future of Copper in Computing</a> <em>2024-10-29</em> — 铜 3m@5G→1m@200G；翻倍数据率缩距 30–50%；AEC 3×。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.qsfptek.com/qt-news/400g-osfp-siph-lpos-in-huawei-ai-cloudmatrix384-super-node.html">QSFPTEK — CloudMatrix 384 光模块与 68.2% 故障来自光分析</a> <em>2025</em> — 6,912×400G SiPh LPO、3,168 纤；可靠性风险侧证。</li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://xueqiu.com/1036711465/385027404">雪球/HKEX — 曦智科技(01879) 招股 + 弗若斯特沙利文数据</a> <em>2026-04</em> — 中国 scale-up 光互连 57 亿(2025)→1,805 亿(2030)、CAGR 约 99.6%；曦智约 88% 份额。</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-06-02 · 内容定格于生成时点，更新请重跑生成新版本
+  </footer>
+
+</div>
+</body>
+</html>

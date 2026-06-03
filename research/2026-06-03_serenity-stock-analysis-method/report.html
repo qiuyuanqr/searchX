@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Serenity 分析股票的方法 · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* TL;DR */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 表格 */
+  table{width:100%; border-collapse:collapse; margin:1.2rem 0; font-size:.86rem;
+    font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif}
+  th,td{text-align:left; padding:.5rem .6rem; border-bottom:1px solid var(--rule); vertical-align:top}
+  th{color:var(--seal); font-weight:600; border-bottom:1.5px solid var(--rule); white-space:nowrap}
+  td code{font-size:.9em; background:var(--accent-bg); padding:.05rem .3rem; border-radius:3px}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} table{font-size:.78rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 人物 / 方法论</div>
+    <h1>Serenity 分析股票的方法</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-06-03（北京时间）</span>
+      <span><b>类型</b> 人物 / 方法论</span>
+      <span><b>关联板块</b> 光模块 · 算力 · 机器人</span>
+      <span><b>来源</b> 20 条</span>
+    </div>
+  </header>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    Serenity（X 账号 <strong>@aleabitoreddit</strong>）是 2026 年在 X 爆红的匿名美股研究者。方法只有一句话内核——<strong>不买 AI 故事、不买龙头，专买 AI 算力扩张里"一旦断供整条产业链就停摆"的不可替代物理环节</strong>（他称之为"卡脖子 / 紫苏叶"）。这套供应链瓶颈打法逻辑清晰，其"<strong>选股方向命中率</strong>"也有一份独立回测支撑（首次提及标的平均 +82%、胜率约 86%、跑赢纳指）。但要分清两件不同强度的事：他自述的天文收益（YTD 32–45 倍、两年 225 倍）<strong>全部无审计、口径随时点漂移</strong>，另一份独立回测显示"散户跟着他买反而跑输大盘"。更关键的是，2026 年 5 月底起，他一条帖子先让法国 X-Fab 单日暴涨 77%，随后其重仓的瑞典股 Sivers 引来<strong>瑞典经济犯罪局的市场滥用(MAR)调查</strong>与美国集体诉讼调查——<strong>方法可借鉴，但仓位、标的与其本人的合规风险都不可盲学盲跟。</strong>
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li><strong>方法内核 = 供应链瓶颈（Chokepoint）。</strong>把整条 AI 产业链当成一张地图，从英伟达 GPU 自上而下逆向拆解，去找"体量极小、却被少数几家垄断、断了全行业停工"的物理环节——他用<strong>霍尔木兹海峡</strong>（其本人原创、有原帖）和高级料理里的<strong>紫苏叶</strong>（经中文媒体转述）来打比方。严格说他做的不是选股，是<strong>"产业侦察"</strong>。</li>
+      <li><strong>可复制的五步法</strong>（需注意：这是分析者归纳，各来源版本并不一致）：①锁定确定性超级趋势（AI 算力 / 光互连）→ ②自上而下逆向拆产业链 → ③专挑"最难扩产、最难替代、认证周期最长"的二三层瓶颈、避开龙头 → ④用<strong>订单·认证·产能·Capex·招聘·电话会措辞·专利</strong>等工程证据坐实（不看 PE/PB）→ ⑤等催化剂。最值得单独学的一招：<strong>把 AI 当"魔鬼代言人"来证伪自己，而不是让它荐股。</strong></li>
+      <li><strong>战绩要分两层、强弱差一个数量级。</strong>"选股方向命中率"有独立证据（TradingKey 回测：首提标的平均 +82.2%、胜率约 86%、同期纳指仅 +14.7%）；但"账户翻 32/45/225 倍"全是无审计自述、且另一份独立回测（unfadv）证明<strong>"散户跟着买反而跑输大盘"</strong>——差额几乎全在入场时点。<strong>命中率高 ≠ 账户翻倍属实。</strong></li>
+      <li><strong>招牌故事要打折看。</strong>他的 AXTI 逻辑方向有公司 10-K 背书，但"全球年产 60 万片 vs 需求 150 万片""占全球 35–40%"只有二手估算、AXT 从不披露自身市占率（<strong>未独立核实</strong>）；且"西方 AI 单点故障"叙事<strong>部分反转</strong>——AXTI 的磷化铟产线在其北京子公司 Tongmei、正卡在中国 2025 年 InP 出口管制下，2025 全年营收反而下滑 11%。</li>
+      <li><strong>2026 年 5 月底的监管拐点（最新、也最重）。</strong>5/27 他一条帖让法国 X-Fab 单日盘中暴涨约 77%、多次因波动熔断；随后其重仓的瑞典 Sivers 因"一个匿名高粉 X 账号在官宣前约 48 小时泄露纳斯达克上市细节"，引来<strong>瑞典经济犯罪局的 MAR（市场滥用）调查</strong>（检察官称时点"触目"、带"拉高出货前科特征"），叠加做空机构 Ningi 报告与美国 Rosen 律所集体诉讼调查（均 6/1）。<strong>注意：官方未点名其本人、尚未认定任何违规。</strong></li>
+      <li><strong>仓位是"方法可学、仓位不可盲学"的分界。</strong>高度集中 + 约 <strong>1.3–1.4 倍杠杆</strong> + <strong>70%+ 浮盈留场</strong>复利（"70%"主要见于中文转述）；地缘风险期他会主动把杠杆降到 0（动态风控的硬证据）。同样的选股逻辑配上集中持仓 + 杠杆 + 微型股，盈亏会被放大到普通人难以承受。</li>
+    </ul>
+  </div>
+
+  <main>
+
+    <h2>先用一句话理解他在干什么</h2>
+    <p>想象 AI 是一台正在疯狂扩张的超级工厂。所有人都在抢着买它最显眼的零件——英伟达的 GPU、台积电的产能。Serenity 偏不。他问的是另一个问题：<strong>"如果这台工厂还要再扩张十倍，第一个会断货、卡住所有人的，是哪个不起眼的小零件？"</strong> 然后他抢在机构注意到之前，把那个小零件背后的上市公司买下来。</p>
+    <p>他给这种"小零件"起了两个外号。一个是<strong>霍尔木兹海峡</strong>——全球五分之一的石油都得从这条窄海峡过，谁卡住它谁就卡住全世界；他甚至把自己的招牌研究直接命名为"<em>The Strait of AXTI</em>（AXTI 海峡）"。另一个比喻更妙，据中文媒体转述，是高级日料里的<strong>紫苏叶</strong>：一桌几千块的怀石料理里，那片垫在刺身下的绿叶谁都不会多看一眼，可它来自伊豆少数几家农场，一场台风就能让整条料理街停摆——<a href="https://www.panewslab.com/zh/articles/019e674b-724f-736c-8077-b2221cf24e39">据 PANews 整理</a>，这就是他全部方法的隐喻起点：<strong>找那些"看不见、却谁也绕不开"的环节</strong>。</p>
+    <p>所以严格说，他做的不是传统"选股"。<a href="https://www.163.com/dy/article/KU5K019B0556BWUL.html">网易转载的一篇分析</a>概括得很准：他干的是<strong>"产业侦察"</strong>——提前侦察 AI 基础设施里的战略瓶颈，选股只是侦察结果的副产品。理解这一点，是理解后面一切的钥匙。</p>
+
+    <h2>他是谁：从 WSB 被封号到 X 的"瓶颈猎人"</h2>
+    <p>Serenity 是一个<strong>匿名账号</strong>，用动漫女性头像，真实身份与性别均未公开（多数媒体按"他"转述）。<a href="https://www.odaily.news/en/post/5210924">据 Odaily</a> 与<a href="https://singularityresearchfund.substack.com/p/inside-the-mind-of-serenity-aleabitoreddit">英文深度画像 Singularity Research Fund</a>，他自述的背景包括：前 Reddit r/wallstreetbets 知名交易者、前 AI 研究科学家、Nature 论文作者、RISC-V 基金会成员、（部分中文稿还称）曾任某创投 GP。</p>
+    <p><strong>这里必须把"自述"和"已核实"硬性分开</strong>：</p>
+    <ul>
+      <li>"前 AI 科学家""Nature 论文""2018 年拒绝英伟达 offer"——<strong>全部为自述，无任何第三方实证</strong>；PANews 在文末明确写"所有背景信息均为自述，未经第三方验证"。</li>
+      <li>"RISC-V 基金会成员"——技术上为真，但<a href="https://riscv.org/individual-membership/">RISC-V International 官网</a>写明个人 / 社区会籍<strong>免费、任何人填表即可加入</strong>，所以这"会员"≈免费注册，<strong>不构成专业资历背书</strong>。</li>
+      <li>"曾任某创投 GP"——在本次检索到的英文一手源与主要中文深度报道中<strong>均未出现该说法</strong>，疑为部分中文二手稿的演绎，<strong>未能独立核实</strong>。</li>
+    </ul>
+    <p>有一段经历被反复引用：<strong>2022 年初</strong>，他（早期账号 AleaBito）在 WSB 发布一篇 <code>AXTI</code>（AXT Inc，磷化铟衬底厂）的深度研究，当时该股约 <strong>12 美元、市值约 2 亿美元</strong>；论坛版主以"<strong>蓄意操纵言论 / 拉高出货</strong>"为由把他永久封号。此后 AXTI 一路走高，这既成了他的立名之战，也埋下"他到底是研究者还是庄家"的长期争议（<a href="https://www.panewslab.com/zh/articles/019e674b-724f-736c-8077-b2221cf24e39">PANews</a>）。<strong>注意：封号方是社区版主、并非监管机构</strong>，但这是"他被指操纵"最具体、可追溯的一次。</p>
+    <p>2025 年年中他转战 X，<strong>涨粉曲线很陡且各源时点不一</strong>：2026-02 约 5.8 万、4 月约 12.7 万、5 月中旬约 15–17 万；到 5/27 X-Fab 事件当天，<a href="https://finance.yahoo.com/markets/stocks/articles/popular-x-account-sparks-massive-151950807.html">路透口径已逾 40 万</a>。用户印象里的"21 万→30 万"对应的是 5 月中下旬的快照。他坚持<strong>反付费墙</strong>：绝大多数研究免费公开、公开自己的持仓理念、不卖课不搞高价会员——这是他口碑的重要来源（也是后文"激励结构"要重新审视的地方）。</p>
+
+    <h2>方法拆解：五步法（用户问的核心）</h2>
+    <p>把多篇分析（<a href="https://news.qq.com/rain/a/20260525A09L0D00">腾讯新闻</a>、<a href="https://www.163.com/dy/article/KU5K019B0556BWUL.html">网易</a>、<a href="https://www.panewslab.com/zh/articles/019e674b-724f-736c-8077-b2221cf24e39">PANews</a>）交叉对齐，他的流程可稳定拆成五步。<strong>但要先说一句诚实话：所谓"五步法"是分析者的归纳，不是他钦定的固定框架</strong>——不同来源把它重述成三步、五步、甚至七层瓶颈图，措辞各有出入。下面是各版本的"最大公约数"：</p>
+    <ol>
+      <li><strong>锁定一个"确定性超级趋势"。</strong>不预测短期涨跌，先确认一条几乎不可逆的大方向——目前是 <strong>AI 算力扩张</strong>，以及由此倒逼的<strong>光互连</strong>（电信号在芯片间传输已撞物理极限，必须改用光）。只在"物理规律倒逼"的趋势上下注。</li>
+      <li><strong>自上而下逆向拆解整条产业链。</strong>从终端 GPU 一层层往上扒：<code>GPU → HBM → 网络/交换 → 光模块 → 激光器 → InP/SOI 衬底 → 外延 → 测试烧入 → 封装 → 玻璃基板 → 电力</code>。像拆机器一样把牛市拆成一张<strong>供应链瓶颈地图</strong>。</li>
+      <li><strong>专找"第二、三层瓶颈"，避开龙头。</strong>GPU、HBM 已被市场充分定价。他要更上游、更冷门的卡点，判据很硬：<strong>一旦断货整行业停工 / 最难扩产 / 最难替代 / 认证周期最长 / 被极少数公司垄断</strong>。典型如激光器、磷化铟衬底、外延片、特种玻璃基板。</li>
+      <li><strong>用工程证据坐实，而非财务估值。</strong>他不看 PE/PB，而是去翻<strong>订单、客户路线图、供应链认证、产能/扩产、Capex、招聘、电话会措辞、专利</strong>这些一手工程信号。<a href="https://www.163.com/dy/article/KU5K019B0556BWUL.html">网易那篇</a>点破关键：他强的不是选股，是<strong>能读懂这些非财务证据</strong>。</li>
+      <li><strong>等催化剂兑现。</strong>逻辑成立后不急着追，等明确触发点：<strong>财报、客户官宣、量产爬坡、指数纳入</strong>。catalyst 一到，市场被迫重新定价。</li>
+    </ol>
+    <div class="callout">一句话记住这套法：<strong>"在确定性的趋势里，找最难被替代的那一环，用工程证据证明它会断货，然后在机构看见之前埋伏，等催化剂。"</strong></div>
+
+    <h2>独门武器：把 AI 当"杠精"用，而不是当"荐股师"</h2>
+    <p>这是 Serenity 最值得学、也最被低估的一点。绝大多数散户用 AI 是"帮我推荐几只票"，他正好相反——<strong>AI 是用来攻击自己的</strong>。<a href="https://www.panewslab.com/zh/articles/019e674b-724f-736c-8077-b2221cf24e39">据 PANews 描述</a>，他发布任何论点前的工作流是：</p>
+    <ol>
+      <li><strong>数据收集</strong>——供应链逆向工程、物理架构分解；</li>
+      <li><strong>假设构建</strong>——锁定技术壁垒和商业化拐点；</li>
+      <li><strong>AI 魔鬼代言人</strong>——把研究草稿喂给多个大模型，命令它扮演极度苛刻的 <strong>devil's advocate</strong>，专挑：逻辑漏洞、技术/物理限制、替代方案威胁、估值偏差；</li>
+      <li><strong>漏洞修补</strong>——按反驳迭代逻辑；多轮拷问通过后才公开发布。</li>
+    </ol>
+    <p>本质上他用 AI 做的是<strong>证伪</strong>而不是<strong>证实</strong>——这正是科学方法的核心。有一个较硬的一手锚点：据 Singularity 画像，他曾用 <strong>Gemini 模拟独立验证</strong> SIVE 的并购论点。对普通投资者最可迁移的一招就是这个：<strong>下注前，逼一个 AI（或一个懂行的人）把你的逻辑往死里批一遍，活下来的逻辑才值得下注。</strong></p>
+
+    <h2>完整走一遍：AXTI 是怎么被他"推"出来的（含硬数据核实）</h2>
+    <div class="case">
+      <p>他在 <code>AXTI</code> 上的逻辑链是理解这套方法最好的样本，但<strong>每一步都要配上"核实状态"看，才不会被叙事带跑</strong>：</p>
+      <p><strong>第 1 步｜终端需求确定性：</strong>AI 数据中心算力爆炸 → 芯片间数据传输撞物理极限 → 必须上<strong>光互连</strong>。这是物理规律倒逼。<em>（方向成立：AXT 自己的 2025 年 10-K 把"推广 InP 用于云数据中心、AI 用 InP 做高速光传输"列为战略首条。）</em></p>
+      <p><strong>第 2–3 步｜逐层定位卡点：</strong>要光通信就要激光器；硅芯片自己不会高效发光，需外置<strong>磷化铟（InP）激光源</strong>；而 InP 激光要长在 <strong>InP 单晶衬底</strong>上，生长条件极苛刻——这就是那片"紫苏叶"。</p>
+      <p><strong>第 4 步｜供需错配（这里要打问号）：</strong>他与部分媒体称全球 InP 衬底年产能仅约 <strong>60 万片</strong>、AI 需求可能激增到约 <strong>150 万片</strong>，且 AXTI 占全球供应约 <strong>35–40%</strong>。<strong>但这两组数字只有二手"行业估算"，无任何 filing 佐证；媒体口径本身就打架（30–35% / 60–70% / 三家合计 80–90% 都有），而 AXT 在 10-K 里从不披露自身市占率。<a href="https://globalsemiresearch.substack.com/p/axt-the-indium-phosphide-play-for">（来源标注为作者 industry checks 估算，未独立核实）</a></strong></p>
+      <p><strong>第 5 步｜"西方 AI 单点故障"——这个标签部分反转：</strong>AXTI 的 InP 产线其实在其<strong>北京子公司 Tongmei</strong>。中国 2025-02-04 把铟列入出口管制，<a href="https://www.semiconductor-today.com/news_items/2026/mar/axt-090326.shtml">AXT 2025 全年营收因此不升反降约 11%（9,940 万→8,830 万美元），北美营收占比从约 11% 掉到 1%</a>。所以它与其说是"西方供给的单点故障"，不如说是<strong>一个被中国出口管制卡住的咽喉</strong>——叙事方向需要重大修正。</p>
+      <p><strong>那它为什么还涨了近十倍？</strong>催化剂是<strong>2025 年底的增发扩产</strong>（募资用于 Tongmei 扩 InP 产能"供全球出口"），加上 record 级 InP 在手订单与 AI 远期需求叙事。其股价 52 周区间从 <strong>1.47 → 143.16 美元</strong>、一年涨约 900%，<a href="https://stockanalysis.com/stocks/axti/">如今市值约 69 亿美元、日均成交约 590 万股</a>，<strong>早已不是微型股</strong>。坊间"8436%"是从绝对地板 1.47 美元起算的峰值涨幅，技术上成立但具误导性。</p>
+      <p><strong>这个案例的真正教训：</strong>方法的吸引力（逻辑链清晰、且部分被公司证据印证）和它的脆弱性（关键稀缺数字无法核实、"西方"标签讲反、<strong>公司 trailing 财务与故事背离</strong>）都集中体现在这一个标的上。叙事很美，但"远期订单/扩产"和"当期营收下滑"同时为真。</p>
+    </div>
+
+    <h2>他的"瓶颈地图"长什么样（注意区分"他点的"与"社区外延的"）</h2>
+    <p>下面这张表整理了常被挂在他名下的代表环节与标的。<strong>一个被很多转述含糊掉的关键事实：其中有几个并不在 Serenity 本人公开点过的清单里，而是社区（如自媒体 Jimmy 狐狸）按同一逻辑外延整理的</strong>——它们的产业链角色属实，但"是 Serenity 点的"这个前提不成立。表中份额/估值数字为各源转述，仅作理解框架用，<strong>不构成可下注的硬数据</strong>。</p>
+    <table>
+      <thead><tr><th>供应链环节</th><th>代表标的</th><th>来源归属</th></tr></thead>
+      <tbody>
+        <tr><td>InP 磷化铟衬底</td><td><code>AXTI</code></td><td>Serenity 本人（媒体转述）</td></tr>
+        <tr><td>CW / DFB 外部光源激光</td><td><code>SIVE</code></td><td>Serenity 本人（媒体转述）</td></tr>
+        <tr><td>光模块 / EML 激光</td><td><code>AAOI</code> · <code>LITE</code> · <code>COHR</code></td><td>Serenity 本人（媒体转述）</td></tr>
+        <tr><td>晶圆级烧入 / 测试</td><td><code>AEHR</code></td><td>Serenity 本人（媒体转述）</td></tr>
+        <tr><td>光纤 / 玻璃基板</td><td><code>GLW</code>（康宁）</td><td>Serenity 本人（媒体转述）</td></tr>
+        <tr><td>稀土 / 磁材（国安角度）</td><td><code>MP</code>（MP Materials）</td><td>Serenity 本人（媒体转述）</td></tr>
+        <tr><td>SOI 衬底（Smart-Cut）</td><td><code>Soitec</code></td><td><strong>社区外延，非其本人公开清单</strong></td></tr>
+        <tr><td>MBE 分子束外延设备</td><td><code>Riber (ALRIB)</code></td><td><strong>社区外延，非其本人公开清单</strong></td></tr>
+        <tr><td>硅光代工</td><td><code>TSEM</code> · <code>GFS</code></td><td><strong>社区外延，非其本人公开清单</strong></td></tr>
+      </tbody>
+    </table>
+    <p><a href="https://www.jimmyhuli.com/p/serenity-x-21">社区整理（Jimmy 狐狸）</a>把它扩成"硅光多层瓶颈框架"，可读性强但请按上表的归属打折。另外，常被写进报告的"<strong>人形机器人：美国掌握软件大脑、谐波/RV 减速器与执行器卡在亚洲</strong>"这套说法，<strong>我未能找到 Serenity 本人的公开出处</strong>——减速器卡在日本（Nabtesco/Harmonic Drive）是行业事实，但"他据此点了哪只机器人股"无据，<strong>应视为对其方法的外推，而非他的公开持仓</strong>。他在机器人/国安方向真正点过的只有稀土的 <code>MP</code>。</p>
+
+    <h2>仓位与风控：集中 + 杠杆 + 让利润奔跑（这部分不可盲学）</h2>
+    <p>方法只是选股，赚不赚大钱还看仓位。多源一致地描述他是典型<strong>进攻型</strong>：核心仓位高度集中、约 <strong>1.3–1.4 倍杠杆</strong>、把 <strong>70%+ 浮盈留在场内</strong>复利滚动，并动态把仓位从一个瓶颈轮动到下一个（<a href="https://singularityresearchfund.substack.com/p/inside-the-mind-of-serenity-aleabitoreddit">Singularity</a> 引其原话：内存/HBM → 光收发 → 硅光/外部光源）。<strong>"70% 浮盈留场"这个精确数字主要见于中文转述，英文一手未确认</strong>，宜当作定性描述。</p>
+    <p>值得肯定的一处<strong>动态风控硬证据</strong>：据 Singularity，伊朗冲突升级期间他主动把杠杆<strong>降到 0</strong>。但这恰恰反衬出整体打法的风险——同样一套选股逻辑，配上集中持仓 + 杠杆 + 微型股，盈亏都会被放大到普通人无法承受；<a href="https://www.163.com/dy/article/KU5K019B0556BWUL.html">网易那篇</a>直言其"波动极其恐怖，不适合所有投资者"。<strong>这正是"方法可学、仓位不可盲学"的分界线。</strong></p>
+
+    <h2>战绩：宣称的 vs 能核实的（必须分两层说）</h2>
+    <p>他<strong>自述</strong>的收益随时点剧烈跳动，且无任何审计——把它们按截止日期排开，"矛盾"大半来自不同快照，但<strong>每一个都只是收益率截图、从无账户净值或实时成交</strong>：</p>
+    <ul>
+      <li>2026-04 较诚实的一版：<strong>1 年 +122% / 年内峰值 +501% 后已回撤</strong>（这一版自带回撤，反而最该被引用）；</li>
+      <li>YTD 截至 5/20：<strong>+3,152.77%（约 32 倍）</strong>，称 23 只持仓全部翻倍以上、最猛 84 倍（<a href="https://news.qq.com/rain/a/20260525A09L0D00">腾讯</a>）；</li>
+      <li>YTD 截至 5/27：<strong>+4,502.45%（约 45 倍）</strong>；两年累计自述 <strong>+22,561.99%（约 225 倍）</strong>（<a href="https://www.panewslab.com/zh/articles/019e674b-724f-736c-8077-b2221cf24e39">PANews</a>）。</li>
+    </ul>
+    <p>YTD 从 5/20 的 3,152% 一周内跳到 5/27 的 4,502%，<strong>这种敏感度本身就说明它对几只微型股的日内价格高度依赖</strong>。目前有<strong>两份相互制衡的独立核查</strong>，结论很重要：</p>
+    <ul>
+      <li><strong>选股命中率——有证据。</strong><a href="https://www.tradingkey.com/zh-hans/analysis/stocks/us-stock/261935617-adam-xie">TradingKey 分析师 Adam Xie</a> 用程序抓取其历史推文，按"首次提及"时点回测：全样本<strong>平均 +82.2%、中位数 63%、胜率约 86%</strong>，同期纳指仅 +14.7%；他评"避开"的标的也确实平均跌 22.5%。作者同时诚实承认：账户收益（约 46 倍）<strong>无法核实</strong>、无法排除"推错后删帖"、且多数标的在元旦前已评级（<strong>存在起点选择偏差</strong>）。</li>
+      <li><strong>跟着买能不能赚——被证伪。</strong>另一份独立回测（<a href="https://unfadv.substack.com/p/can-you-just-copytrade-serenity">unfadv</a>）只取他明确"建仓"的推文、等权跟单，结论是<strong>跑输大盘</strong>。差额几乎全在<strong>入场时点</strong>：他首提时标的还在底部，等 40 万粉看到、价格已被（包括跟风盘）推高，散户接的是已被定价的价。</li>
+    </ul>
+    <div class="callout">所以报告对战绩的定性必须是：<strong>"他首次提及标的的方向命中率，在这波 AI 供应链行情里显著跑赢基准"——这有独立证据；而"账户翻 32/45/225 倍"是无审计自述、且大概率被选择性曝光与跟风盘反身性显著美化。两者证据强度差一个数量级，不能合并背书。</strong></div>
+    <p><strong>关于亏损，有一处刺眼的缺口：</strong>公开渠道几乎找不到他被明确证伪的深套实单——除了"峰值 +501% 回撤到 +122%"这一笔软回撤、以及他主动翻空 IREN（属判断、非踩雷）。一个两年喊出几十只票的人，公开可查的"惨败且不再提"的标的接近于零，<strong>这种"只见赢家"本身就是幸存者偏差 + 选择性曝光的信号</strong>（追踪站 <a href="https://semiconstocks.com/">semiconstocks</a> 也直言"败例与止损不会被同等曝光，请据此校准那 +122%"）。</p>
+
+    <h2>这套方法的"出身"：放进投资史的谱系里看</h2>
+    <p>把它放进谱系，能看清哪些是真创新、哪些是旧范式换皮。一句话裁决：<strong>它的躯干 ≈"费雪式草根调研 × 卖铲子"，真正的增量在两处——把一级市场的技术尽调搬进二级，以及把"AI 证伪"做成发布前的强制关卡。叙事符号（霍尔木兹/紫苏叶）是营销级创新，不是方法论创新。</strong></p>
+    <ul>
+      <li><strong>费雪 scuttlebutt（草根调研）— 旧范式，换皮成分高。</strong>费雪主张绕开财报、靠访谈供应商/客户/前员工拼真相；他读论文、看招聘/Capex/电话会措辞，本质是 scuttlebutt 的现代化。<strong>差异</strong>：费雪的落点是"公司质地、长期持有"，他的落点是"产业链拓扑里的结构性卡点、靠催化剂短期兑现"。手法同源，目的不同。</li>
+      <li><strong>Picks-and-shovels / 卖铲子 — 这是它最贴切的母范式。</strong>不买淘金者（英伟达/微软），买他们都得依赖的卖铲人（衬底/光源/外延设备）。<strong>差异</strong>：经典卖铲子停在"卖给所有人的通用工具"，他再往里钻一两层，要求<strong>铲子的唯一供应商</strong>——是"卖铲子 + 卡铲子咽喉"的加强版。</li>
+      <li><strong>收费站 / toll-booth 型生意 — 旧范式的工程化变体。</strong>经典收费站靠品牌、网络效应、特许经营这类<strong>商业护城河</strong>；他的"收费站"由认证周期、扩产周期、材料纯度、专利这类<strong>物理与工艺壁垒</strong>构成。</li>
+      <li><strong>迈克尔·伯里式深挖 — 气质像，方向相反。</strong>都做硬核深挖、敢站共识对面、敢下重注；但伯里是<strong>逆向做空、押崩塌</strong>，他是<strong>顺周期做多、押结构性赢家</strong>。一个赌崩、一个赌建，不能算同一打法。</li>
+      <li><strong>一级市场 VC 技术尽调搬到二级 — 最接近"真创新"的一条。</strong>VC 投早期硬科技靠读论文、判技术路线唯一性、与工程师对话；他把这套<strong>原样搬进二级流动性标的</strong>，以技术可行性而非财务模型定生死。在散户语境里这是真增量（多数二级投资者不具备这种工程尽调能力）。</li>
+    </ul>
+    <p>两处不属于任何经典范式的真创新：<strong>(1)"AI 魔鬼代言人"证伪流水线</strong>——把多模型对抗拷问制度化为发布前的强制关卡，2023 年后才可能出现；<strong>(2)"工程证据完全替代财务估值"</strong>——彻底不看 PE/DCF，只认订单/认证/产能等领先性工程信号。后者是真增量，但也正是其最大风险来源（见下一节估值脆性）。</p>
+
+    <h2>执行门槛：框架可懂，普通人基本不可复现</h2>
+    <p>这套方法读起来"可学"，但要诚实地说：<strong>框架可懂，落地基本不可复现。</strong>原因是它的 alpha 不在那五个步骤的形式上，而在四样普通人难以同时具备的东西：</p>
+    <ul>
+      <li><strong>读懂工程信号的纵深</strong>——能从英伟达工程级细节、材料纯度（如 7N 高纯铟、pBN 坩埚）、认证周期里读出别人读不出的瓶颈，这需要半导体/光子学的硬背景；</li>
+      <li><strong>一手信源网络</strong>——产业高管对话、供应链认证状态、招聘与 Capex 的实时变化，不是公开检索能完全替代的；</li>
+      <li><strong>极高的波动承受力</strong>——集中持仓微型股 + 杠杆，日内 15–25% 波动是常态；</li>
+      <li><strong>以及——他自己的 40 万粉</strong>（见下一节，这是普通人结构上拿不到的"buff"）。</li>
+    </ul>
+    <p>因此对普通投资者，<strong>真正可迁移的是"思维姿势"而非"持仓"</strong>：逆向拆产业链找瓶颈、用工程证据而非热度下注、发布前逼 AI 把逻辑批到死。<strong>把它当成"可抄的作业"是危险的</strong>——连他的跟单者都警告"别一边抄作业一边骗自己在学习"。</p>
+
+    <h2>红旗清单 + 现状核对：如果他是错的 / 在拉高出货，会出现哪些迹象？</h2>
+    <p>比起罗列质疑，更有判断力的做法是：把"<strong>若此人在拉高出货 / 业绩注水会出现的迹象</strong>"逐条列出，再核对<strong>当前是否已经出现</strong>。</p>
+    <table>
+      <thead><tr><th>会出现的迹象</th><th>当前是否已出现</th><th>依据</th></tr></thead>
+      <tbody>
+        <tr><td>删帖 / 改口（败例消失）</td><td><strong>部分迹象，未坐实</strong></td><td>TradingKey 明确"无法排除推错后删帖"，但也称未观察到明显掉粉 → 更像幸存者偏差，而非已证实的系统性删帖</td></tr>
+        <tr><td>自己重仓股被大额增发稀释套现</td><td><strong>未指向他本人</strong></td><td>唯一"60 亿美元 ATM 大额增发"是 IREN，而他是做空/批评 IREN；他本人无基金、无 13F、无增发主体</td></tr>
+        <tr><td>被监管 / 交易所点名</td><td><strong>已出现（进行中）</strong></td><td>瑞典经济犯罪局就 Sivers 涉嫌违反 MAR 立案、美国 Rosen 律所启动集体诉讼调查（见下）；但官方<strong>未点名其本人</strong>、尚未认定违规</td></tr>
+        <tr><td>重仓微型股流动性异常 / 被拉抬</td><td><strong>已出现</strong></td><td>SIVE 在他公开建仓后<strong>单日暴涨约 73.78%</strong>（市值约 1.3 亿→2.3 亿美元）；X-Fab 单帖单日 +77%、多次熔断</td></tr>
+        <tr><td>自述与可查记录冲突</td><td><strong>已出现（口径冲突）</strong></td><td>收益与粉丝数在各源/各时点全不一致——属"叙事弹性"，非硬造假证据</td></tr>
+        <tr><td>跌得很惨却不提的标的</td><td><strong>结构性存在</strong></td><td>公开几乎只见赢家；他本人也说"不会告诉大家我什么时候卖"</td></tr>
+        <tr><td>付费导流 / 割韭菜</td><td><strong>基本未出现（反例）</strong></td><td>不卖课、无信号群、不接广告；核心研究 X 免费。<strong>但</strong>他确有 X 平台付费订阅（5/24 时约 3.2 万），属平台分成式变现</td></tr>
+      </tbody>
+    </table>
+    <h3>5 月底的监管拐点（这是"被点名"那一栏的展开）</h3>
+    <p>2026-05-27，他发帖称建仓法国巴黎上市的 <strong>X-Fab</strong>，<a href="https://finance.yahoo.com/markets/stocks/articles/popular-x-account-sparks-massive-151950807.html">当日股价盘中暴涨约 77%、成交量约为三个月均量的 17 倍、多次因波动熔断</a>，X-Fab CEO Damien Macq 回应称公司"不知悉任何需披露的未公开重大事项"。<a href="https://www.bloomberg.com/news/articles/2026-05-27/popular-x-account-sparks-massive-rally-in-little-known-chipmaker">Bloomberg</a> 亦报道了同一事件。</p>
+    <p>更实质的是 <strong>Sivers（SIVE）</strong>这条线：<a href="https://www.ad-hoc-news.de/boerse/news/ueberblick/insider-trading-probe-clouds-sivers-dual-listing-plans-as-q1-revenues/69465103">瑞典经济犯罪局（Ekobrottsmyndigheten）已就涉嫌违反欧盟《市场滥用条例》(MAR) 立案</a>——导火索是"一个拥有大量粉丝的<strong>匿名 X 账号</strong>，在 Sivers 官宣纳斯达克上市约 <strong>48 小时前</strong>就发出精确的上市细节"，引发异常波动；主控检察官 Jonas Myrdal 称该时点与交易形态"<strong>触目（striking）</strong>"，带有"<strong>以往拉高出货案的特征</strong>"。叠加：做空机构 <a href="https://ningiresearch.com/">Ningi Research</a> 于 6/1 发报告，直接把 Sivers 称为"一场建立在<strong>编造的瓶颈叙事</strong>之上的散户驱动式拉抬"，指控约 31% 的 2025 年营收存疑；同日美国 <a href="https://www.businesswire.com/news/home/20260601422907/en/Rosen-Law-Firm-Encourages-Sivers-Semiconductors-AB-Investors-to-Inquire-About-Securities-Class-Action-Investigation-SIVEF">Rosen 律所启动证券集体诉讼调查</a>，Sivers 美国 OTC 股价当日 −9.2%。</p>
+    <div class="callout"><strong>务必中立表述：</strong>上述调查对象在官方措辞上是"一个匿名 X 账号"，媒体普遍将其指向 Serenity，但<strong>官方迄今未点名其本人，尚未认定任何违规、未提出指控，无罪推定仍适用</strong>。这是"网红选股"升级为"潜在市场操纵嫌疑"的拐点，但拐点 ≠ 定罪。</div>
+
+    <h2>激励与反身性：业绩里多少来自方法、多少来自跟风盘</h2>
+    <p>这是评判他时最容易被漏掉、却最关键的一层。即便他完全真诚，<strong>40 万粉丝跟单本身就是其重仓小市值标的的买盘</strong>——SIVE 单日 +73.78%、X-Fab 单日 +77% 就是铁证。于是形成一个自我实现的循环：</p>
+    <p style="text-align:center"><strong>他喊 → 粉丝买 → 小票涨 → 他浮盈/YTD 暴涨 → 战绩更亮 → 涨粉 → 下一次拉抬力更强。</strong></p>
+    <p>所以"YTD 45 倍"里，相当一部分是<strong>自己的粉丝盘把自己重仓的微型股抬上去的账面浮盈</strong>，而非纯由选股方法创造、可被任意第三方复制的 α。<a href="https://unfadv.substack.com/p/can-you-just-copytrade-serenity">unfadv 那份"跟单跑输大盘"的回测正是这层的实证</a>：方法在"首提点"有 α，但 α 会被他自己的影响力迅速吃掉，后来者拿不到。</p>
+    <p>至于利益结构：他主张反付费墙、不卖课，这点是真实的加分项；但"利益为零"并不成立——<strong>(1)</strong> X 平台付费订阅（约 3.2 万）带来平台分成；<strong>(2)</strong> 40 万粉丝本身是可变现的注意力资产；<strong>(3)</strong> 最直接的——他<strong>先建仓、后公开</strong>，跟风盘抬价直接美化其浮盈。点破这一层，不是指控他造假，而是提醒：<strong>他的"业绩好"里，方法、真实产业 β、和自身反身性拉抬三者混在一起，无法干净拆分。</strong></p>
+
+    <h2>外界评价：是"研究者"还是"庄"？</h2>
+    <p><strong>正面：</strong>支持者认为他真正的护城河是<strong>技术背景 + 供应链深度</strong>——能读懂工程级细节而非"金融翻译版"，且透明公开、反付费墙。<a href="https://www.163.com/dy/article/KU5K019B0556BWUL.html">网易</a>评价他"跳过热闹的 AI 叙事，直接扎进物理世界"。</p>
+    <p><strong>负面：</strong>资深空头把他的打法批为"<strong>高智商学术包装下的拉高出货</strong>"——用巨大的话语量诱导散户接盘微型股；<a href="https://www.zhihu.com/question/2043660509396865080">知乎等社区</a>质疑其身份不可核实、且"所谓瓶颈猎手，买的其实也基本是当下热门股"。如今 Ningi 与瑞典检方的介入，把"庄"的怀疑从社区口水升级到了机构与监管层面。<strong>较公允的中间结论是</strong>：他的命中率里既有真方法、也有真实产业 β，但其入场点与当前对微型股的影响力，确实使"拉高出货"的质疑无法被轻易排除。</p>
+
+    <h2>下次看什么（监控信号）</h2>
+    <p>这套方法是否继续奏效、以及他本人是否被证伪，盯这几个可跟踪的点：</p>
+    <ul>
+      <li><strong>Sivers 监管进展 ——</strong> 瑞典经济犯罪局的 MAR 调查是否定性、是否点名、纳斯达克是否介入；美国 Rosen 集体诉讼是否正式立案。这是从"嫌疑"走向"结论"的关键，看官方公告而非媒体转述。</li>
+      <li><strong>CPO 量产兑现 ——</strong> 英伟达/博通的 CPO 交换机、台积电硅光（COUPE）量产是否如期；若被先进铜缆等方案绕过，他整条逻辑的地基动摇。看每季财报与 OFC/GTC 等大会官宣。</li>
+      <li><strong>核心标的的"工程证据" ——</strong> <code>AXTI</code> 的 InP 衬底产能/营收能否把"远期订单"兑现成"当期收入"（2025 全年营收是下滑的）、<code>AAOI</code> 的光收发出货、<code>SIVE</code> 营收能否追上其约 70 倍的市销率。看数字，别看股价。</li>
+      <li><strong>他本人的可信度信号 ——</strong> 是否出现删帖/改口、是否被监管正式点名；以及粉丝继续涌入后，其重仓微型股的流动性踩踏风险。</li>
+      <li><strong>账户级独立核查 ——</strong> 是否出现对其<strong>账户级</strong>（而非选股级）收益的独立审计；目前账户翻倍仍无任何审计证据。</li>
+    </ul>
+
+    <div class="limitation">
+      本报告关于 Serenity 的言论、持仓、业绩与背景，<strong>均基于公开可检索的二手分析、媒体报道与被转引的代表性推文，而非其 X 账号的完整时间线</strong>。X/Twitter 自 2023 年起关闭免费 API 且强反爬，无法稳定、完整地拉取其实时推文与逐笔操作；其真实身份（含性别）、自述背景与账户收益均<strong>未经第三方审计</strong>，存疑处已就地标注。涉及监管的部分：相关调查的对象在官方措辞上为"匿名 X 账号"，媒体普遍指向 Serenity，但<strong>官方尚未点名其本人、尚未认定违规</strong>，无罪推定适用。所有时效以检索日 <strong>2026-06-03（北京时间）</strong>为准，此后其持仓、收益、监管进展与市场评价可能已变化。
+    </div>
+
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li><strong>监管/法律风险（最新升级）：</strong>其重仓的 Sivers 已引来瑞典经济犯罪局 MAR 调查、做空机构 Ningi 报告与美国 Rosen 集体诉讼调查；检方称相关泄露"带有以往拉高出货案的特征"。官方未点名其本人、尚未认定违规，但这是从社区质疑升级到监管层面的拐点。</li>
+      <li><strong>收益无法独立审计：</strong>32 / 45 / 225 倍均为本人自述、各源数字打架；"账户翻倍"无任何审计证据，与"选股命中率高"是两个数量级的命题。</li>
+      <li><strong>跟单大概率不赚：</strong>独立回测显示无脑跟单跑输大盘——散户读到时价格已被（含跟风盘）推高。</li>
+      <li><strong>拉高出货指控 + 反身性：</strong>标的多为低流动性微型股，SIVE/X-Fab 单日暴涨 70%+ 即其市场影响力的实证；其"业绩"含大量自身粉丝盘拉抬的账面浮盈。</li>
+      <li><strong>关键数据未独立核实：</strong>"InP 全球产能 60 万 vs 需求 150 万""占全球 35–40%"仅二手估算、口径打架，AXT 从不披露自身市占率。</li>
+      <li><strong>叙事方向有反转风险：</strong>AXTI"西方单点故障"标签部分讲反（产线在北京 Tongmei、卡在中国 InP 出口管制、2025 营收下滑）；Ningi 直指 Sivers 的瓶颈叙事为"编造"。</li>
+      <li><strong>极端估值与单一路线依赖：</strong>核心标的（如 SIVE）市销率约 70 倍、对应营收下滑+亏损放大的公司；整套逻辑押 CPO/硅光为唯一路线，被替代则瓦解。逻辑链越长越脆——若一条逻辑依赖五个各 80% 把握的环节，全中概率仅约 33%（0.8⁵）。</li>
+      <li><strong>身份不可核实：</strong>匿名动漫号，"前 AI 科学家/Nature 作者/创投 GP"均为自述无实证，"RISC-V 会员"经核实是免费注册项、非资历。</li>
+    </ul>
+  </section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.semiconductor-today.com/news_items/2026/mar/axt-090326.shtml">AXT Q4/2025 营收受中国 InP 出口许可延迟拖累</a> <em>Semiconductor Today · 2026-03</em> — 据 AXT 财报：2025 全年营收 9,940 万→8,830 万美元（−11%）、北美营收占比掉到约 1%；产线在北京子公司 Tongmei、受中国 2025-02 InP 出口管制影响。修正"西方单点故障"叙事的一手依据。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://stockanalysis.com/stocks/axti/">AXT Inc (AXTI) 行情与基本面</a> <em>StockAnalysis · 截至 2026-06 初</em> — 52 周区间 1.47→143.16 美元、市值约 69 亿美元、日均成交约 590 万股，证明其旗舰标的已脱离微型股区间。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.prnewswire.com/news-releases/sivers-semiconductors-publishes-the-2025-annual-report-adjusting-prior-reported-financials-as-preparation-for-a-potential-dual-listing-in-the-united-states-302771355.html">Sivers 发布并重述 2025 年报</a> <em>PR Newswire · 2026-05-13</em> — FY2025 营收 SEK 3.07 亿（重述）、息税前亏损 SEK 1.78 亿、净亏 SEK 2.23 亿；为评估赴美双重上市所做调整。SIVE 估值脆性的一手财务依据。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.businesswire.com/news/home/20260601422907/en/Rosen-Law-Firm-Encourages-Sivers-Semiconductors-AB-Investors-to-Inquire-About-Securities-Class-Action-Investigation-SIVEF">Rosen 律所就 Sivers (SIVEF) 启动证券集体诉讼调查</a> <em>BusinessWire · 2026-06-01</em> — 援引 Ningi 6/1 做空报告标题与当日 OTC 股价 −9.2%，称 Sivers 或向投资者发布了重大误导性信息。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://riscv.org/individual-membership/">RISC-V International 个人会籍页</a> <em>官方 · 现行</em> — 个人/社区会籍免费、无发票、任何人填表即可加入；证明"RISC-V 会员"非专业资历背书。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.yahoo.com/markets/stocks/articles/popular-x-account-sparks-massive-151950807.html">一个 X 账号引爆这家小芯片厂暴涨（路透）</a> <em>Reuters / Yahoo Finance · 2026-05-27</em> — X-Fab 单日盘中涨约 77%、量为均量 17 倍、多次熔断；@aleabitoreddit 逾 40 万粉；CEO Damien Macq 称无未披露重大事项；分析师多为持有/中性。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.bloomberg.com/news/articles/2026-05-27/popular-x-account-sparks-massive-rally-in-little-known-chipmaker">Popular X Account Sparks Massive Rally in Little-Known Chipmaker</a> <em>Bloomberg · 2026-05-27</em> — X-Fab 事件原始报道之一（与路透互证）。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.ad-hoc-news.de/boerse/news/ueberblick/insider-trading-probe-clouds-sivers-dual-listing-plans-as-q1-revenues/69465103">内幕交易调查笼罩 Sivers 双重上市计划</a> <em>ad-hoc-news · 2026-05 下旬</em> — 瑞典经济犯罪局就"匿名 X 账号在官宣前约 48 小时泄露 Sivers 上市细节"立案查 MAR，检察官 Jonas Myrdal 称时点"触目"、带拉高出货前科特征（内容经多源交叉佐证）。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://en.ilsole24ore.com/art/sivers-semiconductors-rally-1700percent-and-boom-swedish-chip-stock-short-positions-ai-AIKYPPLD">Sivers 年内涨约 1700%、做空头寸激增</a> <em>Il Sole 24 Ore（英文版）· 约 2026-05-29</em> — 意大利财经大报：Sivers 市值约 SEK 235 亿、约 17% 流通股被借空；行情由 Serenity 的帖子点燃。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.panewslab.com/zh/articles/019e674b-724f-736c-8077-b2221cf24e39">2 年 225 倍收益？揭秘神秘研究员 Serenity 的 AI"卡脖子"投资术</a> <em>PANews · 2026-05</em> — 最系统的方法论梳理：chokepoint 理论、紫苏叶比喻、AI 魔鬼代言人工作流、仓位杠杆；明确"背景均为自述未经核实"。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260525A09L0D00">X 神秘大佬 Serenity 是怎么选股的</a> <em>腾讯新闻 · 2026-05-25</em> — 清晰复述选股五步框架与瓶颈识别标准；给出 YTD +3,152.77%（约 32 倍）、23 只全翻倍、最高 84 倍等自述数据。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.163.com/dy/article/KU5K019B0556BWUL.html">YTD 暴赚 4500% 后，爆火股神 Serenity 真正厉害的，不是选股</a> <em>网易订阅 · 2026-05</em> — 论点"他的核心能力是产业侦察而非选股"；五步法、工程证据清单、波动风险提示。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.odaily.news/en/post/5210924">拒绝英伟达 $6 报价的他是谁（Odaily 英文）</a> <em>Odaily · 2026-05-22</em> — 变现与争议最全：不卖课/无信号群/不接广告、核心研究免费；SIVE 建仓后单日 +73.78%（约 1.3 亿→2.3 亿美元）；2022 WSB 因 AXTI 被指 pump 封号；身份均自述未核实。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.tradingkey.com/zh-hans/analysis/stocks/us-stock/261935617-adam-xie">Serenity：宣称 40 倍收益率的检验与拆解（Adam Xie）</a> <em>TradingKey · 2026-05-29</em> — 唯一系统化"首提回测"：平均 +82.2%、中位 63%、胜率 86%、纳指同期 +14.7%；坦承账户收益无法核实、无法排除删帖、多数标的元旦前已评级（起点偏差）。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://unfadv.substack.com/p/can-you-just-copytrade-serenity">能照抄 Serenity 跟单吗？</a> <em>UnsolicitedNotFinancialAdvice（Substack）· 2026-03-15</em> — 反向回测：只取明确建仓推文、等权对比 SPY/XLK，结论"无脑跟单跑输大盘"；与 TradingKey 的差异全在入场时点。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://ningiresearch.com/">Ningi Research 做空报告《Sivers: Dubious Revenue Accounting…》</a> <em>Ningi Research · 2026-06-01</em> — 称 Sivers 是"建立在编造的瓶颈叙事之上的散户驱动式拉抬"，指控约 31% 的 2025 营收存疑、InP 激光因可靠性问题尚未量产。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://singularityresearchfund.substack.com/p/inside-the-mind-of-serenity-aleabitoreddit">Inside the Mind of Serenity (@aleabitoreddit)</a> <em>Singularity Research Fund（Substack）· 2026-04-01</em> — 英文最系统的一手梳理：引其三段式机构轮动原话、约 1.4x 杠杆、地缘期降杠杆至 0、用 Gemini 验证 SIVE；峰值 +501% 后回撤。</li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://semiconstocks.com/">Serenity Tracker（semiconstocks）</a> <em>第三方追踪站 · 滚动更新</em> — 把方法落成"七层 chokepoint 链路图"；明示"无基金无 13F、仓位未知、只晒赢家、败例与止损不被同等曝光"。</li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://www.jimmyhuli.com/p/serenity-x-21">Serenity 是谁？X 上 21 万粉丝的"光通信瓶颈猎人"</a> <em>Jimmy 狐狸（自媒体）· 2026-05</em> — 最完整的"硅光多层瓶颈框架"与标的清单（含 Soitec/Riber/TSEM/GFS 等社区外延项，未独立核实）。</li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://www.zhihu.com/question/2043660509396865080">如何看待最近推特爆火的散户 Serenity？</a> <em>知乎问答 · 2026</em> — 社区正反讨论与质疑（身份存疑、拉高出货、"买的也是热股"），本报告相关社区观点据此并标注未独立核实。</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-06-03 · 内容定格于生成时点，更新请重跑生成新版本
+  </footer>
+
+</div>
+</body>
+</html>

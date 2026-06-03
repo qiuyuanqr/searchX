@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CPO 共封装光学 · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* TL;DR */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 对比表 */
+  table.cmp{width:100%; border-collapse:collapse; margin:1.3rem 0; font-size:.9rem;
+    font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif}
+  table.cmp th{text-align:left; padding:.5rem .55rem; border-bottom:2px solid var(--muted); color:var(--ink-soft); font-weight:600}
+  table.cmp td{padding:.5rem .55rem; border-bottom:1px solid var(--rule); vertical-align:top; line-height:1.45}
+  table.cmp td:first-child{font-weight:600; white-space:nowrap}
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} table.cmp{font-size:.82rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 概念</div>
+    <h1>CPO 共封装光学</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-06-02（北京时间）</span>
+      <span><b>类型</b> 概念</span>
+      <span><b>关联板块</b> 光模块 · 算力 · AI应用</span>
+      <span><b>来源</b> 34 条</span>
+    </div>
+  </header>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    CPO（Co-Packaged Optics，共封装光学）把负责"电↔光"转换的光引擎，从交换机面板上的可插拔模块，搬到与交换/计算芯片同一个封装内——用极短的电通道，换取大幅的功耗下降与带宽密度提升。它是 AI 数据中心翻越"铜缆的距离墙"与"可插拔光模块的功耗墙"的关键路线。2025–2026 年，NVIDIA、Broadcom 推动它从概念走向出货；但它不是"取代可插拔"的单选题——LPO 等线性可插拔路线会与之长期共存，真正的产业看点是激光器、硅光代工、连接器与封装环节的价值重新分配。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li><strong>本质是"挪近几厘米省一大笔电"。</strong>把光引擎贴到芯片旁，电通道损耗从约 22 dB 降到约 4 dB，单端口功耗按 NVIDIA 口径从约 30 W 降到约 9 W（省约 70%）；大集群里光模块的电费是天文数字——百万颗 GPU 仅光收发就要约 180 MW。</li>
+      <li><strong>两大主推手已出实物。</strong>NVIDIA 在 GTC 2025（2025-03）发布 Quantum-X / Spectrum-X Photonics CPO 交换机；Broadcom 的 Tomahawk 6 "Davisson"（102.4 Tbps，2025-10 发布）已于 2026-03 进入量产。</li>
+      <li><strong>但这不是单选题。</strong>以 Arista 的 Bechtolsheim 为代表的 LPO（线性可插拔）阵营主张：在 1.6T 这代，可插拔的能效已与 CPO 相近，且能现场更换、可多源——2026 年 OFC 上"共存 / XPO"成了主流叙事。</li>
+      <li><strong>价值链在重构。</strong>DSP 被消灭、传统光模块厂面临被"越过"的风险；硅光代工（TSMC COUPE）、激光器（NVIDIA 2026-03 向 Coherent、Lumentum 各投 20 亿美元锁产能）、连接器与封装成为新卡位点。</li>
+      <li><strong>对中国光模块是"威胁还是机会"两种声音并存。</strong>中际旭创承认 CPO 成熟"或带来产业链生态重大变化"，同时强调硅光通用、自己向光引擎上探；华为自研 400G CPO 交换机据报 Q3 2025 已出货超 2 万台。</li>
+      <li><strong>时间预期分歧很大。</strong>交换机侧 2026 出货、2027–28 上量；算力芯片（XPU）scale-up 侧 2027+ 才是更大蛋糕；可插拔 / LPO / CPO 预计共存约十年。</li>
+    </ul>
+  </div>
+
+  <main>
+
+    <h2>一、CPO 是什么：把"翻译官"搬到老板隔壁</h2>
+    <p>数据中心里，交换芯片（ASIC）算的是"电"，而长距离传输靠的是"光"，中间需要一个"翻译官"做电光转换。今天主流做法是把翻译官（光收发模块）插在交换机<strong>面板</strong>上——就是那一排可热插拔的 QSFP-DD / OSFP 光模块。<strong>CPO 的核心动作，是把这个翻译官从大门口（面板）搬进老板（ASIC）办公室隔壁</strong>，和主芯片封装在同一块基板上。</p>
+    <p>这个"翻译官"在 CPO 里叫<strong>光引擎（optical engine）</strong>，由两部分叠在一起：负责放大与驱动的电芯片（EIC），和用<strong>硅光（silicon photonics）</strong>工艺做的光芯片（PIC，上面是调制器、光电探测器、波导）。多个光引擎像卫星一样环绕主芯片摆放（NVIDIA 的方案在一个封装里有 36+ 个光连接区）。</p>
+    <p>有一件东西被故意<strong>留在门外</strong>：激光器。因为激光器怕热，而旁边的 ASIC 动辄几百瓦高温。于是把"发电机（连续波激光器）"放在机箱面板上凉快的地方，做成可热插拔的<strong>外置激光源（ELS / ELSFP）</strong>，再用光纤把光"喂"进封装里，让封装内的调制器在这束光上"刻"数据。Broadcom 的 Bailly 用 16 个外置激光模块、NVIDIA 的 Quantum-X 用 18 个激光模块喂 144 条通道——激光被多通道共享，既凉快又好维修（参见 <a href="https://blog.apnic.net/2025/05/07/co-packaged-optics-a-deep-dive/">APNIC 技术深解</a>）。</p>
+
+    <h2>二、底层原理：为什么"挪近几厘米"能省这么多电</h2>
+    <p>关键词是<strong>电通道距离（electrical reach）</strong>。电信号在 PCB 铜线上跑得越远、速率越高，就越"失真"——像传话游戏，传得越远越歪。为了把歪掉的信号纠回来，可插拔模块里塞了一颗功耗很高的 <strong>DSP 芯片</strong>做均衡/重定时。</p>
+    <p>CPO 把光引擎贴到芯片边上，这段电路从几十厘米压缩到<strong>几毫米</strong>。NVIDIA 给出的数字很直观：传统可插拔架构电通道损耗高达约 <strong>22 dB</strong>，CPO 降到约 <strong>4 dB</strong>（这是其"信号完整性提升约 63 倍"说法的由来）。路短了、信号干净了，SerDes 就不需要那么重的均衡电路，<strong>DSP 可以省掉</strong>——这才是省电的真正机理。在 200G/lane 这代，电 SerDes 约 5 pJ/bit，光的目标约 1 pJ/bit（<a href="https://www.marvell.com/blogs/copper-and-optical-interconnects-in-ai-cluster.html">Marvell</a>）。</p>
+    <p>另一个被反复提到的词是<strong>"海岸线带宽"（beachfront bandwidth）</strong>：芯片边缘像海岸线，能"停多少船"（带宽）取决于岸线长度。面板插槽是另一个更窄的瓶颈；CPO 直接去芯片边缘上船，绕开了面板这道闸。</p>
+    <div class="callout">两家旗舰用了不同的"调制"技术，是理解差异的关键：NVIDIA 用<strong>微环调制器（MRM）</strong>，约 1–2 pJ/bit、天然支持多波长，但要持续做热调谐；Broadcom 用<strong>马赫-曾德尔调制器（MZM）</strong>，约 5–10 pJ/bit、个头大些，但更耐温、更稳。这对应了两种工程哲学：极致能效 vs 工程稳健。</div>
+
+    <h2>三、为什么是现在</h2>
+    <p>三堵墙同时压过来，把 CPO 从"实验室名词"逼成"工程刚需"：</p>
+    <ul>
+      <li><strong>带宽墙。</strong>交换 ASIC 容量大约每两年翻一倍：25.6T → 51.2T → 102.4T → 204.8T。到这个量级，铜和面板都顶不住。</li>
+      <li><strong>距离墙。</strong>在 AI 集群速率下，无源铜缆只能跑 1 米出头；200G/lane 是 PCB 走线与飞线（flyover）变得不划算的拐点，过了这道坎，光几乎是唯一选择。</li>
+      <li><strong>功耗墙。</strong>一台满配 32 口 800G 交换机，仅 DSP 可插拔模块就可能吃掉 500 W 以上；放大到<strong>百万颗 GPU 的集群，光收发功耗逼近约 180 MW</strong>。NVIDIA 称 CPO 能把网络能效提升约 3.5 倍，一座大型 AI 数据中心可省约 40 MW——这点电够再多供养约 1 万颗 GPU（<a href="https://nvidianews.nvidia.com/news/nvidia-spectrum-x-co-packaged-optics-networking-switches-ai-factories">NVIDIA, 2025-03</a>）。</li>
+    </ul>
+    <p>一句话：是 AI 算力的爆炸式扩张，让"省电、省面积、保带宽"从锦上添花变成了生死线。</p>
+
+    <h2>四、一张表看懂路线之争：CPO / LPO / NPO / 光 I/O</h2>
+    <p>这是全行业最大的争论，也是最容易被混淆的地方。它们其实是一条"用可维护性换能效/密度"的光谱，而非互斥的对错：</p>
+    <table class="cmp">
+      <thead><tr><th>路线</th><th>做了什么</th><th>收益</th><th>代价 / 取舍</th></tr></thead>
+      <tbody>
+        <tr><td>可插拔 + DSP</td><td>光模块在面板，带完整 DSP 重定时</td><td>基准（约 15–30 W/口）</td><td>成熟、多供应商、可热插拔；功耗最高</td></tr>
+        <tr><td>LRO 线性接收</td><td>只去掉接收侧 DSP</td><td>约省 30% 模块功耗</td><td>先啃功耗最高的那一侧；耦合更紧</td></tr>
+        <tr><td>LPO 线性可插拔</td><td>收发两侧 DSP 全去掉，靠交换芯片 SerDes 兜底</td><td>较 DSP 可插拔省约 30–50%</td><td><strong>保住可插拔、可维修、可多源</strong>；需软硬协同、容差小</td></tr>
+        <tr><td>NPO 近封装</td><td>光引擎放在芯片封装"旁边"但不进封装</td><td>消掉大部分铜缆损耗</td><td>过渡形态，收益打折</td></tr>
+        <tr><td>CPO 共封装</td><td>光转换进到主芯片封装内、贴着裸片</td><td>约省 70% / 3.5 倍能效，密度最高</td><td>焊死、难现场维修、互操作弱、量产不成熟</td></tr>
+        <tr><td>封装内光 I/O / 光 chiplet</td><td>光引擎作为 UCIe chiplet 与算力裸片同放</td><td>密度最高、时延最低</td><td>最不成熟；主打 GPU 间 scale-up</td></tr>
+      </tbody>
+    </table>
+    <p><strong>两个阵营在吵什么。</strong>CPO 阵营（NVIDIA、Broadcom、TSMC）认为到 102.4T+、到 AI 规模，功耗与密度让 CPO 不可回避。可插拔/LPO 阵营的代表是 Arista 联合创始人 <strong>Andy Bechtolsheim</strong>，他在 OFC 2025 直言：在 1.6T（1600G）这一代，<strong>LPO 的能效与 CPO 大体相当</strong>，却保住了现场可维护、独立升级、多源采购（MSA）与设计灵活性——CPO 强迫一台设备所有口用同一种光，反而是负担。到 2026 年 OFC，他的口风软化为<strong>"共存"</strong>，EE Times 报道"<strong>XPO</strong>"（可插拔/线性路线的统称）成了热门提法：先用可插拔拿密度，让 CPO 在旁边慢慢成熟（<a href="https://www.eetimes.com/why-xpo-resonated-at-ofc-2026/">EE Times, 2026</a>；<a href="https://www.nextplatform.com/connect/2026/04/17/bechtolsheim-friends-breathe-life-into-pluggable-optics-one-last-time/">The Next Platform, 2026-04</a>）。第三个阵营是<strong>封装内光 I/O</strong>（Ayar Labs 等），瞄准的不是交换机面板，而是 GPU 之间的 scale-up 互连。</p>
+
+    <h2>五、真实案例与关键玩家</h2>
+
+    <div class="case">
+      <p><strong>NVIDIA — Quantum-X / Spectrum-X Photonics（GTC 2025，2025-03-19 北京时间）</strong></p>
+      <p>NVIDIA 一口气把 CPO 推到产品级。<strong>Quantum-X Photonics</strong>（InfiniBand）单机 115.2 Tb/s（144 口 × 800G，基于 200G SerDes、TSMC 4nm ASIC，液冷）；<strong>Spectrum-X Photonics</strong>（以太网）从 100 Tb/s 到顶配 409.6 Tb/s（512 口 × 800G）。1.6T 硅光引擎由 8 个 200G 微环调制器（MRM）构成，叠在 TSMC 硅光平台上。官方宣称对比可插拔：<strong>3.5 倍能效、4 倍更少激光器、约 63 倍信号完整性、10 倍网络韧性、1.3 倍更快部署</strong>。出货节奏：Quantum-X 约 2025 下半年起 / 2026 年初商用，Spectrum-X 2026 年。生态点名一长串：TSMC、Coherent、Lumentum、Corning、Fabrinet、Foxconn、SENKO、住友电工、矽品，以及可插拔侧的旭创、易飞扬。</p>
+    </div>
+
+    <div class="case">
+      <p><strong>Broadcom — 从 Bailly 到 Davisson 的三代演进</strong></p>
+      <p>Broadcom 是 CPO 交换机最早拿出实物的玩家。第一/二代 <strong>Tomahawk 5 "Bailly"</strong>（51.2 Tbps，OFC 2023 首展）用 8 个 6.4T 硅光引擎，驱动 800G 流量仅 5.5 W（vs 可插拔约 15 W，约 3 倍能效）；台达已量产。2025-05 宣布第三代 200G/lane。2025-10-08 发布、2026-03 量产的旗舰 <strong>Tomahawk 6 "Davisson"</strong> 是业界首款 102.4 Tbps CPO 以太网交换机，16 个 6.4T 硅光引擎、200 Gb/通道、功耗较传统方案降约 70%。一个关键的可靠性背书：Meta 在 ECOC 2025 公布对 Bailly 的长期验证，约 325 天里 CPO 的 MTBF 约 260 万器件小时，远高于 400G 可插拔的约 55 万（<a href="https://www.globenewswire.com/news-release/2025/10/08/3163429/19933/en/Broadcom-Announces-Tomahawk-6-Davisson-the-Industry-s-First-102-4-Tbps-Ethernet-Switch-with-Co-Packaged-Optics.html">Broadcom, 2025-10</a>）。</p>
+    </div>
+
+    <h3>支撑底座与其他玩家</h3>
+    <ul>
+      <li><strong>TSMC — COUPE 平台</strong>：用 SoIC-X 3D 堆叠把电芯片叠在光芯片上，宣称 5–10 倍能效、10–20 倍更低时延。路线：2025 年先认证小型可插拔模块，<strong>真正的"板上 CPO"（COUPE-on-Substrate）瞄准 2026 下半年量产</strong>；硅光客户已超 50 家。这是 NVIDIA、Broadcom 共同依赖的代工底座，也是产业最强的"卡位点"（<a href="https://www.trendforce.com/news/2026/05/18/news-tsmc-targets-2h26-coupe-on-substrate-nvidia-could-eye-long-term-substrate-deals-amid-cpo-push/">TrendForce, 2026-05</a>）。</li>
+      <li><strong>Marvell — 收购 Celestial AI</strong>：2025-12-02 宣布以 32.5 亿美元（最高对价约 55 亿）收购 Celestial AI，2026-02 完成交割，把其 Photonic Fabric 光 I/O 纳入 XPU scale-up 战略；此前已展示 6.4T / 1.6T 硅光 light engine。</li>
+      <li><strong>Intel — OCI 光 I/O chiplet</strong>：OFC 2024 展示业界首个与 CPU 共封装的全集成光 I/O chiplet，4 Tbps 双向、单纤 8 波长、可达 100 米，技术视野指向 32 Tbps。</li>
+      <li><strong>初创三杰（主打封装内光 I/O / scale-up）</strong>：<strong>Ayar Labs</strong> 发布全球首个 UCIe 光 chiplet（TeraPHY，8 Tbps/口；2026-03 完成 5 亿美元 E 轮、估值 37.5 亿，NVIDIA、AMD、联发科参投）；<strong>Lightmatter</strong> 的 Passage M1000 有源光 interposer 号称 114 Tbps、支持 256 根光纤（Series D 4 亿、估值 44 亿）；<strong>Celestial AI</strong>（C1 轮 2.5 亿、估值 25 亿，后被 Marvell 收购）。</li>
+      <li><strong>光器件供应商（最直接受益）</strong>：Lumentum、Coherent 供激光器与外置激光源；Corning 供光纤与可拆卸连接器；Fabrinet、ASE 做精密封装组装；SENKO、US Conec、Molex、波若威供 CPO 连接器。</li>
+    </ul>
+
+    <div class="case">
+      <p><strong>产业链最重磅一锤：NVIDIA 40 亿美元锁激光器产能（2026-03-03 北京时间）</strong></p>
+      <p>NVIDIA 宣布向 <strong>Coherent 与 Lumentum 各注资 20 亿美元（合 40 亿）</strong>，并附多年期采购承诺与优先产能/技术访问权，专门为 CPO 扩大激光器与光器件供应。消息当日两家股价均跳涨逾 10%（<a href="https://www.cnbc.com/2026/03/02/nvidia-investment-coherent-lumentum.html">CNBC</a>、<a href="https://optics.org/news/nvidia-backs-lumentum-and-coherent-with-4bn-cash-investment">optics.org</a>）。这是 CPO 故事里最直白的信号：算力巨头认定<strong>激光器是 AI 互连的下一个瓶颈</strong>，宁可真金白银把上游产能焊死在自己身上。</p>
+    </div>
+
+    <h2>六、产业链：价值往哪里流</h2>
+    <p>CPO 把一颗集成度很高的可插拔模块，拆成了"光引擎（焊进封装）+ 外置激光 + 可拆卸光纤"。价值随之沿五层重新分布：硅光代工（TSMC、GlobalFoundries、Intel、Tower）、激光/外置光源（Lumentum、Coherent 等）、光纤与连接器（Corning、US Conec、SENKO、Molex）、封装组装测试（Fabrinet、ASE、TSMC）。</p>
+    <p><strong>看空者（SemiAnalysis）的逻辑</strong>：CPO 消灭了 DSP（1.6T 单元上千美元的料），打散了高度分散的可插拔生态，价值向交换/XPU 原厂（NVIDIA、Broadcom、云厂）、代工（TSMC 吃下集成锁定）、激光/器件商集中——<strong>传统光模块厂可能被"越过去"</strong>。<strong>看多者</strong>则认为，模块厂会顺势<strong>上探去做光引擎本身</strong>，而非被淘汰（详见下一节）。</p>
+
+    <h2>七、中国生态：是威胁还是机会</h2>
+    <p>对中国最强的光模块板块，CPO 既是悬顶之剑、也是上探之梯。两种声音并存，谁也没把话说死：</p>
+    <ul>
+      <li><strong>中际旭创（Innolight）</strong>：态度最直白。2025 半年报承认 CPO 成熟应用"<strong>或许会带来光模块产业链生态的重大变化</strong>"——即承认结构性风险——但强调<strong>硅光在可插拔与 CPO 中通用</strong>，自己 2019 年就启动 CPO 研发、投入超 5 亿元建先进封测平台，已展示 1.6T CPO 引擎（8 Tbps 集成、光-ASIC 互连约 5 mm、信号损耗降约 60%）。姿态是"机会"——往光引擎上探。其 2025 全年营收约 382 亿元（同比约 +60%）、归母净利约 108 亿元（同比约翻倍）（据其年报，第三方媒体整理）。</li>
+      <li><strong>新易盛（Eoptolink）</strong>：被视为要抓住 LPO 过渡窗口；OFC 2026 推出 6.4T <strong>NPO（近封装）</strong>模块（32×200G 硅光），用近封装做对冲。</li>
+      <li><strong>天孚通信（T&S）</strong>：卡在上游光器件核心（无源器件、透镜、光纤阵列、封装），无论谁赢都要供货，被认为"最受益于上游"。</li>
+      <li><strong>光迅科技（Accelink）</strong>：国内垂直整合最深（芯片-器件-模块），OFC 2025 推出基于 3nm DSP 的 1.6T 硅光模块，CPO/3.2T"多路径并行"推进。</li>
+      <li><strong>华为</strong>：已有<strong>自研 400G CPO 交换机部署在国内智算中心，据报 Q3 2025 出货超 2 万台</strong>——这是中国已落地的具体 CPO 产品；同时也押注 800G 线性可插拔作替代路线。</li>
+    </ul>
+    <p>一个结构性约束要点破：领先的硅光代工与 3D 集成（TSMC COUPE、GF Fotonix、混合键合）由美/台主导；GlobalFoundries 在 2025 年底收购新加坡 AMF，<strong>明确打造"无中国（China-free）"光芯片供应链</strong>——这对中国的 CPO 雄心是真实的地缘约束。Coherent CEO Jim Anderson 那句被中文投资圈广泛援引的话则代表"共存派"：CPO 是"增量、非替代"，会与可插拔长期并行。</p>
+
+    <h2>八、节奏与市场预期（截至 2026-06）</h2>
+    <p><strong>出货现状</strong>：Broadcom TH6 Davisson 已于 2026-03 进入量产；NVIDIA Quantum-X 约 2026 年初商用、Spectrum-X 2026 下半年。<strong>但"发布 / 出货"不等于"规模渗透"</strong>——TrendForce 认为到 2027 渗透率仍处低个位数。</p>
+    <p><strong>市场规模预测口径差异极大</strong>，引用需谨慎：Yole 估 CPO 从 2024 年约 4600 万美元增至 2030 年约 81 亿美元（约 137% CAGR）；LightCounting 称"<strong>2025 是 CPO 元年</strong>"，预计 2027 年 CPO 端口约占 800G+1.6T 端口的 30%、2030 年 CPO 引擎市场约 100 亿美元 / 约 1 亿端口；TrendForce 则偏保守。</p>
+    <p><strong>共识时间线</strong>：交换机/scale-out 侧 2026 出货、2027–28 上量；算力芯片（XPU）scale-up 侧——被普遍视为"更大但更晚"的蛋糕——2026 推产品、2027 出货、2028+ 上量；铜在 scale-up 里"能用多久用多久"。三条路线（可插拔 / LPO / CPO）预计<strong>共存约十年</strong>。</p>
+
+    <h2>九、与五大关注板块的关联</h2>
+    <ul>
+      <li><strong>光模块（最直接）</strong>：CPO 是可插拔光模块的演进/潜在颠覆者，直接重定义这条产业链的价值分配——既是中际旭创、新易盛、天孚、光迅的最大变量，也是它们向光引擎上探的机会窗口。</li>
+      <li><strong>算力（驱动源）</strong>：CPO 的全部动因来自 AI 算力扩张带来的带宽墙与功耗墙；它本质是"为算力供电、供带宽"的基础设施改造。</li>
+      <li><strong>AI 应用（下游）</strong>：CPO 降低单位算力的网络功耗与时延，间接决定大模型训练/推理集群能堆多大、跑多省——关联较间接，但方向一致。</li>
+    </ul>
+    <p>（机器人、航天与本主题无实质关联，不强行挂链。）</p>
+
+    <div class="limitation">
+      本报告为概念类技术调研，<strong>非个股投资建议</strong>。CPO 处于快速演进期，文中产品规格、出货时间、融资与市场规模数据均定格于 <strong>2026-06-02（北京时间）</strong>检索时点；不同机构对 CPO 市场规模与渗透节奏的预测差异很大（见正文），引用时请注意口径与发布时点。少数英文权威媒体页面（The Register、The Next Platform）有反爬限制，相关数据以检索摘要佐证并尽量交叉核对。中际旭创 2025 全年财务数为第三方媒体对其年报的整理，以公司正式披露为准。
+    </div>
+
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li><strong>可维护性（最大软肋）</strong>：可插拔模块坏了几分钟热插拔即换；CPO 光引擎焊在封装里，一旦失效可能要换整台交换机/线卡，"失效域 / 爆炸半径"被放大（SemiAnalysis 估约 0.06% 不可维护故障率即可拖累 64 端口）。缓解方向：可拆卸光纤、外置激光，以及 OFC 2026 上 Coherent 演示的"可插拔（socketed）CPO"。</li>
+      <li><strong>激光器可靠性与散热</strong>：激光器对温度敏感（InP DFB 约 0.1 nm/°C 波长漂移；在 85°C 比 25°C 寿命短约 10 倍），而旁边 ASIC 动辄数百瓦——这正是激光器被外置的原因；CPO 普遍需液冷。光模块现场故障中激光器常居前三。</li>
+      <li><strong>"喊了五年还没来"</strong>：可插拔一直在进步、够用，叠加标准/互操作/测试流程不成熟、早期方案私有化（单一供应商），CPO 多年"必然但不紧迫"（Cignal AI）。</li>
+      <li><strong>LPO 的反击</strong>：线性可插拔去掉 DSP 即省约 30–50% 功耗且保持现场可换、可多源，在 1.6T 这代能效与 CPO 相近，可能延后 CPO 规模铺开（但 LPO 自身在部分部署中有信号完整性争议）。</li>
+      <li><strong>良率与成本</strong>：3D 集成需 known-good-die 测试，光引擎/ASIC 任一坏掉就报废昂贵封装；当前 CPO 相对高量可插拔并无成本优势，依赖上量摊薄。</li>
+      <li><strong>预测口径分歧巨大</strong>：Yole（约 137% CAGR）、LightCounting（"2025 元年"、2027 占比约 30%）与 TrendForce（到 2027 仍低个位数渗透）差距悬殊，结论高度依赖假设与时点。</li>
+      <li><strong>地缘 / 供应链</strong>：领先硅光代工与 3D 集成由美/台主导；GlobalFoundries 2025 收购新加坡 AMF 明确打造"无中国"光芯片供应链，对中国 CPO 形成约束。</li>
+    </ul>
+  </section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://nvidianews.nvidia.com/news/nvidia-spectrum-x-co-packaged-optics-networking-switches-ai-factories">NVIDIA Announces Spectrum-X / Quantum-X Photonics CPO Switches（GTC 2025 官方稿）</a> <em>2025-03-19</em> — 端口/吞吐、3.5x/4x/63x/10x/1.3x 收益、出货时间、生态伙伴。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://developer.nvidia.com/blog/scaling-ai-factories-with-co-packaged-optics-for-better-power-efficiency/">NVIDIA Technical Blog — Scaling AI Factories with CPO</a> <em>约2025</em> — 30W→9W/口、22dB→4dB、115.2T/144 口等技术口径。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.globenewswire.com/news-release/2025/10/08/3163429/19933/en/Broadcom-Announces-Tomahawk-6-Davisson-the-Industry-s-First-102-4-Tbps-Ethernet-Switch-with-Co-Packaged-Optics.html">Broadcom Announces Tomahawk 6 "Davisson"（首款 102.4T CPO 以太网交换机）</a> <em>2025-10-08</em> — 16×6.4T 硅光引擎、200Gb/通道、功耗-70%、Meta 验证。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.globenewswire.com/news-release/2025/05/15/3082220/19933/en/Broadcom-Announces-Third-Generation-Co-Packaged-Optics-CPO-Technology-with-200G-lane-Capability.html">Broadcom Announces Third-Generation CPO with 200G/lane</a> <em>2025-05-15</em> — Bailly 200G/lane 量产、第四代 400G/lane 在研。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://investors.broadcom.com/news-releases/news-release-details/broadcom-showcases-industry-leading-solutions-scaling-ai">Broadcom — OFC 2026 Portfolio Showcase（TH6 量产）</a> <em>2026-03</em> — Tomahawk 6 自 3 月 12 日起进入量产、全栈 CPO 组合。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://investor.marvell.com/news-events/press-releases/detail/1000/marvell-to-acquire-celestial-ai-accelerating-scale-up-connectivity-for-next-generation-data-centers">Marvell to Acquire Celestial AI</a> <em>2025-12-02</em> — 32.5 亿（最高约 55 亿）收购、XPU scale-up 光 I/O；2026-02 交割。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://investor.marvell.com/2025-03-31-Marvell-Demonstrates-Silicon-Photonics-Light-Engine-for-Low-power,-Rack-scale-Interconnect-in-AI-Networks">Marvell Demonstrates 1.6T Silicon Photonics Light Engine</a> <em>2025-03-31</em> — 6.4T CPO 引擎的 1/4 规模版、8×200G PAM4。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://newsroom.intel.com/artificial-intelligence/intel-unveils-first-integrated-optical-io-chiplet">Intel Demonstrates First Fully Integrated Optical I/O Chiplet（OCI）</a> <em>2024-03</em> — 4 Tbps 双向、PCIe Gen5、8 波长、100m、视野 32 Tbps。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://ayarlabs.com/news/ayar-labs-unveils-worlds-first-ucie-optical-chiplet-for-ai-scale-up-architectures/">Ayar Labs Unveils World's First UCIe Optical Chiplet</a> <em>2025-03-31</em> — TeraPHY 8 Tbps、SuperNova 16 波长、封装内光 I/O。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://lightmatter.co/press-release/lightmatter-unveils-passage-m1000-photonic-superchip-worlds-fastest-ai-interconnect/">Lightmatter Unveils Passage M1000 Photonic Superchip</a> <em>2025-03</em> — 有源光 interposer、114 Tbps、支持 256 根光纤。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://lightmatter.co/press-release/lightmatter-raises-400m-series-d-quadruples-valuation-to-4-4b-as-photonics-leader-for-next-gen-ai-data-centers/">Lightmatter Raises $400M Series D（估值 44 亿）</a> <em>2024-10-16</em> — T. Rowe Price 领投、Google 跟投。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.celestial.ai/blog/celestial-ai-secures-250-million-funding-to-revolutionize-ai-infrastructure-with-its-photonic-fabric">Celestial AI Secures $250M Series C1（估值 25 亿）</a> <em>2025-03-11</em> — Photonic Fabric、Fidelity 领投。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.businesswire.com/news/home/20260311692947/en/">Xscape Photonics 新增 $37M 融资、FalconX 8 波长激光</a> <em>2026-03-11</em> — 累计约 9500 万，可编程梳状激光。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.lumentum.com/en/products/external-laser-source-els-module-ultra-high-power-laser">Lumentum — External Laser Source (ELS) Module</a> <em>2025</em> — CPO 用集中可维护高功率外置激光源（ELSFP）。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.coherent.com/news/press-releases/coherent-co-packaged-optics-cpo-technologies-ofc-2026">Coherent — CPO Technologies at OFC 2026（可插拔 socketed CPO）</a> <em>2026-03</em> — 6.4T socketed CPO、VCSEL CPO、InP-on-Si 400G。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.oiforum.com/wp-content/uploads/OIF-Co-Packaging-FD-01.0.pdf">OIF — Co-Packaging Framework Document（OIF-Co-Packaging-FD-01.0）</a> <em>约2025</em> — 标准组织对 CPO 术语与架构的框架定义。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.c114.net.cn/uploads/20250829/163ce193c8d45aebfafeb18c7f00cf99.pdf">中际旭创 — 2025 年半年度报告</a> <em>2025-08-29</em> — "CPO 成熟应用或许会带来光模块产业链生态的重大变化"；硅光通用。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://finance.sina.com.cn/stock/relnews/dongmiqa/2025-06-29/doc-infctvcp7362116.shtml">中际旭创 — CPO 应用场景及光模块需求（投资者答复）</a> <em>2025-06-29</em> — CPO 适用 scale-up/out；云厂 ASIC 投入利好光模块需求。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cnbc.com/2026/03/02/nvidia-investment-coherent-lumentum.html">CNBC — NVIDIA 向 Coherent、Lumentum 各投 20 亿美元（合 40 亿）</a> <em>2026-03-03</em> — 多年采购承诺、锁定 CPO 激光/光器件产能，两股跳涨逾 10%。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://optics.org/news/nvidia-backs-lumentum-and-coherent-with-4bn-cash-investment">optics.org — NVIDIA backs Lumentum and Coherent with $4BN</a> <em>2026-03</em> — 行业媒体对 40 亿投资的独立印证。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.servethehome.com/broadcom-tomahawk-5-based-51-2t-bailly-co-packaged-optics-switch-shown-cpo/">ServeTheHome — Broadcom 51.2T Bailly CPO Switch Shown</a> <em>2023-03-01</em> — Bailly 8×64ch 引擎、800G@5.5W、OFC 2023 首展。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.nextplatform.com/2025/10/17/the-third-time-will-be-the-charm-for-broadcom-switch-co-packaged-optics/">The Next Platform — Third Time Charm for Broadcom Switch CPO</a> <em>2025-10-17</em> — Broadcom CPO 三代史与可维护性顾虑。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.nextplatform.com/connect/2026/04/17/bechtolsheim-friends-breathe-life-into-pluggable-optics-one-last-time/">The Next Platform — Bechtolsheim 为可插拔光学发声</a> <em>2026-04-17</em> — LPO/XPO 与 CPO"共存"的演化立场。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.eetimes.com/why-xpo-resonated-at-ofc-2026/">EE Times — Why XPO Resonated at OFC 2026</a> <em>2026-04</em> — XPO 成 AI 互连热门提法、可插拔 vs CPO 最新态势。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://optics.org/news/nvidia-reveals-plan-to-scale-ai-factories-with-co-packaged-optics">SPIE optics.org — NVIDIA reveals plan to scale AI factories with CPO</a> <em>2025-03</em> — 合作伙伴名单：TSMC、Coherent、Lumentum、Corning、Foxconn、ASE。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.trendforce.com/news/2026/05/18/news-tsmc-targets-2h26-coupe-on-substrate-nvidia-could-eye-long-term-substrate-deals-amid-cpo-push/">TrendForce — TSMC COUPE-on-Substrate 瞄准 2H26 量产</a> <em>2026-05-18</em> — 50+ 硅光客户、2025 硅光收入约 2.28 亿美元。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.trendforce.com/news/2026/04/01/news-silicon-photonics-race-intensifies-as-tsmc-targets-2026-coupe-production-samsung-eyes-2029-cpo-turnkey/">TrendForce — Silicon Photonics Race; Samsung Eyes 2029 CPO Turnkey</a> <em>2026-04-01</em> — 代工路线图；CPO 渗透到 2027 仍低个位数。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.eet-china.com/news/202509235857.html">EET-China — CPO 概念爆火：哪些企业已入局</a> <em>2025-09-23</em> — 国产 CPO 玩家梳理（旭创/光迅/华为等）。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="http://www.iccsz.com/4g/news.Asp?ID=02dde0825dae4735aa58b387f55b7f51">讯石光通讯网 — 专访光迅科技刘家胜：全栈布局光互连</a> <em>2025</em> — 光迅 OFC2025 3nm 1.6T 硅光；CPO/3.2T 多路径。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://blog.apnic.net/2025/05/07/co-packaged-optics-a-deep-dive/">APNIC Blog — Co-Packaged Optics: a deep dive</a> <em>2025-05-07</em> — 最完整技术深解：架构、ELS、MZM vs MRM、可维护性/FIT/热、Bechtolsheim 立场。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://newsletter.semianalysis.com/p/co-packaged-optics-cpo-book-scaling">SemiAnalysis — Co-Packaged Optics: Scaling with Light</a> <em>约2025</em> — 价值链重构（消灭 DSP、代工锁定）、爆炸半径、scale-up 杀手级应用。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://cignal.ai/2025/02/co-packaged-optics-inevitable-but-not-imminent/">Cignal AI — CPO: Inevitable but Not Imminent</a> <em>2025-02</em> — 为何延迟、scale-up 先行、规模落地 3–5 年。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.yolegroup.com/product/report/co-packaged-optics-2025/">Yole — Co-Packaged Optics for Data Centers 2025</a> <em>2025</em> — CPO 市场 $46M(2024)→$8.1B(2030)、约 137% CAGR、中国份额。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.lightcounting.com/newsletter/en/december-2025-aocs-dacs-linear-drive-pluggable-and-co-packaged-optics-320">LightCounting — 2025 was the year of CPO</a> <em>2025-12</em> — CPO 约 $10B / 约 1 亿端口（2030）；2027 端口占比约 30%；Meta 验证 Bailly。</li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://xueqiu.com/4538701301/375378209">雪球 — Coherent CEO 表态：CPO 是"增量非替代"、与可插拔并行共存</a> <em>2025</em> — Jim Anderson 言论的中文投资圈转述（非一手转录）。</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-06-02 · 内容定格于生成时点，更新请重跑生成新版本
+  </footer>
+
+</div>
+</body>
+</html>
