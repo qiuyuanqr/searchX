@@ -143,6 +143,30 @@ archive: "<ARCHIVE_ROOT 下本主题文件夹的相对路径>"
 
 ---
 
+## Step 6 — 自动同步上线（每次必做）
+
+调研三件套写完、INDEX 更新后，**把本次成果提交并推送到 `main`，触发 GitHub Pages 自动部署**，让它出现在公开站 https://qiuyuanqr.github.io/searchX/ 。站点构建逻辑：CI 扫描 `research/` 下所有 `<YYYY-MM-DD>_<slug>/` 文件夹（须含 `notes.md`），渲染成信息流卡片 + 报告页。`push: branches:[main]` 即自动 build+deploy（见 `.github/workflows/deploy.yml`），**无需手动 dispatch**。
+
+执行顺序（**不要跳步，构建不过不许推**）：
+
+1. **构建门禁**：先在仓库根跑
+   ```
+   bun test && bun run web/build/cli.js
+   ```
+   测试须全绿，且输出的 `Built N entries` 里能看到本次主题（可 `grep '<对象>' web/dist/index.html` 自检）。**不过则先修，绝不推送会让站点构建失败的内容。**（`web/dist/` 已 gitignore，是构建产物，不进提交。）
+2. **隐私终检（硬红线）**：推送=公开发布。推送前再扫一遍 `report.html` / `sources.md` / `notes.md`，确认**无任何用户私人信息**（持仓规模、负债、财务、健康、家庭）。涉及买卖一律条件化表述。有疑即停、问用户。
+3. **精准提交**：只 add 本次主题文件夹与索引，**绝不用 `git add -A`**（避免把无关改动、本地文件、Obsidian 库一并提交；Obsidian 副本在仓库外，本就不该进 git）：
+   ```
+   git add research/<YYYY-MM-DD>_<topic-slug> research/INDEX.md
+   git commit -m "research: <对象> 上线"
+   git push origin main
+   ```
+4. **回报**：推送成功后，告诉用户已触发部署、给出公开链接（首页 + 本篇 `r/<YYYY-MM-DD>_<topic-slug>/`），并说明 Pages 构建通常需 1–2 分钟生效。
+
+> 若当前不在 `main`、或工作区有不相关的未提交改动，先向用户说明再决定如何处理，不擅自合并或丢弃他人改动。仓库是公开站点源，推送即对外可见——这是用户已授权的常态发布流程，但隐私终检每次都要做。
+
+---
+
 ## 贯穿全程的硬规则
 
 1. **隐私（绝对红线）**：report.html / sources.md / notes.md 都是可导出/可分享文档。**永远不在其中写入用户的私人信息**——持仓规模、负债与还款压力、财务状况、健康、家庭等一律不写。涉及"是否该买/持有"用条件化表述（"若已持有…""若尚未建仓…"）保持中立、非个人化。私人背景只在对话里、且用户主动提起时才谈，绝不落进文档。
