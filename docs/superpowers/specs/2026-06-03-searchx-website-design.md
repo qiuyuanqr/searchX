@@ -178,4 +178,22 @@ searchX 目前是跑在 Claude Code 上的本地深度调研引擎：`/research 
 
 ---
 
-> 注：当前项目尚不是 git 仓库；待进入第 1 期部署时再 `git init` 并接 GitHub（届时把设计稿一并纳入版本管理）。
+## 14. 项目目录结构（M1 执行前敲定）
+
+为便于 M2/M3 长大后管理，做网站的东西全部归入 `web/`，并预留 `services/` 给后续服务：
+
+```
+searchX/
+├── research/          # 内容档案（真相源，不动）
+├── web/               # 所有"做网站"的东西
+│   ├── build/         #   构建脚本 + 测试 + 夹具
+│   ├── src/           #   首页模板 + assets/{feed.css,feed.js}
+│   └── dist/          #   构建产物（git 忽略，CI/本地生成）
+├── services/          # M2/M3：intake worker / runner / emailer（用时再建）
+├── docs/              # specs / plans
+├── .claude/           # research 引擎（skill）
+├── .github/           # 部署 workflow
+└── package.json
+```
+
+> 注：项目已是 git 仓库，远程 `git@github.com:qiuyuanqr/searchX.git`（公开仓库，项目页 `https://qiuyuanqr.github.io/searchX/`）。
