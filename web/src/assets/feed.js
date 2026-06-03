@@ -55,6 +55,47 @@ function bindChips(){
   });
 }
 
+// Pagefind 全文检索：输入即查，清空回到信息流
+function debounce(fn, ms){ let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+
+function bindSearch(){
+  const input = document.getElementById("q");
+  const feed = document.getElementById("feed");
+  const results = document.getElementById("results");
+  const chips = document.getElementById("chips");
+  const empty = document.getElementById("empty");
+  let pf;
+
+  async function ensure(){
+    // 相对“页面”而非“本模块”解析：feed.js 在 /assets/ 下，须按 document.baseURI 定位站点根的 pagefind。
+    // 站点在根（/）或在 /searchX/ 子路径下都正确；Pagefind 再据此自动推断结果 URL 的 base。
+    if (!pf) {
+      const url = new URL("pagefind/pagefind.js", document.baseURI).href;
+      pf = await import(url);
+      await pf.init();
+    }
+    return pf;
+  }
+  function showFeed(){ results.hidden = true; results.innerHTML = ""; feed.hidden = false; chips.hidden = false; }
+  function showResults(){ feed.hidden = true; chips.hidden = true; results.hidden = false; }
+
+  const run = debounce(async (q) => {
+    if (!q) { showFeed(); empty.hidden = true; return; }
+    const engine = await ensure();
+    const search = await engine.search(q);
+    const items = await Promise.all(search.results.slice(0, 20).map((r) => r.data()));
+    if (!items.length) { showResults(); results.innerHTML = ""; empty.hidden = false; return; }
+    empty.hidden = true;
+    results.innerHTML = items.map((d) =>
+      `<div class="result"><a href="${d.url}"><h3>${d.meta.title || "(无标题)"}</h3><p class="ex">${d.excerpt}</p></a></div>`
+    ).join("");
+    showResults();
+  }, 180);
+
+  input.addEventListener("input", (e) => run(e.target.value.trim()));
+}
+
 bindTilt();
 bindToTop();
 bindChips();
+bindSearch();
