@@ -8,11 +8,11 @@ export function dayKey(date) {
 
 export async function checkRateLimit(
   kv,
-  { ip, email, dayKey, limits = { ip: 8, email: 4 }, ttl = 172800 }
+  { ip, email, dayKeyStr, limits = { ip: 8, email: 4 }, ttl = 172800 }
 ) {
   const checks = [
-    { key: `rl:ip:${ip}:${dayKey}`, max: limits.ip, reason: "ip_rate_limited" },
-    { key: `rl:email:${email}:${dayKey}`, max: limits.email, reason: "email_rate_limited" },
+    { key: `rl:ip:${ip}:${dayKeyStr}`, max: limits.ip, reason: "ip_rate_limited" },
+    { key: `rl:email:${email}:${dayKeyStr}`, max: limits.email, reason: "email_rate_limited" },
   ];
   for (const c of checks) {
     const cur = parseInt((await kv.get(c.key)) || "0", 10);

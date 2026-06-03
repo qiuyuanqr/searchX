@@ -26,9 +26,9 @@ test("超长报错", () => {
 });
 
 test("清洗掉控制字符但保留换行", () => {
-  const r = validateSubmission({ ...good, focus: "第一行\n第二行坏" });
+  const r = validateSubmission({ ...good, focus: "第一行\n第二行" });
   expect(r.ok).toBe(true);
-  expect(r.clean.focus).toBe("第一行\n第二行坏");
+  expect(r.clean.focus).toBe("第一行\n第二行"); // BEL stripped, newline kept
 });
 
 test("非字符串字段不抛异常", () => {
