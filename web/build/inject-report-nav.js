@@ -2,7 +2,16 @@
 // 一个常驻的「返回档案首页」按钮 + 一个滚动后出现的「回到顶部」按钮，
 // 圆形纸感样式复刻主页 .to-top，并复用报告自身的配色变量（自动适配深色模式）。
 // 注意：只注入到 dist 副本，原始 research/<dir>/report.html（归档/Obsidian 用）保持纯净。
-export function injectReportNav(html, { homeHref = "../../index.html" } = {}) {
+export function injectReportNav(html, {
+  homeHref = "../../index.html",
+  faviconHref = "../../assets/favicon.png",
+} = {}) {
+  // 站点 favicon（报告在 /r/<dir>/ 下，故上两级到 /assets）。注入到 <head>，
+  // 让单独打开/分享的报告页也带站点图标，而非浏览器默认首字母。
+  const favicon = `<link rel="icon" type="image/png" href="${faviconHref}">`;
+  const headM = html.match(/<\/head>/i);
+  if (headM) html = html.replace(headM[0], favicon + "\n" + headM[0]);
+
   const snippet = `
 <!-- searchX 站点导航（构建时注入，不写入归档 report.html） -->
 <style>

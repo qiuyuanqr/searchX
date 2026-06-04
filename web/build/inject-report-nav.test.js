@@ -23,6 +23,18 @@ test("homeHref 可自定义", () => {
   expect(injectReportNav(BASE, { homeHref: "/searchX/" })).toContain('href="/searchX/"');
 });
 
+test("在 <head> 注入站点 favicon（默认上两级到 /assets）", () => {
+  const out = injectReportNav(BASE);
+  expect(out).toContain('<link rel="icon" type="image/png" href="../../assets/favicon.png">');
+  // favicon 落在 <head> 内
+  expect(out.indexOf("favicon.png")).toBeLessThan(out.indexOf("</head>"));
+});
+
+test("faviconHref 可自定义", () => {
+  expect(injectReportNav(BASE, { faviconHref: "/assets/favicon.png" }))
+    .toContain('href="/assets/favicon.png"');
+});
+
 test("大小写不敏感地匹配 </BODY>", () => {
   const out = injectReportNav("<html><body>x</BODY></html>");
   expect(out).toContain("sx-home");
