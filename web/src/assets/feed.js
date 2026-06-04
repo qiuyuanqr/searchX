@@ -210,55 +210,9 @@ function bindRefresh(){
   btn.addEventListener("click", () => location.reload());
 }
 
-// 下拉刷新（手机端）：仅在页面顶部、非弹窗时接管下拉手势，超阈值松手即 reload
-function bindPullToRefresh(){
-  const ptr = document.getElementById("ptr");
-  if (!ptr) return;
-  const text = ptr.querySelector(".ptr-text");
-  const H = 54, READY = 50, MAX = 78;   // 指示条高度 / 触发阈值 / 最大下拉（均为阻尼后视觉距离）
-  let startY = 0, pulling = false, dist = 0;
-  const atTop = () => window.scrollY <= 0;
-  const canPull = () => atTop() && !document.body.classList.contains("modal-lock");
-
-  function snapBack(){ ptr.style.transition = ""; ptr.style.transform = ""; ptr.classList.remove("ready"); if (text) text.textContent = "下拉刷新"; }
-
-  window.addEventListener("touchstart", (e) => {
-    if (!canPull()) { pulling = false; return; }
-    startY = e.touches[0].clientY; pulling = true; dist = 0;
-    ptr.style.transition = "none";       // 拖动期间不过渡，跟手
-  }, { passive: true });
-
-  window.addEventListener("touchmove", (e) => {
-    if (!pulling) return;
-    const dy = e.touches[0].clientY - startY;
-    if (dy <= 0 || !atTop()) { pulling = false; snapBack(); return; }  // 上滑/已离顶 → 让位正常滚动
-    dist = Math.min(dy * 0.5, MAX);                                    // 阻尼
-    e.preventDefault();                                                // 仅在真正下拉时接管，避免与原生 overscroll 抢
-    ptr.style.transform = `translateY(${Math.min(dist, H) - H}px)`;
-    const ready = dist >= READY;
-    ptr.classList.toggle("ready", ready);
-    if (text) text.textContent = ready ? "松开刷新" : "下拉刷新";
-  }, { passive: false });
-
-  window.addEventListener("touchend", () => {
-    if (!pulling) return;
-    pulling = false;
-    if (dist >= READY) {
-      ptr.style.transition = "";
-      ptr.classList.remove("ready"); ptr.classList.add("refreshing");
-      ptr.style.transform = "translateY(0)";
-      if (text) text.textContent = "刷新中…";
-      setTimeout(() => location.reload(), 260);
-    } else {
-      snapBack();
-    }
-  }, { passive: true });
-}
-
 bindTilt();
 bindToTop();
 bindChips();
 bindSearch();
 bindSubmitModal();
 bindRefresh();
-bindPullToRefresh();
