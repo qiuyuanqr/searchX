@@ -184,6 +184,16 @@ bun run runner:log    # 看最近 80 行日志
 
 > 因此**不需要真 FIFO 队列**：一次运行即清空 approved 队列，不存在"多任务排队"场景。你尽管在手机上随时 `approved` + 随时手动触发，最坏结果只是某次触发发现"已有一轮在跑"而跳过，活照样被跑完。
 
+## 作者汇总邮件（每完成一篇，单独通知作者）
+
+除了给**提交者**发「【调研完成】…」结果邮件（抄送作者）外，每成功完成一篇还会**单独再给作者发一封汇总邮件**（`composeAuthorDigest`，`src/email.js`）：
+- 主题：`【searchX 已完成·今日第 N 篇】<报告名>`；
+- 正文：完成了什么（主题 / 报告名 / 公开链接）+ **今日（北京时间）累计完成 N 篇**。
+- 收件人 = `RUNNER_AUTHOR_EMAIL`（缺省同 `RUNNER_SMTP_USER`），无 cc；**只含公开信息，绝不含提交者邮箱等私人信息**。
+- **独立、尽力而为**：与提交者邮件互不影响，作者汇总发送失败只记日志、不影响任务本身（不回滚 done、不拦后续）。
+
+**今日计数**：按北京时间分日存计数文件 `~/Library/Application Support/searchx-runner/daily-<YYYY-MM-DD>.count`，每成功一篇 +1，纯本地、零额外 API（`bumpDailyCount`，`src/index.js`）。跨自然日自动归零（新日期=新文件）。
+
 ## 端到端验收（M2b「完成」定义）
 
 1. 准备一条 `approved` 且邮箱在 KV 的 Issue（可复用 M2a 测试 Issue #2：给它贴 `approved`）。

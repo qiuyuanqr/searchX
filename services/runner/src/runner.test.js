@@ -95,3 +95,45 @@ test("发信失败 → 仍贴 done、评论告警、emailed 不计数", async ()
     /\/issues\/7\/comments$/.test(c.url) && JSON.parse(c.opts.body).body.includes("发信失败")
   )).toBe(true);
 });
+
+test("提供 bumpDailyCount 时：除提交者邮件外，再给作者发一封当日汇总", async () => {
+  const fetchImpl = makeFetch();
+  const world = makeWorld();
+  const sent = [];
+  const summary = await runOnce(CONFIG, {
+    fetchImpl, scanDirs: world.scanDirs, runResearch: world.runResearch,
+    sendEmail: async (m) => { sent.push(m); }, log: () => {},
+    bumpDailyCount: () => ({ date: "2026-06-04", count: 5 }),
+  });
+  expect(summary.emailed).toBe(1); // emailed 仍只统计提交者那封
+  expect(sent.length).toBe(2);
+  const author = sent.find((m) => m.to === "me@g.com" && !m.cc); // 作者汇总：to=作者、无 cc
+  expect(author).toBeTruthy();
+  expect(author.subject).toContain("5");
+  expect(author.text).toContain("今日（2026-06-04）累计完成 5 篇");
+});
+
+test("提交者发信失败也不影响作者汇总（两者独立）", async () => {
+  const fetchImpl = makeFetch({ subOk: false }); // 取提交者邮箱 404 → 提交者那封不发
+  const world = makeWorld();
+  const sent = [];
+  await runOnce(CONFIG, {
+    fetchImpl, scanDirs: world.scanDirs, runResearch: world.runResearch,
+    sendEmail: async (m) => { sent.push(m); }, log: () => {},
+    bumpDailyCount: () => ({ date: "2026-06-04", count: 1 }),
+  });
+  const author = sent.find((m) => m.to === "me@g.com" && !m.cc);
+  expect(author).toBeTruthy(); // 作者汇总照发
+});
+
+test("不传 bumpDailyCount 则只发提交者邮件（向后兼容）", async () => {
+  const fetchImpl = makeFetch();
+  const world = makeWorld();
+  const sent = [];
+  await runOnce(CONFIG, {
+    fetchImpl, scanDirs: world.scanDirs, runResearch: world.runResearch,
+    sendEmail: async (m) => { sent.push(m); }, log: () => {},
+  });
+  expect(sent.length).toBe(1);
+  expect(sent[0].to).toBe("u@x.com"); // 仅提交者那封
+});

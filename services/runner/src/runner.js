@@ -8,10 +8,10 @@ import { parseIssueRequest } from "./parse-issue.js";
 import { buildResearchPrompt } from "./research-cmd.js";
 import { diffNewDirs } from "./research-output.js";
 import { fetchSubmitterEmail } from "./sub-fetch.js";
-import { composeEmail } from "./email.js";
+import { composeEmail, composeAuthorDigest } from "./email.js";
 
 export async function runOnce(config, deps) {
-  const { fetchImpl, scanDirs, runResearch, sendEmail, log } = deps;
+  const { fetchImpl, scanDirs, runResearch, sendEmail, log, bumpDailyCount } = deps;
   const gh = { owner: config.owner, repo: config.repo, token: config.githubToken };
 
   const issues = await listApprovedIssues(gh, fetchImpl);
@@ -61,6 +61,22 @@ export async function runOnce(config, deps) {
         fetchImpl
       );
       log(`#${issue.number} 发信失败：${err.message}`);
+    }
+
+    // 作者汇总邮件（独立、尽力而为，失败不影响任务本身）：完成了什么 + 今日累计完成数。
+    if (bumpDailyCount) {
+      try {
+        const { date, count } = bumpDailyCount();
+        await sendEmail(
+          composeAuthorDigest({
+            topic, title: entry.title, url, date, count,
+            authorEmail: config.authorEmail, fromEmail: config.smtpUser,
+          })
+        );
+        log(`#${issue.number} 作者汇总已发（今日第 ${count} 篇）`);
+      } catch (err) {
+        log(`#${issue.number} 作者汇总发送失败：${err.message}`);
+      }
     }
   }
 

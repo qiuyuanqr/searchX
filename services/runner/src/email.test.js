@@ -1,6 +1,6 @@
 // services/runner/src/email.test.js
 import { test, expect } from "bun:test";
-import { composeEmail, sendEmail } from "./email.js";
+import { composeEmail, composeAuthorDigest, sendEmail } from "./email.js";
 
 test("composeEmail：主题含标题、正文含 TLDR 与链接、抄送作者、from 用 smtpUser", () => {
   const m = composeEmail({
@@ -27,6 +27,25 @@ test("无 TLDR 也不报错、不留空噪声行", () => {
   });
   expect(m.text).toContain("https://x/r/y/");
   expect(m.text).not.toContain("一句话结论：");
+});
+
+test("composeAuthorDigest：只发给作者（无 cc）、含报告名/链接/今日计数、不含提交者邮箱", () => {
+  const m = composeAuthorDigest({
+    topic: "左侧交易和右侧交易的区别",
+    title: "左侧交易 vs 右侧交易",
+    url: "https://qiuyuanqr.github.io/searchX/r/2026-06-04_x/",
+    date: "2026-06-04",
+    count: 3,
+    authorEmail: "me@gmail.com",
+    fromEmail: "me@gmail.com",
+  });
+  expect(m.to).toBe("me@gmail.com");
+  expect(m.cc).toBeUndefined();
+  expect(m.subject).toContain("左侧交易 vs 右侧交易");
+  expect(m.subject).toContain("3");
+  expect(m.text).toContain("https://qiuyuanqr.github.io/searchX/r/2026-06-04_x/");
+  expect(m.text).toContain("今日（2026-06-04）累计完成 3 篇");
+  expect(m.text).not.toContain("@"); // 正文不出现任何邮箱（隐私）—— URL/正文均无 @
 });
 
 test("sendEmail 调用注入的 transport.sendMail", async () => {

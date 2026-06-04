@@ -39,6 +39,20 @@ function acquireLock() {
   return () => { if (released) return; released = true; try { rmSync(lock, { recursive: true, force: true }); } catch {} };
 }
 
+// 当日完成计数：按「北京时间」分日存一个计数文件，每完成一篇 +1，返回 { date, count }。
+// 供作者汇总邮件报「今日累计完成几篇」。纯本地文件、零额外 API。
+function bumpDailyCount() {
+  const date = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai" }).format(new Date()); // YYYY-MM-DD
+  const dir = join(homedir(), "Library", "Application Support", "searchx-runner");
+  mkdirSync(dir, { recursive: true });
+  const file = join(dir, `daily-${date}.count`);
+  let n = 0;
+  try { n = parseInt(readFileSync(file, "utf8").trim(), 10) || 0; } catch {}
+  n += 1;
+  writeFileSync(file, String(n));
+  return { date, count: n };
+}
+
 async function main() {
   // 必须在仓库根跑（/research 写 research/、Step 6 的 git push 都依赖当前目录）
   if (!existsSync("research") || !existsSync(".git")) {
@@ -90,6 +104,7 @@ async function main() {
     },
     sendEmail: (msg) => sendEmailImpl(msg, { transport }),
     log: (m) => console.log(m),
+    bumpDailyCount,
   });
 
   process.exit(summary.failed > 0 ? 1 : 0);
