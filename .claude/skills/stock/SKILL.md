@@ -198,11 +198,13 @@ disable-model-invocation: false
 - **类型**：`TYPE = 股票`；`slug` 用 拼音/英文 + 代码（如 `ningde-times-300750`、`nvidia-nvda`）。
 - **report.html**（填 `.claude/skills/research/templates/report.html` 的 token）：
   - `{{TLDR}}` = A 节方向判断 + 一句话操作倾向（条件式）
+  - `{{PLAIN}}` = 「先说人话」：零术语 + 一个生活化比方，把这家公司**做什么、靠什么赚钱**讲给完全不懂股票/这行的人（2–3 句纯文本；遵 research 开头「易懂铁律」）
   - `{{KEY_FINDINGS}}` = A 节核心驱动 Top3 + 核心风险 Top3 + 整体置信度（`<li>` 列表）
   - `{{BODY}}` = **B–M 全部**，已渲染 HTML：小结用 `<p>`，**C 财务表 / K 三情景表用 `<table>`**，竞品对比 / 案例用 `<div class="case">`，条件式触发 / 提示用 `<div class="callout">`；关键数据就地 `<a href>` 挂一手来源
   - `{{MASTHEAD_BOARDS}}` = 该股**确有关联**的五大板块，填 `<span><b>关联板块</b> 算力 · AI应用</span>`；无关联则填空字符串
   - `{{RISKS}}` = A 节核心风险 + M 节关键漏洞（`<li>`）
   - `{{LIMITATION_BLOCK}}` = 留空字符串（股票类无人物时间线局限）
+  - `{{GLOSSARY}}` = 「名词小抄」：把报告出现的财务/行业术语（PE、毛利率、scale-up、良率…）集中成"术语→人话"对照表，填 `<section class="glossary"><h2>名词小抄</h2><dl><dt>术语</dt><dd>人话解释</dd>…</dl></section>`（股票类术语多，**必填**）
   - 报头"生成"行即**信息截止日期（北京时间）**
 - **notes.md frontmatter**：`type: 股票`；`related: ["[[算力]]", …]` 仅挂确有关联的板块（与报头一致）；其余字段同 research。
 - **Step 6 隐私终检照常**：推送=公开发布，确认报告内**无任何用户私人信息**（持仓 / 负债 / 财务 / 健康 / 家庭）。
