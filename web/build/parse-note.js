@@ -11,13 +11,31 @@ export function cleanInline(s) {
     .trim();
 }
 
+// 导语（卡片 lead）抽取：优先 markdown `>` 引用块；没有则回退到「## 一句话」/「## TL;DR」
+// 标题下的首段（股票等报告用标题段落而非引用块写结论，否则卡片导语会空）。
+function extractTldr(content) {
+  const bq = content.match(/^>\s?(.+(?:\n>.*)*)/m);
+  if (bq) return cleanInline(bq[1].replace(/\n>\s?/g, " "));
+  const lines = content.split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    if (!/^#{1,6}\s+.*(?:一句话|TL;?DR)/i.test(lines[i])) continue;
+    const para = [];
+    for (let j = i + 1; j < lines.length; j++) {
+      if (/^\s*$/.test(lines[j])) { if (para.length) break; else continue; }
+      if (/^#{1,6}\s/.test(lines[j])) break;   // 撞到下一个标题就停
+      para.push(lines[j]);
+    }
+    if (para.length) return cleanInline(para.join(" "));
+  }
+  return "";
+}
+
 export function parseNote(raw, dir) {
   const { data, content } = matter(raw);
   const titleMatch = content.match(/^#\s+(.+)$/m);
-  const tldrMatch = content.match(/^>\s?(.+(?:\n>.*)*)/m);
 
   const title = titleMatch ? titleMatch[1].trim() : dir.slice(11);
-  const tldr = tldrMatch ? cleanInline(tldrMatch[1].replace(/\n>\s?/g, " ")) : "";
+  const tldr = extractTldr(content);
   const boards = (data.related || []).map(
     (s) => String(s).replace(/\[\[|\]\]/g, "").trim()
   );
