@@ -1,5 +1,6 @@
 ---
 date: 2026-06-03
+created: 2026-06-03T15:08:53+08:00
 type: 方法论
 tags: [research, serenity, 供应链瓶颈, chokepoint, AI投资, 硅光, CPO, 散户, 拉高出货]
 related: ["[[光模块]]", "[[算力]]", "[[机器人]]"]

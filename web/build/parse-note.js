@@ -25,6 +25,7 @@ export function parseNote(raw, dir) {
   return {
     dir,
     date: dir.slice(0, 10),
+    created: data.created || "",   // 精确生成时间（ISO8601 北京时间），用于同日排序；缺则退化为 date
     slug: dir.slice(11),
     type: data.type || "",
     title,

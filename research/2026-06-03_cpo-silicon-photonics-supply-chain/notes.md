@@ -1,5 +1,6 @@
 ---
 date: 2026-06-03
+created: 2026-06-03T15:08:53+08:00
 type: 板块
 tags: [research, CPO, 硅光, silicon-photonics, 光模块, 算力, 激光器, EML, 光互联]
 related: ["[[光模块]]", "[[算力]]"]

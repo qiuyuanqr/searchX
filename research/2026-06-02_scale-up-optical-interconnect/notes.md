@@ -1,5 +1,6 @@
 ---
 date: 2026-06-02
+created: 2026-06-03T15:08:53+08:00
 type: 概念
 tags: [research, scale-up, 光互连, XPU, NVLink, UALink, CPO, 光交换, 超节点]
 related: ["[[光模块]]", "[[算力]]", "[[AI应用]]", "[[CPO 共封装光学]]"]

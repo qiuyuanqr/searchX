@@ -1,5 +1,6 @@
 ---
 date: 2026-06-04
+created: 2026-06-04T17:42:07+08:00
 type: 股票
 tags: [research, 润泽科技, 300442, IDC, AIDC, 数据中心, 算力, REITs, 液冷]
 related: ["[[算力]]", "[[AI应用]]"]

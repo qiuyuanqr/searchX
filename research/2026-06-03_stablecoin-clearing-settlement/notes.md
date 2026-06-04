@@ -1,5 +1,6 @@
 ---
 date: 2026-06-03
+created: 2026-06-03T23:51:17+08:00
 type: 概念
 tags: [research, 稳定币, 清结算, USDC, USDT, CCTP, GENIUS-Act, MiCA, BIS]
 related: ["[[AI应用]]", "[[算力]]"]
