@@ -145,6 +145,45 @@ bun run runner
 - **贴标签/评论本身失败**（如 PAT 过期、限频）：当次 `bun run runner` 会带可见错误中止（`main()` 已 catch → 退出码 1）。修好凭据后重跑；极少数情况下若恰好在「push 成功后、贴 done 前」中断，重跑可能对同一题目再跑一次研究（低概率、可手动删掉重复文件夹）。
 - **必须在仓库根、`main`、工作区干净时跑**：薄壳会预检 `research/`+`.git`+`claude` 是否就位，缺则带中文报错退出。
 
+## 定时无人值守（Mac mini LaunchAgent）
+
+让 Mac mini 每 15 分钟自动跑一次 runner，你只需在手机上给 Issue 贴 `approved`，剩下全自动上线 + 发信。
+
+**组成：**
+- `services/runner/scheduled-run.sh` —— launchd 调用的包装（补 PATH、cd 仓库根、落日志）。
+- `services/runner/launchd/com.searchx.runner.plist` —— LaunchAgent 模板（`StartInterval=900` 即 15 分钟）。
+- 日志：`~/Library/Logs/searchx-runner/runner.log`（runner 输出）、`launchd.{out,err}.log`（launchd 层）。
+
+**安装（仅在常驻不关机的 Mac mini 上做）：**
+```bash
+chmod +x services/runner/scheduled-run.sh
+cp services/runner/launchd/com.searchx.runner.plist ~/Library/LaunchAgents/
+launchctl bootout  "gui/$(id -u)/com.searchx.runner" 2>/dev/null   # 幂等：先卸旧
+launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.searchx.runner.plist
+launchctl enable   "gui/$(id -u)/com.searchx.runner"
+launchctl print    "gui/$(id -u)/com.searchx.runner" | grep -E "state|run interval"   # 确认
+```
+改间隔：编辑 plist 的 `StartInterval`（1800=30 分、3600=1 小时），重新 `bootout` + `bootstrap`。
+卸载：`launchctl bootout "gui/$(id -u)/com.searchx.runner"` 并删 `~/Library/LaunchAgents/com.searchx.runner.plist`。
+
+> 前提：Mac mini 保持**开机、不休眠、已登录 GUI**（claude 鉴权 / git push / 钥匙串都依赖登录态）。睡眠期间错过的 tick，launchd 会在唤醒后补跑一次（合并）。
+
+**手动立刻跑（手机/远程触发，与定时器共用同一把锁，绝不撞车）：**
+```bash
+bun run runner:now    # = launchctl kickstart …：让 launchd 立即跑一次；若已在跑则自然不重复
+bun run runner:log    # 看最近 80 行日志
+```
+
+## 并发 / 互斥语义（定时 + 手动如何不撞车）
+
+三重保护，保证「定时器自动跑」与「你手机手动触发」永不并发、永不重复处理、永不丢活：
+
+1. **runner 全局单实例锁**（`src/index.js`）：锁目录 `~/Library/Application Support/searchx-runner/runner.lock`，内含持有者 pid。任何入口启动 runner 时先抢锁，抢不到就打印 `⏭ 已有一轮在运行` 干净退出。死进程残留锁按 pid 自动回收。**这是核心防线，连直接 `bun run runner` 也受它保护。**
+2. **launchd 单实例**：同名 LaunchAgent 任意时刻只跑一个实例；`runner:now` 走 `launchctl kickstart`，若任务在跑则不会再起一个。
+3. **定时兜底**：跳过是无损的——一次运行处理**整个** `approved` 队列；若某条审批恰好卡在"上一轮取完列表之后"进来，下个 tick（≤15 分钟）自动补上。
+
+> 因此**不需要真 FIFO 队列**：一次运行即清空 approved 队列，不存在"多任务排队"场景。你尽管在手机上随时 `approved` + 随时手动触发，最坏结果只是某次触发发现"已有一轮在跑"而跳过，活照样被跑完。
+
 ## 端到端验收（M2b「完成」定义）
 
 1. 准备一条 `approved` 且邮箱在 KV 的 Issue（可复用 M2a 测试 Issue #2：给它贴 `approved`）。
