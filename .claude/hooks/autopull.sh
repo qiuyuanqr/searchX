@@ -39,7 +39,8 @@ cd "$REPO" 2>/dev/null || exit 0
 # 日志超 2MB 滚动一次
 [ -f "$LOG" ] && [ "$(wc -c < "$LOG" 2>/dev/null || echo 0)" -gt 2000000 ] && mv -f "$LOG" "$LOG.1"
 
-OUT="$(bash "$REPO/.claude/hooks/git-sync.sh" pull 2>&1)"
+# 捕获并剥掉 ANSI 颜色码（git-sync.sh 输出带色，日志只要纯文本）
+OUT="$(bash "$REPO/.claude/hooks/git-sync.sh" pull 2>&1 | sed $'s/\033\\[[0-9;]*m//g')"
 # 只在"已拉取/告警"时落日志；"已是最新"忽略
 if printf '%s' "$OUT" | grep -qE '已拉取|⚠'; then
   printf '[%s] %s\n' "$(ts)" "$OUT" >> "$LOG"
