@@ -21,6 +21,21 @@ cd "$REPO" 2>/dev/null || { echo "[git-sync] 找不到仓库目录，跳过"; ex
 warn(){ printf "\033[33m[git-sync] %s\033[0m\n" "$1"; }
 ok(){   printf "\033[32m[git-sync] %s\033[0m\n" "$1"; }
 
+# —— 即时通知对端拉取（仅 MacBook→Mac mini 方向；best-effort，绝不阻塞收工）——
+# 自我识别：只有本机 ssh 配了别名 mac-mini→stocks 时才触发（Mac mini 无指向自己的别名，
+# 故不会自 ping、不会反向回环）。对端睡眠/离线就静默跳过——它的定时自动拉 autopull 会补上。
+# 触发的是对端的 pull 分支（不再 push），无递归。反向 mini→MacBook 仍靠 MacBook 的 SessionStart 拉。
+notify_peer(){
+  command -v ssh >/dev/null 2>&1 || return 0
+  ssh -G mac-mini 2>/dev/null | grep -qiE '^hostname[[:space:]]+stocks$' || return 0
+  if ssh -o ConnectTimeout=5 -o BatchMode=yes mac-mini \
+       'bash /Users/yangqiuyuan/Coding/searchX/.claude/hooks/git-sync.sh pull' >/dev/null 2>&1; then
+    ok "已即时通知 Mac mini 同步"
+  else
+    warn "Mac mini 没连上（睡眠/离线？）——改动已推 GitHub，其定时自动拉会补上"
+  fi
+}
+
 # —— 安全闸：必须是本人的仓库 ——
 ORIGIN="$(git remote get-url origin 2>/dev/null || true)"
 case "$ORIGIN" in
@@ -109,6 +124,7 @@ case "$MODE" in
     if [ "$ahead" = "0" ]; then ok "无待推送提交"; exit 0; fi
     if git push --quiet origin "$BRANCH" 2>/dev/null; then
       ok "已推送 $ahead 个提交到 origin/$BRANCH"
+      notify_peer
     else
       warn "⚠️ 推送失败（鉴权/网络？）。改动已本地提交，下次收工自动补推。"
     fi
