@@ -28,6 +28,20 @@ case "$ORIGIN" in
   *) exit 0 ;;
 esac
 
+# —— 与定时 runner 互斥：runner 跑研究期间不插手 git，避免三方并发写同一工作树 ——
+# 1) 本会话若就是 runner spawn 出来的研究子进程（带哨兵）→ 直接跳过，别让会话级 pull/push
+#    与 /research Step6 的 push 打架。
+[ -n "${SEARCHX_IN_RUNNER:-}" ] && exit 0
+# 2) 别的会话同步时，若 runner 正持锁跑研究 → 也跳过（同步可跳过、下次补，不丢活）。
+RUNNER_LOCK="$HOME/Library/Application Support/searchx-runner/runner.lock"
+if [ -f "$RUNNER_LOCK" ]; then
+  LPID="$(tr -dc '0-9' < "$RUNNER_LOCK" 2>/dev/null)"
+  if [ -n "$LPID" ] && kill -0 "$LPID" 2>/dev/null; then
+    warn "runner 正在跑研究（pid=$LPID），本次 git 同步跳过（避免并发冲突，下次收工补）。"
+    exit 0
+  fi
+fi
+
 # —— 必须在某个分支上、且有上游 ——
 BRANCH="$(git symbolic-ref --short HEAD 2>/dev/null || true)"
 [ -n "$BRANCH" ] || { warn "处于游离 HEAD，跳过"; exit 0; }
@@ -40,6 +54,14 @@ case "$MODE" in
     behind="$(git rev-list --count "HEAD..@{u}" 2>/dev/null || echo 0)"
     if [ "$behind" = "0" ]; then ok "已是最新（$BRANCH @ $(git rev-parse --short HEAD)）"; exit 0; fi
     if git pull --rebase --autostash --no-edit --quiet >/dev/null 2>&1; then
+      # 关键：autostash 弹回可能在 rebase 成功**之后**才冲突 → 整条命令退出码仍是 0，
+      # 但工作区残留 <<<<<<< 冲突标记、index 出现未合并条目。若不显式拦下，收工的
+      # git add -A 会把冲突标记提交并推上公开仓，本地真实改动则困死在孤儿 stash 里。
+      if [ -n "$(git ls-files -u 2>/dev/null)" ]; then
+        git reset --hard HEAD >/dev/null 2>&1   # 丢弃弹回冲突残留；你的改动仍安全保存在 git stash
+        warn "⚠️ 拉取后 autostash 弹回冲突：已恢复干净工作区。你的本地改动安全保留在 git stash（用 git stash list 查看、手动 git stash pop 解决）。先别收工，以免误提交冲突标记。"
+        exit 0
+      fi
       ok "已拉取并 rebase $behind 个提交（$BRANCH @ $(git rev-parse --short HEAD)）"
     else
       git rebase --abort >/dev/null 2>&1
@@ -48,9 +70,24 @@ case "$MODE" in
     ;;
 
   push)
-    # 1) 有未提交改动 → 自动提交
+    # 1) 有未提交改动 → 自动提交（提交前两道终检闸）
     if [ -n "$(git status --porcelain)" ]; then
       git add -A
+      # 闸1：暂存内容含 git 冲突标记 → 中止（多为 autostash/rebase 残留被误纳入，防其推上公开仓）
+      if git diff --cached -U0 2>/dev/null | grep -qE '^\+(<{7}|={7}|>{7})([ \t]|$)'; then
+        git reset -q >/dev/null 2>&1
+        warn "⚠️ 暂存区检测到冲突标记（<<<<<<< / ======= / >>>>>>>），已取消本次自动提交。请手动 git diff 检查解决后再收工。"
+        exit 0
+      fi
+      # 闸2：暂存文件名命中机密/敏感模式 → 中止（公开仓库，绝不自动提交机密/临时密钥）
+      SENSITIVE="$(git diff --cached --name-only 2>/dev/null | grep -iE '(^|/)\.env($|\.)|\.(pem|key|p12|pfx|keystore)$|(^|/)(secret|secrets|credential|credentials|token)([._-]|$)|持仓|holding' || true)"
+      if [ -n "$SENSITIVE" ]; then
+        git reset -q >/dev/null 2>&1
+        warn "⚠️ 暂存区出现疑似机密/敏感文件，已取消自动提交，避免推上公开仓："
+        printf '%s\n' "$SENSITIVE" | sed 's/^/      /'
+        warn "请确认后处理（如需忽略加入 .gitignore），再手动提交。"
+        exit 0
+      fi
       HOST="$(hostname -s 2>/dev/null || echo unknown)"
       STAMP="$(date '+%Y-%m-%d %H:%M')"
       if git commit --quiet -m "chore(sync): 自动同步 · ${HOST} · ${STAMP}"; then

@@ -178,7 +178,7 @@ bun run runner:log    # 看最近 80 行日志
 
 三重保护，保证「定时器自动跑」与「你手机手动触发」永不并发、永不重复处理、永不丢活：
 
-1. **runner 全局单实例锁**（`src/index.js`）：锁目录 `~/Library/Application Support/searchx-runner/runner.lock`，内含持有者 pid。任何入口启动 runner 时先抢锁，抢不到就打印 `⏭ 已有一轮在运行` 干净退出。死进程残留锁按 pid 自动回收。**这是核心防线，连直接 `bun run runner` 也受它保护。**
+1. **runner 全局单实例锁**（`src/index.js`）：锁文件 `~/Library/Application Support/searchx-runner/runner.lock`，用 `O_EXCL` 原子创建并即写持有者 pid（占位与标识同一步，杜绝 TOCTOU 强占）。任何入口启动 runner 时先抢锁，抢不到就打印 `⏭ 已有一轮在运行` 干净退出。回收保守：只回收「确证已死的 pid」或「pid 损坏且锁超 1 小时」的残留。**这是核心防线，连直接 `bun run runner` 也受它保护。**
 2. **launchd 单实例**：同名 LaunchAgent 任意时刻只跑一个实例；`runner:now` 走 `launchctl kickstart`，若任务在跑则不会再起一个。
 3. **定时兜底**：跳过是无损的——一次运行处理**整个** `approved` 队列；若某条审批恰好卡在"上一轮取完列表之后"进来，下个 tick（≤15 分钟）自动补上。
 

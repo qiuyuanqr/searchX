@@ -3,7 +3,7 @@
 // 副作用集中在此（spawn claude / nodemailer / 文件系统 / 网络），不单测——逻辑都在被注入的纯函数里。
 
 import nodemailer from "nodemailer";
-import { existsSync, mkdirSync, writeFileSync, readFileSync, rmSync } from "fs";
+import { existsSync, mkdirSync, writeFileSync, readFileSync, rmSync, openSync, closeSync, writeSync, statSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
 import { scanResearch } from "../../../web/build/scan.js";
@@ -15,28 +15,43 @@ import { runOnce } from "./runner.js";
 // 保证「定时器自动跑」与「手机手动触发」永不并发：无论从哪个入口进来（launchd 定时、
 // launchctl kickstart 手动、或直接 bun run runner），同一时刻只允许一个 runner 处理队列。
 // 已有一轮在跑时本次直接跳过——跳过无损：一次运行会处理完整个 approved 队列，
-// 漏网的新审批由下一个定时 tick 兜底。锁目录用 mkdir 原子占位，内含持有者 pid 以回收死锁。
-function lockDir() {
+// 漏网的新审批由下一个定时 tick 兜底。
+// 用 O_EXCL 原子创建锁文件**并立即写入持有者 pid**（占位与标识在同一步内完成），杜绝
+// 「mkdir 占位后、写 pid 前的窗口被第二个 runner 误判为残留锁而强占」的 TOCTOU 竞态。
+// 回收策略保守——只有「读到一个明确已死的 pid」或「pid 不可读且锁已超 1 小时」才回收，
+// 其余（含 pid 刚创建还没读到）一律视为有人持有、本次跳过。
+const STALE_MS = 3600_000; // 1h：pid 损坏/没写好的锁，超此年龄才敢回收，兜底永久死锁
+function lockFile() {
   return join(homedir(), "Library", "Application Support", "searchx-runner", "runner.lock");
 }
 function pidAlive(pid) {
   try { process.kill(pid, 0); return true; } catch (e) { return e.code === "EPERM"; }
 }
-function acquireLock() {
-  const lock = lockDir();
-  mkdirSync(join(lock, ".."), { recursive: true });
-  try {
-    mkdirSync(lock); // 原子占位；已存在抛 EEXIST
-  } catch {
-    let pid = 0;
-    try { pid = parseInt(readFileSync(join(lock, "pid"), "utf8").trim(), 10); } catch {}
-    if (pid && pidAlive(pid)) return null; // 真有另一轮在跑
-    // 残留锁（持有进程已退出）：回收后重占
-    try { rmSync(lock, { recursive: true, force: true }); mkdirSync(lock); } catch { return null; }
-  }
-  writeFileSync(join(lock, "pid"), String(process.pid));
+// 原子创建锁文件（O_CREAT|O_EXCL）+ 立即写 pid；已被占抛 EEXIST → 返回 false。
+function createLockExclusive(path) {
+  let fd;
+  try { fd = openSync(path, "wx"); } catch (e) { if (e.code === "EEXIST") return false; throw e; }
+  try { writeSync(fd, String(process.pid)); } finally { closeSync(fd); }
+  return true;
+}
+function makeRelease(path) {
   let released = false;
-  return () => { if (released) return; released = true; try { rmSync(lock, { recursive: true, force: true }); } catch {} };
+  return () => { if (released) return; released = true; try { rmSync(path, { recursive: true, force: true }); } catch {} };
+}
+function acquireLock() {
+  const path = lockFile();
+  mkdirSync(join(path, ".."), { recursive: true });
+  if (createLockExclusive(path)) return makeRelease(path);
+  // 锁已存在：判定持有者死活（拿不准就当有人在跑，保守跳过）
+  let pid = NaN;
+  try { pid = parseInt(readFileSync(path, "utf8").trim(), 10); } catch {}
+  if (Number.isInteger(pid) && pidAlive(pid)) return null;        // 持有者活着 → 跳过
+  let ageMs = 0;
+  try { ageMs = Date.now() - statSync(path).mtimeMs; } catch {}
+  if (!Number.isInteger(pid) && ageMs < STALE_MS) return null;     // pid 没写好/损坏但锁很新 → 视为刚起的另一轮，跳过
+  // 确证持有者已死，或损坏锁已超时 → 回收并原子重建（重建失败=被别人抢先 → 跳过）
+  try { rmSync(path, { recursive: true, force: true }); } catch {}
+  return createLockExclusive(path) ? makeRelease(path) : null;
 }
 
 // 当日完成计数：按「北京时间」分日存一个计数文件，每完成一篇 +1，返回 { date, count }。
@@ -94,10 +109,17 @@ async function main() {
     scanDirs: () => scanResearch("research"),
     runResearch: async (prompt) => {
       console.log(`→ claude -p ${JSON.stringify(prompt)}`);
+      // 给研究子进程一个「剥掉 RUNNER_* 机密」的环境：PAT / SMTP 密码 / 共享密钥不进这个
+      // 全权限（bypassPermissions）会话，缩小提示注入的爆炸半径（它本不需要这些密钥）。
+      // 同时打哨兵 SEARCHX_IN_RUNNER=1：让两机 git-sync 钩子在 runner 跑研究期间自动跳过，
+      // 避免会话级 pull/push 与 /research Step6 的 push 并发写同一工作树。
+      const childEnv = { ...process.env, SEARCHX_IN_RUNNER: "1" };
+      for (const k of Object.keys(childEnv)) if (k.startsWith("RUNNER_")) delete childEnv[k];
       const proc = Bun.spawn(["claude", "-p", prompt, ...config.claudeArgs], {
         stdout: "inherit",
         stderr: "inherit",
         stdin: "ignore",
+        env: childEnv,
       });
       const code = await proc.exited;
       return code === 0;

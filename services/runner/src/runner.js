@@ -53,13 +53,23 @@ export async function runOnce(config, deps) {
       });
       await sendEmail(msg);
       summary.emailed++;
-      await commentIssue({ ...gh, number: issue.number, body: `✅ 已上线并发信：${url}` }, fetchImpl);
       log(`#${issue.number} 邮件已发送`);
+      // 留痕评论单独兜底：邮件已发成功，这条评论失败不该被误判成"发信失败"、更不该重复告警。
+      try {
+        await commentIssue({ ...gh, number: issue.number, body: `✅ 已上线并发信：${url}` }, fetchImpl);
+      } catch (e) {
+        log(`#${issue.number} 留痕评论失败（不影响已发信）：${e.message}`);
+      }
     } catch (err) {
-      await commentIssue(
-        { ...gh, number: issue.number, body: `⚠️ 报告已上线 ${url}，但发信失败：${err.message}。请手动补发。` },
-        fetchImpl
-      );
+      // 告警评论本身也兜底，避免评论失败让整轮 runOnce 抛出、后续 Issue 不被处理。
+      try {
+        await commentIssue(
+          { ...gh, number: issue.number, body: `⚠️ 报告已上线 ${url}，但发信失败：${err.message}。请手动补发。` },
+          fetchImpl
+        );
+      } catch (e) {
+        log(`#${issue.number} 告警评论也失败：${e.message}`);
+      }
       log(`#${issue.number} 发信失败：${err.message}`);
     }
 

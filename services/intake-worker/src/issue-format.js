@@ -7,8 +7,9 @@ export function maskEmail(email) {
   const local = email.slice(0, at);
   const domain = email.slice(at + 1);
   if (!domain) return "***";
-  const head = local.slice(0, 1);
-  return `${head}${"*".repeat(Math.max(0, local.length - 1))}@${domain}`;
+  // 定长掩码：不用 `*` 个数泄露本地名长度；单字符本地名也不暴露（head 置空）。
+  const head = local.length > 1 ? local.slice(0, 1) : "";
+  return `${head}***@${domain}`;
 }
 
 // 用代码围栏包裹用户内容，杜绝 markdown/HTML 注入。

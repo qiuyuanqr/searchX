@@ -62,7 +62,7 @@ test("快乐路径：建 Issue、存打码前的真实邮箱进 KV、回 ok", as
   // 发给 GitHub 的正文不含原始邮箱
   const ghCall = fetchImpl.calls.find((c) => String(c.url).includes("api.github.com"));
   expect(JSON.parse(ghCall.opts.body).body).not.toContain("alice@gmail.com");
-  expect(JSON.parse(ghCall.opts.body).body).toContain("a****@gmail.com");
+  expect(JSON.parse(ghCall.opts.body).body).toContain("a***@gmail.com");
 });
 
 test("Turnstile 失败 → 403，不建 Issue", async () => {
@@ -80,7 +80,7 @@ test("校验失败 → 400 + details", async () => {
 
 test("超限 → 429", async () => {
   const env = ENV();
-  env.INTAKE_KV = fakeKV({ "rl:email:alice@gmail.com:20260603": "4" });
+  env.INTAKE_KV = fakeKV({ "rl:email:alice%40gmail.com:20260603": "4" });
   const res = await handleIntake(post(GOOD), env, { fetch: routeFetch(), now: NOW });
   expect(res.status).toBe(429);
 });
