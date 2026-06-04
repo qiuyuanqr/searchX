@@ -28,3 +28,20 @@ test("转义用户文本里的尖括号", () => {
   expect(escapeHtml("<a>")).toBe("&lt;a&gt;");
   expect(renderCard(ENTRY)).toContain("&lt;带尖括号&gt;");
 });
+
+test("非股票类型不显示板块标签（但 data-boards 仍保留）", () => {
+  const html = renderCard(ENTRY); // type=板块
+  expect(html).not.toContain('<span class="boards">');
+  expect(html).toContain('data-boards="光模块,算力"');
+});
+
+test("股票类型显示板块标签", () => {
+  const html = renderCard({ ...ENTRY, type: "股票" });
+  expect(html).toContain('<span class="boards">光模块 · 算力</span>');
+  expect(html).toContain('data-type="股票"');
+});
+
+test("股票类型但无关联板块时不渲染空标签", () => {
+  const html = renderCard({ ...ENTRY, type: "股票", boards: [] });
+  expect(html).not.toContain('<span class="boards">');
+});
