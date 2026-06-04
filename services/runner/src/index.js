@@ -124,6 +124,21 @@ async function main() {
       const code = await proc.exited;
       return code === 0;
     },
+    // 部署探活：Step6 push 后 GitHub Actions 才 build+deploy（约 1–2 分钟）；偶发 Pages 5xx
+    // 会打掉部署 → 报告子页 404。轮询报告 URL 直到 200（新路径 200 即代表已上线）或超时。
+    verifyPublished: async (url) => {
+      const DEADLINE_MS = 8 * 60_000, INTERVAL_MS = 15_000;
+      const deadline = Date.now() + DEADLINE_MS;
+      console.log(`→ 探活（等部署上线，最多 ${DEADLINE_MS / 60000} 分钟）：${url}`);
+      for (let n = 1; ; n++) {
+        try {
+          const res = await fetch(url, { redirect: "follow" });
+          if (res.ok) { console.log(`✓ 已确认上线（第 ${n} 次探测 200）`); return true; }
+        } catch {}
+        if (Date.now() >= deadline) { console.log("✗ 超时未确认上线（疑似 Pages 部署故障）"); return false; }
+        await new Promise((r) => setTimeout(r, INTERVAL_MS));
+      }
+    },
     sendEmail: (msg) => sendEmailImpl(msg, { transport }),
     log: (m) => console.log(m),
     bumpDailyCount,

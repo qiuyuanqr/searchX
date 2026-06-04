@@ -137,3 +137,44 @@ test("不传 bumpDailyCount 则只发提交者邮件（向后兼容）", async (
   expect(sent.length).toBe(1);
   expect(sent[0].to).toBe("u@x.com"); // 仅提交者那封
 });
+
+// —— 部署探活闸 ——
+// 研究 Step6 push 后，GitHub Actions 才 build+deploy；Pages 偶发 5xx 会打掉部署，
+// 造成「已 push 但没上线」。探活失败时不能给提交者发"已上线"邮件（链接会 404）。
+test("部署探活失败：研究已完成→贴 done 防重研，但不发信、failed 计数、评论告警未上线", async () => {
+  const fetchImpl = makeFetch();
+  const world = makeWorld();
+  let sentCount = 0;
+  const summary = await runOnce(CONFIG, {
+    fetchImpl, scanDirs: world.scanDirs, runResearch: world.runResearch,
+    sendEmail: async () => { sentCount++; }, log: () => {},
+    verifyPublished: async () => false, // 报告子页迟迟非 200
+  });
+  expect(summary.published).toBe(0);
+  expect(summary.failed).toBe(1);
+  expect(sentCount).toBe(0); // 关键：不给提交者发 404 链接
+  // 仍贴 done：研究已 push，避免下个 tick 重复跑 /research（重研费额度又再造文件夹）
+  expect(fetchImpl.calls.some((c) =>
+    /\/issues\/7\/labels$/.test(c.url) && JSON.parse(c.opts.body).labels.includes("done")
+  )).toBe(true);
+  // 评论点明"未确认上线"，提示作者手动补跑部署
+  expect(fetchImpl.calls.some((c) =>
+    /\/issues\/7\/comments$/.test(c.url) && JSON.parse(c.opts.body).body.includes("未确认上线")
+  )).toBe(true);
+});
+
+test("部署探活通过：用报告 URL 探活，确认上线后才发信", async () => {
+  const fetchImpl = makeFetch();
+  const world = makeWorld();
+  let probed;
+  let sent;
+  const summary = await runOnce(CONFIG, {
+    fetchImpl, scanDirs: world.scanDirs, runResearch: world.runResearch,
+    sendEmail: async (m) => { sent = m; }, log: () => {},
+    verifyPublished: async (u) => { probed = u; return true; },
+  });
+  expect(probed).toBe("https://site.dev/searchX/r/2026-06-03_stablecoin/"); // 探的是报告子页
+  expect(summary.published).toBe(1);
+  expect(summary.emailed).toBe(1);
+  expect(sent.to).toBe("u@x.com");
+});

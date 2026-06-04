@@ -11,7 +11,8 @@ import { fetchSubmitterEmail } from "./sub-fetch.js";
 import { composeEmail, composeAuthorDigest } from "./email.js";
 
 export async function runOnce(config, deps) {
-  const { fetchImpl, scanDirs, runResearch, sendEmail, log, bumpDailyCount } = deps;
+  const { fetchImpl, scanDirs, runResearch, sendEmail, log, bumpDailyCount,
+    verifyPublished = async () => true } = deps;
   const gh = { owner: config.owner, repo: config.repo, token: config.githubToken };
 
   const issues = await listApprovedIssues(gh, fetchImpl);
@@ -38,7 +39,27 @@ export async function runOnce(config, deps) {
     // 正常每次 /research 只产出 1 个文件夹（SKILL Step 4），故取首个新目录即可。
     const entry = after.find((e) => newDirs.includes(e.dir));
     const url = `${config.siteBase}/${entry.href}`;
+
+    // 研究已完成并 push：先贴 done，杜绝下个 tick 重复跑 /research（重研既费额度又再造文件夹）。
     await addLabel({ ...gh, number: issue.number, label: "done" }, fetchImpl);
+
+    // 部署探活闸：Step6 push 后 GitHub Actions 才 build+deploy，Pages 偶发 5xx 会打掉部署
+    // → 报告子页 404。未确认上线就不发"已上线"邮件（免得给提交者发 404 链接），改发作者告警。
+    if (!(await verifyPublished(url))) {
+      summary.failed++;
+      log(`#${issue.number} 已完成研究并推送，但未确认上线（疑似 Pages 部署故障）：${url}`);
+      try {
+        await commentIssue(
+          { ...gh, number: issue.number,
+            body: `⚠️ 研究已完成并推送，但未确认上线（疑似 GitHub Pages 部署故障）：${url}。已暂缓发信，请手动补跑部署（Actions → deploy.yml → Run workflow）确认上线后再补发。` },
+          fetchImpl
+        );
+      } catch (e) {
+        log(`#${issue.number} 告警评论失败（不影响已 push 的研究）：${e.message}`);
+      }
+      continue;
+    }
+
     summary.published++;
     log(`#${issue.number} 已上线：${url}`);
 
