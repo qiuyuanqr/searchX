@@ -4,11 +4,14 @@
   {{TITLE}}            调研对象名称
   {{TYPE}}             类型：概念 / 人物 / 方法论 / 事件 / 板块
   {{DATE}}             生成日期（北京时间，如 2026-06-02）
-  {{TLDR}}             一句话核心结论（纯文本，1–2 句）
+  {{TLDR}}             一句话核心结论（纯文本，1–2 句；分析师口吻、给懂行者）
+  {{PLAIN}}            「先说人话」给完全不懂这行的人的 2–3 句通俗导读（纯文本，零术语 + 一个生活化比方）；所有类型都填
   {{KEY_FINDINGS}}     关键发现，HTML 的 <li>…</li> 列表项（3–6 条）
   {{BODY}}             正文主体，已渲染 HTML（<h2>/<h3>/<p>/<ul>；案例用 <div class="case">…；
                        提示用 <div class="callout">…）
   {{LIMITATION_BLOCK}} 局限声明区块。人物类填 <div class="limitation">…</div>；其它类型留空字符串
+  {{GLOSSARY}}         「名词小抄」术语→人话对照。概念/板块/方法论类填
+                       <section class="glossary"><h2>名词小抄</h2><dl><dt>术语</dt><dd>人话解释</dd>…</dl></section>；人物/事件类留空字符串
   {{RISKS}}            风险与争议，HTML <li>…</li>（无则填一句"暂无显著风险项"）
   {{SOURCES}}          来源清单，每条一个 <li><span class="src-tag …">类型</span> <a href>标题</a> <em>日期</em> — 摘要</li>
   {{SOURCE_COUNT}}     来源条数
@@ -60,6 +63,11 @@
     margin:0 0 2.6rem; font-size:1.05rem; color:var(--ink)}
   .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
     letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  /* 先说人话（给完全不懂这行的人） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
   /* 关键发现 */
   .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
   .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
@@ -89,6 +97,13 @@
     padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
   .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
     font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
   /* 风险 */
   section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
   section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
@@ -128,6 +143,11 @@
     {{TLDR}}
   </div>
 
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    {{PLAIN}}
+  </div>
+
   <div class="findings">
     <h2>关键发现</h2>
     <ul>
@@ -146,6 +166,8 @@
       {{RISKS}}
     </ul>
   </section>
+
+  {{GLOSSARY}}
 
   <section class="sources">
     <h2>来源清单（按可信度优先级排序）</h2>
