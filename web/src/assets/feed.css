@@ -70,14 +70,29 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .result .ex{color:var(--ink-soft); font-size:.92rem; line-height:1.55}
 .result .ex mark{background:rgba(177,74,49,.18); color:inherit; padding:0 .1em; border-radius:2px}
 .empty{margin-top:2rem; text-align:center; color:var(--muted); font-family:var(--sans); font-size:.9rem}
-.to-top{position:fixed; right:20px; bottom:20px; width:44px; height:44px; border-radius:50%;
+/* 右下角浮动按钮：刷新（常驻）+ 回到顶部（滚动后浮现），共用外观 */
+.to-top, .to-refresh{position:fixed; right:20px; width:44px; height:44px; border-radius:50%;
   background:var(--card); border:1px solid var(--rule); color:var(--seal); font-size:1.15rem;
   display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:50;
-  box-shadow:0 4px 14px rgba(0,0,0,.1); opacity:0; transform:translateY(10px); pointer-events:none;
+  box-shadow:0 4px 14px rgba(0,0,0,.1);
   transition:opacity .3s ease, transform .3s ease, box-shadow .2s ease, border-color .2s ease}
+.to-top:hover, .to-refresh:hover{transform:translateY(-3px); box-shadow:0 9px 22px rgba(0,0,0,.15); border-color:var(--seal-soft)}
+.to-top:active, .to-refresh:active{transform:translateY(-1px) scale(.95)}
+.to-refresh{bottom:20px}                                                          /* 常驻最底 */
+.to-top{bottom:74px; opacity:0; transform:translateY(10px); pointer-events:none}  /* 叠其上方，滚动后浮现 */
 .to-top.show{opacity:1; transform:none; pointer-events:auto}
-.to-top:hover{transform:translateY(-3px); box-shadow:0 9px 22px rgba(0,0,0,.15); border-color:var(--seal-soft)}
-.to-top:active{transform:translateY(-1px) scale(.95)}
+
+/* 下拉刷新指示条（手机端）*/
+.ptr{position:fixed; left:0; right:0; top:0; z-index:60; height:54px;
+  display:flex; align-items:center; justify-content:center; gap:.5rem;
+  font-family:var(--sans); font-size:.82rem; letter-spacing:.04em; color:var(--seal);
+  background:var(--paper); border-bottom:1px solid var(--rule);
+  transform:translateY(-100%); pointer-events:none; transition:transform .25s ease}
+.ptr .ptr-icon{display:inline-block; font-size:1.05rem; transition:transform .2s ease}
+.ptr.ready .ptr-icon{transform:rotate(180deg)}
+.ptr.refreshing .ptr-icon{animation:ptrspin .7s linear infinite}
+@keyframes ptrspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){ .ptr{transition:none} .ptr .ptr-icon{animation:none; transition:none} }
 @media (prefers-reduced-motion: reduce){
   html{scroll-behavior:auto}
   .article-card{animation:none}
