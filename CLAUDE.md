@@ -1,6 +1,6 @@
 # searchX — 项目约定
 
-通用深度调研引擎。核心能力在 `/research` 命令（`.claude/skills/research/SKILL.md`）。
+通用深度调研引擎，并自动上线为公开信息流站。两个核心能力：`/research`（通用调研，`.claude/skills/research/SKILL.md`）与 `/stock`（单只股票深度投研，`.claude/skills/stock/SKILL.md`；research 判定股票类时自动路由）。围绕它有一条半自动流水线（站内提交 → 审核 → runner 自动跑 → 上线 → 邮件），代码在 `services/` 与 `web/`。完整地图见 `README.md`。
 
 ## 路径变量（SKILL 引用）
 
@@ -8,6 +8,14 @@
 
 - `ARCHIVE_ROOT` — 调研资产根（仓库内 `research/`）。每次调研在此下建独立主题文件夹（`<YYYY-MM-DD>_<topic-slug>/`），存全部资产。
 - `OBSIDIAN_VAULT` — 本机 Obsidian 库根。精简笔记落到其 `Research/` 子目录，带 frontmatter 与 `[[]]` 双链。
+
+## 仓库结构速览
+
+- `.claude/skills/{research,stock}/` — 两个 skill（能力本体 + `research/templates/report.html` 报告模板，stock 复用同模板）。
+- `research/` — 调研资产库（= `ARCHIVE_ROOT`），每主题一文件夹（三件套）+ `INDEX.md` 总索引；也是站点数据源。
+- `web/` — 信息流站（`src` 源 / `build` 构建逻辑 / `dist` 产物，CI 自动部署）。
+- `services/intake-worker/` · `services/runner/` — 半自动流水线（提交 worker / 自动跑研究 + 发信），各有独立 README。
+- `docs/` — 开发文档（设计稿 / 计划 / 进度，见 `docs/README.md`）。
 
 ## 全局约定（所有任务适用）
 

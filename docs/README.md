@@ -1,0 +1,25 @@
+# docs — 开发文档
+
+存 searchX **自身**的开发过程文档（与 `research/` 的调研产出无关）。
+
+| 子目录 | 放什么 | 来源 |
+|---|---|---|
+| `superpowers/specs/` | 设计稿（spec）：动手前对齐的方案 | brainstorming skill 默认输出路径 |
+| `superpowers/plans/` | 实现计划（implementation plan）：拆好的执行步骤 | writing-plans skill 默认输出路径 |
+| `progress/` | 进度记录 / 审计：某次大改的过程与结论留痕 | 手写 |
+
+> `superpowers/` 这层命名来自 superpowers 插件——它的 brainstorming / writing-plans 默认就把产出写到 `docs/superpowers/{specs,plans}/`。保留原路径，未来 skill 产出自动归位、无需搬运。
+
+## 现有文档（按时间）
+
+**设计稿（specs）**
+- [2026-06-03 searchX 网站化设计稿](superpowers/specs/2026-06-03-searchx-website-design.md)
+- [2026-06-04 股票深度分析 skill 设计](superpowers/specs/2026-06-04-stock-analysis-skill-design.md)
+
+**实现计划（plans）**
+- [2026-06-03 M1 · 信息流站](superpowers/plans/2026-06-03-m1-feed-site.md)
+- [2026-06-03 M2a · 入队闭环](superpowers/plans/2026-06-03-m2a-intake-loop.md)
+- [2026-06-03 M2b · Runner](superpowers/plans/2026-06-03-m2b-runner.md)
+
+**进度记录（progress）**
+- [2026-06-04 自动 runner + 全项目审计修复](progress/2026-06-04-runner-automation-and-audit.md)
