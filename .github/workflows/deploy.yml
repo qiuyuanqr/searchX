@@ -2,7 +2,14 @@ name: Deploy site
 on:
   push:
     branches: [main]
-  workflow_dispatch:
+    # 只有动到站点内容才部署；纯配置/skill/自动同步提交不触发，省构建额度。
+    paths:
+      - 'research/**'
+      - 'web/**'
+      - 'package.json'
+      - 'bun.lock'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:  # 随时可在 GitHub Actions 页 / `gh workflow run deploy.yml` 手动触发
 permissions:
   contents: read
   pages: write

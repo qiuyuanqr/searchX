@@ -1,0 +1,29 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/git-sync.sh\" pull",
+            "timeout": 30,
+            "statusMessage": "git 同步：拉取另一台的进度…"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/git-sync.sh\" push",
+            "timeout": 30,
+            "statusMessage": "git 同步：提交并推送本次改动…"
+          }
+        ]
+      }
+    ]
+  }
+}

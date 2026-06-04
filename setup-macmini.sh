@@ -19,7 +19,7 @@ warn(){ printf "  \033[33m⚠\033[0m %s\n" "$1"; }
 err(){  printf "  \033[31m✗\033[0m %s\n" "$1"; }
 
 # ── 0. 位置确认 ────────────────────────────────────────────────
-b "0/7 确认项目位置"
+b "0/7 确认项目位置并拉取最新"
 if [ ! -d "$REPO/.git" ] || [ ! -f "$REPO/CLAUDE.md" ]; then
   err "没在预期路径找到 searchX：$REPO"
   echo "     请确认整个文件夹已拷到这个路径（两台机用户名都是 yangqiuyuan）。"
@@ -27,6 +27,17 @@ if [ ! -d "$REPO/.git" ] || [ ! -f "$REPO/CLAUDE.md" ]; then
 fi
 cd "$REPO" || exit 1
 ok "项目在 $REPO"
+# 拉取共享配置（含两台机自动同步 hooks：.claude/settings.json + .claude/hooks/）。
+# 公开仓库读取无需鉴权，所以这步在配 GitHub 推送授权之前也能跑通。
+if git rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; then
+  if git pull --rebase --autostash --no-edit --quiet >/dev/null 2>&1; then
+    ok "已拉取最新（含自动同步 hooks，开工/收工将自动 pull/push）"
+  else
+    git rebase --abort >/dev/null 2>&1
+    warn "拉取有冲突，已回滚。请手动 git pull --rebase 解决后重跑本脚本。"
+    TODO+=("手动 git pull --rebase 解决冲突")
+  fi
+fi
 
 # ── 1. 重建 Claude 记忆软链接 ─────────────────────────────────
 b "1/7 重建 Claude 记忆软链接（让这台的 Claude 读仓库内记忆）"
