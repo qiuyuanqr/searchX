@@ -12,9 +12,20 @@ export function injectReportNav(html, {
   const headM = html.match(/<\/head>/i);
   if (headM) html = html.replace(headM[0], favicon + "\n" + headM[0]);
 
+  // 移动端防误放大：把报告副本的 viewport 锁成「禁触摸缩放」。覆盖所有存量报告
+  // （其原始 report.html 可能仍是旧 viewport），无需逐个改归档文件。
+  // 仅约束移动端触摸缩放；电脑浏览器的 Cmd/Ctrl +/- 缩放不受 viewport 影响，照常可用。
+  const lockedViewport =
+    '<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">';
+  const vpRe = /<meta\s+name=["']viewport["'][^>]*>/i;
+  if (vpRe.test(html)) html = html.replace(vpRe, lockedViewport);
+  else if (headM) html = html.replace(/<\/head>/i, lockedViewport + "\n</head>");
+
   const snippet = `
 <!-- searchX 站点导航（构建时注入，不写入归档 report.html） -->
 <style>
+/* 移动端禁双击放大（存量报告 head CSS 未含此规则，构建时补上）；电脑端缩放不受影响 */
+html,body{touch-action:manipulation}
 .sx-nav-btn{position:fixed; right:20px; width:44px; height:44px; border-radius:50%;
   background:var(--card); border:1px solid var(--rule); color:var(--seal); font-size:1.15rem;
   display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:50;
