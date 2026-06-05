@@ -86,6 +86,22 @@ function bumpDailyCount() {
   return { date, count: n };
 }
 
+// park 信号：上线前独立核验未过、报告被搁置时，skill 写仓库根 research/.parked.json（不 push）。
+// runner 读到就发邮件通知作者 + 评论 + 贴 done；读完即删，杜绝泄漏到本批后续 Issue。
+// （skill 在 runner 子进程里被剥掉了 RUNNER_* 机密，发不了信，故由持凭据的 runner 代发。）
+function parkFile() {
+  return "research/.parked.json"; // 相对仓库根；main() 已确保 cwd 在仓库根
+}
+function readParkSignal() {
+  try {
+    const data = JSON.parse(readFileSync(parkFile(), "utf8"));
+    return data && typeof data === "object" ? data : null;
+  } catch { return null; }
+}
+function clearParkSignal() {
+  try { rmSync(parkFile(), { force: true }); } catch {}
+}
+
 async function main() {
   // 必须在仓库根跑（/research 写 research/、Step 6 的 git push 都依赖当前目录）
   if (!existsSync("research") || !existsSync(".git")) {
@@ -153,6 +169,8 @@ async function main() {
     bumpDailyCount,
     loadPending,
     savePending,
+    readParkSignal,
+    clearParkSignal,
   });
 
   process.exit(summary.failed > 0 ? 1 : 0);

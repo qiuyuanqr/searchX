@@ -8,15 +8,16 @@ import { parseIssueRequest } from "./parse-issue.js";
 import { buildResearchPrompt } from "./research-cmd.js";
 import { diffNewDirs } from "./research-output.js";
 import { fetchSubmitterEmail } from "./sub-fetch.js";
-import { composeEmail, composeAuthorDigest } from "./email.js";
+import { composeEmail, composeAuthorDigest, composeParkNotice } from "./email.js";
 
 export async function runOnce(config, deps) {
   const { fetchImpl, scanDirs, runResearch, sendEmail, log, bumpDailyCount,
     verifyPublished = async () => true,
-    loadPending = async () => [], savePending = async () => {} } = deps;
+    loadPending = async () => [], savePending = async () => {},
+    readParkSignal = async () => null, clearParkSignal = async () => {} } = deps;
   const gh = { owner: config.owner, repo: config.repo, token: config.githubToken };
 
-  const summary = { processed: 0, published: 0, emailed: 0, failed: 0 };
+  const summary = { processed: 0, published: 0, emailed: 0, parked: 0, failed: 0 };
 
   // 取提交者邮箱并发一封「已上线」邮件。复用于正常路径与补发路径。
   async function emailSubmitter({ number, topic, title, tldr, url }) {
@@ -69,6 +70,44 @@ export async function runOnce(config, deps) {
     const ok = await runResearch(buildResearchPrompt({ topic, focus }));
     const after = scanDirs();
     const newDirs = diffNewDirs(before, after.map((e) => e.dir));
+
+    // —— park（上线前独立核验未过被搁置）——
+    // skill 在 runner 里拿不到 SMTP 凭据（runResearch 剥掉了 RUNNER_*），所以它只写信号文件
+    // research/.parked.json、不 push；这里读到就由持凭据的 runner 发邮件通知作者 + 评论 + 贴 done。
+    // 必须在"无新文件夹"失败分支之前判定：park 也可能没产出可发布文件夹，但它不是失败、不该被重跑
+    //（重跑大概率还 park、白费额度），且不能误判成"研究未产出留待重跑"。
+    const park = await readParkSignal();
+    if (park) {
+      await clearParkSignal(); // 先清信号：杜绝泄漏到本批后续 Issue（即便下面步骤抛错，信号也已清）
+      summary.parked++;
+      log(`#${issue.number} 上线前核验未过，已搁置不发：${park.reason || topic}`);
+      // 发邮件通知作者（尽力而为，失败不影响后续贴 done / 评论）
+      try {
+        await sendEmail(composeParkNotice({
+          topic, reason: park.reason, unresolved: park.unresolved, folder: park.folder,
+          authorEmail: config.authorEmail, fromEmail: config.smtpUser,
+        }));
+        log(`#${issue.number} 已邮件通知作者（搁置）`);
+      } catch (err) {
+        log(`#${issue.number} 搁置通知邮件发送失败：${err.message}`);
+      }
+      // 贴 done 停重试：park 重跑大概率还 park；作者已收到邮件，人工接手订正/发布。
+      try {
+        await addLabel({ ...gh, number: issue.number, label: "done" }, fetchImpl);
+      } catch (err) {
+        log(`#${issue.number} 搁置后贴 done 失败：${err.message}`);
+      }
+      try {
+        await commentIssue(
+          { ...gh, number: issue.number,
+            body: `⚠️ 上线前独立核验未通过，已搁置待人工复核（未发布、未给提交者发信）。${park.reason ? "原因：" + park.reason + "。" : ""}已邮件通知作者。` },
+          fetchImpl
+        );
+      } catch (e) {
+        log(`#${issue.number} 搁置评论失败（不影响已发的通知邮件）：${e.message}`);
+      }
+      continue;
+    }
 
     if (!ok || newDirs.length === 0) {
       summary.failed++;
@@ -165,6 +204,6 @@ export async function runOnce(config, deps) {
   // 持久化「上线待确认」队列：含本轮新失败的 + 上一轮仍未补发成功的。
   await savePending(pending);
 
-  log(`完成：处理 ${summary.processed}、上线 ${summary.published}、发信 ${summary.emailed}、失败 ${summary.failed}`);
+  log(`完成：处理 ${summary.processed}、上线 ${summary.published}、发信 ${summary.emailed}、搁置 ${summary.parked}、失败 ${summary.failed}`);
   return summary;
 }

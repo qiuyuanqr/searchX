@@ -33,6 +33,26 @@ export function composeAuthorDigest({ topic, title, url, date, count, authorEmai
   return { from: fromEmail, to: authorEmail, subject, text: lines.join("\n") };
 }
 
+// 搁置（park）通知：上线前独立核验转满 2 轮仍有"确认为真且消解不掉"的硬错，报告被搁置不发。
+// 只发作者（无 cc，绝不发提交者）；只含运维信息（主题 / 搁置原因 / 没解决的条目 / 本地草稿路径），
+// 不含任何用户私人信息。skill 在 runner 里拿不到 SMTP 凭据，故由持凭据的 runner 发这封信。
+export function composeParkNotice({ topic, reason, unresolved = [], folder, authorEmail, fromEmail }) {
+  const subject = `【searchX 核验未通过·已搁置】${topic}`;
+  const lines = [
+    `调研「${topic}」上线前独立核验未通过，已搁置不发（未公开、未给提交者发信）。`,
+    ...(reason ? ["", `搁置原因：${reason}`] : []),
+    ...(unresolved.length
+      ? ["", "没解决的硬错：", ...unresolved.map((u) => `· ${u}`)]
+      : []),
+    ...(folder ? ["", `本地草稿（仅本机、未 push，可查看核对）：${folder}`] : []),
+    "",
+    "请人工核对后决定如何处理（订正后手动发布 / 删除该结论 / 强制发布）。",
+    "",
+    "—— searchX 自动调研流水线",
+  ];
+  return { from: fromEmail, to: authorEmail, subject, text: lines.join("\n") };
+}
+
 // 注入 transport（nodemailer），便于离线单测。
 export async function sendEmail(message, { transport }) {
   return transport.sendMail(message);
