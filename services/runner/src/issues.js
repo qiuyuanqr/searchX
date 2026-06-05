@@ -15,12 +15,19 @@ const errText = async (res) =>
   typeof res.text === "function" ? await res.text().catch(() => "") : "";
 
 // 取 approved 且未 done 的开放 Issue（排除 PR）。
+// 翻页取全：GitHub 每页最多 100 条，approved 队列若超过 100 条，不翻页会静默漏掉尾部、永不处理。
 export async function listApprovedIssues({ owner, repo, token }, fetchImpl = fetch) {
-  const url = `${API}/repos/${owner}/${repo}/issues?state=open&labels=approved&per_page=100`;
-  const res = await fetchImpl(url, { headers: ghHeaders(token) });
-  if (!res.ok) throw new Error(`list issues failed: ${res.status} ${await errText(res)}`.trim());
-  const arr = await res.json();
-  return arr
+  const perPage = 100;
+  const all = [];
+  for (let page = 1; ; page++) {
+    const url = `${API}/repos/${owner}/${repo}/issues?state=open&labels=approved&per_page=${perPage}&page=${page}`;
+    const res = await fetchImpl(url, { headers: ghHeaders(token) });
+    if (!res.ok) throw new Error(`list issues failed: ${res.status} ${await errText(res)}`.trim());
+    const arr = await res.json();
+    all.push(...arr);
+    if (arr.length < perPage) break; // 拿到的不足一整页 → 已是最后一页
+  }
+  return all
     .filter((it) => !it.pull_request)
     .map((it) => ({
       number: it.number,

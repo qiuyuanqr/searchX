@@ -100,3 +100,54 @@ test("GitHub 建 Issue 失败 → 502", async () => {
   const res = await handleIntake(post(GOOD), ENV(), { fetch: fetchImpl, now: NOW });
   expect(res.status).toBe(502);
 });
+
+test("建 Issue 失败(502) 不消耗当日额度（计数器不自增）", async () => {
+  const env = ENV();
+  const fetchImpl = async (url) => {
+    if (String(url).includes("siteverify")) return { ok: true, json: async () => ({ success: true }) };
+    return { ok: false, status: 500, text: async () => "boom" };
+  };
+  const res = await handleIntake(post(GOOD), env, { fetch: fetchImpl, now: NOW });
+  expect(res.status).toBe(502);
+  // peek 不计数、createIssue 失败前不 commit → 限频键不该出现
+  expect([...env.INTAKE_KV.store.keys()].some((k) => k.startsWith("rl:"))).toBe(false);
+});
+
+test("快乐路径：建 Issue 成功后才记一次额度", async () => {
+  const env = ENV();
+  await handleIntake(post(GOOD), env, { fetch: routeFetch(), now: NOW });
+  expect(env.INTAKE_KV.store.get("rl:ip:5.5.5.5:20260603")).toBe("1");
+  expect(env.INTAKE_KV.store.get("rl:email:alice%40gmail.com:20260603")).toBe("1");
+});
+
+test("提交者邮箱写 KV 时带 60 天过期（不无限期驻留）", async () => {
+  const puts = [];
+  const kv = {
+    store: new Map(),
+    async get(k) { return this.store.has(k) ? this.store.get(k) : null; },
+    async put(k, v, opts) { this.store.set(k, v); puts.push({ k, v, opts }); },
+  };
+  const env = { ...ENV(), INTAKE_KV: kv };
+  await handleIntake(post(GOOD), env, { fetch: routeFetch(), now: NOW });
+  const subPut = puts.find((p) => p.k === "sub:7");
+  expect(subPut).toBeTruthy();
+  expect(subPut.opts?.expirationTtl).toBe(60 * 60 * 24 * 60);
+});
+
+test("下游抛错（fetch reject）→ 结构化 500 且带 CORS 头（非裸 500）", async () => {
+  const fetchImpl = async () => { throw new Error("network down"); };
+  const res = await handleIntake(post(GOOD), ENV(), { fetch: fetchImpl, now: NOW });
+  expect(res.status).toBe(500);
+  expect((await res.json()).error).toBe("internal");
+  expect(res.headers.get("access-control-allow-origin")).toBe("https://qiuyuanqr.github.io");
+});
+
+test("siteverify 返回非 JSON（res.json 抛）→ 500 而非裸抛", async () => {
+  const fetchImpl = async (url) => {
+    if (String(url).includes("siteverify"))
+      return { ok: true, json: async () => { throw new Error("bad json"); } };
+    return { ok: false, status: 404, text: async () => "" };
+  };
+  const res = await handleIntake(post(GOOD), ENV(), { fetch: fetchImpl, now: NOW });
+  expect(res.status).toBe(500);
+});

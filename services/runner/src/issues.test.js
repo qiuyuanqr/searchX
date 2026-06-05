@@ -23,6 +23,27 @@ test("listApprovedIssues：过滤掉 PR 与含 done 的，URL/headers 正确", a
   expect(seen.opts.headers["user-agent"]).toBeTruthy();
 });
 
+test("listApprovedIssues：超过 100 条时翻页取全，不漏尾部", async () => {
+  const mk = (n) => ({ number: n, title: `t${n}`, body: "", labels: [{ name: "approved" }] });
+  const page1 = Array.from({ length: 100 }, (_, i) => mk(i + 1)); // 满 100 → 还有下一页
+  const page2 = [
+    ...Array.from({ length: 49 }, (_, i) => mk(101 + i)),
+    { number: 150, title: "d", body: "", labels: [{ name: "approved" }, { name: "done" }] },
+  ]; // 50 条（<100）→ 末页
+  const seen = [];
+  const fetchImpl = async (url) => {
+    const u = String(url);
+    seen.push(u);
+    const page = Number(new URL(u).searchParams.get("page"));
+    return { ok: true, json: async () => (page === 1 ? page1 : page === 2 ? page2 : []) };
+  };
+  const out = await listApprovedIssues({ owner: "o", repo: "r", token: "T" }, fetchImpl);
+  expect(out.length).toBe(149); // 共 150 条，排除 1 条 done
+  expect(out.some((i) => i.number === 150)).toBe(false); // done 被过滤
+  expect(out.some((i) => i.number === 130)).toBe(true); // 第二页尾部不再被漏
+  expect(seen.length).toBe(2); // page1 满 100 → 取 page2；page2 不足 100 → 停
+});
+
 test("listApprovedIssues：非 2xx 抛错", async () => {
   const fetchImpl = async () => ({ ok: false, status: 403 });
   await expect(

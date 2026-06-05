@@ -1,4 +1,4 @@
-import { buildPayload, describeResult } from "./submit.js";
+import { buildPayload, describeResult, renderSearchResultsHTML } from "./submit.js";
 
 const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -88,9 +88,7 @@ function bindSearch(){
     const items = await Promise.all(search.results.slice(0, 20).map((r) => r.data()));
     if (!items.length) { showResults(); results.innerHTML = ""; empty.hidden = false; return; }
     empty.hidden = true;
-    results.innerHTML = items.map((d) =>
-      `<div class="result"><a href="${d.url}"><h3>${d.meta.title || "(无标题)"}</h3><p class="ex">${d.excerpt}</p></a></div>`
-    ).join("");
+    results.innerHTML = renderSearchResultsHTML(items); // title/url 在此函数内已转义，防 DOM-XSS
     showResults();
   }, 180);
 
@@ -171,6 +169,9 @@ function bindSubmitModal(){
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const btn = form.querySelector(".submit-btn");
+    if (btn && btn.disabled) return;          // 防连点：请求在途时忽略重复提交
+    if (btn) btn.disabled = true;             // Turnstile token 一次性，连发会让第二次必败、闪现误导错误
     const fd = new FormData(form);
     const token = (window.turnstile && tsId !== null ? window.turnstile.getResponse(tsId) : "")
       || (fd.get("cf-turnstile-response") || "").toString();
@@ -196,6 +197,8 @@ function bindSubmitModal(){
       }
     } catch {
       setStatus(describeResult({ ok: false }).text, "error");
+    } finally {
+      if (btn) btn.disabled = false;          // 无论成败都恢复，允许失败后重试
     }
   });
 

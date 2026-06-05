@@ -12,6 +12,29 @@ export function buildPayload(fields, turnstileToken) {
   };
 }
 
+// 纯函数：HTML 转义（覆盖元素内容与双引号属性两种场景）。
+export function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// 纯函数：把 Pagefind 命中项渲染成搜索结果列表 HTML。
+// title 与 url 来自被检索的报告内容，直接拼进 innerHTML 会有 DOM-XSS，必须先转义；
+// excerpt 是 Pagefind 生成的高亮片段（含 <mark>），按其约定原样保留。
+export function renderSearchResultsHTML(items) {
+  return items
+    .map((d) => {
+      const url = escapeHtml(d.url);
+      const title = escapeHtml(d.meta && d.meta.title) || "(无标题)";
+      const ex = d.excerpt == null ? "" : String(d.excerpt);
+      return `<div class="result"><a href="${url}"><h3>${title}</h3><p class="ex">${ex}</p></a></div>`;
+    })
+    .join("");
+}
+
 // 纯函数：把服务端响应（或异常）映射成给用户看的中文。
 export function describeResult(res) {
   if (res && res.ok) {

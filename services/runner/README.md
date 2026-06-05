@@ -1,8 +1,8 @@
 # searchX Runner（M2b · 一键跑研究 + 发信）
 
-作者审批后回到 Mac，跑**一条命令** `bun run runner`：它取队列里 `approved` 且未 `done` 的 Issue → 喂给本机 Claude Code 跑 `/research`（含 Step 6 自动上线）→ 给 Issue 贴 `done` → 取提交者邮箱 → 发一封极简结果邮件（抄送作者）。
+作者审批后回到 Mac，运行**一条命令** `bun run runner`。它会依次：取出队列里已 `approved` 且尚未 `done` 的 Issue，交给本机 Claude Code 跑 `/research`（其中第 6 步会自动把报告发布上线），给 Issue 打上 `done` 标签，读取提交者邮箱，最后发一封简短的结果邮件（抄送作者）。
 
-**唯一花 Claude 额度的地方 = 跑一次 `/research` 本身。** 取 Issue / 贴标签 / 发邮件 / 取邮箱全是确定性脚本、零 token。
+**唯一消耗 Claude 额度的就是跑一次 `/research` 本身。** 取 Issue、打标签、发邮件、取邮箱都是写死的脚本逻辑，不调用大模型、不消耗 token。
 
 ```
 GitHub Issues（M2a 入队的，作者已贴 approved）
@@ -22,7 +22,7 @@ GitHub Issues（M2a 入队的，作者已贴 approved）
 
 ## 隐私 / 安全（务必理解）
 
-- **唯一花钱动作锁在人工审批之后**：Runner 只处理带 `approved` 标签的 Issue。灌垃圾的最坏后果只是待审列表多几条。
+- **唯一花钱动作锁在人工审批之后**：Runner 只处理带 `approved` 标签的 Issue。恶意大量提交的最坏后果只是待审列表多几条。
 - **邮件内容遵守隐私红线**：只含报告标题 / 已公开的一句话结论（TLDR）/ 公开链接，**绝不含任何用户私人信息**。
 - **Cloudflare 凭据不下本机**：取提交者邮箱只经 Worker 的只读端点 `GET /sub/<n>`，用共享密钥头 `x-sub-secret` 鉴权——本机只持这把共享密钥，不持 CF API token。
 - **机密永不入库**：GitHub PAT / 共享密钥 / Gmail 应用专用密码全部走未入库的根 `.env`（已 gitignore）或 `export`。`.env` / `.env.local` 已在 `.gitignore`。
@@ -40,7 +40,7 @@ GitHub Issues（M2a 入队的，作者已贴 approved）
 | `src/sub-fetch.js` | `fetchSubmitterEmail({workerUrl,secret,issueNumber})` 经 Worker 取邮箱 |
 | `src/email.js` | `composeEmail(...)` + `sendEmail(msg,{transport})`（注入 transport） |
 | `src/runner.js` | `runOnce(config,deps)` 编排，全部副作用经 deps 注入 |
-| `src/index.js` | 一键启动薄壳：装配真实依赖（spawn claude / nodemailer / scanResearch）后跑 `runOnce` |
+| `src/index.js` | 一键启动的装配入口（thin wrapper）：装配真实依赖（spawn claude / nodemailer / scanResearch）后跑 `runOnce` |
 
 ## 本地开发 / 测试
 
@@ -51,20 +51,20 @@ bun test                 # 根目录跑，递归含 services/runner/**/*.test.js
 bun test services/runner # 只跑 Runner 的单测
 ```
 
-`src/index.js` 是薄壳（spawn/网络/SMTP），按约定不单测——逻辑都在被它注入的纯函数里。
+`src/index.js` 是只做装配的入口（spawn/网络/SMTP），按约定不单测——逻辑都在被它注入的纯函数里。
 
 ---
 
 ## 一次性运维 + 运行 Runbook（需作者本人操作）
 
-> `{owner}=qiuyuanqr`、`{repo}=searchX`、`{author}=qiuyuanqr`。承接 M2a：Cloudflare 账号 `<你的 Gmail>`、Worker `searchx-intake.qiuyuanqr.workers.dev`、KV `INTAKE_KV`、四标签 `pending/approved/rejected/done` 已建、邮箱已存 KV `sub:<n>`。**凭据永不入库。**
+> `{owner}=qiuyuanqr`、`{repo}=searchX`、`{author}=qiuyuanqr`。承接 M2a：Cloudflare 账号 `<你的 Gmail>`、Worker `searchx-intake.qiuyuanqr.workers.dev`、KV `INTAKE_KV`、四个标签 `pending/approved/rejected/done` 已建好、提交者邮箱已存入 KV 的 `sub:<n>` 键。**凭据永不入库。**
 
 ### 1. 建作者 fine-grained PAT（仅 searchX、Issues 读写）
 GitHub → Settings → Developer settings → **Fine-grained tokens** → Generate：
 - Resource owner = `qiuyuanqr`；Repository access = **Only select repositories → searchX**。
 - Permissions → Repository → **Issues: Read and write**（其余 No access）。
 - 复制 token（`github_pat_…`）→ 待写入 `.env` 的 `RUNNER_GITHUB_TOKEN`。
-> 与 M2a 的 bot classic token 分离：本 token 仅本机 Runner 用，最小权限。贴 `done` 不需通知，身份无所谓。
+> 与 M2a 那个 bot 用的 classic token 分开：本 token 只供本机 Runner 使用，权限最小化。因为打 `done` 标签不会触发任何通知，所以用哪个账号身份都无所谓。
 
 ### 2. 生成 `/sub` 端点共享密钥
 ```bash
@@ -102,7 +102,7 @@ Google 账号 `<你的 Gmail>` → Security → 确保**两步验证已开** →
 claude --help | grep -iE "permission|dangerous"
 ```
 确认本机 `claude` 支持的非交互放行标志（很可能是 `--permission-mode bypassPermissions`，或 `--dangerously-skip-permissions`），据此设 `RUNNER_CLAUDE_ARGS`（默认 `--permission-mode bypassPermissions`）。
-> **安全前提**：Runner 只跑**已审批**的 Issue；`/research` Step 6 本身有「精准 `git add`（绝不 `-A`）+ 隐私终检」两道闸。放行标志只为让一条命令无人值守跑通。
+> **安全前提**：Runner 只跑**已审批**的 Issue；`/research` Step 6 本身有「精准 `git add`（绝不 `-A`）+ 推送前隐私最终检查」两道检查。放行标志只为让一条命令无人值守跑通。
 
 ### 6. 写本机 `.env`（未入库）
 在仓库根创建 `.env`（已 gitignore，bun 自动加载）：
@@ -142,8 +142,10 @@ bun run runner
 - **幂等标记 = `done` 标签**：再跑 `bun run runner` 只处理 `approved` 且未 `done` 的 Issue，已完成的跳过——不二次花费、不二次发信。
 - **研究未产出**（claude 退出码≠0 或没出新文件夹）：**不贴 `done`**，计入 `失败`，留待修好后重跑。
 - **发信失败**（取邮箱/SMTP 出错）：报告**已上线且已贴 `done`**，Runner 在 Issue 上留一条 `⚠️ …发信失败…请手动补发` 评论。**注意**：再跑不会重发该条邮件（它已 `done`）——按评论手动补发即可。
-- **贴标签/评论本身失败**（如 PAT 过期、限频）：当次 `bun run runner` 会带可见错误中止（`main()` 已 catch → 退出码 1）。修好凭据后重跑；极少数情况下若恰好在「push 成功后、贴 done 前」中断，重跑可能对同一题目再跑一次研究（低概率、可手动删掉重复文件夹）。
-- **必须在仓库根、`main`、工作区干净时跑**：薄壳会预检 `research/`+`.git`+`claude` 是否就位，缺则带中文报错退出。
+- **可访问性检查失败 / 未确认上线**（Pages 偶发 5xx 等导致 push 后报告页一直非 200）：报告**已上线且已贴 `done`**（贴 `done` 是为防下一轮重跑研究），但 Runner 暂缓给提交者发信（免得发出打不开的 404 链接），并留一条 `⚠️ …暂未确认上线…` 评论。同时把该条记进本机「上线待确认」队列（`~/Library/Application Support/searchx-runner/pending-publish.json`）：**后续每轮 runner 会自动重新检查，一旦确认上线就自动补发提交者邮件，无需人工**。（急的话也可在 Actions → deploy.yml → Run workflow 手动补跑部署。）
+- **贴 `done` 失败**（如 PAT 过期、被限制请求频率）：研究已上线但标签没贴上——Runner 会计入 `失败`、留一条 `⚠️ …贴 done 失败…请手动补贴` 评论、并**继续处理同批后续 Issue**（不再让整轮中止）。请按评论手动补贴 `done`，否则下一轮会对它重跑一次研究（重复消耗额度 + 造重复文件夹）。
+- **取 `approved` 列表本身失败**（首个 GitHub 请求就 4xx/5xx，如 PAT 失效）：本轮没做任何事就带可见错误退出（退出码 1）；修好凭据后重跑即可，无副作用。
+- **必须在仓库根、`main`、工作区干净时跑**：这个装配入口会预检 `research/`+`.git`+`claude` 是否就位，缺则带中文报错退出。
 
 ## 定时无人值守（Mac mini LaunchAgent）
 
@@ -168,21 +170,21 @@ launchctl print    "gui/$(id -u)/com.searchx.runner" | grep -E "state|run interv
 
 > 前提：Mac mini 保持**开机、不休眠、已登录 GUI**（claude 鉴权 / git push / 钥匙串都依赖登录态）。睡眠期间错过的 tick，launchd 会在唤醒后补跑一次（合并）。
 
-**手动立刻跑（手机/远程触发，与定时器共用同一把锁，绝不撞车）：**
+**手动立刻跑（手机/远程触发，与定时器共用同一把锁，绝不冲突）：**
 ```bash
 bun run runner:now    # = launchctl kickstart …：让 launchd 立即跑一次；若已在跑则自然不重复
 bun run runner:log    # 看最近 80 行日志
 ```
 
-## 并发 / 互斥语义（定时 + 手动如何不撞车）
+## 并发 / 互斥语义（定时 + 手动如何不冲突）
 
 三重保护，保证「定时器自动跑」与「你手机手动触发」永不并发、永不重复处理、永不丢活：
 
-1. **runner 全局单实例锁**（`src/index.js`）：锁文件 `~/Library/Application Support/searchx-runner/runner.lock`，用 `O_EXCL` 原子创建并即写持有者 pid（占位与标识同一步，杜绝 TOCTOU 强占）。任何入口启动 runner 时先抢锁，抢不到就打印 `⏭ 已有一轮在运行` 干净退出。回收保守：只回收「确证已死的 pid」或「pid 损坏且锁超 1 小时」的残留。**这是核心防线，连直接 `bun run runner` 也受它保护。**
+1. **runner 全局单实例锁**（`src/index.js`）：锁文件 `~/Library/Application Support/searchx-runner/runner.lock`，用 `O_EXCL` 原子地创建锁文件并同时写入持有者 pid（创建和标记身份是同一步完成，避免「检查与抢占之间出现竞态」即 TOCTOU 被钻空子）。任何入口启动 runner 时先抢锁，抢不到就打印 `⏭ 已有一轮在运行` 干净退出。回收保守：只回收「确证已死的 pid」或「pid 损坏且锁超 1 小时」的残留。**这是核心防线，连直接 `bun run runner` 也受它保护。**
 2. **launchd 单实例**：同名 LaunchAgent 任意时刻只跑一个实例；`runner:now` 走 `launchctl kickstart`，若任务在跑则不会再起一个。
-3. **定时兜底**：跳过是无损的——一次运行处理**整个** `approved` 队列；若某条审批恰好卡在"上一轮取完列表之后"进来，下个 tick（≤15 分钟）自动补上。
+3. **定时器保底**：即使某次触发被跳过也不会丢活——每次运行都会处理**整个** `approved` 队列；万一某条审批恰好在「上一轮取完列表之后」才进来，下一次定时触发（≤15 分钟）会自动补处理。
 
-> 因此**不需要真 FIFO 队列**：一次运行即清空 approved 队列，不存在"多任务排队"场景。你尽管在手机上随时 `approved` + 随时手动触发，最坏结果只是某次触发发现"已有一轮在跑"而跳过，活照样被跑完。
+> 因此**不需要真 FIFO 队列**：一次运行即清空 approved 队列，不存在"多任务排队"场景。你可以随时在手机上给 Issue 贴 `approved`、随时手动触发，最坏情况也只是某次触发发现「已有一轮在跑」而自动跳过，待处理的任务照样会被跑完。
 
 ## 作者汇总邮件（每完成一篇，单独通知作者）
 

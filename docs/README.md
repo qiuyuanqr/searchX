@@ -8,7 +8,7 @@
 | `superpowers/plans/` | 实现计划（implementation plan）：拆好的执行步骤 | writing-plans skill 默认输出路径 |
 | `progress/` | 进度记录 / 审计：某次大改的过程与结论留痕 | 手写 |
 
-> `superpowers/` 这层命名来自 superpowers 插件——它的 brainstorming / writing-plans 默认就把产出写到 `docs/superpowers/{specs,plans}/`。保留原路径，未来 skill 产出自动归位、无需搬运。
+> `superpowers/` 这层命名来自 superpowers 插件——它的 brainstorming / writing-plans 默认就把产出写到 `docs/superpowers/{specs,plans}/`。保留原路径，未来 skill 产出会自动存到对应目录、无需搬运。
 
 ## 现有文档（按时间）
 
@@ -18,7 +18,7 @@
 
 **实现计划（plans）**
 - [2026-06-03 M1 · 信息流站](superpowers/plans/2026-06-03-m1-feed-site.md)
-- [2026-06-03 M2a · 入队闭环](superpowers/plans/2026-06-03-m2a-intake-loop.md)
+- [2026-06-03 M2a · 提交入队流程](superpowers/plans/2026-06-03-m2a-intake-loop.md)
 - [2026-06-03 M2b · Runner](superpowers/plans/2026-06-03-m2b-runner.md)
 
 **进度记录（progress）**

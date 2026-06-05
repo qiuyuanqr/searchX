@@ -6,6 +6,7 @@ import { scanResearch } from "./scan.js";
 import { renderIndex } from "./render-index.js";
 import { injectConfig } from "./inject-config.js";
 import { injectReportNav } from "./inject-report-nav.js";
+import { findReportDefects } from "./validate-report.js";
 
 export function build({
   root = "research",
@@ -18,14 +19,26 @@ export function build({
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
 
-  const entries = scanResearch(root);
   const cfg = JSON.parse(readFileSync(config, "utf8"));
+
+  // scan 的收录门禁只看 notes.md，但下面要读 report.html。缺 report.html 的半成品文件夹
+  // （如 runner 中断留下的）不该让整次构建崩溃——跳过它（连同它的首页卡片），其余照常产出。
+  const entries = scanResearch(root).filter((e) => {
+    if (existsSync(join(root, e.dir, "report.html"))) return true;
+    console.warn(`⚠️ 跳过 ${e.dir}：缺 report.html（半成品文件夹，本次不收录）`);
+    return false;
+  });
 
   // 报告副本：注入站点导航（回到顶部 + 返回档案首页），原始 report.html 不动
   for (const e of entries) {
     const destDir = join(out, "r", e.dir);
     mkdirSync(destDir, { recursive: true });
     const reportHtml = readFileSync(join(root, e.dir, "report.html"), "utf8");
+    // 发布前校验：拦住残留 {{TOKEN}} / 非法来源标签类流向公开站（让构建直接失败，而非静默上线）
+    const defects = findReportDefects(reportHtml);
+    if (defects.length) {
+      throw new Error(`report.html 有问题，拒绝发布 ${e.dir}：\n  - ${defects.join("\n  - ")}`);
+    }
     writeFileSync(join(destDir, "index.html"), injectReportNav(reportHtml));
     const dataDir = join(root, e.dir, "data");
     if (existsSync(dataDir)) cpSync(dataDir, join(destDir, "data"), { recursive: true });

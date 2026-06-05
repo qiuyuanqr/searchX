@@ -1,19 +1,19 @@
-# M2a · 入队闭环 Implementation Plan
+# M2a · 提交入队流程 Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 让朋友能在站内友好表单提交一个调研题目，经 Cloudflare Worker 校验后在 GitHub 建一条 `pending` Issue 并通知作者——全程 0 花费、0 上线。
 
-**Architecture:** 公开面仍是 GitHub Pages 静态站，新增一张纸感**提交表单页**（构建进 `web/dist/submit.html`）。表单 POST 到一个无状态 **Cloudflare Worker**（唯一公开写入口）：Turnstile 人机验证 → 每 IP/邮箱每日限频（KV）→ 长度校验/清洗 → 用受限 GitHub token 建 `pending` Issue 并指派+@作者（触发 GitHub 原生邮件）。**仓库公开、Issue 公开 → 提交者邮箱绝不进 Issue 正文**，改存进 Worker 私有 KV（键 `sub:<issue号>`，留给 M2b Emailer），Issue 仅显示打码邮箱。
+**Architecture:** 公开面仍是 GitHub Pages 静态站，新增一张仿纸张质感的**提交表单页**（构建进 `web/dist/submit.html`）。表单把数据 POST 到一个无状态的 **Cloudflare Worker**（这是唯一对外公开的写入口）。Worker 依次做四件事：用 Turnstile 做人机验证；按每个 IP、每个邮箱的每日提交上限做限制（计数存在 KV 里）；校验并清洗输入长度；最后用权限受限的 GitHub token 建一条标了 `pending` 的 Issue，并指派、@ 作者（借此触发 GitHub 自带的邮件通知）。**仓库公开、Issue 公开 → 提交者邮箱绝不进 Issue 正文**，改存进 Worker 私有 KV（键 `sub:<issue号>`，留给 M2b Emailer），Issue 仅显示打码邮箱。
 
-**Tech Stack:** 静态 HTML/CSS/JS（复用纸感 `feed.css` token）；bun + `bun:test`（与 M1 一致，全部纯函数 + 注入 fetch，离线可测）；Cloudflare Worker（ESM module，`export default { fetch }`，`bun build` 打成单文件，dashboard 粘贴或 `bun x wrangler deploy`）；Cloudflare Turnstile + KV；GitHub Issues + 受限 fine-grained PAT。
+**Tech Stack:** 静态 HTML/CSS/JS（复用仿纸张质感的 `feed.css` token）；bun + `bun:test`（与 M1 一致，全部纯函数 + 注入 fetch，离线可测）；Cloudflare Worker（ESM module，`export default { fetch }`，`bun build` 打成单文件，dashboard 粘贴或 `bun x wrangler deploy`）；Cloudflare Turnstile + KV；GitHub Issues + 受限 fine-grained PAT。
 
 ---
 
 ## 范围与边界
 
-- **本计划只做 M2a（入队闭环）。** 不实现 Runner、不跑 `/research`、不发邮件——那是 M2b/M3（spec §6.4/§7）。
-- **唯一花 Claude 额度处仍是 `/research` 本身；M2a 全是确定性脚本与一次性运维配置，零 token。**
+- **本计划只做 M2a（提交入队流程）。** 不实现 Runner、不跑 `/research`、不发邮件——那是 M2b/M3（spec §6.4/§7）。
+- **唯一消耗 Claude 额度的仍是 `/research` 本身；M2a 全是行为固定、不调用 AI 的脚本与一次性运维配置，不消耗 token。**
 - **不改 `/research` 产出格式、不改 M1 既有 build 输出语义**；只在 build 末尾多产一张 `submit.html`，并给首页加一个链接。
 - 验收（spec §12 M2a）：站上提交 → 作者邮箱收到通知 + 仓库出现 `pending` Issue；驳回路径 0 花费、0 上线。
 
@@ -21,7 +21,7 @@
 
 **新建（站点侧 · `web/`）**
 - `web/src/site.config.json` — 公开站点配置（`WORKER_URL` / `TURNSTILE_SITE_KEY`，均为公开值，可入库）。
-- `web/src/submit.template.html` — 纸感提交表单页模板（含 `{{WORKER_URL}}` / `{{TURNSTILE_SITE_KEY}}` 占位）。
+- `web/src/submit.template.html` — 仿纸张质感的提交表单页模板（含 `{{WORKER_URL}}` / `{{TURNSTILE_SITE_KEY}}` 占位）。
 - `web/src/assets/submit.js` — 表单客户端：两个纯函数（`buildPayload` / `describeResult`，可单测）+ 受 `typeof document` 守卫的 DOM 引导。
 - `web/build/inject-config.js` + `.test.js` — 把 `{{KEY}}` 占位从配置对象注入模板字符串（纯函数）。
 
@@ -29,7 +29,7 @@
 - `web/build/build.js` — 末尾多读 `submit.template.html` + `site.config.json`，注入后写 `web/dist/submit.html`（assets 目录已整体拷贝，`submit.js` 自动带上）。
 - `web/build/build.test.js` — 加一条断言：build 产出 `submit.html` 且含注入后的 `WORKER_URL`。
 - `web/src/index.template.html` — 顶部加「+ 提交一个调研请求」链接到 `submit.html`。
-- `web/src/assets/feed.css` — 加 `.submit-link` 样式（极简、纸感）。
+- `web/src/assets/feed.css` — 加 `.submit-link` 样式（极简、与纸质感一致）。
 
 **新建（Worker 侧 · `services/intake-worker/`）**
 - `src/validate.js` + `.test.js` — `validateSubmission(input)`：必填/长度/邮箱/清洗。
@@ -37,8 +37,8 @@
 - `src/turnstile.js` + `.test.js` — `verifyTurnstile(token,secret,ip,fetchImpl)`：调 siteverify。
 - `src/ratelimit.js` + `.test.js` — `checkRateLimit(kv,{...})` + `dayKey(date)`：KV 每日计数。
 - `src/github.js` + `.test.js` — `createIssue({...},fetchImpl)`：调 GitHub Issues API。
-- `src/handler.js` + `.test.js` — `handleIntake(request,env,deps)`：编排 CORS/方法/校验/限频/建 Issue/存邮箱。
-- `src/index.js` — Cloudflare 入口 `export default { fetch }`（薄壳，不单测）。
+- `src/handler.js` + `.test.js` — `handleIntake(request,env,deps)`：编排 CORS/方法/校验/限制提交频率/建 Issue/存邮箱。
+- `src/index.js` — Cloudflare 入口 `export default { fetch }`（只做装配的入口外层，不单测）。
 - `wrangler.toml` — Worker 配置（KV 绑定 `INTAKE_KV`、公开 vars）。
 - `README.md` — 一次性运维 + 部署手册（账号/Turnstile/token/labels/KV/deploy/E2E）。
 
@@ -169,7 +169,7 @@ test("describeResult: 已知错误码给对应中文", () => {
   expect(describeResult({ ok: false, error: "email_rate_limited" }).text).toContain("邮箱");
 });
 
-test("describeResult: 未知错误给兜底文案", () => {
+test("describeResult: 未知错误给默认文案", () => {
   expect(describeResult({ ok: false, error: "weird" }).kind).toBe("error");
   expect(describeResult(null).kind).toBe("error");
 });
@@ -464,7 +464,7 @@ Run:
 bun run build
 bun run serve   # 或 .claude/launch.json 的 site（端口 8081）
 ```
-打开 `http://localhost:8080/`（serve）确认：① 首页右上出现「+ 提交调研请求」；② 点进 `submit.html` 表单纸感一致、字段齐全、Turnstile 占位渲染（占位 sitekey 下会报错属正常，Phase C 填真值后消失）；③ 移动端宽度与深色模式不破版。
+打开 `http://localhost:8080/`（serve）确认：① 首页右上出现「+ 提交调研请求」；② 点进 `submit.html` 表单与纸质感一致、字段齐全、Turnstile 占位渲染（占位 sitekey 下会报错属正常，Phase C 填真值后消失）；③ 移动端宽度与深色模式不破版。
 
 > 验证手段优先用文本：`bun run build` 后 `grep -c 'submit-link' web/dist/index.html` 应为 1；`grep -o 'data-worker="[^"]*"' web/dist/submit.html` 应回显配置值。
 
@@ -783,7 +783,7 @@ git add services/intake-worker/src/turnstile.js services/intake-worker/src/turns
 git commit -m "feat(worker): verifyTurnstile (M2a)"
 ```
 
-## Task 8: `checkRateLimit` + `dayKey` — 每日限频
+## Task 8: `checkRateLimit` + `dayKey` — 每日提交频率限制
 
 **Files:**
 - Create: `services/intake-worker/src/ratelimit.js`
@@ -847,8 +847,8 @@ Expected: FAIL — 模块不存在
 
 ```js
 // services/intake-worker/src/ratelimit.js
-// 每 IP / 每邮箱 每日提交上限。KV 最终一致 → 近似限频即可
-// （真正的闸是作者人工审批；这里只挡批量灌水）。
+// 每 IP / 每邮箱 每日提交上限。KV 最终一致 → 近似限制即可
+// （真正把关的是作者人工审批；这里只挡批量提交垃圾内容）。
 
 export function dayKey(date) {
   return date.toISOString().slice(0, 10).replace(/-/g, "");
@@ -975,7 +975,7 @@ git add services/intake-worker/src/github.js services/intake-worker/src/github.t
 git commit -m "feat(worker): createIssue via GitHub REST API (M2a)"
 ```
 
-## Task 10: `handleIntake` — 编排（CORS / 方法 / 校验 / 限频 / 建 Issue / 存邮箱）
+## Task 10: `handleIntake` — 编排（CORS / 方法 / 校验 / 限制提交频率 / 建 Issue / 存邮箱）
 
 **Files:**
 - Create: `services/intake-worker/src/handler.js`
@@ -1181,7 +1181,7 @@ git commit -m "feat(worker): handleIntake orchestrator — CORS/validate/turnsti
 - Modify: `package.json`
 - Modify: `.gitignore`
 
-- [ ] **Step 1: Write the Cloudflare entry（薄壳，不单测）**
+- [ ] **Step 1: Write the Cloudflare entry（只做装配的入口外层，不单测）**
 
 ```js
 // services/intake-worker/src/index.js
@@ -1202,7 +1202,7 @@ name = "searchx-intake"
 main = "src/index.js"
 compatibility_date = "2026-01-01"
 
-# KV：限频计数 + 提交者邮箱私有记录（sub:<issue号>）
+# KV：提交频率计数 + 提交者邮箱私有记录（sub:<issue号>）
 # 创建后把 id 填进来：bun x wrangler kv namespace create INTAKE_KV
 [[kv_namespaces]]
 binding = "INTAKE_KV"
@@ -1287,7 +1287,7 @@ git commit -m "feat(worker): cloudflare entry + bundle script + wrangler config 
     bun x wrangler deploy
     ```
     记下回显的 Worker URL（形如 `https://searchx-intake.<subdomain>.workers.dev`）。
-  - **B · dashboard 粘贴（本机无 node/wrangler 时的兜底）**：
+  - **B · dashboard 粘贴（本机无 node/wrangler 时的备用方案）**：
     `bun run build:worker` → Workers & Pages → Create Worker → 编辑器粘贴 `services/intake-worker/dist/worker.js` → Settings 里：Variables 加 `GITHUB_OWNER/GITHUB_REPO/AUTHOR_LOGIN/ALLOWED_ORIGIN`（与 `wrangler.toml [vars]` 一致）、Secrets 加 `TURNSTILE_SECRET/GITHUB_TOKEN`、KV Bindings 绑 `INTAKE_KV` → 部署，记下 Worker URL。
 
 - [ ] **Step 6: 回填站点配置并上线**：
@@ -1298,7 +1298,7 @@ git commit -m "feat(worker): cloudflare entry + bundle script + wrangler config 
     "TURNSTILE_SITE_KEY": "0x4AAAAAAA…"
   }
   ```
-  然后（隐私终检确认无私人信息后）：
+  然后（隐私最终检查确认无私人信息后）：
   ```bash
   bun test && bun run build
   git add web/src/site.config.json services/intake-worker/README.md
@@ -1313,7 +1313,7 @@ git commit -m "feat(worker): cloudflare entry + bundle script + wrangler config 
   3. 仓库 Issues 出现一条 `pending` Issue，标题=题目，正文含**打码**邮箱、指派给你、@你。
   4. 你的邮箱收到 GitHub 的指派/提醒邮件。
   5. 全程**无任何 `/research` 运行、无站点内容变更**（0 花费、0 上线新报告）。
-  6. 反向：连发超过每日上限 → 第 N+1 次返回限频文案（验证限频）。
+  6. 反向：连发超过每日上限 → 第 N+1 次返回频率限制提示（验证频率限制）。
   7. 清理：关掉测试 Issue。
 
 - [ ] **Step 8: 写 README 手册并提交**（把 Step 1–7 固化为 `services/intake-worker/README.md`，含"机密永不入库"红线、KV 里 `sub:<n>` 留给 M2b 的说明）：
@@ -1329,16 +1329,16 @@ git commit -m "docs(worker): M2a setup & deploy runbook"
 
 ## Self-Review（对照 spec §6.1/§6.2/§6.3/§6.6/§10/§12）
 
-- **§6.1 友好表单（无需 GitHub 账号）+ Worker 校验入队**：Task 3（表单）+ Task 5–10（Worker：Turnstile/限频/长度/建 Issue）✓
+- **§6.1 友好表单（无需 GitHub 账号）+ Worker 校验入队**：Task 3（表单）+ Task 5–10（Worker：Turnstile/限制提交频率/长度/建 Issue）✓
 - **§6.2 GitHub Issues 即队列、`pending` 标签、GitHub 原生通知**：Task 6（labels:["pending"]）+ Task 12 Step 1（建标签）+ 指派/@作者触发邮件 ✓
 - **§6.3 @作者 / 指派**：Task 6 `assignees:[author]` + 正文 `@author`，Task 12 Step 7 验证邮件 ✓
-- **§6.6 安全模型**：Turnstile（Task 7）+ 限频（Task 8）+ 长度上限/清洗（Task 5）+ 受限 token（Task 12 Step 2）+ 机密永不进前端（site.config 只放公开值；Secret 只在 Worker）✓。"朋友口令/邮箱白名单"按用户选择**不先上**（spec 列为可选）。
+- **§6.6 安全模型**：Turnstile（Task 7）+ 限制提交频率（Task 8）+ 长度上限/清洗（Task 5）+ 受限 token（Task 12 Step 2）+ 机密永不进前端（site.config 只放公开值；Secret 只在 Worker）✓。"朋友口令/邮箱白名单"按用户选择**不先上**（spec 列为可选）。
 - **§10.2 无需 GitHub 账号**：表单 + Worker 路线满足 ✓
 - **§12 M2a 验收**：Task 12 Step 7 ✓
-- **公开仓库泄露邮箱风险**：maskEmail + KV 私有存（Task 6 + Task 10）——超出 spec 显式条目的一处必要加固 ✓
-- **零 token**：全程确定性脚本 + 一次性运维，无 `/research`、无大模型调用 ✓
+- **公开仓库泄露邮箱风险**：maskEmail + KV 私有存（Task 6 + Task 10）——超出 spec 明确列出条目的一处必要加固 ✓
+- **零 token**：全程行为固定、不调用 AI 的脚本 + 一次性运维，无 `/research`、无大模型调用 ✓
 
-**Placeholder 扫描**：无 TBD/TODO；每个 code step 给了完整代码与可运行命令。`site.config.json`/`wrangler.toml` 里的 `REPLACE_WITH_*` 是**运行期真值占位**（Task 12 显式填），非计划占位。
+**Placeholder 扫描**：无 TBD/TODO；每个 code step 给了完整代码与可运行命令。`site.config.json`/`wrangler.toml` 里的 `REPLACE_WITH_*` 是**运行期真值占位**（Task 12 明确填写），非计划占位。
 
 **类型/命名一致性**：KV 绑定全程 `INTAKE_KV`；env 名跨 handler/wrangler/README 一致；`validateSubmission`/`verifyTurnstile`/`checkRateLimit`/`dayKey`/`formatIssue`/`maskEmail`/`createIssue`/`handleIntake`/`injectConfig`/`buildPayload`/`describeResult` 在定义与调用处签名一致；错误码（`turnstile_failed`/`invalid`/`ip_rate_limited`/`email_rate_limited`/`bad_json`/`issue_create_failed`）在 handler 返回与 `describeResult` 映射两侧对齐。
 

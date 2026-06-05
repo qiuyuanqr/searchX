@@ -34,11 +34,13 @@ export function parseNote(raw, dir) {
   const { data, content } = matter(raw);
   const titleMatch = content.match(/^#\s+(.+)$/m);
 
-  const title = titleMatch ? titleMatch[1].trim() : dir.slice(11);
+  // 标题也走 cleanInline：H1 里若带 **加粗** / [[双链]] / `代码`，卡片是纯文本展示层，不该漏出字面记号。
+  const title = titleMatch ? cleanInline(titleMatch[1]) : dir.slice(11);
   const tldr = extractTldr(content);
-  const boards = (data.related || []).map(
-    (s) => String(s).replace(/\[\[|\]\]/g, "").trim()
-  );
+  // related / tags 都可能被人工写成 YAML 标量（如 `related: 算力`）而非数组——统一归一化成数组，
+  // 否则 .map 抛 TypeError，一条格式写偏的 note 会击穿整站构建（而非只丢这一张卡片）。
+  const toList = (v) => (Array.isArray(v) ? v : v ? [v] : []);
+  const boards = toList(data.related).map((s) => String(s).replace(/\[\[|\]\]/g, "").trim());
 
   return {
     dir,
@@ -48,7 +50,7 @@ export function parseNote(raw, dir) {
     type: data.type || "",
     title,
     tldr,
-    tags: data.tags || [],
+    tags: toList(data.tags),
     boards,
     sourceCount: data.source_count || 0,
     href: `r/${dir}/`,

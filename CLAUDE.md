@@ -1,13 +1,13 @@
 # searchX — 项目约定
 
-通用深度调研引擎，并自动上线为公开信息流站。两个核心能力：`/research`（通用调研，`.claude/skills/research/SKILL.md`）与 `/stock`（单只股票深度投研，`.claude/skills/stock/SKILL.md`；research 判定股票类时自动路由）。围绕它有一条半自动流水线（站内提交 → 审核 → runner 自动跑 → 上线 → 邮件），代码在 `services/` 与 `web/`。完整地图见 `README.md`。
+通用深度调研引擎，并自动发布为公开信息流站。两个核心能力：`/research`（通用调研，`.claude/skills/research/SKILL.md`）与 `/stock`（单只股票深度投研，`.claude/skills/stock/SKILL.md`；research 判定为股票类时自动转交给它）。围绕它有一条半自动流水线（站内提交 → 审核 → runner 自动跑 → 发布上线 → 邮件），代码在 `services/` 与 `web/`。完整地图见 `README.md`。
 
 ## 路径变量（SKILL 引用）
 
 > 两个变量的**本机绝对路径**定义在未入库的 `CLAUDE.local.md`（Claude Code 自动加载、不进公开仓库）。下面只说明用途。
 
 - `ARCHIVE_ROOT` — 调研资产根（仓库内 `research/`）。每次调研在此下建独立主题文件夹（`<YYYY-MM-DD>_<topic-slug>/`），存全部资产。
-- `OBSIDIAN_VAULT` — 本机 Obsidian 库根。精简笔记落到其 `Research/` 子目录，带 frontmatter 与 `[[]]` 双链。
+- `OBSIDIAN_VAULT` — 本机 Obsidian 库根。精简笔记保存到其 `Research/` 子目录，带 frontmatter 与 `[[]]` 双链。
 
 ## 仓库结构速览
 
@@ -25,7 +25,7 @@
 - **隐私红线（绝对）**：任何可导出文档（HTML / md / 来源清单）中，永远不写入用户私人信息（持仓规模、负债与还款、财务状况、健康、家庭）。涉及买卖/持有用条件化表述。
 - **数据完整性**：让数据直接说话；数据与既有结论冲突时立即修正解读，不为维护结论而扭曲。
 - **不预设深层意图**：只处理用户明确指定的对象，不擅自外延。
-- **X/Twitter 局限**：无法稳定拉取账号完整时间线（免费 API 已关闭+强反爬）。人物类调研主攻被引用/转载/整理的代表性观点与方法论，并在产出中显式声明此局限。
+- **X/Twitter 局限**：无法稳定拉取账号完整时间线（免费 API 已关闭 + 反爬严格）。人物类调研重点研究被引用/转载/整理的代表性观点与方法论，并在产出中明确声明这一局限。
 
 ## 五大常关注板块（双链与关联判断用）
 

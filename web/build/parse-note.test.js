@@ -39,6 +39,17 @@ test("parseNote 容错：缺字段不崩", () => {
   expect(e.sourceCount).toBe(0);
 });
 
+test("parseNote 容错：related / tags 写成 YAML 标量（非数组）不崩，归一化成数组", () => {
+  const e = parseNote("---\ntype: 股票\nrelated: 算力\ntags: 半导体\n---\n\n# 某股", "2026-06-05_x");
+  expect(e.boards).toEqual(["算力"]);
+  expect(e.tags).toEqual(["半导体"]);
+});
+
+test("parseNote 标题也清洗 markdown 噪声（卡片是纯文本展示层）", () => {
+  const e = parseNote("---\ntype: 概念\n---\n\n# 标题 **粗** 与 [[双链]] 和 `代码`", "2026-06-05_t");
+  expect(e.title).toBe("标题 粗 与 双链 和 代码");
+});
+
 test("parseNote 清洗 tldr 里的 markdown 噪声（纸感卡片用纯文本）", () => {
   const raw = "---\ntype: 板块\n---\n\n# 标题\n\n" +
     "> 衔接 [[other-note]] 的 **重点**，参考 `code` 与 [链接](https://x.com)。\n";

@@ -10,6 +10,7 @@ import { scanResearch } from "../../../web/build/scan.js";
 import { loadRunnerConfig } from "./config.js";
 import { sendEmail as sendEmailImpl } from "./email.js";
 import { runOnce } from "./runner.js";
+import { pollUntilOk } from "./verify-published.js";
 
 // —— 全局单实例锁 ——
 // 保证「定时器自动跑」与「手机手动触发」永不并发：无论从哪个入口进来（launchd 定时、
@@ -52,6 +53,23 @@ function acquireLock() {
   // 确证持有者已死，或损坏锁已超时 → 回收并原子重建（重建失败=被别人抢先 → 跳过）
   try { rmSync(path, { recursive: true, force: true }); } catch {}
   return createLockExclusive(path) ? makeRelease(path) : null;
+}
+
+// 「上线待确认」持久队列：研究已 push、但部署探活当轮没通过的条目存这里（本地 JSON）。
+// 后续每轮 runner 启动时重新探活，一旦确认上线就自动补发提交者邮件，无需人工盯评论补发。
+function pendingFile() {
+  return join(homedir(), "Library", "Application Support", "searchx-runner", "pending-publish.json");
+}
+function loadPending() {
+  try {
+    const data = JSON.parse(readFileSync(pendingFile(), "utf8"));
+    return Array.isArray(data) ? data : [];
+  } catch { return []; }
+}
+function savePending(list) {
+  const dir = join(homedir(), "Library", "Application Support", "searchx-runner");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(pendingFile(), JSON.stringify(list, null, 2));
 }
 
 // 当日完成计数：按「北京时间」分日存一个计数文件，每完成一篇 +1，返回 { date, count }。
@@ -125,23 +143,16 @@ async function main() {
       return code === 0;
     },
     // 部署探活：Step6 push 后 GitHub Actions 才 build+deploy（约 1–2 分钟）；偶发 Pages 5xx
-    // 会打掉部署 → 报告子页 404。轮询报告 URL 直到 200（新路径 200 即代表已上线）或超时。
+    // 会打掉部署 → 报告子页 404。轮询报告 URL 直到 200（含单次硬超时，防连接卡死永久占锁）。
     verifyPublished: async (url) => {
-      const DEADLINE_MS = 8 * 60_000, INTERVAL_MS = 15_000;
-      const deadline = Date.now() + DEADLINE_MS;
-      console.log(`→ 探活（等部署上线，最多 ${DEADLINE_MS / 60000} 分钟）：${url}`);
-      for (let n = 1; ; n++) {
-        try {
-          const res = await fetch(url, { redirect: "follow" });
-          if (res.ok) { console.log(`✓ 已确认上线（第 ${n} 次探测 200）`); return true; }
-        } catch {}
-        if (Date.now() >= deadline) { console.log("✗ 超时未确认上线（疑似 Pages 部署故障）"); return false; }
-        await new Promise((r) => setTimeout(r, INTERVAL_MS));
-      }
+      console.log(`→ 探活（等部署上线，最多 8 分钟）：${url}`);
+      return pollUntilOk(url, { log: (m) => console.log(m) });
     },
     sendEmail: (msg) => sendEmailImpl(msg, { transport }),
     log: (m) => console.log(m),
     bumpDailyCount,
+    loadPending,
+    savePending,
   });
 
   process.exit(summary.failed > 0 ? 1 : 0);

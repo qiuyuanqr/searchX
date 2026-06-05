@@ -138,7 +138,7 @@ test("不传 bumpDailyCount 则只发提交者邮件（向后兼容）", async (
   expect(sent[0].to).toBe("u@x.com"); // 仅提交者那封
 });
 
-// —— 部署探活闸 ——
+// —— 部署探活 ——
 // 研究 Step6 push 后，GitHub Actions 才 build+deploy；Pages 偶发 5xx 会打掉部署，
 // 造成「已 push 但没上线」。探活失败时不能给提交者发"已上线"邮件（链接会 404）。
 test("部署探活失败：研究已完成→贴 done 防重研，但不发信、failed 计数、评论告警未上线", async () => {
@@ -177,4 +177,72 @@ test("部署探活通过：用报告 URL 探活，确认上线后才发信", asy
   expect(summary.published).toBe(1);
   expect(summary.emailed).toBe(1);
   expect(sent.to).toBe("u@x.com");
+});
+
+// —— 贴 done 失败的兜底（runner-1）——
+test("贴 done 失败：不中止整轮、failed 计数、评论告警、同批后续 Issue 仍处理", async () => {
+  const ISSUES = [
+    { number: 7, title: "A", body: "", labels: [{ name: "approved" }] },
+    { number: 8, title: "B", body: "", labels: [{ name: "approved" }] },
+  ];
+  const comments = [];
+  const fetchImpl = async (url, opts = {}) => {
+    const u = String(url);
+    if (u.includes("/issues?")) return { ok: true, json: async () => ISSUES };
+    if (/\/issues\/\d+\/labels$/.test(u)) return { ok: false, status: 403, text: async () => "forbidden" }; // 贴 done 失败
+    if (/\/issues\/\d+\/comments$/.test(u)) { comments.push(JSON.parse(opts.body).body); return { ok: true, json: async () => ({}) }; }
+    if (u.includes("/sub/")) return { ok: true, json: async () => ({ ok: true, email: "u@x.com" }) };
+    return { ok: false, status: 404, json: async () => ({}) };
+  };
+  const dirs = [{ dir: "old", title: "旧", tldr: "t", href: "r/old/" }];
+  let runs = 0;
+  const summary = await runOnce(CONFIG, {
+    fetchImpl,
+    scanDirs: () => dirs.slice(),
+    runResearch: async () => { runs++; dirs.push({ dir: `n${runs}`, title: `t${runs}`, tldr: "x", href: `r/n${runs}/` }); return true; },
+    sendEmail: async () => {}, log: () => {},
+  });
+  expect(runs).toBe(2);            // 两条都跑了研究（第一条贴 done 失败没拖垮第二条）
+  expect(summary.failed).toBe(2);  // 两条都贴 done 失败
+  expect(summary.emailed).toBe(0); // 贴 done 失败即跳过，不发信
+  expect(comments.some((b) => b.includes("done") && b.includes("重复跑"))).toBe(true); // 告警含手动补贴提示
+});
+
+// —— 上线待确认队列：自动补发（runner-2 / dc-1）——
+test("探活失败→记入待补发；下一轮探活通过→自动补发邮件，且不重跑研究", async () => {
+  // 第一轮：研究产出、贴 done、探活失败 → 进入待补发队列、不发信
+  let store = [];
+  const s1 = await runOnce(CONFIG, {
+    ...(() => { const w = makeWorld(); return { scanDirs: w.scanDirs, runResearch: w.runResearch }; })(),
+    fetchImpl: makeFetch(),
+    sendEmail: async () => {}, log: () => {},
+    verifyPublished: async () => false,
+    loadPending: async () => store, savePending: async (p) => { store = p; },
+  });
+  expect(s1.emailed).toBe(0);
+  expect(store.length).toBe(1);
+  expect(store[0].number).toBe(7);
+  expect(store[0].url).toBe("https://site.dev/searchX/r/2026-06-03_stablecoin/");
+
+  // 第二轮：issue 7 已是 done → 不在 approved 队列；探活这次通过 → 从待补发队列自动补发
+  let ran2 = 0;
+  let sent2;
+  const s2 = await runOnce(CONFIG, {
+    fetchImpl: async (url) => {
+      const u = String(url);
+      if (u.includes("/issues?")) return { ok: true, json: async () => [] }; // approved 队列已空（7 已 done）
+      if (/\/issues\/\d+\/comments$/.test(u)) return { ok: true, json: async () => ({}) };
+      if (u.includes("/sub/")) return { ok: true, json: async () => ({ ok: true, email: "u@x.com" }) };
+      return { ok: false, status: 404, json: async () => ({}) };
+    },
+    scanDirs: () => [],
+    runResearch: async () => { ran2++; return true; },
+    sendEmail: async (m) => { sent2 = m; }, log: () => {},
+    verifyPublished: async () => true,
+    loadPending: async () => store, savePending: async (p) => { store = p; },
+  });
+  expect(ran2).toBe(0);             // 关键：没有重跑 /research
+  expect(sent2.to).toBe("u@x.com"); // 补发给提交者
+  expect(s2.emailed).toBe(1);
+  expect(store.length).toBe(0);     // 待补发队列已清空
 });

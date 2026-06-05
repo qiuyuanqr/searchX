@@ -1,6 +1,6 @@
 // services/intake-worker/src/ratelimit.test.js
 import { test, expect } from "bun:test";
-import { checkRateLimit, dayKey } from "./ratelimit.js";
+import { checkRateLimit, peekRateLimit, commitRateLimit, dayKey } from "./ratelimit.js";
 
 // 假 KV：Map 实现 get/put
 function fakeKV(seed = {}) {
@@ -42,4 +42,26 @@ test("邮箱达上限拒绝（reason=email_rate_limited）", async () => {
   });
   expect(r.allowed).toBe(false);
   expect(r.reason).toBe("email_rate_limited");
+});
+
+test("peekRateLimit 只读检查、不自增计数", async () => {
+  const kv = fakeKV();
+  const r = await peekRateLimit(kv, { ip: "1.1.1.1", email: "a@b.com", dayKeyStr: "20260603" });
+  expect(r.allowed).toBe(true);
+  expect(kv.store.size).toBe(0); // 没有任何写入
+});
+
+test("peekRateLimit 达上限拒绝、仍不自增", async () => {
+  const kv = fakeKV({ "rl:email:a%40b.com:20260603": "4" });
+  const r = await peekRateLimit(kv, { ip: "9.9.9.9", email: "a@b.com", dayKeyStr: "20260603" });
+  expect(r.allowed).toBe(false);
+  expect(r.reason).toBe("email_rate_limited");
+  expect(kv.store.get("rl:email:a%40b.com:20260603")).toBe("4"); // 未变动
+});
+
+test("commitRateLimit 把两个计数器各 +1", async () => {
+  const kv = fakeKV();
+  await commitRateLimit(kv, { ip: "1.1.1.1", email: "a@b.com", dayKeyStr: "20260603" });
+  expect(kv.store.get("rl:ip:1.1.1.1:20260603")).toBe("1");
+  expect(kv.store.get("rl:email:a%40b.com:20260603")).toBe("1");
 });
