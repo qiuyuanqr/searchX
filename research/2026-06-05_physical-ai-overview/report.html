@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>物理 AI（Physical AI） · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation;
+  }
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 概念</div>
+    <h1>物理 AI（Physical AI）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-06-05（北京时间）</span>
+      <span><b>类型</b> 概念</span>
+      <span><b>来源</b> 22 条</span>
+    </div>
+  </header>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    物理 AI 是 NVIDIA 黄仁勋在 CES 2025（2025/1/6 北京时间）推出、并被全球产业广泛采纳的「会动手的 AI」框架——把生成式 AI 的能力从屏幕里搬进真实物理世界，让机器能<strong>感知、推理、规划并行动</strong>。最紧密的三个落地行业是<strong>具身机器人（尤其人形机器人）、自动驾驶/Robotaxi、工业仿真与流程工业 AI</strong>。上市公司层面，美股以 <strong>NVIDIA / Tesla</strong> 为枢纽；A 股直接相关公司集中在<strong>执行器</strong>（拓普集团 601689、三花智控 002050、绿的谐波 688017）、<strong>感知与仿真</strong>（奥比中光 688322、索辰科技 688507、中控技术 688777）、<strong>整车/算力底座</strong>（比亚迪 002594、汇川技术 300124、工业富联 601138）几条主线；港股侧关键映射是地平线（09660）与瑞声科技（02018）。
+  </div>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    过去说 AI，是它会认图、写字、画画——会"看"会"说"但不动手；物理 AI 就是给 AI 装上身体、放进真实世界，让它会开车、会拧螺丝、会叠衣服。打个比方：以前 ChatGPT 像一个"屏幕里聊天的助理"，物理 AI 想做的，是把这位助理从屏幕里搬到工厂、商场和家里，让它真正动手干活。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>概念由 NVIDIA 黄仁勋于 2025/1/6 CES 主题演讲提出，定位为「感知 AI → 生成式 AI → Agentic AI → <strong>物理 AI</strong>」演进路径的下一阶段；后续被高盛、摩根士丹利、新华社等主流机构与媒体作为产业术语沿用。</li>
+      <li>NVIDIA 是当前最完整的"卖铲人"——Cosmos 世界基础模型（2025/1 首发，2026/5/31 升级 <strong>Cosmos 3</strong>）+ Isaac GR00T N1 人形机器人基础模型（2025/3/18 GTC 发布）+ Newton 物理引擎（与 Google DeepMind、Disney 联合开发，Linux Foundation 托管）。</li>
+      <li>三个紧密相关行业：<strong>具身机器人</strong>（人形机器人、协作机器人、医疗手术机器人）、<strong>自动驾驶 / Robotaxi</strong>（NVIDIA Drive、Waabi、小马智行、Tesla）、<strong>工业仿真与流程工业 AI</strong>（数字孪生、CAE、化工/能源闭环控制）。</li>
+      <li>A 股直接相关上市公司分四条主线——<strong>执行器与精密零件</strong>（拓普集团、三花智控、绿的谐波、双环传动）、<strong>感知与仿真平台</strong>（奥比中光、索辰科技、中控技术）、<strong>整车与自动驾驶</strong>（比亚迪、理想港股）、<strong>算力与制造</strong>（工业富联、汇川技术）；但「概念股」标签下大多数公司的物理 AI 直接收入占比仍极低（如索辰开物 2025H1 仅 376 万元）。</li>
+      <li>市场预测跨度巨大——摩根士丹利预测 2050 年人形机器人生态 <strong>$5 万亿</strong>（含上下游），高盛 2035 年仅人形机器人本体 <strong>$380 亿</strong>，差两个数量级；当前更多是"故事强 + 业绩弱"的叙事阶段，弱来源（自媒体）的 $3.25 万亿/2040 等数据需谨慎对待（未独立核实）。</li>
+      <li>NVIDIA 自有的 <strong>Cosmos Coalition</strong> + Isaac GR00T 早期合作伙伴名单，是判断"哪些公司真正踩中第一梯队"最一手的线索：人形机器人含 1X、Figure AI、Agility Robotics、Boston Dynamics、Mentee、NEURA、小鹏汽车、Skild AI 等；自动驾驶含 Waabi、Wayve、Uber 等；工业含 Foxconn、Doosan、ABB、发那科、库卡、Universal Robots。</li>
+    </ul>
+  </div>
+
+  <main>
+
+    <h2>一、是什么——把"会说"的 AI 变成"会做"的 AI</h2>
+
+    <p>先把行话拆开。<strong>物理 AI（Physical AI）</strong>，是 NVIDIA 给 AI 演化路径划的"第四阶段"标签。在 <a href="https://blogs.nvidia.com/blog/ces-2025-jensen-huang/">CES 2025 主题演讲</a>（2025/1/6 北京时间）里，黄仁勋把过去十年的 AI 分了四档：</p>
+
+    <ul>
+      <li><strong>感知 AI</strong>：会"看图、听话、识音"——人脸识别、语音助手都属于这一档。</li>
+      <li><strong>生成式 AI</strong>：会"画图、写字、谱曲"——ChatGPT、Sora、Midjourney 都属于这一档，但仍只在屏幕里。</li>
+      <li><strong>Agentic AI</strong>（代理 AI）：会"自己规划、调用工具、跑流程"——比如让 AI 自己订机票、查邮件，是 2024 年开始热的方向，但仍是在数字世界里跑。</li>
+      <li><strong>物理 AI</strong>：能<strong>感知、推理、规划、并真的动手在物理世界里去做</strong>——会开车、会拧螺丝、会叠衣服。这就需要它真正理解物理规律（重力、摩擦、惯性），并控制一副"身体"（轮子、机械臂、双足）。</li>
+    </ul>
+
+    <p>黄仁勋在 <a href="https://nvidianews.nvidia.com/news/nvidia-launches-cosmos-world-foundation-model-platform-to-accelerate-physical-ai-development">同期 NVIDIA 新闻稿</a>里给的定义最简洁——"物理 AI 是机器人和自动驾驶汽车等系统的开发技术"。所以两个最容易让你一秒抓住边界的对照：</p>
+
+    <p>
+      <strong>类比</strong>：生成式 AI 像一个隔着屏幕的"键盘侠"——文笔好、点子多，但不能下楼倒垃圾。物理 AI 是想让它<strong>从屏幕里走出来，真正去倒那袋垃圾</strong>。它要懂垃圾袋会不会破、电梯按哪个、地板滑不滑——这套对真实世界物理规律的理解，叫<strong>世界模型</strong>。
+    </p>
+
+    <h3>它和「具身智能（Embodied AI）」是不是一回事？</h3>
+
+    <p>不是，但高度交叉。<a href="https://www.nature.com/articles/s42256-026-01239-3">《Nature Machine Intelligence》</a>的综述把<strong>具身智能</strong>定义为"通过身体（可以是虚拟的、模拟的）与环境交互来学习的 AI"——强调"通过身体学习"；而<strong>物理智能/物理 AI</strong> 是更严格的子集：身体必须在真实物理世界，要受机械、材料、环境的硬约束。简单粗暴一句：</p>
+
+    <p><em>具身 AI 是哲学家给的名字，物理 AI 是工程师与英伟达营销给的名字</em>——两者目标相同（让 AI 动手干活），只是抽象层次不同。中文媒体（如新华社）和券商研报里一般把两者混用。</p>
+
+    <h2>二、为什么"现在"突然热——三个技术拐点的合流</h2>
+
+    <p>物理 AI 这个词不是新造的，机器人和自动驾驶研究了几十年。它在 2025 年突然成为产业共识，是<strong>三件事在同一时间撞上</strong>了：</p>
+
+    <ol>
+      <li><strong>世界模型成熟</strong>。GPT 是从文本里学语言，<strong>世界基础模型（World Foundation Model, WFM）</strong>——直白说就是"一只懂物理规律的 GPT"——是从视频里学物理。NVIDIA Cosmos 用了 <a href="https://blogs.nvidia.com/blog/cosmos-world-foundation-models/">"9000 万亿 token × 2000 万小时真实视频"</a>（人、环境、工业、机器人、驾驶）训练，让模型能预测"摔下来的杯子会怎么碎"。这把"机器人没有海量真实数据可学"的老问题，<strong>用合成数据 + 仿真生成解开了</strong>。</li>
+      <li><strong>仿真与 Sim-to-Real 跨越拐点</strong>。机器人要学会一个动作，过去要在实验室拉无数次真机试错；现在 NVIDIA + Google DeepMind + Disney 联合做的开源物理引擎 <a href="https://developer.nvidia.com/blog/announcing-newton-an-open-source-physics-engine-for-robotics-simulation/">Newton</a>（基于 GPU 加速，号称比传统仿真<strong>快 70 倍</strong>）把"虚拟训练 → 真机部署"（Sim-to-Real）做到了能用。打个类比：以前训练飞行员要真的开飞机摔机，现在能在飞行模拟器里反复训练再上真机——成本降了几个数量级。</li>
+      <li><strong>人形机器人硬件成熟 + 资本涌入</strong>。马达、减速器、关节、电池、AI 芯片的成本曲线同时下行——<a href="https://www.morganstanley.com/insights/articles/humanoid-robot-market-5-trillion-by-2050">摩根士丹利</a>测算售价可能从现在的 $20 万跌到 2050 年的 $1.5 万（中国供应链区域）；Tesla Optimus、Figure 02、智元、宇树等同时在 2024-2026 进入"小批量到批量"过渡。</li>
+    </ol>
+
+    <div class="callout">三件事的共同效果：让 AI 学会动手的边际成本急剧下降——这是 NVIDIA 把"通用机器人的 ChatGPT 时刻"挂在嘴边的工程基础。</div>
+
+    <h2>三、底层"三件套"：Cosmos / Isaac GR00T / Newton</h2>
+
+    <p>要看清相关公司，先得看清 NVIDIA 自己构建的物理 AI 技术栈。它不是一个东西，是三层结构：</p>
+
+    <h3>1. Cosmos——"懂物理的 GPT"（脑子）</h3>
+
+    <p><strong>Cosmos</strong> 是 NVIDIA 的<a href="https://www.nvidia.com/en-us/ai/cosmos/">世界基础模型平台</a>。它的作用是给机器人和自动驾驶车一个"会想象未来"的脑子——给它一张当前画面 + 一个意图（"过马路"），它能预测出未来几秒不同决策下会发生什么，让机器人挑出最优解。</p>
+
+    <p>2025/1/6 首发 Cosmos 1；2026/5/31 在 GTC Taipei 升级到 <a href="https://nvidianews.nvidia.com/news/nvidia-launches-cosmos-3-the-open-frontier-foundation-model-for-physical-ai">Cosmos 3</a>——号称"全球首个开放的物理 AI 全模态模型"，把<strong>物理推理 + 世界生成 + 动作生成</strong>合一，训练数据规模 "billions of samples"。Cosmos 3 同时发布 <strong>Cosmos Coalition</strong>（联盟），首批成员包括 Agile Robots、Black Forest Labs、Generalist、LTX、Runway、Skild AI；应用方包括 Doosan Robotics、LG Electronics、Samsung Electronics、Li Auto（理想汽车）。</p>
+
+    <h3>2. Isaac GR00T——"人形机器人通用大脑"</h3>
+
+    <p>Cosmos 是给所有物理 AI 用的"通用世界模型"，<a href="https://nvidianews.nvidia.com/news/nvidia-isaac-gr00t-n1-open-humanoid-robot-foundation-model-simulation-frameworks">Isaac GR00T N1</a>（2025/3/18 GTC 发布）则是<strong>专门给人形机器人的"开源大脑"</strong>。它采用"双系统"架构（仿人脑）：</p>
+
+    <ul>
+      <li><strong>System 1</strong>（快思考）：像人的反射——看到杯子要倒，手立刻去接，毫秒级反应。</li>
+      <li><strong>System 2</strong>（慢思考）：像人的深思熟虑——视觉语言模型先理解"该怎么搬这个东西"，再让 System 1 把动作做出来。</li>
+    </ul>
+
+    <p>早期合作伙伴清单是判断"谁在第一梯队"的<strong>最干净来源</strong>：<strong>1X Technologies、Agility Robotics、Boston Dynamics、Mentee Robotics、NEURA Robotics</strong>。这五家全是头部人形机器人公司。同期开放的还有更新版 GR00T N1.5（2025/5/19）、Newton 集成、以及 <a href="https://blogs.nvidia.com/blog/isaac-gr00t-blueprint-humanoid-robotics/">GR00T Blueprint</a>（合成动作数据生成工作流）。</p>
+
+    <h3>3. Newton——"机器人的飞行模拟器"</h3>
+
+    <p><a href="https://www.linuxfoundation.org/press/linux-foundation-announces-contribution-of-newton-by-disney-research-google-deepmind-and-nvidia-to-accelerate-open-robot-learning">Newton</a> 是 NVIDIA + Google DeepMind + Disney Research 联合开发、捐给 Linux Foundation 的<strong>开源物理引擎</strong>。它的角色像"飞行员模拟舱"——机器人在里面摔上百万次都不疼，物理规律和真世界一致，然后再把"练好的脑子"部署到真机上。GPU 加速 + 可微分物理使其比传统仿真<strong>快 70 倍</strong>。Disney 用它训练《星球大战》系灵感的 BDX droid，奥兰多迪士尼乐园 2026/3/29 在巴黎首秀的 Olaf 机器人也是基于这套。</p>
+
+    <div class="case">
+      <p><strong>三件套怎么协作（一个例子）</strong>：你要让 1X 的 NEO Gamma 机器人学"叠衣服"——先用 <strong>Cosmos</strong> 生成几百万段不同光线、不同衣服材质下的"叠衣服视频"作为合成训练数据（解决真实数据不足问题）；再用 <strong>Isaac GR00T N1</strong> 提供"双系统"控制框架；最后在 <strong>Newton</strong> 里仿真训练上万次（每次 GPU 跑几秒），调好策略后再部署到真机。整个过程从"几个月"压缩到"几天"——这就是 2025-2026 物理 AI 真正改变机器人开发节奏的工程意义。</p>
+    </div>
+
+    <h2>四、紧密相关的三大行业</h2>
+
+    <p>物理 AI 不是一个行业，是<strong>一组让 AI 进入物理世界的能力</strong>，会被多个行业接入。最紧密的三个：</p>
+
+    <h3>① 具身机器人（最重磅，尤其是人形）</h3>
+
+    <p>这是物理 AI 最直接的"皮肤"。新华社 <a href="https://www.news.cn/tech/20260119/928025f5e8034dd180dc875c61d63b60/c.html">2026/1/19 报道</a>引用业内表述称"人形机器人是最大的物理 AI 应用"。下面分三层看：</p>
+
+    <ul>
+      <li><strong>人形机器人本体</strong>：海外 Tesla Optimus、Figure 02、1X NEO、Agility Digit、Boston Dynamics Atlas；国内智元、宇树科技、傅利叶、小鹏 Iron、银河通用等。</li>
+      <li><strong>非人形具身机器人</strong>：协作机器人（ABB、发那科、库卡、Universal Robots、安川电机）、手术机器人（Medtronic、CMR Surgical Versius）、物流机器人、家用服务机器人（科沃斯）。</li>
+      <li><strong>关键部件供应链</strong>：减速器（谐波/RV）、伺服电机、丝杠、力矩传感器、电池——这是 A 股最密集的获益层。</li>
+    </ul>
+
+    <h3>② 自动驾驶与 Robotaxi</h3>
+
+    <p>把"会开车"理解为"放在轮子上的人形机器人"——本质就是物理 AI。NVIDIA 把自动驾驶和机器人放在同一个 Cosmos 平台上训练，正是看到底层是同一套问题。</p>
+
+    <ul>
+      <li><strong>纯算法/平台</strong>：Waabi、Wayve、地平线机器人（09660.HK）、Mobileye（MBLY）。</li>
+      <li><strong>整车</strong>：Tesla（TSLA）、比亚迪（002594/01211）、理想汽车（02015.HK）、小鹏汽车（09868.HK，同时做 Iron 人形机器人）、小米（01810.HK）。</li>
+      <li><strong>Robotaxi 平台</strong>：Uber（与 Waymo / Waabi / 小马智行合作）、小马智行、Waymo。高盛认为 <a href="https://finance.sina.com.cn/roll/2025-03-04/doc-inennqmi9801929.shtml">Uber 是物理 AI 在自动驾驶层的核心受益者</a>之一。</li>
+    </ul>
+
+    <h3>③ 工业仿真、数字孪生与流程工业 AI</h3>
+
+    <p>这一块过去被叫"工业 4.0"或"智能制造"，物理 AI 把它的天花板再抬一层——从"按规则自动化"升级到"会学习、会优化、会自己决策"。</p>
+
+    <div class="case">
+      <p><strong>典型场景：化工厂全流程闭环控制</strong>。<a href="https://www.stcn.com/article/detail/3365389.html">2025 年</a>，中控技术（688777）把自研的"时间序列工业大模型 TPT + 通用控制系统 UCS"部署到兴发集团兴瑞化工厂，把化工厂从"人盯仪表 + 规则自动化"升级到"AI 感知 → 认知 → 决策 → 执行"闭环——按公司表述，这是流程工业的"具身智能"形态：物料、反应、阀门、能耗都被 AI 看在眼里、自己调。</p>
+    </div>
+
+    <p>这条线对应的上市公司方向：</p>
+    <ul>
+      <li><strong>工业仿真/CAE</strong>：达索系统（DASTY）、索辰科技（688507，国产 CAE 龙头，<a href="https://www.ccaonline.cn/newsflashes/1050316.html">2025/3/6 发布"天工·开物"物理 AI 平台</a>）。</li>
+      <li><strong>3D 视觉与感知</strong>：奥比中光（688322，<a href="https://www.orbbec.com.cn/index/News/info.html?cate=31&id=333">Gemini 330 系列 3D 相机接入 NVIDIA Jetson Thor 平台</a>）、瑞声科技（02018.HK，汽车 ADAS 相机模组）。</li>
+      <li><strong>工业 AI 平台 / 流程工业控制</strong>：中控技术（688777）。</li>
+      <li><strong>工业富联</strong>（601138）作为 NVIDIA 核心 AI 服务器代工方，是物理 AI 算力底座。</li>
+    </ul>
+
+    <h2>五、相关上市公司——按产业链角色分</h2>
+
+    <p>说清楚<strong>三个判断口径</strong>，再看清单：</p>
+
+    <ol>
+      <li><strong>"卖铲人"层（最硬）</strong>：直接提供物理 AI 必需的算力、模型、仿真平台。代表是 NVIDIA。</li>
+      <li><strong>"端到端整合"层</strong>：自己造车 / 造机器人 / 跑 Robotaxi，把物理 AI 装到自己产品里。Tesla、小鹏、1X（未上市）、Figure（未上市）属于这层。</li>
+      <li><strong>"关键零件 + 数据 + 感知"层</strong>：减速器、执行器、3D 传感器、CAE 工具。A 股密集分布在这层。</li>
+    </ol>
+
+    <p>下面这份清单的主要参照系是<a href="https://wallstreetcn.com/articles/3742312">高盛 2025/3/3 发布的物理 AI 产业研报（华尔街见闻整理）</a>，叠加 NVIDIA Cosmos 早期合作伙伴名单与各公司公开披露的业务暴露——<strong>但请把它当"产业地图"读，不当"推荐买入"读</strong>。每条都标注业务暴露度。</p>
+
+    <h3>美股 / 港股 / 台股 / 日股</h3>
+
+    <ul>
+      <li><strong>NVIDIA（NVDA）</strong>——平台 + GPU + Cosmos + Isaac GR00T + Newton 三件套<strong>全套自有</strong>，是物理 AI 浪潮的"卖铲人"中枢。</li>
+      <li><strong>Tesla（TSLA）</strong>——Optimus + FSD + Cybercab + Dojo 训练芯片，<strong>端到端</strong>纵向一体化，物理 AI 含量最高的整车厂。</li>
+      <li><strong>Uber（UBER）</strong>——Robotaxi 流量入口，与 Waymo、Waabi、小马智行多方合作；高盛认为是自动驾驶商用化的关键节点。</li>
+      <li><strong>Mobileye（MBLY）</strong>——ADAS/AV 视觉芯片与系统老牌。</li>
+      <li><strong>地平线机器人-W（09660.HK）</strong>——中国 ADAS/AV 芯片与算法龙头，是比亚迪等关键供应商；港股近期被高盛列为<a href="https://finance.sina.com.cn/stock/hkstock/hkgg/2025-03-07/doc-inenuzhm5891812.shtml">物理 AI 潜力股</a>。</li>
+      <li><strong>瑞声科技（02018.HK）</strong>——光学 + 声学 + ADAS 相机模组，正快速扩张汽车业务。</li>
+      <li><strong>小鹏汽车（XPEV / 09868.HK）</strong>——<a href="https://nvidianews.nvidia.com/news/nvidia-launches-cosmos-world-foundation-model-platform-to-accelerate-physical-ai-development">Cosmos 早期合作伙伴名单</a>中唯一中国整车厂；同时自研 Iron 人形机器人，物理 AI 双线暴露。</li>
+      <li><strong>理想汽车（LI / 02015.HK）</strong>——<a href="https://nvidianews.nvidia.com/news/nvidia-launches-cosmos-3-the-open-frontier-foundation-model-for-physical-ai">Cosmos 3 应用方</a>之一，自动驾驶端深度合作 NVIDIA。</li>
+      <li><strong>比亚迪（002594.SZ / 01211.HK）</strong>——高阶 NOA + 代客泊车规模化推广，新能源车销量绝对头部。</li>
+      <li><strong>安川电机（6506.T）</strong>——双臂机器人开发者、伺服与运动控制全球巨头。</li>
+      <li><strong>Harmonic Drive Systems（6324.T）</strong>——日本谐波减速器市场领导者，绿的谐波最重要的国际对标。</li>
+      <li><strong>达索系统（DASTY）</strong>——工业仿真软件与数字孪生平台 3DEXPERIENCE。</li>
+      <li><strong>基础设施层</strong>：Belden、Flex、Jabil、TE Connectivity、Amphenol、Prysmian、Legrand——数据中心 / 电力 / 连接器 / EMS 制造端的"水电煤"。</li>
+    </ul>
+
+    <h3>A 股（按产业链角色）</h3>
+
+    <p>这一节请配合上面那条"业务暴露度"原则读——A 股很多公司是"沾光式映射"，把它们和 NVDA、TSLA 放在同一坐标系下比对会高估其当前现金流敏感度。</p>
+
+    <p><strong>1) 执行器与精密零部件（"肌肉与骨骼"）</strong>：</p>
+    <ul>
+      <li><strong>拓普集团（601689.SH）</strong>——Tesla Optimus <strong>直线 + 旋转执行器总成独家一级供应商</strong>，<a href="https://pdf.dfcfw.com/pdf/H3_AP202504031650863529_1.pdf">深度报告</a>显示自研行星滚柱丝杠、无框力矩电机，2025/1 已有 2 条产线投产、规划年产能 30 万套；但特斯拉业务占营收 35-40%，<strong>客户集中度极高</strong>是反面风险。</li>
+      <li><strong>三花智控（002050.SZ / 02050.HK）</strong>——制冷阀 + 新能源车热管理双龙头，规划机器人执行器年产百万套；本站<a href="https://qiuyuanqr.github.io/searchX/r/2026-06-05_sanhua-zhikong-002050/">2026/6/5 单股调研</a>显示 2026 Q1 扣非 +15.52%、机器人主题被高盛/小摩双下调。</li>
+      <li><strong>绿的谐波（688017.SH）</strong>——<a href="https://xueqiu.com/S/SH688017">国产谐波减速器龙头</a>，2018 国产机器人市占率 62.55%，<a href="https://basic.10jqka.com.cn/688017/concept.html">人形机器人单台用 16 个谐波减速器、价值约 2.4 万元</a>，弹性敞口直接对应人形量产。</li>
+      <li><strong>双环传动（002472.SZ）</strong>——RV 减速器与精密齿轮，机器人零部件配套。</li>
+      <li><strong>北特科技（603009.SH）</strong>——汽车底盘零部件 + 行星滚柱丝杠新业务（送样阶段），见本站<a href="https://qiuyuanqr.github.io/searchX/r/2026-06-05_beite-technology-603009/">单股调研</a>。</li>
+    </ul>
+
+    <p><strong>2) 感知与仿真平台（"眼睛与想象力"）</strong>：</p>
+    <ul>
+      <li><strong>奥比中光（688322.SH）</strong>——国产 3D 视觉感知龙头；<a href="https://orbbec.com.cn/index/News/info.html?cate=31&id=245">Gemini 335/336 系列双目 3D 相机已集成进 NVIDIA Isaac Sim</a>、Gemini 330 系列接入 Jetson Thor 平台，<strong>NVIDIA 生态官方合作伙伴（NPN）</strong>。</li>
+      <li><strong>索辰科技（688507.SH）</strong>——国产 CAE 仿真龙头，<a href="https://www.ccaonline.cn/newsflashes/1050316.html">2025/3/6 发布"天工·开物"物理 AI 平台</a>聚焦低空经济、具身智能、新能源电池仿真。但<a href="http://static.cninfo.com.cn/finalpage/2025-08-28/1224589493.PDF">2025 半年报</a>披露开物（物理 AI）板块收入仅 376 万元，业务<strong>仍在概念兑现初期</strong>。</li>
+      <li><strong>中控技术（688777.SH）</strong>——流程工业 DCS 龙头，"All in AI" 战略推 TPT 工业大模型 + UCS 通用控制系统；<a href="https://www.stcn.com/article/detail/3365389.html">2025 年在兴发集团兴瑞化工厂部署"工业具身智能"</a>实现 AI 闭环。前三季度营业收入 56.54 亿，TPT 业务 1.54 亿。</li>
+      <li><strong>天准科技（688003.SH）</strong>——机器视觉 + 边缘计算，NVIDIA Jetson 合作伙伴，工业与人形机器人应用。</li>
+      <li><strong>凡拓数创（301313.SZ）</strong>——数字孪生引擎与物理仿真技术，为机器人提供虚拟训练环境。</li>
+    </ul>
+
+    <p><strong>3) 整车与自动驾驶</strong>：见前面美/港股清单中的比亚迪、理想港股。</p>
+
+    <p><strong>4) 算力底座与运动控制</strong>：</p>
+    <ul>
+      <li><strong>工业富联（601138.SH）</strong>——<a href="https://finance.sina.com.cn/roll/2025-03-04/doc-inennqmi9801929.shtml">NVIDIA 核心 AI 服务器制造伙伴</a>，全球 AI 服务器份额超 40%，是物理 AI 训练 / 推理底层算力的代工核心。</li>
+      <li><strong>汇川技术（300124.SZ）</strong>——工业自动化龙头，伺服、变频器、PLC 全栈布局，<a href="https://wallstreetcn.com/articles/3742312">高盛梳理中明确点名</a>"伺服 + 逆变器等机器人核心组件"，并已布局人形机器人执行器。</li>
+    </ul>
+
+    <div class="callout">A 股清单的常见误区：把"概念覆盖广"等同于"业绩弹性大"。物理 AI 当前阶段，真实从中拿到收入与利润最大份额的是<strong>NVIDIA 一家</strong>；A 股大部分公司是"主营业务稳健 + 物理 AI 题材想象"组合，量产兑现仍需 1-3 年观察。</div>
+
+    <h2>六、与五大常关注板块的关联</h2>
+
+    <p>对照 searchX 跟踪的五大板块（光模块 · 机器人 · 算力 · AI 应用 · 航天），物理 AI 的关联度从高到低：</p>
+
+    <ul>
+      <li><strong>机器人</strong>（最强关联）：物理 AI 几乎是机器人板块的"上层理论框架"，本质同一件事的两种叫法。</li>
+      <li><strong>AI 应用</strong>（强）：物理 AI 是 AI 应用的"物理化"分支，从聊天 / 写代码扩展到动手干活。</li>
+      <li><strong>算力</strong>（强）：训练 Cosmos 这种万亿 token 世界模型、跑 Newton 仿真，都是 GPU 吞噬大户，对 NVIDIA / 工业富联 / 算力服务器链条是直接利好。</li>
+      <li><strong>光模块</strong>（弱）：物理 AI 推动数据中心需求，对光通信间接利好，但不是直接驱动。</li>
+      <li><strong>航天</strong>（弱）：仅在"低空经济 / 无人机 / 卫星感知"分支有交叉（如索辰开物平台覆盖低空经济），非主线。</li>
+    </ul>
+
+    <h2>下次看什么（监控信号）</h2>
+
+    <p>物理 AI 是"故事 → 兑现"过渡阶段，催化和证伪都密集，未来 3-6 个月几个具体观察点：</p>
+
+    <ol>
+      <li><strong>Tesla Optimus V3 量产进度</strong>（2026 Q3/Q4 财报）——Tesla 自述要在 Fremont 工厂转产 Optimus，年产能目标 100 万套；实际产量与外销时间是<strong>整个 A 股供应链估值的最大单一变量</strong>。</li>
+      <li><strong>NVIDIA Cosmos 3 商用兑现</strong>——Cosmos 3 于 2026/5/31 发布，下一份关键数据是 NVIDIA Q2 FY2027 财报（约 2026/8 末）里 Omniverse / 机器人业务的收入披露口径与增速。</li>
+      <li><strong>人形机器人首次"非演示"交付订单</strong>——目前所有交付（智元、宇树等）大多仍是 PoC 与 B 端单批；首个万台量级商用订单（含家庭、零售）出现的时点。</li>
+      <li><strong>头部供应商物理 AI 业务收入</strong>——索辰科技、中控技术、奥比中光、汇川技术 2026 年报披露的物理 AI / 具身智能 / 机器人板块收入占比，是判断"题材"何时变"业绩"的硬指标。</li>
+      <li><strong>下一届 CES（2027/1 拉斯维加斯）与 GTC（2027/3 圣何塞）</strong>——黄仁勋这两次主题演讲是产业基准节奏；CES 2027 看 Cosmos 4 / Isaac GR00T N3 是否兑现新一代。</li>
+      <li><strong>监管节点</strong>——美国 NHTSA 对 Robotaxi 大规模商用的批准、中国对人形机器人安全标准的国标出台。</li>
+    </ol>
+
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li><strong>市场预测分歧极大</strong>。摩根士丹利 2050 年 $5 万亿 vs 高盛 2035 年 $380 亿，差两个数量级；自媒体广为引用的"沙利文 2040 年 $3.25 万亿"未找到一手原报告深链（未独立核实），不应作为硬数据使用。</li>
+      <li><strong>"概念股"业务暴露度差异巨大</strong>。索辰科技 2025H1 物理 AI 收入仅 376 万元，但股价被"3 天暴涨近 64%"——股价与业绩之间隔着"未来几年量产兑现"的强假设，证伪一旦出现回撤可能很深。</li>
+      <li><strong>技术兑现节奏不确定</strong>。黄仁勋说"通用机器人的 ChatGPT 时刻就在拐角"——但 ChatGPT 时刻的另一面是"过去八年自动驾驶量产时间不断延后"。Sim-to-Real 在仿真里好用，到真机上的泛化仍是工程难题；尤其家庭场景，安全性 / 长尾问题远比工厂场景复杂。</li>
+      <li><strong>客户集中度风险</strong>。拓普集团特斯拉收入占比 35-40%，Optimus 一旦推迟或路径变更，敞口直接转为利空。</li>
+      <li><strong>NVIDIA 寡头风险与生态依赖</strong>。Cosmos / Isaac / Newton 三件套虽部分开源，但训练算力与生态仍高度依赖 NVIDIA GPU；中长期 AMD、华为昇腾、Groq、AWS Trainium 等替代方案对 NVIDIA 物理 AI 平台的竞争格局有重塑可能。</li>
+      <li><strong>叙事 vs 业绩错配</strong>。"物理 AI"是产业级营销词，被广泛贴标签——同一只票既能被打"算力""AI 应用""机器人""物理 AI"四个标签，但底层收入和现金流可能没那么多新增。当下应把"物理 AI 概念"当作<strong>叙事框架</strong>读，而非买入信号；估值锚仍要回到各公司主营基本面与可披露的真实订单。</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2>
+    <dl>
+      <dt>物理 AI（Physical AI）</dt>
+      <dd>NVIDIA 提出的概念：能在真实物理世界感知、推理、规划并行动的 AI；机器人和自动驾驶是它的主要载体。</dd>
+      <dt>具身智能（Embodied AI）</dt>
+      <dd>通过"身体"与环境交互学习的 AI；包含虚拟身体（仿真）和真实身体两种，物理 AI 是其中"身体必须在真实物理世界"的子集。中文媒体常混用。</dd>
+      <dt>世界基础模型（WFM）</dt>
+      <dd>一只"懂物理规律的 GPT"：从大量真实世界视频里学到重力、摩擦、惯性怎么作用，能预测"接下来会发生什么"；机器人靠它来想象未来。</dd>
+      <dt>Cosmos</dt>
+      <dd>NVIDIA 的世界基础模型平台，2025/1 首发，2026/5/31 升级到 Cosmos 3；是物理 AI 的"通用脑子"。</dd>
+      <dt>Isaac GR00T</dt>
+      <dd>NVIDIA 专门给人形机器人的"开源大脑"框架，采用快/慢双系统（反射 + 深思）架构。</dd>
+      <dt>Newton</dt>
+      <dd>NVIDIA + Google DeepMind + Disney 联合做、Linux Foundation 托管的开源物理引擎；机器人在里面虚拟训练，比真机摔便宜得多、比传统仿真快 70 倍。</dd>
+      <dt>Omniverse</dt>
+      <dd>NVIDIA 的 3D 数字孪生/仿真协作平台，是 Cosmos 与 Isaac 跑起来的"虚拟世界舞台"。</dd>
+      <dt>数字孪生（Digital Twin）</dt>
+      <dd>给一个真实物体或工厂建一份"数字镜像"，把它在虚拟里跑一遍 → 看会出什么事 → 再回真世界——可以理解成"上线前的彩排"。</dd>
+      <dt>Sim-to-Real</dt>
+      <dd>"从仿真到真机"：先在仿真器里练好策略，再部署到真机器人。物理 AI 落地的关键工程门槛。</dd>
+      <dt>执行器（Actuator）</dt>
+      <dd>机器人的"肌肉"——直线执行器把电信号变成"伸缩"，旋转执行器变成"转动"，是动作的最后一公里。</dd>
+      <dt>谐波减速器</dt>
+      <dd>机器人关节里把"高速小扭矩"变"低速大扭矩"的关键齿轮装置；一台人形机器人通常用 16 个。绿的谐波是国产代表。</dd>
+      <dt>Robotaxi</dt>
+      <dd>"机器人出租车"——把自动驾驶汽车放进打车网络。Tesla Cybercab、Waymo、小马智行都在跑这条路线。</dd>
+    </dl>
+  </section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-disc">披露</span> <a href="https://nvidianews.nvidia.com/news/nvidia-launches-cosmos-world-foundation-model-platform-to-accelerate-physical-ai-development">NVIDIA Launches Cosmos World Foundation Model Platform to Accelerate Physical AI Development</a> <em>2025-01-06</em> — NVIDIA 官方新闻稿，CES 2025 首发 Cosmos，给出物理 AI 官方定义、训练数据规模与早期合作伙伴名单。</li>
+      <li><span class="src-disc">披露</span> <a href="https://nvidianews.nvidia.com/news/nvidia-isaac-gr00t-n1-open-humanoid-robot-foundation-model-simulation-frameworks">NVIDIA Announces Isaac GR00T N1 — the World's First Open Humanoid Robot Foundation Model</a> <em>2025-03-18</em> — GTC 2025 发布 Isaac GR00T N1 与双系统架构，早期合作伙伴含 1X、Agility、Boston Dynamics、Mentee、NEURA。</li>
+      <li><span class="src-disc">披露</span> <a href="https://nvidianews.nvidia.com/news/nvidia-launches-cosmos-3-the-open-frontier-foundation-model-for-physical-ai">NVIDIA Launches Cosmos 3, the Open Frontier Foundation Model for Physical AI</a> <em>2026-05-31</em> — Cosmos 3 官方发布，全模态架构 + Cosmos Coalition 名单，应用方含 Doosan、LG、Samsung、Li Auto。</li>
+      <li><span class="src-disc">披露</span> <a href="https://blogs.nvidia.com/blog/ces-2025-jensen-huang/">CES 2025: AI Advancing at 'Incredible Pace,' NVIDIA CEO Says</a> <em>2025-01-06</em> — NVIDIA 官方博客记录黄仁勋 CES 2025 主题演讲，"物理 AI"四阶段框架与"通用机器人 ChatGPT 时刻"原话。</li>
+      <li><span class="src-disc">披露</span> <a href="https://developer.nvidia.com/blog/announcing-newton-an-open-source-physics-engine-for-robotics-simulation/">Announcing Newton, an Open-Source Physics Engine for Robotics Simulation</a> <em>2025-03-18</em> — NVIDIA 技术博客发布 Newton 物理引擎，GPU 加速 + 可微分物理 + 70x 加速。</li>
+      <li><span class="src-disc">披露</span> <a href="https://www.linuxfoundation.org/press/linux-foundation-announces-contribution-of-newton-by-disney-research-google-deepmind-and-nvidia-to-accelerate-open-robot-learning">Linux Foundation Announces Contribution of Newton by Disney Research, Google DeepMind and NVIDIA</a> <em>2025-09-22</em> — Linux Foundation 官方公告 Newton 捐赠与托管，三方联合维护。</li>
+      <li><span class="src-disc">披露</span> <a href="https://www.nvidia.com/en-us/ai/cosmos/">NVIDIA Cosmos: World Foundation Models Powering Physical AI</a> <em>2026-06-01</em> — NVIDIA 官方产品页，Cosmos 平台完整产品矩阵与合作伙伴清单。</li>
+      <li><span class="src-disc">披露</span> <a href="https://blogs.nvidia.com/blog/cosmos-world-foundation-models/">Cosmos World Foundation Models Openly Available to Physical AI Developers</a> <em>2025-01-06</em> — NVIDIA 官方博客，Cosmos 训练规模（9000T tokens × 20M 小时视频）一手数据。</li>
+      <li><span class="src-disc">披露</span> <a href="https://blogs.nvidia.com/blog/isaac-gr00t-blueprint-humanoid-robotics/">NVIDIA Announces Isaac GR00T Blueprint to Accelerate Humanoid Robotics Development</a> <em>2025-03-18</em> — Isaac GR00T Blueprint 合成动作数据工作流官方说明。</li>
+      <li><span class="src-disc">披露</span> <a href="http://static.cninfo.com.cn/finalpage/2025-08-28/1224589493.PDF">索辰科技 2025 年半年度报告</a> <em>2025-08-28</em> — 索辰科技半年报披露开物（物理 AI）板块收入 376 万元，业务初期阶段。</li>
+      <li><span class="src-disc">披露</span> <a href="https://www.orbbec.com.cn/index/News/info.html?cate=31&id=333">奥比中光 3D 相机矩阵接入 NVIDIA Jetson Thor 平台</a> <em>2025-04-23</em> — 奥比中光官网新闻，Gemini 330 系列接入 NVIDIA Jetson Thor 平台，验证 NVIDIA 生态合作。</li>
+      <li><span class="src-disc">披露</span> <a href="https://orbbec.com.cn/index/News/info.html?cate=31&id=245">奥比中光入驻 NVIDIA Isaac Sim 新平台</a> <em>2024-04-08</em> — 奥比中光官网新闻，Gemini 335/336 集成进 Isaac Sim 仿真平台。</li>
+      <li><span class="src-media">媒体</span> <a href="https://www.news.cn/tech/20260119/928025f5e8034dd180dc875c61d63b60/c.html">物理 AI：人工智能发展又一高光时刻</a> <em>2026-01-19</em> — 新华网科技频道，国内主流媒体对物理 AI 定位与产业意义的报道。</li>
+      <li><span class="src-media">媒体</span> <a href="https://wallstreetcn.com/articles/3742312">黄仁勋力捧的"物理 AI"，高盛梳理了上市公司</a> <em>2025-03-04</em> — 华尔街见闻整理高盛 2025/3/3 物理 AI 研报，分自动驾驶 / AI 装备 / 机器人 / 基础设施四档列出上市公司名单。</li>
+      <li><span class="src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/hkstock/hkgg/2025-03-07/doc-inenuzhm5891812.shtml">高盛再出重磅报告 看好瑞声科技、地平线等企业作为物理 AI 的潜力</a> <em>2025-03-07</em> — 新浪财经报道高盛对港股物理 AI 标的的看法。</li>
+      <li><span class="src-media">媒体</span> <a href="https://www.stcn.com/article/detail/3365389.html">中控技术 TPT+UCS 在兴发集团投运 工业具身智能让 AI 从分析走向执行</a> <em>2025-09-23</em> — 证券时报报道中控技术工业具身智能落地兴瑞化工，物理 AI 在流程工业的典型案例。</li>
+      <li><span class="src-media">媒体</span> <a href="https://www.ccaonline.cn/newsflashes/1050316.html">索辰科技推出"天工·开物"物理 AI 平台</a> <em>2025-03-06</em> — 民用航空网快讯，索辰科技物理 AI 平台发布。</li>
+      <li><span class="src-media">媒体</span> <a href="https://techcrunch.com/2025/03/18/nvidia-and-google-deepmind-will-help-power-disneys-cute-robots/">Nvidia and Google DeepMind will help power Disney's cute robots</a> <em>2025-03-18</em> — TechCrunch 报道 Newton 物理引擎三方合作与 Disney BDX droid 应用。</li>
+      <li><span class="src-media">媒体</span> <a href="https://www.morganstanley.com/insights/articles/humanoid-robot-market-5-trillion-by-2050">Humanoid Robot Market Expected to Reach $5 Trillion by 2050</a> <em>2025-05-15</em> — 摩根士丹利对人形机器人市场长期规模预测的官方文章。</li>
+      <li><span class="src-research">研究</span> <a href="https://pdf.dfcfw.com/pdf/H3_AP202504031650863529_1.pdf">天风证券：拓普集团（601689.SH）公司深度报告——Tier 0.5 级汽车 + 机器人供应商</a> <em>2025-04-03</em> — 天风证券深度研报披露拓普集团是 Optimus 执行器总成独家一级供应商、Tesla 业务占比 35-40%。</li>
+      <li><span class="src-research">研究</span> <a href="https://www.nature.com/articles/s42256-026-01239-3">From embodied intelligence to physical AI</a> <em>2026-01-15</em> — Nature Machine Intelligence 综述文章，给出具身智能与物理 AI 的学术边界区分。</li>
+      <li><span class="src-research">研究</span> <a href="https://basic.10jqka.com.cn/688017/concept.html">绿的谐波（688017）概念题材</a> <em>2026-05-30</em> — 同花顺 F10 资料，绿的谐波客户、产品与人形机器人弹性测算。</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-06-05 · 内容定格于生成时点，更新请重跑生成新版本
+  </footer>
+
+</div>
+</body>
+</html>
