@@ -23,3 +23,4 @@
 - [媒体] CNBC：Intel 分拆 RealSense、募资 5,000 万美元 — https://www.cnbc.com/2025/07/11/intel-ai-robotics-realsense.html — 2025-07-11 — 竞品动态，客户含 Unitree。
 - [媒体] 证券时报：凌云光 2024 营收 22.34 亿（-15.42%）、净利 1.07 亿 — https://stcn.com/article/detail/1733603.html — 2025-04-29 — 工业机器视觉对标（赛道交叉不重叠）。
 - [研究] 同花顺 F10 盈利预测（卖方一致预期） — http://basic.10jqka.com.cn/688322/worth.html — 截至 2025-12 — PS 2025E/2026E/2027E 约 37.82/23.98/18.65 倍；2026E 营收预期约 +57.6%、净利约 +120%（属预期，非已兑现）。
+- [数据] akshare 接口核准（stock_zh_a_daily · stock_margin_detail_sse · stock_financial_abstract） — https://akshare.akfamily.xyz/ — 拉取 2026-06-06 — 基准日 6/5 收盘 126.06、当日振幅 20.15%、换手率 11.24%、近 90 日收盘区间 73.85–126.06、区间高点 133.28；融资余额 14.72 亿；2023–2025 及 2026Q1 营收/归母/扣非/经营现金流净额/资产负债率，与年报口径一致。主力资金 eastmoney 接口本次超时未取到。
