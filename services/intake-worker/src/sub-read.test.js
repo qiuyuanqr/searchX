@@ -23,8 +23,13 @@ test("缺密钥头 → 401", async () => {
   expect((await handleSubRead(get("/sub/7"), ENV())).status).toBe(401);
 });
 
-test("错密钥 → 401", async () => {
+test("错密钥 → 401（长度不同）", async () => {
   expect((await handleSubRead(get("/sub/7", { "x-sub-secret": "wrong" }), ENV())).status).toBe(401);
+});
+
+test("错密钥 → 401（与正确密钥等长，验证恒定时间比较仍判错）", async () => {
+  // "S3CRET" 6 位；给一个等长但不同的串，确保 safeEqual 不因等长而误放行
+  expect((await handleSubRead(get("/sub/7", { "x-sub-secret": "XXXXXX" }), ENV())).status).toBe(401);
 });
 
 test("路径非法（非数字）→ 400", async () => {

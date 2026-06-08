@@ -17,15 +17,22 @@ const fence = (label, text) => ["", `### ${label}`, "```", text, "```"];
 
 // 公开仓库 → Issue 公开：这里**总是**内部打码（纵深防御，不依赖调用方先打码；
 // maskEmail 幂等，即使 handler 已先打码也安全）。
-export function formatIssue(clean, { author }) {
+export function formatIssue(clean, { author, flags = [] }) {
   const maskedEmail = maskEmail(clean.email);
   const lines = [
     "**调研请求**（来自站内表单）",
     "",
     `- 提交者邮箱（打码）：\`${maskedEmail}\``,
     `- 审批：@${author} 贴 \`approved\` 标签即开始（贴前 0 花费）`,
-    ...fence("题目", clean.title),
   ];
+  // 安全初筛红旗：命中可疑模式时显眼提示，审批前请逐字核对题目/侧重点（防提示注入）。
+  if (flags.length) {
+    lines.push(
+      "",
+      `> ⚠️ **自动安全初筛**：检测到可疑内容（${flags.join("、")}）。可能是提示注入，**审批前请逐字核对题目与侧重点，确认无误再贴 \`approved\`**。`
+    );
+  }
+  lines.push(...fence("题目", clean.title));
   if (clean.focus) lines.push(...fence("侧重点", clean.focus));
   if (clean.message) lines.push(...fence("留言", clean.message));
 

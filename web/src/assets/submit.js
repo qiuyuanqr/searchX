@@ -35,6 +35,17 @@ export function renderSearchResultsHTML(items) {
     .join("");
 }
 
+// 纯函数：把"已有报告"命中渲染成提示 HTML。title/href 来自报告数据，拼进 innerHTML 前必须转义防 DOM-XSS。
+// match = findFreshReport 的返回 { entry, ageDays, matchedBy }；无命中返回空串。
+export function describeExistingReport(match) {
+  if (!match || !match.entry) return "";
+  const title = escapeHtml(match.entry.title) || "这个标的";
+  const href = escapeHtml(match.entry.href || "#");
+  const age = Number.isFinite(match.ageDays) ? match.ageDays : null;
+  const when = age === 0 ? "今天刚调研过" : age != null ? `${age} 天内已调研过` : "已经调研过";
+  return `📄 ${when}：「${title}」。<a href="${href}" target="_blank" rel="noopener">点此查看报告 →</a> 不用重复提交啦；如确需基于最新情况重做，可邮件联系作者。`;
+}
+
 // 纯函数：把服务端响应（或异常）映射成给用户看的中文。
 export function describeResult(res) {
   if (res && res.ok) {

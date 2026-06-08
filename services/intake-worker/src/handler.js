@@ -40,7 +40,7 @@ export async function handleIntake(request, env, deps = {}) {
     const passed = await verifyTurnstile(token, env.TURNSTILE_SECRET, ip, fetchImpl);
     if (!passed) return json({ ok: false, error: "turnstile_failed" }, 403);
 
-    const { ok: valid, errors, clean } = validateSubmission(input);
+    const { ok: valid, errors, clean, flags } = validateSubmission(input);
     if (!valid) return json({ ok: false, error: "invalid", details: errors }, 400);
 
     const dk = dayKey(now);
@@ -49,7 +49,7 @@ export async function handleIntake(request, env, deps = {}) {
     if (!rl.allowed) return json({ ok: false, error: rl.reason }, 429);
 
     // 公开仓库 → Issue 正文只放打码邮箱
-    const issue = formatIssue({ ...clean, email: maskEmail(clean.email) }, { author: env.AUTHOR_LOGIN });
+    const issue = formatIssue({ ...clean, email: maskEmail(clean.email) }, { author: env.AUTHOR_LOGIN, flags });
     const created = await createIssue(
       { owner: env.GITHUB_OWNER, repo: env.GITHUB_REPO, token: env.GITHUB_TOKEN, ...issue },
       fetchImpl

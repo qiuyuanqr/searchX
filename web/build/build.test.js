@@ -43,6 +43,27 @@ test("build 产出首页、报告副本、资产", () => {
   expect(report).toContain("beta 正文");
 });
 
+test("build 产出查重资产：assets/dedup.js + 精简 reports.json（含查重所需字段、不含私密）", () => {
+  build({
+    root: "web/build/fixtures/research",
+    out: OUT,
+    assets: "web/src/assets",
+    template: "web/src/index.template.html",
+  });
+  // 查重纯函数复制到 assets（供浏览器表单 import），且确为可用的导出
+  expect(existsSync(`${OUT}/assets/dedup.js`)).toBe(true);
+  expect(readFileSync(`${OUT}/assets/dedup.js`, "utf8")).toContain("findFreshReport");
+  // 报告清单：数组、每条含查重所需字段
+  const reports = JSON.parse(readFileSync(`${OUT}/reports.json`, "utf8"));
+  expect(Array.isArray(reports)).toBe(true);
+  expect(reports.length).toBe(2);
+  for (const r of reports) {
+    for (const k of ["title", "type", "date", "slug", "tags", "href"]) expect(k in r).toBe(true);
+  }
+  // 不夹带正文/来源/邮箱等多余或私密字段
+  expect("tldr" in reports[0]).toBe(false);
+});
+
 test("首页注入提交配置（弹窗表单）；submit.html 跳转回主页", () => {
   build({
     root: "web/build/fixtures/research",

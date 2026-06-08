@@ -15,6 +15,7 @@ export function build({
   template = "web/src/index.template.html",
   submitTemplate = "web/src/submit.template.html",
   config = "web/src/site.config.json",
+  dedup = "services/runner/src/dedup.js", // 查重纯函数：复制给浏览器表单用，单一源、不漂移
 } = {}) {
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
@@ -51,6 +52,15 @@ export function build({
     recursive: true,
     filter: (src) => !src.endsWith(".test.js"),
   });
+
+  // 提交表单的"提交即查重"用：复制查重纯函数 + 产出精简报告清单。
+  // dedup.js 与 runner 同一份源（无依赖、浏览器可直接 import），复制到 assets/ 供表单加载。
+  cpSync(dedup, join(out, "assets", "dedup.js"));
+  // reports.json：表单 fetch 后本地比对，判断"这只票是否已有报告"。只放查重所需字段，邮箱等私密信息绝不出现。
+  const slim = entries.map((e) => ({
+    title: e.title, type: e.type, date: e.date, slug: e.slug, tags: e.tags, href: e.href,
+  }));
+  writeFileSync(join(out, "reports.json"), JSON.stringify(slim));
 
   // submit.html：保留旧网址，跳转回主页并打开提交弹窗（#submit）
   const submitTpl = readFileSync(submitTemplate, "utf8");

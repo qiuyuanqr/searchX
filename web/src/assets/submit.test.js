@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { buildPayload, describeResult, escapeHtml, renderSearchResultsHTML } from "./submit.js";
+import { buildPayload, describeResult, escapeHtml, renderSearchResultsHTML, describeExistingReport } from "./submit.js";
 
 test("buildPayload 去空白并带上 turnstile token", () => {
   const p = buildPayload(
@@ -48,4 +48,32 @@ test("renderSearchResultsHTML 转义 title 与 url（防 DOM-XSS），excerpt �
 test("renderSearchResultsHTML 空标题回退「(无标题)」", () => {
   const html = renderSearchResultsHTML([{ url: "u", meta: { title: "" }, excerpt: "" }]);
   expect(html).toContain("(无标题)");
+});
+
+test("describeExistingReport：含标题/天数/链接；无命中给空串", () => {
+  expect(describeExistingReport(null)).toBe("");
+  expect(describeExistingReport({})).toBe("");
+  const h = describeExistingReport({
+    entry: { title: "芯原股份（688521.SH）", href: "r/2026-06-08_verisilicon-688521/" },
+    ageDays: 2, matchedBy: "name",
+  });
+  expect(h).toContain("2 天内已调研过");
+  expect(h).toContain("芯原股份（688521.SH）");
+  expect(h).toContain('href="r/2026-06-08_verisilicon-688521/"');
+  expect(h).toContain("点此查看报告");
+});
+
+test("describeExistingReport：0 天显示『今天刚调研过』", () => {
+  const h = describeExistingReport({ entry: { title: "X", href: "r/x/" }, ageDays: 0 });
+  expect(h).toContain("今天刚调研过");
+});
+
+test("describeExistingReport：title/href 转义防 DOM-XSS", () => {
+  const h = describeExistingReport({
+    entry: { title: `<img src=x onerror=alert(1)>`, href: `r/" onmouseover="alert(1)` },
+    ageDays: 1,
+  });
+  expect(h).not.toContain("<img src=x");
+  expect(h).toContain("&lt;img src=x");
+  expect(h).not.toContain(`href="r/" onmouseover="alert(1)"`); // 引号被转义，无法逃逸属性
 });

@@ -1,6 +1,23 @@
-import { buildPayload, describeResult, renderSearchResultsHTML } from "./submit.js";
+import { buildPayload, describeResult, renderSearchResultsHTML, describeExistingReport } from "./submit.js";
+import { findFreshReport } from "./dedup.js";
 
 const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// 提交即查重：与 runner 同一时效窗口（天）。已有同标的且窗口内报告 → 提示已有、拦下提交。
+const DEDUP_WINDOW_DAYS = 30;
+let reportsCache = null;
+async function loadReports(){
+  if (reportsCache) return reportsCache;
+  try {
+    const url = new URL("reports.json", document.baseURI).href; // 站点根的报告清单（构建产出）
+    const r = await fetch(url);
+    reportsCache = r.ok ? await r.json() : [];
+  } catch { reportsCache = []; } // 取不到就当无可比对：不拦提交，runner 仍会兜底查重
+  return reportsCache;
+}
+function todayBeijing(){
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai" }).format(new Date());
+}
 
 // 卡片 3D 倾斜
 function bindTilt(){
@@ -120,10 +137,33 @@ function bindSubmitModal(){
   const done = document.getElementById("submit-done");
   const again = document.getElementById("submit-again");
   const firstField = () => form.querySelector('input[name="title"]');
+  const titleInput = form.querySelector('input[name="title"]');
+  const dupNotice = document.getElementById("dup-notice");
+  const submitBtn = form.querySelector(".submit-btn");
   let lastFocus = null;
 
   const setStatus = (text, kind) => { statusEl.textContent = text; statusEl.dataset.kind = kind; statusEl.hidden = false; };
   const showForm = () => { form.hidden = false; done.hidden = true; statusEl.hidden = true; };
+
+  // ── 提交即查重 ──
+  // 清除提示并解除"重复"造成的禁用（注意：只解除查重禁用，不动"请求在途"那次禁用）。
+  function clearDup(){
+    if (dupNotice){ dupNotice.hidden = true; dupNotice.innerHTML = ""; }
+    if (submitBtn && submitBtn.dataset.dupBlocked){ delete submitBtn.dataset.dupBlocked; submitBtn.disabled = false; }
+  }
+  async function runDupCheck(){
+    if (!titleInput || !dupNotice) return;
+    const t = titleInput.value.trim();
+    if (!t) { clearDup(); return; }
+    const match = findFreshReport({
+      topic: t, entries: await loadReports(), today: todayBeijing(), windowDays: DEDUP_WINDOW_DAYS,
+    });
+    if (!match) { clearDup(); return; }
+    dupNotice.innerHTML = describeExistingReport(match); // 内部已转义，防 DOM-XSS
+    dupNotice.hidden = false;
+    if (submitBtn){ submitBtn.dataset.dupBlocked = "1"; submitBtn.disabled = true; } // 拦下：honest 重复不进待审队列
+  }
+  const checkDup = debounce(runDupCheck, 200);
 
   function open(){
     lastFocus = document.activeElement;
@@ -132,6 +172,8 @@ function bindSubmitModal(){
     document.body.classList.add("modal-lock");
     openBtn.setAttribute("aria-expanded", "true");
     renderTurnstile();                       // 弹窗已可见，可安全渲染（API 未就绪则等回调）
+    loadReports();                           // 预取报告清单，让首次输入即时可比对
+    runDupCheck();                           // 题目若已有内容（如再次打开）立即查一次
     const f = firstField(); if (f) f.focus();
   }
   function close(){
@@ -153,6 +195,7 @@ function bindSubmitModal(){
 
   openBtn.addEventListener("click", open);
   closeBtn.addEventListener("click", close);
+  if (titleInput) titleInput.addEventListener("input", checkDup); // 输入题目即查重
   modal.addEventListener("click", (e) => { if (e.target === modal) close(); }); // 点遮罩关闭
   document.addEventListener("keydown", (e) => {
     if (modal.hidden) return;
@@ -162,6 +205,7 @@ function bindSubmitModal(){
 
   again.addEventListener("click", () => {
     form.reset();
+    clearDup();                              // 题目已清空，撤掉查重提示与禁用
     if (tsId !== null && window.turnstile) window.turnstile.reset(tsId);
     showForm();
     const f = firstField(); if (f) f.focus();
