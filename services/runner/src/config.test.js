@@ -10,7 +10,7 @@ const FULL = {
   RUNNER_SMTP_PASS: "app-pass",
 };
 
-test("齐全 → 返回配置；URL 去尾斜杠；含默认 owner/repo/siteBase/claudeArgs", () => {
+test("齐全 → 返回配置；URL 去尾斜杠；含默认 owner/repo/siteBase/claudeArgs/dedupWindowDays", () => {
   const c = loadRunnerConfig(FULL);
   expect(c.githubToken).toBe("ghp_x");
   expect(c.workerUrl).toBe("https://w.workers.dev");
@@ -18,7 +18,16 @@ test("齐全 → 返回配置；URL 去尾斜杠；含默认 owner/repo/siteBase
   expect(c.repo).toBe("searchX");
   expect(c.authorEmail).toBe("me@gmail.com"); // 缺省回退到 RUNNER_SMTP_USER
   expect(c.siteBase).toBe("https://qiuyuanqr.github.io/searchX");
+  expect(c.dedupWindowDays).toBe(30); // 默认查重时效窗口 30 天
   expect(c.claudeArgs).toEqual(["--permission-mode", "bypassPermissions"]);
+});
+
+test("dedupWindowDays：可被 RUNNER_DEDUP_WINDOW_DAYS 覆盖；空/非法/负数回退 30", () => {
+  expect(loadRunnerConfig({ ...FULL, RUNNER_DEDUP_WINDOW_DAYS: "7" }).dedupWindowDays).toBe(7);
+  expect(loadRunnerConfig({ ...FULL, RUNNER_DEDUP_WINDOW_DAYS: "0" }).dedupWindowDays).toBe(0);
+  expect(loadRunnerConfig({ ...FULL, RUNNER_DEDUP_WINDOW_DAYS: "" }).dedupWindowDays).toBe(30);
+  expect(loadRunnerConfig({ ...FULL, RUNNER_DEDUP_WINDOW_DAYS: "abc" }).dedupWindowDays).toBe(30);
+  expect(loadRunnerConfig({ ...FULL, RUNNER_DEDUP_WINDOW_DAYS: "-5" }).dedupWindowDays).toBe(30);
 });
 
 test("缺必填 → 抛错且列出缺的键", () => {

@@ -166,6 +166,8 @@ async function main() {
     },
     sendEmail: (msg) => sendEmailImpl(msg, { transport }),
     log: (m) => console.log(m),
+    // 查重时效用「北京时间」当天判定，与全项目时间口径一致。
+    today: () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai" }).format(new Date()),
     bumpDailyCount,
     loadPending,
     savePending,

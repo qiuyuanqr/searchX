@@ -7,17 +7,19 @@ import { listApprovedIssues, addLabel, commentIssue } from "./issues.js";
 import { parseIssueRequest } from "./parse-issue.js";
 import { buildResearchPrompt } from "./research-cmd.js";
 import { diffNewDirs } from "./research-output.js";
+import { findFreshReport } from "./dedup.js";
 import { fetchSubmitterEmail } from "./sub-fetch.js";
-import { composeEmail, composeAuthorDigest, composeParkNotice } from "./email.js";
+import { composeEmail, composeExistingEmail, composeAuthorDigest, composeParkNotice } from "./email.js";
 
 export async function runOnce(config, deps) {
   const { fetchImpl, scanDirs, runResearch, sendEmail, log, bumpDailyCount,
+    today = () => new Date().toISOString().slice(0, 10),
     verifyPublished = async () => true,
     loadPending = async () => [], savePending = async () => {},
     readParkSignal = async () => null, clearParkSignal = async () => {} } = deps;
   const gh = { owner: config.owner, repo: config.repo, token: config.githubToken };
 
-  const summary = { processed: 0, published: 0, emailed: 0, parked: 0, failed: 0 };
+  const summary = { processed: 0, published: 0, emailed: 0, deduped: 0, parked: 0, failed: 0 };
 
   // 取提交者邮箱并发一封「已上线」邮件。复用于正常路径与补发路径。
   async function emailSubmitter({ number, topic, title, tldr, url }) {
@@ -66,7 +68,56 @@ export async function runOnce(config, deps) {
     const { topic, focus } = parseIssueRequest(issue);
     log(`#${issue.number} 开始：${topic}`);
 
-    const before = scanDirs().map((e) => e.dir);
+    const existing = scanDirs();
+
+    // —— 查重：同标的且在时效窗口内已有报告 → 不重复调研，自动回信引导看现成报告 + 贴 done ——
+    // 确定性、零 token：在 spawn claude 之前判定，既省额度又避免"重复调研空跑/再造文件夹"。
+    // 命中即跳过本条研究；股票类才查（默认 types=["股票"]），超窗口的旧报告允许重做。
+    const dup = findFreshReport({
+      topic, entries: existing, today: today(), windowDays: config.dedupWindowDays,
+    });
+    if (dup) {
+      summary.deduped++;
+      const url = `${config.siteBase}/${dup.entry.href}`;
+      log(`#${issue.number} 已有报告（${dup.ageDays} 天内 · 命中${dup.matchedBy === "code" ? "代码" : "名称"}），不重复调研：${url}`);
+      let emailedOk = false;
+      try {
+        const email = await fetchSubmitterEmail(
+          { workerUrl: config.workerUrl, secret: config.subSecret, issueNumber: issue.number },
+          fetchImpl
+        );
+        await sendEmail(composeExistingEmail({
+          topic, title: dup.entry.title, tldr: dup.entry.tldr, url, ageDays: dup.ageDays,
+          toEmail: email, authorEmail: config.authorEmail, fromEmail: config.smtpUser,
+        }));
+        summary.emailed++;
+        emailedOk = true;
+        log(`#${issue.number} 已回信告知已有报告`);
+      } catch (err) {
+        log(`#${issue.number} 已有报告但回信失败：${err.message}`);
+      }
+      // 贴 done（兜底）：杜绝下轮重复选中再判一次（幂等）。
+      try {
+        await addLabel({ ...gh, number: issue.number, label: "done" }, fetchImpl);
+      } catch (err) {
+        log(`#${issue.number} 查重命中后贴 done 失败：${err.message}`);
+      }
+      // 留痕评论（尽力而为，失败不影响已发的信）。
+      try {
+        await commentIssue(
+          { ...gh, number: issue.number,
+            body: emailedOk
+              ? `ℹ️ 已有同标的报告（生成于 ${dup.ageDays} 天内），未重复调研，已回信引导提交者查看：${url}`
+              : `ℹ️ 已有同标的报告（生成于 ${dup.ageDays} 天内），未重复调研：${url}。但自动回信失败，请手动告知提交者。` },
+          fetchImpl
+        );
+      } catch (e) {
+        log(`#${issue.number} 查重命中后评论失败（不影响主流程）：${e.message}`);
+      }
+      continue;
+    }
+
+    const before = existing.map((e) => e.dir);
     const ok = await runResearch(buildResearchPrompt({ topic, focus }));
     const after = scanDirs();
     const newDirs = diffNewDirs(before, after.map((e) => e.dir));
@@ -204,6 +255,6 @@ export async function runOnce(config, deps) {
   // 持久化「上线待确认」队列：含本轮新失败的 + 上一轮仍未补发成功的。
   await savePending(pending);
 
-  log(`完成：处理 ${summary.processed}、上线 ${summary.published}、发信 ${summary.emailed}、搁置 ${summary.parked}、失败 ${summary.failed}`);
+  log(`完成：处理 ${summary.processed}、上线 ${summary.published}、发信 ${summary.emailed}、查重跳过 ${summary.deduped}、搁置 ${summary.parked}、失败 ${summary.failed}`);
   return summary;
 }

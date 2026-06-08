@@ -7,6 +7,7 @@ const CONFIG = {
   workerUrl: "https://w.dev", subSecret: "S",
   authorEmail: "me@g.com", smtpUser: "me@g.com",
   siteBase: "https://site.dev/searchX",
+  dedupWindowDays: 30,
 };
 
 const ISSUE_LIST = [
@@ -56,7 +57,7 @@ test("快乐路径：贴 done、发信（含链接+TLDR+抄送）、评论、sum
     fetchImpl, scanDirs: world.scanDirs, runResearch: world.runResearch,
     sendEmail: async (m) => { sent = m; }, log: () => {},
   });
-  expect(summary).toEqual({ processed: 1, published: 1, emailed: 1, parked: 0, failed: 0 });
+  expect(summary).toEqual({ processed: 1, published: 1, emailed: 1, deduped: 0, parked: 0, failed: 0 });
   expect(fetchImpl.calls.some((c) =>
     /\/issues\/7\/labels$/.test(c.url) && JSON.parse(c.opts.body).labels.includes("done")
   )).toBe(true);
@@ -307,5 +308,106 @@ test("park 时发信失败：仍清信号、贴 done、评论，parked 照计数
   )).toBe(true);
   expect(fetchImpl.calls.some((c) =>
     /\/issues\/7\/comments$/.test(c.url) && JSON.parse(c.opts.body).body.includes("搁置")
+  )).toBe(true);
+});
+
+// —— 查重：同标的且在时效窗口内已有报告 → 不重复调研，自动回信 ——
+// scanDirs 返回一个 30 天内的同股票报告（type=股票、tags 含中文名+代码），runner 应在 spawn 前拦下。
+function makeStockFetch(issues) {
+  const calls = [];
+  const fn = async (url, opts = {}) => {
+    calls.push({ url: String(url), opts });
+    const u = String(url);
+    if (u.includes("/issues?")) return { ok: true, json: async () => issues };
+    if (/\/issues\/\d+\/labels$/.test(u)) return { ok: true, json: async () => [] };
+    if (/\/issues\/\d+\/comments$/.test(u)) return { ok: true, json: async () => ({}) };
+    if (u.includes("/sub/")) return { ok: true, json: async () => ({ ok: true, email: "u@x.com" }) };
+    return { ok: false, status: 404, json: async () => ({}) };
+  };
+  fn.calls = calls;
+  return fn;
+}
+const STOCK_ENTRY = {
+  dir: "2026-06-08_verisilicon-688521", date: "2026-06-08", type: "股票",
+  title: "芯原股份（688521.SH）", tldr: "国内半导体 IP 龙头", slug: "verisilicon-688521",
+  tags: ["research", "芯原股份", "688521"], href: "r/2026-06-08_verisilicon-688521/",
+};
+
+test("查重命中（窗口内已有同股票报告）：不跑研究、回信告知已有、贴 done、deduped 计数、不计 failed", async () => {
+  const fetchImpl = makeStockFetch([{ number: 9, title: "芯原股份", body: "", labels: [{ name: "approved" }] }]);
+  let ran = 0, sent;
+  const summary = await runOnce(CONFIG, {
+    fetchImpl, scanDirs: () => [STOCK_ENTRY],
+    runResearch: async () => { ran++; return true; },
+    sendEmail: async (m) => { sent = m; }, log: () => {},
+    today: () => "2026-06-10",
+  });
+  expect(ran).toBe(0);                 // 关键：没 spawn claude、没跑研究
+  expect(summary.deduped).toBe(1);
+  expect(summary.processed).toBe(1);
+  expect(summary.published).toBe(0);
+  expect(summary.failed).toBe(0);
+  expect(summary.emailed).toBe(1);
+  // 回信：发给提交者、抄作者、主题标「已有」、正文含报告链接
+  expect(sent.to).toBe("u@x.com");
+  expect(sent.cc).toBe("me@g.com");
+  expect(sent.subject).toContain("已有");
+  expect(sent.text).toContain("https://site.dev/searchX/r/2026-06-08_verisilicon-688521/");
+  // 贴 done（幂等，杜绝下轮重判）+ 评论留痕「未重复调研」
+  expect(fetchImpl.calls.some((c) =>
+    /\/issues\/9\/labels$/.test(c.url) && JSON.parse(c.opts.body).labels.includes("done")
+  )).toBe(true);
+  expect(fetchImpl.calls.some((c) =>
+    /\/issues\/9\/comments$/.test(c.url) && JSON.parse(c.opts.body).body.includes("未重复调研")
+  )).toBe(true);
+});
+
+test("查重命中但报告已过时效窗口 → 照常跑研究（不当成重复）", async () => {
+  const stale = { ...STOCK_ENTRY, dir: "2026-01-01_verisilicon-688521", date: "2026-01-01", href: "r/2026-01-01_verisilicon-688521/" };
+  const dirs = [stale];
+  const fetchImpl = makeStockFetch([{ number: 9, title: "芯原股份", body: "", labels: [{ name: "approved" }] }]);
+  let ran = 0, sent;
+  const summary = await runOnce(CONFIG, {
+    fetchImpl, scanDirs: () => dirs.slice(),
+    runResearch: async () => {
+      ran++;
+      dirs.push({ dir: "2026-06-10_verisilicon-688521-new", date: "2026-06-10", type: "股票",
+        title: "芯原股份（688521.SH）", tldr: "刷新", slug: "verisilicon-688521-new",
+        tags: ["芯原股份", "688521"], href: "r/2026-06-10_verisilicon-688521-new/" });
+      return true;
+    },
+    sendEmail: async (m) => { sent = m; }, log: () => {},
+    today: () => "2026-06-10", // 距 2026-01-01 远超 30 天
+  });
+  expect(ran).toBe(1);            // 旧报告过时 → 重做
+  expect(summary.deduped).toBe(0);
+  expect(summary.published).toBe(1);
+  expect(sent.subject).toContain("调研完成"); // 走正常完成回信，而非「已有报告」
+});
+
+test("查重命中但回信失败 → 仍贴 done、评论提示手动告知、emailed 不计数", async () => {
+  const fetchImpl = makeStockFetch([{ number: 9, title: "芯原股份", body: "", labels: [{ name: "approved" }] }]);
+  // 取提交者邮箱 404 → fetchSubmitterEmail 抛错 → 回信失败
+  const base = fetchImpl;
+  const wrapped = async (url, opts) => {
+    if (String(url).includes("/sub/")) { base.calls.push({ url: String(url), opts: opts || {} }); return { ok: false, status: 404 }; }
+    return base(url, opts);
+  };
+  wrapped.calls = base.calls;
+  let ran = 0;
+  const summary = await runOnce(CONFIG, {
+    fetchImpl: wrapped, scanDirs: () => [STOCK_ENTRY],
+    runResearch: async () => { ran++; return true; },
+    sendEmail: async () => {}, log: () => {},
+    today: () => "2026-06-10",
+  });
+  expect(ran).toBe(0);
+  expect(summary.deduped).toBe(1);
+  expect(summary.emailed).toBe(0);
+  expect(base.calls.some((c) =>
+    /\/issues\/9\/labels$/.test(c.url) && JSON.parse(c.opts.body).labels.includes("done")
+  )).toBe(true);
+  expect(base.calls.some((c) =>
+    /\/issues\/9\/comments$/.test(c.url) && JSON.parse(c.opts.body).body.includes("手动告知")
   )).toBe(true);
 });

@@ -13,6 +13,15 @@ const REQUIRED = [
 const t = (s) => String(s).trim();                 // 去首尾空白（防粘贴带空格导致静默 401）
 const trimUrl = (u) => t(u).replace(/\/+$/, "");    // 去首尾空白 + 尾部斜杠
 
+// 查重时效窗口（天）：默认 30；空 / 非法 / 负数都回退默认。股票报告是约 13 周时点快照，
+// 30 天内的报告视为"现成可用、不重复调研"，更早的允许重做（行情/基本面多已变动）。
+const DEFAULT_DEDUP_WINDOW_DAYS = 30;
+function parseDedupWindow(raw) {
+  if (raw === undefined || String(raw).trim() === "") return DEFAULT_DEDUP_WINDOW_DAYS;
+  const n = Math.floor(Number(raw));
+  return Number.isFinite(n) && n >= 0 ? n : DEFAULT_DEDUP_WINDOW_DAYS;
+}
+
 export function loadRunnerConfig(env) {
   const missing = REQUIRED.filter((k) => !env[k] || !String(env[k]).trim());
   if (missing.length) {
@@ -30,6 +39,7 @@ export function loadRunnerConfig(env) {
     repo: t(env.RUNNER_REPO || "searchX"),
     authorEmail: t(env.RUNNER_AUTHOR_EMAIL || env.RUNNER_SMTP_USER), // 缺省=发信账号，不在代码里硬写个人邮箱
     siteBase: trimUrl(env.RUNNER_SITE_BASE || "https://qiuyuanqr.github.io/searchX"),
+    dedupWindowDays: parseDedupWindow(env.RUNNER_DEDUP_WINDOW_DAYS),
     claudeArgs: (env.RUNNER_CLAUDE_ARGS || "--permission-mode bypassPermissions")
       .split(/\s+/)
       .filter(Boolean),

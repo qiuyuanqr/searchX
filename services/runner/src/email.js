@@ -15,6 +15,24 @@ export function composeEmail({ topic, title, tldr, url, toEmail, authorEmail, fr
   return { from: fromEmail, to: toEmail, cc: authorEmail, subject, text: lines.join("\n") };
 }
 
+// 「已有报告·不重复调研」回信：提交的标的此前已调研过且报告仍在时效窗口内，不重复跑，
+// 直接引导提交者去站点看现成报告。抄送作者。隐私红线：只含报告标题 / TLDR / 公开链接。
+export function composeExistingEmail({ topic, title, tldr, url, ageDays, toEmail, authorEmail, fromEmail }) {
+  const name = title || topic;
+  const subject = `【已有调研报告】${name}`;
+  const lines = [
+    `你提交的调研「${topic}」此前已经做过，站点上已有现成报告，就不重复调研了，可直接查看：`,
+    "",
+    `完整报告：${url}`,
+    ...(tldr ? ["", `一句话结论：${tldr}`] : []),
+    "",
+    "如你认为该报告已较旧、希望基于最新情况重新调研，回复本邮件说明即可。",
+    "",
+    "—— searchX 深度调研引擎",
+  ];
+  return { from: fromEmail, to: toEmail, cc: authorEmail, subject, text: lines.join("\n") };
+}
+
 // 作者汇总邮件：每完成一篇，单独给作者发一封——说明「完成了什么」+「今天累计完成几篇」。
 // 只含公开信息（主题 / 报告标题 / 公开链接 / 计数），绝不含提交者邮箱等任何私人信息。
 export function composeAuthorDigest({ topic, title, url, date, count, authorEmail, fromEmail }) {

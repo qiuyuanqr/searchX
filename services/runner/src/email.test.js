@@ -1,6 +1,6 @@
 // services/runner/src/email.test.js
 import { test, expect } from "bun:test";
-import { composeEmail, composeAuthorDigest, composeParkNotice, sendEmail } from "./email.js";
+import { composeEmail, composeExistingEmail, composeAuthorDigest, composeParkNotice, sendEmail } from "./email.js";
 
 test("composeEmail：主题含标题、正文含 TLDR 与链接、抄送作者、from 用 smtpUser", () => {
   const m = composeEmail({
@@ -24,6 +24,36 @@ test("无 TLDR 也不报错、不留空噪声行", () => {
   const m = composeEmail({
     topic: "X", title: "X", tldr: "",
     url: "https://x/r/y/", toEmail: "u@x.com", authorEmail: "me@g.com", fromEmail: "me@g.com",
+  });
+  expect(m.text).toContain("https://x/r/y/");
+  expect(m.text).not.toContain("一句话结论：");
+});
+
+test("composeExistingEmail：主题标『已有』、正文含链接与 TLDR、发提交者抄作者", () => {
+  const m = composeExistingEmail({
+    topic: "芯原股份",
+    title: "芯原股份（688521.SH）",
+    tldr: "国内半导体 IP 龙头",
+    url: "https://qiuyuanqr.github.io/searchX/r/2026-06-08_verisilicon-688521/",
+    ageDays: 2,
+    toEmail: "u@x.com",
+    authorEmail: "me@gmail.com",
+    fromEmail: "me@gmail.com",
+  });
+  expect(m.subject).toContain("已有");
+  expect(m.subject).toContain("芯原股份");
+  expect(m.text).toContain("不重复调研");
+  expect(m.text).toContain("https://qiuyuanqr.github.io/searchX/r/2026-06-08_verisilicon-688521/");
+  expect(m.text).toContain("国内半导体 IP 龙头");
+  expect(m.to).toBe("u@x.com");
+  expect(m.cc).toBe("me@gmail.com");
+  expect(m.from).toBe("me@gmail.com");
+});
+
+test("composeExistingEmail：无 TLDR 不留空噪声行", () => {
+  const m = composeExistingEmail({
+    topic: "X", title: "X", tldr: "", url: "https://x/r/y/",
+    toEmail: "u@x.com", authorEmail: "me@g.com", fromEmail: "me@g.com",
   });
   expect(m.text).toContain("https://x/r/y/");
   expect(m.text).not.toContain("一句话结论：");
