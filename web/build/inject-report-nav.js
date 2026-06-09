@@ -29,7 +29,23 @@ export function injectReportNav(html, {
 html,body{touch-action:manipulation; max-width:100%; overflow-x:hidden}
 /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块改为各自内部横向滚动，而非整页可拖 */
 img,video,iframe{max-width:100%; height:auto}
-table,pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+/* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+   首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+  border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+  border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+  padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+  overflow-wrap:break-word}
+table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+/* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+  min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+/* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+table thead th:first-child{z-index:2; background:var(--accent-bg)}
 /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
 .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
 .sx-nav-btn{position:fixed; right:20px; width:44px; height:44px; border-radius:50%;
