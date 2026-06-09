@@ -72,3 +72,11 @@ test("报告缺 viewport 时补一个锁定的（落在 <head> 内）", () => {
 test("注入 touch-action:manipulation，移动端禁双击放大", () => {
   expect(injectReportNav(BASE)).toContain("touch-action:manipulation");
 });
+
+test("锁横向滚动：注入 overflow-x:hidden，手机端报告页不能左右拖动", () => {
+  const out = injectReportNav(BASE);
+  expect(out).toContain("overflow-x:hidden");
+  // 宽内容自适应规则也一并补上，避免表格/图片撑出横向滚动
+  expect(out).toContain("img,video,iframe{max-width:100%; height:auto}");
+  expect(out).toContain("overflow-wrap:break-word");
+});

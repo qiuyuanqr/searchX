@@ -24,8 +24,14 @@ export function injectReportNav(html, {
   const snippet = `
 <!-- searchX 站点导航（构建时注入，不写入归档 report.html） -->
 <style>
-/* 移动端禁双击放大（存量报告 head CSS 未含此规则，构建时补上）；电脑端缩放不受影响 */
-html,body{touch-action:manipulation}
+/* 移动端禁双击放大（存量报告 head CSS 未含此规则，构建时补上）；电脑端缩放不受影响。
+   同时锁死横向滚动：手机访问报告页只能上下滚，不能左右拖动放大。 */
+html,body{touch-action:manipulation; max-width:100%; overflow-x:hidden}
+/* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块改为各自内部横向滚动，而非整页可拖 */
+img,video,iframe{max-width:100%; height:auto}
+table,pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+/* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+.wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
 .sx-nav-btn{position:fixed; right:20px; width:44px; height:44px; border-radius:50%;
   background:var(--card); border:1px solid var(--rule); color:var(--seal); font-size:1.15rem;
   display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:50;
