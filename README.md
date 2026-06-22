@@ -75,7 +75,7 @@ intake-worker (Cloudflare)   人机验证 + 校验 + 限制提交频率 → 建 
    ▼
 作者：在手机上给 Issue 贴「approved」标签        ← 唯一需要人工把关的环节，也是唯一会消耗 Claude 额度的步骤
    ▼
-runner (常驻机，每 15 分钟自动跑)   取 approved 未 done → 跑 /research（含自动上线）→ 贴 done → 发结果邮件
+runner (常驻机，每 5 分钟自动跑)   取 approved 未 done → 跑 /research（含自动上线）→ 贴 done → 发结果邮件
    ▼
 公开站更新 + 提交者收到「调研完成」邮件（抄送作者）
 ```

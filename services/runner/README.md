@@ -165,11 +165,11 @@ bun run runner
 
 ## 定时无人值守（Mac mini LaunchAgent）
 
-让 Mac mini 每 15 分钟自动跑一次 runner，你只需在手机上给 Issue 贴 `approved`，剩下全自动上线 + 发信。
+让 Mac mini 每 5 分钟自动跑一次 runner，你只需在手机上给 Issue 贴 `approved`，剩下全自动上线 + 发信。
 
 **组成：**
 - `services/runner/scheduled-run.sh` —— launchd 调用的包装（补 PATH、cd 仓库根、落日志）。
-- `services/runner/launchd/com.searchx.runner.plist` —— LaunchAgent 模板（`StartInterval=900` 即 15 分钟）。
+- `services/runner/launchd/com.searchx.runner.plist` —— LaunchAgent 模板（`StartInterval=300` 即 5 分钟）。
 - 日志：`~/Library/Logs/searchx-runner/runner.log`（runner 输出）、`launchd.{out,err}.log`（launchd 层）。
 
 **安装（仅在常驻不关机的 Mac mini 上做）：**
@@ -181,7 +181,7 @@ launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.searchx.runner.pli
 launchctl enable   "gui/$(id -u)/com.searchx.runner"
 launchctl print    "gui/$(id -u)/com.searchx.runner" | grep -E "state|run interval"   # 确认
 ```
-改间隔：编辑 plist 的 `StartInterval`（1800=30 分、3600=1 小时），重新 `bootout` + `bootstrap`。
+改间隔：编辑 plist 的 `StartInterval`（900=15 分、1800=30 分、3600=1 小时），重新 `bootout` + `bootstrap`。
 卸载：`launchctl bootout "gui/$(id -u)/com.searchx.runner"` 并删 `~/Library/LaunchAgents/com.searchx.runner.plist`。
 
 > 前提：Mac mini 保持**开机、不休眠、已登录 GUI**（claude 鉴权 / git push / 钥匙串都依赖登录态）。睡眠期间错过的 tick，launchd 会在唤醒后补跑一次（合并）。
@@ -198,7 +198,7 @@ bun run runner:log    # 看最近 80 行日志
 
 1. **runner 全局单实例锁**（`src/index.js`）：锁文件 `~/Library/Application Support/searchx-runner/runner.lock`，用 `O_EXCL` 原子地创建锁文件并同时写入持有者 pid（创建和标记身份是同一步完成，避免「检查与抢占之间出现竞态」即 TOCTOU 被钻空子）。任何入口启动 runner 时先抢锁，抢不到就打印 `⏭ 已有一轮在运行` 干净退出。回收保守：只回收「确证已死的 pid」或「pid 损坏且锁超 1 小时」的残留。**这是核心防线，连直接 `bun run runner` 也受它保护。**
 2. **launchd 单实例**：同名 LaunchAgent 任意时刻只跑一个实例；`runner:now` 走 `launchctl kickstart`，若任务在跑则不会再起一个。
-3. **定时器保底**：即使某次触发被跳过也不会丢活——每次运行都会处理**整个** `approved` 队列；万一某条审批恰好在「上一轮取完列表之后」才进来，下一次定时触发（≤15 分钟）会自动补处理。
+3. **定时器保底**：即使某次触发被跳过也不会丢活——每次运行都会处理**整个** `approved` 队列；万一某条审批恰好在「上一轮取完列表之后」才进来，下一次定时触发（≤5 分钟）会自动补处理。
 
 > 因此**不需要真 FIFO 队列**：一次运行即清空 approved 队列，不存在"多任务排队"场景。你可以随时在手机上给 Issue 贴 `approved`、随时手动触发，最坏情况也只是某次触发发现「已有一轮在跑」而自动跳过，待处理的任务照样会被跑完。
 

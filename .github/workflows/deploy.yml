@@ -16,7 +16,10 @@ permissions:
   id-token: write
 concurrency:
   group: pages
-  cancel-in-progress: true
+  # 让进行中的生产部署跑完、新的排队等它（GitHub Pages 官方推荐）。
+  # 切勿设 true：两次部署时间靠近时，新 deploy 会掐断进行中的旧 deploy，
+  # 若新 deploy 又恰好 build 失败 / Pages 5xx，会导致已 push 的报告一起从站点消失。
+  cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-latest
