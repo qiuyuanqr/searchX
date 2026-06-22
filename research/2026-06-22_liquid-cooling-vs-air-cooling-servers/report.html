@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>液冷与风冷在服务器散热方面的区别和各自优势 · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation;
+  }
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 概念</div>
+    <h1>液冷与风冷在服务器散热方面的区别和各自优势</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-06-22（北京时间）</span>
+      <span><b>类型</b> 概念</span>
+      <span><b>来源</b> 19 条</span>
+    </div>
+  </header>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    本质区别只有一句话：风冷靠空气把热量"吹"走、液冷靠液体把热量"流"走，而单位体积下液体携热能力比空气高三个数量级，这一物理事实决定了二者的分工。<strong>低密度场景（机柜功率 ≤ 30 kW）风冷仍是综合最优解</strong>——便宜、成熟、运维门槛低；<strong>高密度 AI 训练 / 推理场景（≥ 40–50 kW/柜起步、GB200 NVL72 一柜 120–130 kW）则除液冷之外无可行选择</strong>。2025–2026 是产业拐点：英伟达 GB200 整柜强制液冷、微软 Maia 200 二代闭环液冷量产、中国"东数西算"强约束 PUE ≤ 1.25——液冷正从"先进选项"变成"AI 算力的硬基础设施"，但同时浸没冷却（尤其两相）因 PFAS 监管风险大幅退潮，单相直冷板成为唯一确定的主流路线。
+  </div>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    服务器跑起来就像一群人挤在小屋子里干活，会产生大量热——不散走就会烧坏。<strong>风冷</strong>就是开大风扇吹热风出去，便宜简单，但风扇只能搬走有限的热；<strong>液冷</strong>是给芯片直接装个"小水管"，让冷水贴着芯片背面流过去把热带走，效率高得多。一杯水能带走的热量，大约相当于 3000 立方英尺空气——所以一旦芯片热得厉害（比如 AI 训练用的 GPU），风扇就吹不动了，必须改用水管。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li><strong>物理硬区别</strong>：水在相同体积下能带走的热量约是空气的 <strong>3000+ 倍</strong>，水对器件表面的换热系数 3000–15000 W/m²·K，比空气的 25–250 W/m²·K 高约 <strong>60 倍</strong>（<a href="https://introl.com/blog/liquid-vs-air-cooling-ai-data-centers">Introl 集成商博文 2025-2026</a>，集成商口径、数量级与公开教科书一致）。</li>
+      <li><strong>功率密度拐点在 30–50 kW/柜</strong>：Uptime Institute 2025 全球数据中心调研（N&gt;800 运营方）显示行业主流仍在 10–30 kW/柜区间，超 30 kW 极少（<a href="https://uptimeinstitute.com/about-ui/press-releases/uptimes-15th-annual-global-data-center-survey-results-shows-both-commitment-and-hesitancy">Uptime 2025-07-30</a>）；但 <strong>NVIDIA GB200 NVL72 一柜 120–130 kW、强制液冷</strong>，GB300 单 GPU 约 1400W、整柜 150 kW 起步——风冷在该量级<strong>不是不优、是物理上跑不动</strong>。</li>
+      <li><strong>能效拉开了一个等级</strong>：风冷数据中心年均 PUE 普遍 1.4–1.6（行业均值约 1.56，Uptime 2024）、东部枢纽要求 ≤ 1.25 需深度优化；<strong>闭环液冷可把 PUE 压到 1.05–1.15</strong>，且不依赖蒸发用水，水耗 (WUE) 趋近于 0。</li>
+      <li><strong>市场拐点</strong>：Dell'Oro 2026-01-08 数据，<strong>全球数据中心液冷市场 2025 ≈ $3B、2029 ≈ $7B</strong>（<a href="https://www.delloro.com/news/data-center-liquid-cooling-market-to-approach-7-billion-by-2029-as-ai-deployments-accelerate/">Dell'Oro 2026-01-08</a>）；高盛预测液冷 AI 服务器渗透率 2024 15% → 2026 76%（<a href="https://www.lombardodier.com/insights/2026/january/ai-supercharges-the-race.html">卖方预期 · 置信度中</a>）；中国液冷服务器市场 2025 全年 <strong>33.9 亿美元、+42.6% YoY</strong>（<a href="https://my.idc.com/getdoc.jsp?containerId=prCHC53302025">IDC China 一手新闻稿</a> 口径，IDC 报告页订阅墙、数字与多家中文转引一致）。</li>
+      <li><strong>路线收敛</strong>：<strong>单相直冷板（DTC）成为唯一确定主流</strong>，Dell'Oro 称其"将主导至本十年末"；浸没式（尤其两相）因 <a href="https://news.3m.com/2022-12-20-3M-to-Exit-PFAS-Manufacturing-by-the-End-of-2025">3M 2022-12-20 宣布 2025 底全面退出 PFAS</a> 失去关键介质 Novec / Fluorinert，超大规模运营商已大面积关停项目转回直冷板（<a href="https://www.servethehome.com/2-phase-immersion-cooling-halted-over-multi-billion-dollar-health-hazard-lawsuits/">ServeTheHome 2023</a>）。</li>
+      <li><strong>风冷不会被淘汰，会被"包进"混合架构</strong>：液冷只解决发热密集的 GPU/CPU 冷板部分，机柜里还有内存、电源、网卡等 20–30% 的"零碎热"要靠风冷或后门换热器 (RDHx) 吸走——这是当下 2026 的真实工程现实，不是非此即彼（<a href="https://techcommunity.microsoft.com/blog/azureinfrastructureblog/liquid-cooling-in-air-cooled-data-centers-on-microsoft-azure/4268822">微软 Azure 一手实践 2024-09</a>）。</li>
+    </ul>
+  </div>
+
+  <main>
+
+    <h2>一句话讲清本质：是空气在搬热，还是液体在搬热</h2>
+
+    <p>服务器里芯片跑算（CPU、GPU 这些）会发热——这是用电的代价，发出来的热不及时搬走，芯片温度上去就会降频、寿命缩短，再高就直接烧坏。<strong>散热的本质就是搬热</strong>：把芯片表面的热量挪到机房外面去。区别只在于<strong>用什么当"快递员"</strong>——风冷用空气，液冷用液体（最常见是水加一点防腐剂，或者特殊的不导电液）。</p>
+
+    <p><strong>类比一下</strong>：风冷像用扫帚扫地（一次扫一点点）；液冷像用水冲洗（一次冲一大片）。两者都能让地面变干净，但效率差几十倍。物理上的根据是——同样一立方厘米，水能装下的热量大约是空气的 3300 倍，且液体贴着热源流动时的换热效率（业内叫"对流换热系数"，简单说就是单位面积、单位温差下每秒能搬走多少热）比空气大约高 60 倍（<a href="https://introl.com/blog/liquid-vs-air-cooling-ai-data-centers">Introl</a>）。</p>
+
+    <p>这一物理差距决定了二者的天然分工：<strong>低密度散热场景，风冷的简单、便宜、皮实就赢；高密度散热场景，液冷的高效率就成了唯一可行的解</strong>。"区别"和"优势"两个问题其实是一个问题——在哪个功率密度门槛上，物理决定了你必须从空气切到液体。</p>
+
+
+    <h2>风冷是怎么工作的，极限在哪</h2>
+
+    <h3>典型风冷数据中心的"四件套"</h3>
+
+    <p>一个传统数据中心的风冷系统大约由四个东西串起来：</p>
+
+    <ul>
+      <li><strong>服务器内部风扇</strong>——直接吹芯片散热片（heatsink）的小风扇，把热量带到机柜后部；</li>
+      <li><strong>冷热通道隔离</strong>——机柜前面是"冷通道"进风、后面是"热通道"排风，避免热风被再吸进来；</li>
+      <li><strong>机房空调（CRAC/CRAH，机房专用空调 / 机房空气处理机组，本质是大号空调箱）</strong>——把热通道的热风吸过来、冷却后送回冷通道；</li>
+      <li><strong>外部散冷</strong>——空调系统的热量最终通过冷却塔（蒸发散热，水耗高）或干冷器（不耗水但效率低）排到大气。</li>
+    </ul>
+
+    <h3>风冷的极限在哪</h3>
+
+    <p>风冷的瓶颈不在某一段，而在<strong>整条空气搬热链路的能效</strong>。当机柜功率密度上去，风扇要转得更快、空调要更冷、冷却塔要更大——但空气载热能力本身有上限，越往上"边际效率"越差。</p>
+
+    <p>行业里的经验阈值大致是这样：</p>
+
+    <ul>
+      <li><strong>5–15 kW/柜</strong>：传统风冷舒适区，PUE 可控制在 1.4–1.6，CRAC + 冷热通道隔离基本够用；</li>
+      <li><strong>15–30 kW/柜</strong>：需要专门设计（封闭式热通道、在列式空调、提高风量），仍可全风冷，但 PUE 优化压力开始显现——这正是 Uptime Institute 2025 调研里行业主流所处区间（<a href="https://uptimeinstitute.com/about-ui/press-releases/uptimes-15th-annual-global-data-center-survey-results-shows-both-commitment-and-hesitancy">Uptime 15th Survey 2025-07-30</a>）；</li>
+      <li><strong>30–50 kW/柜</strong>：纯风冷开始"勉强能做但不经济"，后门热交换器（RDHx，rear-door heat exchanger，挂在机柜背面的水冷散热门）开始介入，是<strong>风液混合架构的入口</strong>；</li>
+      <li><strong>50 kW/柜 以上</strong>：风冷物理上做不动了——风量再大也带不走、噪声进入人体不可承受区、芯片温度守不住，<strong>必须引入液冷</strong>。</li>
+    </ul>
+
+    <div class="callout">注：网上常见"风冷在 41.3 kW/柜处遇到物理瓶颈"等极精确数字源自集成商博文，工程上更可靠的说法是 30–50 kW 这段区间，具体阈值取决于机柜进风温度、楼层挑高、列宽等场地条件。</div>
+
+    <h3>风冷为什么仍然没死</h3>
+
+    <p>但风冷不会被"扫地出门"，原因很现实：</p>
+
+    <ul>
+      <li><strong>大量算力不是 AI 训练</strong>——金融交易、企业 IT、视频流、Web 服务、数据库、CDN 节点这些占数据中心 IT 负载的大头，单机柜功率长期在 5–15 kW，风冷的成熟度和成本不可替代；</li>
+      <li><strong>初期投入低</strong>——按 Introl 集成商口径，风冷数据中心 CapEx 约 $1.5–2M / MW，液冷约 $3–4M / MW（<a href="https://introl.com/blog/liquid-vs-air-cooling-ai-data-centers">Introl</a>，集成商口径、与具体方案相关、未独立核实精确值）；</li>
+      <li><strong>运维门槛低</strong>——风冷漏一点是热风跑出来，没事；液冷漏一滴可能短路，需要专门的检漏、补液、CDU 维护团队；</li>
+      <li><strong>故障域天然隔离</strong>——风扇坏一个不影响别的机柜，液冷管路则是一损俱损；</li>
+      <li><strong>退役 / 折旧周期</strong>——存量数据中心十几年才折完，全部改液冷不现实，<strong>风液混合是 2026–2030 的主流过渡形态</strong>，不是"风冷消亡"。</li>
+    </ul>
+
+
+    <h2>液冷是怎么工作的，分几条路线</h2>
+
+    <p>液冷不是一种东西，是三条技术路线，物理上从"轻接触"到"全身泡澡"：</p>
+
+    <h3>1. 直冷板（DTC，Direct-to-Chip Cold Plate，把水管直接焊到芯片散热片上）</h3>
+
+    <p><strong>类比</strong>：给芯片背上贴一个"冰袋"，冰袋里有冷水循环流过，把芯片的热直接带走。</p>
+
+    <p>具体是在 CPU/GPU 芯片散热片上加装一块带微通道的金属冷板（一般是铜或铝），冷却液（多数是 75% 水 + 25% 乙二醇防冻液）从冷板里流过，热量直接传给液体。冷板出来的热液体送到机柜底部或机房里的 <strong>CDU（Coolant Distribution Unit，冷却液分配单元，相当于液冷系统的"心脏 + 变速箱"）</strong>，CDU 通过板式换热器把热量交给楼宇侧的冷却水回路，再由冷却塔或干冷器排到大气。</p>
+
+    <p>整个回路<strong>是闭环的、纯液体的、压力很低（一般 &lt; 2 bar）</strong>。冷却液不接触芯片本体，只是隔着冷板的金属底面。</p>
+
+    <p><strong>这是当下唯一确定的主流</strong>。Dell'Oro 在 2026-01-08 报告里明确称单相直冷板"将主导至本十年末"，市场份额约 47–55%（<a href="https://www.delloro.com/news/data-center-liquid-cooling-market-to-approach-7-billion-by-2029-as-ai-deployments-accelerate/">Dell'Oro 2026-01-08</a>）。<strong>但有个工程现实必须说清</strong>：直冷板只解决了 CPU/GPU 的发热（占机柜热量 70–80%），<strong>内存、电源、网卡、硬盘这 20–30% 的"零碎热"还得靠风冷或后门换热器 (RDHx) 收尾</strong>——所以你看到的"GB200 液冷柜"实际上是<strong>液冷 + 残余风冷</strong>的混合架构，不是真正的"全液冷"。</p>
+
+    <h3>2. 单相浸没（Single-Phase Immersion，整台服务器泡在不导电的油里）</h3>
+
+    <p><strong>类比</strong>：把整台服务器拆掉风扇、直接泡进一缸"特殊矿物油"里，油在缸里循环流动把热带走，但油本身不会沸腾。</p>
+
+    <p>用的是矿物油或合成碳氢化合物（hydrocarbon）这类不导电的液体（绝缘、不腐蚀电子元件），机柜变成水平卧式的"油缸"。冷油从缸底进、热油从缸顶出，进入旁边的换热器冷却后回流。</p>
+
+    <p>优点是<strong>每一颗发热元件——包括内存、硬盘、电源——都被直接浸没冷却</strong>，比直冷板"更彻底"；机柜密度可达 100–200 kW，不需要风扇所以没有风扇噪声、振动，电子元件寿命反而更长。</p>
+
+    <p>缺点也很硬：油很贵、维护时要把整台服务器从油里捞出来滴干、机柜重量大对楼板承重要求高、不能与现有机房无缝兼容。商业部署仍属相对小众。</p>
+
+    <h3>3. 两相浸没（Two-Phase Immersion，泡在低沸点液里，让液体在芯片上"沸腾"）</h3>
+
+    <p><strong>类比</strong>：把芯片泡在"低温酒精"里，芯片一热，液体直接在芯片表面沸腾汽化，蒸汽到缸顶遇冷又凝结成液体——靠相变吸走热量，效率最高。</p>
+
+    <p>用的是 3M 的 Novec 系列、Fluorinert（氟化液 FC-72）等氟化学品（在 ~50°C 左右沸腾），是单相浸没的"加强版"——靠液-气相变把巨大的潜热带走，理论上能支撑机柜密度上 MW 级。</p>
+
+    <div class="callout">但这条路线 2023 年起出了大事——下一节专门说。</div>
+
+
+    <h2>PFAS 监管风暴：两相浸没的供应链危机</h2>
+
+    <p>两相浸没冷却的"心脏液体"——3M 的 Novec 7100、Novec 649、Fluorinert FC-72 等——全都属于 <strong>PFAS（全氟和多氟烷基物质，俗称"永久化学品"，因不易分解在环境中长期累积、被怀疑致癌）</strong>。</p>
+
+    <p>2022 年 12 月 20 日，<a href="https://news.3m.com/2022-12-20-3M-to-Exit-PFAS-Manufacturing-by-the-End-of-2025">3M 宣布将于 2025 年底前全面停产 PFAS</a>，原因是迎面而来的诉讼洪潮——2023 年 6 月 3M 与美国公共水务系统达成约 <strong>125 亿美元和解</strong>（<a href="https://thecoolingreport.com/intel/pfas-two-phase-immersion-cooling-crisis">行业媒体 The Cooling Report</a>，未独立核实精确金额）。Novec 系列最后接单日期为 2025-03-31（<a href="https://www.servethehome.com/2-phase-immersion-cooling-halted-over-multi-billion-dollar-health-hazard-lawsuits/">ServeTheHome</a>）。</p>
+
+    <p>叠加欧盟 2026 年起的 PFAS 限制、美国 EPA 2025 年起的 PFAS 报告要求（<a href="https://www.datacenterdynamics.com/en/news/two-phase-cooling-will-be-hit-by-epa-rules-and-3ms-exit-from-pfas-forever-chemicals/">DCD</a>），两相浸没<strong>事实上失去了关键介质的稳定供应</strong>。ServeTheHome 援引匿名超大规模运营商称"我们几个月前关停了这个项目，现在改看 DLC（直冷板）"。</p>
+
+    <div class="case">
+      <p><strong>这件事对市场结构的影响</strong>：原本两相浸没被视为承接 1000W+ 单 GPU 的"未来路线"，但 3M 退出 + 监管收紧让替代品（Chemours、ZutaCore 在做 PFAS-free 替代液，但商用规模要到 2026–2027）跟不上节奏，<strong>结果就是单相直冷板（DTC）"吃下"了原本预留给两相浸没的市场份额</strong>——这是当下产业链格局的重要逆转。</p>
+    </div>
+
+
+    <h2>数据对比：风冷 vs 液冷三条路线</h2>
+
+    <p>下面这张表汇总主要维度。所有数字带来源，未独立核实的标"~"或"约"。</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>维度</th>
+          <th>风冷</th>
+          <th>直冷板 (DTC)</th>
+          <th>单相浸没</th>
+          <th>两相浸没</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>单柜功率密度上限</td>
+          <td>~30–50 kW（混合后门换热器可到 75 kW）</td>
+          <td>120–200 kW（GB200 NVL72 单柜 120–130 kW 已是工程现实）</td>
+          <td>~100–200 kW</td>
+          <td>理论 200 kW+，但供应链已坏</td>
+        </tr>
+        <tr>
+          <td>典型 PUE</td>
+          <td>1.4–1.6（优化后 1.2–1.3）</td>
+          <td>1.05–1.15</td>
+          <td>1.03–1.10</td>
+          <td>&lt; 1.05</td>
+        </tr>
+        <tr>
+          <td>水耗 WUE</td>
+          <td>0.5–1.8 L/kWh（取决于是否蒸发冷却）</td>
+          <td>~0（闭环）</td>
+          <td>~0</td>
+          <td>~0</td>
+        </tr>
+        <tr>
+          <td>市场份额 2025</td>
+          <td>主流（&gt; 70% AI 之外存量）</td>
+          <td>~47–55%（液冷分类内）</td>
+          <td>小众</td>
+          <td>事实退潮</td>
+        </tr>
+        <tr>
+          <td>CapEx ($/MW)</td>
+          <td>$1.5–2 M（集成商口径）</td>
+          <td>$3–4 M（集成商口径）</td>
+          <td>更高</td>
+          <td>更高 + 介质风险</td>
+        </tr>
+        <tr>
+          <td>运维门槛</td>
+          <td>低（成熟）</td>
+          <td>中（CDU + 检漏）</td>
+          <td>高（油缸维护）</td>
+          <td>高 + 介质合规</td>
+        </tr>
+        <tr>
+          <td>主要风险</td>
+          <td>无法应付高密度</td>
+          <td>漏液短路</td>
+          <td>重量 + 油成本</td>
+          <td>PFAS 监管 + 3M 退出</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>数据来源：Dell'Oro 2026-01-08（市场份额）、Uptime 2025-07-30（机柜密度分布）、Introl（CapEx 与换热系数，集成商口径）、ServeTheHome / DCD（两相浸没现状）。</p>
+
+
+    <h2>各自的真正优势：不要把"先进"等同于"应该选"</h2>
+
+    <h3>风冷的优势（仍然不可替代的场景）</h3>
+
+    <ul>
+      <li><strong>低密度算力的总成本最优</strong>——5–20 kW/柜，风冷的 CapEx、OpEx 和运维风险都最低；</li>
+      <li><strong>故障域天然隔离</strong>——风扇坏 1 个、空调坏 1 台，损失局部，液冷管路一漏可能整柜下线；</li>
+      <li><strong>退役周期长的存量数据中心改造门槛低</strong>——加封闭通道、加在列空调，远比拉冷却液主管廉价；</li>
+      <li><strong>边缘计算 / 小机房</strong>——电信基站机房、CDN 节点这种没有专业运维队伍的场景，风冷是唯一现实选项。</li>
+    </ul>
+
+    <h3>液冷的优势（高密度算力的唯一可行解）</h3>
+
+    <ul>
+      <li><strong>能效高出一个等级</strong>——PUE 1.05–1.15 vs 风冷 1.4–1.6，对于 100 MW 级数据中心、电费占 OpEx 60%+ 的运营方，这是真金白银；</li>
+      <li><strong>支撑高功率密度</strong>——GB200 NVL72 一柜 120–130 kW、GB300 单 GPU 1400W，<strong>风冷物理上做不动</strong>，没有"是否选液冷"的问题，只有"选哪种液冷"；</li>
+      <li><strong>水耗低</strong>——闭环液冷不蒸发用水，WUE 趋近于 0；行业均值蒸发冷却 ~1.8 L/kWh，闭环液冷 ~0（<a href="https://introl.com/blog/water-usage-efficiency-wue-ai-data-center-cooling-guide-2025">Introl WUE 指南 2025</a>），这是水资源紧张地区（亚利桑那、内华达、华北）的强约束因素；</li>
+      <li><strong>空间密度高</strong>——液冷柜可以做窄、单位机房面积 IT 容量更大，存量物业改造（reclaim space）友好；</li>
+      <li><strong>静音 + 元件寿命</strong>——少了高速风扇，振动小、噪声小，元件平均故障间隔（MTBF）改善；</li>
+      <li><strong>余热可回收</strong>——液冷出口水温 40–50°C（W3/W4 类），可对接区域供暖或工业用热，欧洲多个数据中心已并入区域供热网。</li>
+    </ul>
+
+
+    <h2>为什么 2025–2026 是分水岭：AI 把液冷从"选项"推成"基础设施"</h2>
+
+    <p>这件事的根因只有一个：<strong>AI 芯片功耗增长率超过了风冷的散热能力增长率</strong>，物理逼着切换。</p>
+
+    <p>看一组数字：</p>
+
+    <ul>
+      <li>NVIDIA <strong>H100/H200、AMD MI300X</strong>：单 GPU TDP ~700W，机柜功率密度 30–50 kW，<strong>风冷勉强能做</strong>；</li>
+      <li>NVIDIA <strong>GB200 NVL72</strong>（2024 GTC 发布 / 2025 量产）：整柜 72 颗 Blackwell GPU + 36 颗 Grace CPU，<strong>单柜 120–130 kW、强制液冷</strong>，NVIDIA 设计参考文档要求超 700 L/min 冷却液流量（<a href="https://intuitionlabs.ai/articles/nvidia-hgx-data-center-requirements">IntuitionLabs 总结 NVIDIA 设计指南</a>）；</li>
+      <li>NVIDIA <strong>GB300</strong>（2025 公布 / 2026 出货）：单 GPU TDP ~1400W、整柜 150 kW+，冷板的热阻 (thermal resistance) 要求从 GB200 的 0.020°C/W 降到 0.015°C/W 才能压住 83°C 结温（<a href="https://tonecooling.com/gb300-liquid-cooling-requirements-2026/">ToneCooling 集成商 2026</a>，集成商口径、未独立核实精确热阻数字）；</li>
+      <li><strong>NVIDIA Rubin（2026–2027）及之后</strong>：业界普遍预测整柜 250–600 kW、TDP 4000W+；Dell'Oro 称单 GPU TDP 将在 2029 前突破 4000W。</li>
+    </ul>
+
+    <p>这条曲线意味着——<strong>不是"液冷比风冷先进，所以应该用"，而是"风冷物理上不可能搬走这么多热量，所以必须用液冷"</strong>。高盛因此预测液冷 AI 服务器渗透率 2024 15% → 2025 54% → 2026 76%（<a href="https://www.lombardodier.com/insights/2026/january/ai-supercharges-the-race.html">卖方预期 · 置信度中</a>，与一手验证的产业现实方向一致）。</p>
+
+
+    <h2>中国市场与政策：东数西算的强约束</h2>
+
+    <p>中国对数据中心散热路线的影响主要来自三个文件：</p>
+
+    <ul>
+      <li><strong>《数据中心绿色低碳发展专项行动计划》</strong>（2024-08 国家发改委等四部门联合印发，转引<a href="https://home.wuhan.gov.cn/zcfg/202408/t20240808_2439562.shtml">武汉市数据局</a>）——强化"东数西算"刚性约束，明确<strong>东部枢纽 PUE &lt; 1.25、西部 PUE &lt; 1.2</strong>，到 2025 年新建大型 PUE ≤ 1.25 才合规；</li>
+      <li><strong>国家标准 GB 40879《数据中心能效限定值及能效等级》</strong>（<a href="https://std.samr.gov.cn/gb/search/gbDetailed?id=2E4DD4D8E2E84A4BE06397BE0A0AE354">标准库页</a>）——强制性国标，<strong>所有数据中心 PUE 不得超 1.5</strong>，否则视为不合规；</li>
+      <li><strong>三大运营商《电信运营商液冷技术白皮书》</strong>（中国移动 / 中国电信 / 中国联通 2023-06-05 联合发布，<a href="http://www.cnmec.biz/danfoss/Liquid-Cooling-Technology-White-Paper-2023.htm">白皮书页</a>）——三年规划：2023 试点 → 2024 新建项目 10% 液冷 → <strong>2025 新建项目 50%+ 应用液冷技术</strong>。</li>
+    </ul>
+
+    <p>市场规模方面，<a href="https://my.idc.com/getdoc.jsp?containerId=prCHC53302025">IDC China 一手新闻稿口径</a>：中国液冷服务器市场 2024 23.7 亿美元 (+67.0%)、2025 全年预计 33.9 亿美元 (+42.6% YoY)、<strong>2025–2029 CAGR 约 48%、2028 市场规模约 162 亿美元</strong>（IDC 报告页有订阅墙，数字与多家中文转引一致）。赛迪顾问测算液冷渗透率 2025 年达到约 20%。</p>
+
+    <p>这套政策组合的意思是——<strong>新建中大型数据中心想合规、想拿地、想进枢纽节点，PUE 必须 ≤ 1.25</strong>，而风冷在这个 PUE 红线下要做得吃力、做大规模更吃力，<strong>液冷成为合规路径的"准必选项"</strong>，不是技术比较问题，而是政策门槛问题。</p>
+
+
+    <h2>代表玩家与产业链结构</h2>
+
+    <h3>国际：Dell'Oro 口径下的全球液冷供应链格局</h3>
+
+    <p>Dell'Oro 2026-01-08 给出的格局：<strong>Vertiv（维谛）领跑、CoolIT / nVent / Boyd 紧随、Aaon 因绑定超大规模运营商快速上量</strong>（<a href="https://www.delloro.com/news/data-center-liquid-cooling-market-to-approach-7-billion-by-2029-as-ai-deployments-accelerate/">Dell'Oro</a>）。Schneider Electric（施耐德电气）虽然在 Dell'Oro 名单里位置稍后，但在<strong>风液混合改造</strong>这一细分上是工程能力最完整的玩家之一。</p>
+
+    <h3>中国 A 股液冷三强（2025 财报口径）</h3>
+
+    <p>三家代表公司，业务侧重不同：</p>
+
+    <ul>
+      <li><strong>英维克（002837.SZ）</strong>——温控龙头、平台型最完整。2025 年前三季度营收 40.26 亿（+40.19%）、归母 3.83 亿（+13.13%）（<a href="https://www.yicai.com/news/102862628.html">第一财经 2025-10-14</a>，财经媒体口径）；与英特尔等芯片厂深度绑定，<strong>有市场传闻称 2025Q3 拿下 GB300 液冷机柜 1200 台订单（占中国区初期需求 ~50%）</strong>，但<strong>该 1200 台数字源自机构研报 / 媒体口径、非公司一手公告，未独立核实</strong>；</li>
+      <li><strong>申菱环境（301018.SZ）</strong>——工业环境特殊空调 + 液冷并重，2025 年前三季营收 25.08 亿、归母 1.50 亿（<a href="https://www.21jingji.com/article/20251210/herald/e4c09d1535b0737cb2b8dd1ede65b7b6.html">21 经济报道 2025-12-10</a>，财经媒体口径）；</li>
+      <li><strong>高澜股份（300499.SZ）</strong>——同时具备冷板式 / 浸没式 / 集装箱式三路线的厂家，2025 年 1–9 月营收 5.88 亿（+62.52%）、归母 3423 万（+293.98% 扭亏），截至 2025-09-30 在手订单 14.56 亿（<a href="https://finance.sina.cn/2025-08-02/detail-infiqxcs3655627.d.html">新浪财经 2025-08-02</a>，财经媒体口径；订单数为公司公开口径转引、未独立核实）。</li>
+    </ul>
+
+    <div class="callout">声明：上述财务数据均来自财经媒体转载（第一财经 / 21 经济 / 新浪），未直接对照三家公司一手定期报告。具体数字以巨潮资讯网公告原文为准。</div>
+
+
+    <h2>真实部署案例</h2>
+
+    <div class="case">
+      <p><strong>NVIDIA GB200 NVL72：液冷成为产品规格的一部分</strong></p>
+      <p>这是 AI 液冷的标杆事件——<strong>GB200 NVL72 整柜出厂自带液冷管路，运营商买的不是"服务器 + 散热系统"，而是"液冷一体机"</strong>。单柜 120–130 kW、冷却液流量 &gt; 700 L/min，运营商只需在机房侧接好 CDU 与楼宇水回路就能上电。这把液冷从"基础设施选项"变成了"AI 算力的产品规格"——你想要 GB200，就必须有液冷。这是 2024–2025 产业链最关键的一次范式锁定。</p>
+    </div>
+
+    <div class="case">
+      <p><strong>微软 Azure Maia 100 → 200：闭环液冷 + 零蒸发用水</strong></p>
+      <p>2023-11 微软推出自研 AI 加速器 <a href="https://azure.microsoft.com/en-us/blog/azure-maia-for-the-era-of-ai-from-silicon-to-software-to-systems/">Maia 100</a>，机架级闭环液冷设计，配套"侧车式"热交换单元 (sidekick HXU)，可在<strong>不改造既有风冷机房</strong>的情况下接入液冷（这一点在 <a href="https://techcommunity.microsoft.com/blog/azureinfrastructureblog/liquid-cooling-in-air-cooled-data-centers-on-microsoft-azure/4268822">微软技术社区 2024-09</a> 一手描述）。2026-01-26 <a href="https://blogs.microsoft.com/blog/2026/01/26/maia-200-the-ai-accelerator-built-for-inference/">Maia 200 发布</a>，二代 HXU 性能翻倍。配合微软 2024-08 宣布"新数据中心零蒸发用水"战略，标志超大规模运营商把<strong>液冷 + 闭环 + 零用水</strong>组合推向规模化部署。一手公告确认 Maia 200 首批落地在<strong>美国中部数据中心区（Des Moines, Iowa 附近）</strong>，下一站<strong>美国西部 3 区（Phoenix, Arizona 附近）</strong>。</p>
+    </div>
+
+    <div class="case">
+      <p><strong>风液混合的工程现实：后门换热器 (RDHx) 改造</strong></p>
+      <p>对于改造存量机房的运营方，最现实的路径不是"扒了机房重做液冷"，而是<strong>给机柜后门装一个水冷换热器，把热风穿过后门时直接降到房间温度再排出</strong>——相当于给每个机柜配了个"小空调"。这条路 CapEx 低、不动既有空调系统，把单柜密度从 30 kW 推到 75 kW 没问题，是 2025–2026 大量企业级数据中心的过渡架构（Schneider Electric、Vertiv、nVent 都是主流供应商）。</p>
+    </div>
+
+
+    <h2>风险与争议（不仅是技术，也是治理与人）</h2>
+
+    <p>把视角拉远，液冷上位过程中真正难的，不是技术本身，而是几个结构性问题：</p>
+
+    <ul>
+      <li><strong>漏液 vs 可用性的紧张</strong>——液冷管路、快接头、CDU 任一节点漏液，轻则单柜下线、重则整列短路。业内当前主流应对是<strong>双层管路 + IoT 检漏 + 自动隔离阀</strong>，但运维流程的成熟度落后于硬件部署速度——<a href="https://arxiv.org/pdf/2512.21801">arXiv 2025-12 漏液预测论文</a>等学术研究正在追赶；</li>
+      <li><strong>技能与人</strong>——会调试 CDU、维护快接、做无尘换液的工程师，全球都缺。Uptime 2025 调研把"技能短缺"列为运营方对 AI 部署最大顾虑之一；</li>
+      <li><strong>PFAS 不仅终结了两相浸没，还会反噬一部分单相介质</strong>——欧盟 PFAS 限制条款理论上覆盖所有 PFAS 类化合物，未来若把范围扩大到单相浸没用的部分氟化液，单相浸没也会被波及；</li>
+      <li><strong>"AI 泡沫"假设下的过度建设风险</strong>——液冷供应链当下是依赖 GB200/GB300/Rubin 大规模出货的"单一需求曲线"，若 AI 训练侧投入显著放缓，液冷柜需求会出现明显回落，A 股液冷三强目前估值都已反映 AI 暴露（如英维克 2025Q3 PE 一度被媒体标 "150 倍 PE 下的隐忧"，<a href="https://www.yicai.com/news/102862628.html">第一财经 2025-10-14</a>）；</li>
+      <li><strong>余热回收的"承诺 vs 实际"</strong>——液冷出口 40–50°C 水可对接区域供热，欧洲少数案例已落地，但在大多数地理位置（特别是无供热网的南方地区）这条价值链当下兑现不了，常被供应商口头放大；</li>
+      <li><strong>标准滞后</strong>——<a href="https://www.datacenterdynamics.com/en/news/ashrae-publishes-liquid-cooling-guidelines-as-chip-power-moves-into-uncharted-territory/">ASHRAE TC 9.9 在 2024 年补发液冷技术公告</a>，但既有的 2021 第 5 版标准未覆盖最新 AI 芯片的散热场景，工程上各运营方实际是"半参考标准 + 半厂商私有规格"的状态。</li>
+    </ul>
+
+
+    <h2>与五大板块的关联（确有关联才挂）</h2>
+
+    <ul>
+      <li><strong>算力（强关联）</strong>——液冷与风冷选型直接决定 AI 数据中心可承载 GPU 类型、单位面积算力密度、电费 / 水费 OpEx 结构，是算力板块底层成本工程。代表 A 股标的：英维克 / 申菱 / 高澜（散热）、润泽科技 / 数据港（IDC 运营）、工业富联（GB200 整机集成）；</li>
+      <li><strong>AI 应用（间接关联）</strong>——液冷上位间接降低 AI 训练边际成本、推动大模型推理向"liquid-first"数据中心集中，但散热环节本身不在 AI 应用赛道；</li>
+      <li><strong>光模块 / 机器人 / 航天</strong>——无直接关联，不挂。</li>
+    </ul>
+
+
+    <h2>下次看什么（监控信号）</h2>
+
+    <ol>
+      <li><strong>NVIDIA GB300 量产节奏</strong>——2026 下半年 GB300 NVL72 真实交付量、TDP 1400W 是否兑现，决定液冷柜出货曲线。盯英伟达季报 + 关键代工厂 (台积电 / SK 海力士) 财报；</li>
+      <li><strong>Rubin 平台规格披露</strong>——预计 2026 GTC 与 2027 Computex 节点，整柜功率密度、是否引入全新冷板路线，决定 2027–2028 液冷下一波形态；</li>
+      <li><strong>东数西算枢纽 PUE 实测合规情况</strong>——2026 年中数据中心 PUE 抽查公报，看 PUE ≤ 1.25 红线是否实质执行（影响国内液冷强制性）；</li>
+      <li><strong>三大运营商 2025 年终液冷采购规模</strong>——白皮书定的 "2025 新建 50% 液冷" 是否落地，看运营商 IDC 中标公告与年报披露；</li>
+      <li><strong>PFAS-free 替代液商用进度</strong>——Chemours / ZutaCore / Honeywell 等 PFAS-free 替代液 2026–2027 是否进入超大规模运营商采购，决定两相浸没能否复活；</li>
+      <li><strong>液冷漏液事故公开案例</strong>——头部超大规模运营商若出现首例"液冷导致大规模宕机"，会反向影响 2026–2027 改造节奏，盯 Uptime Institute 年度宕机报告。</li>
+    </ol>
+
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li><strong>路线锁定风险</strong>——市场正快速向单相直冷板收敛，部分运营商前期投入的两相浸没和单相浸没产线可能面临折旧加速、客户流失。</li>
+      <li><strong>漏液 vs 可用性</strong>——液冷的运维成熟度落后于硬件部署速度，2026–2027 行业仍需消化"首批大规模液冷宕机事件"风险。</li>
+      <li><strong>PFAS 监管外溢</strong>——欧盟 PFAS 限制范围若扩大，单相浸没用的部分氟化液也会受波及。</li>
+      <li><strong>AI 投资周期风险</strong>——液冷需求曲线高度依赖 AI 训练投资节奏，若 AI CapEx 放缓，A 股液冷三强当前估值（部分 PE 三位数）会面临显著回吐。</li>
+      <li><strong>风冷被低估</strong>——把"液冷上位"误读成"风冷消亡"是叙事偏差；存量数据中心 + 非 AI 算力 + 边缘机房三类场景里，风冷在可见的 5–10 年内仍是综合最优。</li>
+      <li><strong>数据来源置信度</strong>——本文引用的 Introl、ToneCooling 等集成商博文里的精确数字（如"风冷 41.3 kW 物理瓶颈"、"GB300 热阻 0.015°C/W"），属集成商口径、教科书数量级正确但精确值未独立核实，已在正文相应处标注。</li>
+      <li><strong>A 股液冷三强财务数据</strong>——本文 2025 年三季报数据来自财经媒体转引、非一手公司公告，决策前请以巨潮资讯网定期报告原文为准。</li>
+    </ul>
+  </section>
+
+  <section class="glossary">
+    <h2>名词小抄</h2>
+    <dl>
+      <dt>PUE</dt><dd>Power Usage Effectiveness，电源使用效率。整个数据中心总能耗除以 IT 设备实际能耗，越接近 1 越省电。1.5 意味着空调 / 散热 / 配电吃掉了相当于 IT 负载 50% 的额外电。</dd>
+      <dt>WUE</dt><dd>Water Usage Effectiveness，水使用效率。单位 IT 能耗对应消耗的水量（L/kWh），蒸发冷却水耗高，闭环液冷接近 0。</dd>
+      <dt>kW/柜</dt><dd>"单柜功率密度"——一个标准机柜（42U 或 48U）能装下的总 IT 功率。是判断该用风冷还是液冷的最直接指标。</dd>
+      <dt>TDP</dt><dd>Thermal Design Power，热设计功耗。芯片在最大持续负载下的散热设计功率（不是峰值功耗）。GPU 厂商一般按 TDP 设计散热方案。</dd>
+      <dt>CRAC / CRAH</dt><dd>Computer Room Air Conditioner / Air Handler，机房专用空调 / 机房空气处理机组。本质是"专给机房的大号空调"，CRAC 自带制冷压缩机，CRAH 只换风、靠外部冷水提供冷量。</dd>
+      <dt>DTC / 直冷板</dt><dd>Direct-to-Chip Cold Plate，直接接触式冷板。一块带冷却液通道的金属板贴在 CPU/GPU 散热面上，液体在板内流动带走热量。当下液冷主流。</dd>
+      <dt>RDHx / 后门换热器</dt><dd>Rear-Door Heat Exchanger。挂在机柜背面的水冷散热门，机柜排出的热风穿过后门时被水降温。是风液混合改造最便宜的入口。</dd>
+      <dt>CDU</dt><dd>Coolant Distribution Unit，冷却液分配单元。液冷系统的"心脏 + 变速箱"，把楼宇水回路的冷量隔离地交给芯片侧冷却液回路，并控制流量、温度、压力。</dd>
+      <dt>浸没冷却</dt><dd>Immersion Cooling，把整台服务器泡进不导电液体里冷却。分单相（液体不沸腾）与两相（液体在芯片表面沸腾，靠相变带走更多热）。</dd>
+      <dt>PFAS</dt><dd>Per- and Polyfluoroalkyl Substances，全氟和多氟烷基物质。一类含氟化学品，俗称"永久化学品"，因不易降解长期累积在环境与人体中、被怀疑致癌。3M 的 Novec、Fluorinert 系列均属此类。</dd>
+      <dt>ASHRAE TC 9.9</dt><dd>美国采暖、制冷与空调工程师学会的"任务关键设施技术委员会"，行业事实标准制定方。其热环境指南（A1–A4 风冷类、W1–W5 液冷类）是全球数据中心散热设计的基准参考。</dd>
+      <dt>GB200 NVL72 / GB300</dt><dd>NVIDIA 当下与下一代 AI 训练 / 推理整柜方案。NVL72 = 一柜 72 颗 Blackwell GPU + 36 颗 Grace CPU 互联，单柜 120–130 kW，强制液冷。GB300 单 GPU TDP ~1400W，整柜 150 kW+。</dd>
+      <dt>东数西算</dt><dd>中国 2022 年启动的国家级算力调度工程，把东部数据需求向西部能源富集地输送，新建 8 大枢纽节点，配套强制 PUE 红线（东部 &lt; 1.25 / 西部 &lt; 1.2）。</dd>
+    </dl>
+  </section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://std.samr.gov.cn/gb/search/gbDetailed?id=2E4DD4D8E2E84A4BE06397BE0A0AE354">国家标准 GB 40879《数据中心能效限定值及能效等级》</a> <em>2024-11 实施口径</em> — 强制性国标，所有数据中心 PUE 不得超 1.5，新建大型 ≤ 1.25。</li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://home.wuhan.gov.cn/zcfg/202408/t20240808_2439562.shtml">《数据中心绿色低碳发展专项行动计划》（武汉市数据局转发）</a> <em>2024-08-08</em> — 国家发改委等四部门联合印发，强化东数西算 PUE 刚性约束（东部 &lt; 1.25 / 西部 &lt; 1.2）。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://www.cnmec.biz/danfoss/Liquid-Cooling-Technology-White-Paper-2023.htm">中国移动 · 中国电信 · 中国联通 联合发布《电信运营商液冷技术白皮书 (2023)》</a> <em>2023-06-05</em> — 三大运营商液冷三年规划：2023 试点 / 2024 新建 10% / 2025 规模应用 50%+，冷板与浸没式技术对比。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://azure.microsoft.com/en-us/blog/azure-maia-for-the-era-of-ai-from-silicon-to-software-to-systems/">Microsoft Azure 官方博客：Azure Maia for the era of AI</a> <em>2023-11-15</em> — Maia 100 一手公告，机架级闭环液冷 + HXU 热交换单元由 Microsoft 一手描述。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://blogs.microsoft.com/blog/2026/01/26/maia-200-the-ai-accelerator-built-for-inference/">微软官方博客：Maia 200 - The AI accelerator built for inference</a> <em>2026-01-26</em> — Maia 200 一手发布，二代闭环液冷 HXU、Mount Pleasant 与 Atlanta AI Superfactory 部署。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://techcommunity.microsoft.com/blog/azureinfrastructureblog/liquid-cooling-in-air-cooled-data-centers-on-microsoft-azure/4268822">Microsoft Tech Community：Liquid Cooling in Air Cooled Data Centers on Microsoft Azure</a> <em>2024-09</em> — Azure 在既有风冷机房改造接入液冷的一手工程实践。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://news.3m.com/2022-12-20-3M-to-Exit-PFAS-Manufacturing-by-the-End-of-2025">3M 公司公告：3M to Exit PFAS Manufacturing by the End of 2025</a> <em>2022-12-20</em> — 3M 一手宣布全面退出 PFAS 制造（含 Novec 7100/649、Fluorinert FC-72 等两相浸没关键介质）。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.delloro.com/news/data-center-liquid-cooling-market-to-approach-7-billion-by-2029-as-ai-deployments-accelerate/">Dell'Oro Group：Data Center Liquid Cooling Market to Approach $7 Billion by 2029</a> <em>2026-01-08</em> — 液冷市场 2025 $3B / 2029 $7B、单相 DTC 主导、Vertiv 领跑 + CoolIT/nVent/Boyd/Aaon。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://uptimeinstitute.com/about-ui/press-releases/uptimes-15th-annual-global-data-center-survey-results-shows-both-commitment-and-hesitancy">Uptime Institute Global Data Center Survey 2025</a> <em>2025-07-30</em> — 第 15 届年度调研（N&gt;800 运营方）：PUE 连续 6 年停滞、机柜功率 10–30 kW 主流、对 NVIDIA 后续 GPU 系统的功率顾虑。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://intelligence.uptimeinstitute.com/sites/default/files/2025-07/UI%20Field%20181_Data%20center%20cooling.pdf">Uptime Institute Cooling Systems Survey 2025 (PDF)</a> <em>2025-07</em> — 冷却系统专项调研报告。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.lombardodier.com/insights/2026/january/ai-supercharges-the-race.html">Lombard Odier 引用 Goldman Sachs 预测：Why liquid cooling will dominate AI data centres in 2026</a> <em>2026-01</em> — 高盛预测液冷 AI 服务器渗透率 2024 15% → 2025 54% → 2026 76%（卖方预期）。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://my.idc.com/getdoc.jsp?containerId=prCHC53302025">IDC China 新闻稿：中国液冷服务器市场加速扩张，头部聚势驱动应用深化</a> <em>2025</em> — IDC 一手 PR：中国液冷服务器 2024 23.7 亿美元 (+67.0%) / 2025 33.9 亿美元 (+42.6%) / 2025-2029 CAGR ≈ 48%（IDC 报告页有订阅墙，多家中文媒体转引数字一致）。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.datacenterdynamics.com/en/news/ashrae-publishes-liquid-cooling-guidelines-as-chip-power-moves-into-uncharted-territory/">DCD：ASHRAE publishes liquid cooling guidelines as chip power moves into "uncharted territory"</a> <em>2024</em> — ASHRAE TC 9.9 液冷指南补充更新报道与原文摘要。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.datacenterdynamics.com/en/news/two-phase-cooling-will-be-hit-by-epa-rules-and-3ms-exit-from-pfas-forever-chemicals/">DCD：Two-phase cooling will be hit by EPA rules and 3M's exit from PFAS</a> <em>2023</em> — 两相浸没冷却供应链受 PFAS 监管 + 3M 退出双重冲击的深度报道。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.servethehome.com/2-phase-immersion-cooling-halted-over-multi-billion-dollar-health-hazard-lawsuits/">ServeTheHome：2-Phase Immersion Cooling Halted Over Multi-Billion Dollar Health Hazard Lawsuits</a> <em>2023</em> — 两相浸没冷却暂停的产业新闻，引超大规模运营商关停项目转向 DLC 的一手对话。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://introl.com/blog/liquid-vs-air-cooling-ai-data-centers">Introl：Liquid Cooling vs Air Cooling for AI Data Centers</a> <em>2025-2026</em> — 集成商汇总的物理对比（换热系数 / 比热 / W/m²·K 数量级）与各路线 PUE/CapEx 阈值（集成商口径、部分精确数字未独立核实）。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://introl.com/blog/water-usage-efficiency-wue-ai-data-center-cooling-guide-2025">Introl：Water Usage Efficiency (WUE) AI Data Center Cooling Guide 2025</a> <em>2025</em> — WUE 指标与闭环液冷水耗对比，行业均值蒸发冷却 ~1.8 L/kWh、闭环液冷接近 0。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://intuitionlabs.ai/articles/nvidia-hgx-data-center-requirements">IntuitionLabs：NVIDIA HGX Platform Data Center Physical Requirements Guide</a> <em>2025</em> — 总结 NVIDIA 设计参考文档中的 GB200 NVL72 单柜功率、冷却液流量等物理需求（二手汇总）。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.yicai.com/news/102862628.html">第一财经：150 倍 PE 下的隐忧 — 三季度业绩环比转跌，英维克遭陆股通减持</a> <em>2025-10-14</em> — 英维克 2025Q3 营收、归母与陆股通持仓变化（财经媒体口径）。</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-06-22 · 内容定格于生成时点，更新请重跑生成新版本
+  </footer>
+
+</div>
+</body>
+</html>
