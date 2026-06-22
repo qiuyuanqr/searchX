@@ -4,7 +4,7 @@
 
 | 子目录 | 是什么 |
 |---|---|
-| `src/` | **源**：页面模板（`index.template.html` / `submit.template.html`）、前端资源（`assets/feed.css`、`feed.js`、`submit.js`）、站点配置（`site.config.json`，只放公开值） |
+| `src/` | **源**：页面模板（`index.template.html` 含提交弹窗 / `submit.template.html` 跳转壳 / `admin.template.html` 授权管理页）、前端资源（`assets/feed.css`、`feed.js`、`submit.js`、`admin.js`）、站点配置（`site.config.json`，只放公开值 Worker URL） |
 | `build/` | **构建逻辑**（注意：不是产物）：扫描 `research/` 下各 `<日期>_<主题>/` 的 `notes.md` → 渲染信息流卡片 + 报告页。含构建脚本与单元测试，入口 `cli.js` |
 | `dist/` | **构建产物**：`bun run build` 的输出（已 gitignore，CI 部署时现生成） |
 

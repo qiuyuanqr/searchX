@@ -68,17 +68,23 @@ research/<日期>_<主题>/
 ## 半自动流水线（朋友提交 → 自动上线）
 
 ```
-朋友：站内表单 submit.html
-   │  POST
+作者：在设置页（admin.html，凭 ADMIN_KEY）把朋友邮箱加进授权名单 → 生成专属链接，私发给本人
    ▼
-intake-worker (Cloudflare)   人机验证 + 校验 + 限制提交频率 → 建 GitHub「pending」Issue + 私密保存提交者邮箱
+朋友：用专属链接打开站点（?k=<token>）填表单提交
+   │  POST（带 token）
    ▼
-作者：在手机上给 Issue 贴「approved」标签        ← 唯一需要人工把关的环节，也是唯一会消耗 Claude 额度的步骤
+intake-worker (Cloudflare)   token 反查邮箱 + 校验 + 安全初筛 + 限频
+   ├─ 干净内容 → 建「approved」Issue（自动放行，无需人工）
+   └─ 命中安全红旗 → 建「pending」Issue（降级，等作者手动批 ← 仅可疑件需人工）
    ▼
 runner (常驻机，每 5 分钟自动跑)   取 approved 未 done → 跑 /research（含自动上线）→ 贴 done → 发结果邮件
    ▼
 公开站更新 + 提交者收到「调研完成」邮件（抄送作者）
 ```
+
+> 授权名单与专属链接由作者在 `admin.html` 管理（凭 `ADMIN_KEY`）。没有专属链接的人无法提交。详见
+> [services/intake-worker/README.md](services/intake-worker/README.md)。设计/实现见
+> [docs/superpowers/specs/2026-06-23-授权用户自助调研自动放行-设计.md](docs/superpowers/specs/2026-06-23-授权用户自助调研自动放行-设计.md)。
 
 各服务的部署 / 运维 / 环境变量见 [services/intake-worker/README.md](services/intake-worker/README.md) 与 [services/runner/README.md](services/runner/README.md)。
 
