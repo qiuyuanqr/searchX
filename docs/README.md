@@ -16,6 +16,7 @@
 - [2026-06-03 searchX 网站化设计稿](superpowers/specs/2026-06-03-searchx-website-design.md)
 - [2026-06-04 股票深度分析 skill 设计](superpowers/specs/2026-06-04-stock-analysis-skill-design.md)
 - [2026-06-06 上线前独立核验设计](superpowers/specs/2026-06-06-上线前独立核验-设计.md)
+- [2026-06-23 授权用户自助调研、自动放行设计](superpowers/specs/2026-06-23-授权用户自助调研自动放行-设计.md)
 
 **实现计划（plans）**
 - [2026-06-03 M1 · 信息流站](superpowers/plans/2026-06-03-m1-feed-site.md)
