@@ -1,7 +1,5 @@
 // services/intake-worker/src/validate.js
-const LIMITS = { title: 160, focus: 500, message: 1000, email: 254 };
-
-const isEmail = (s) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(s);
+const LIMITS = { title: 160, focus: 500, message: 1000 };
 
 // 提示注入初筛：只挑"高信号"特征，命中只作红旗（不拦提交）——研究内容会喂给全权限 headless
 // claude，审批人看到红旗就能逐字核对，避免被藏在侧重点里的"忽略以上指令/执行某命令"骗过。
@@ -30,27 +28,25 @@ export function screenSubmission(clean) {
 const sanitize = (s) =>
   s.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "").trim();
 
-export function validateSubmission(input, limits = LIMITS) {
+// 只校验内容（题目/侧重点/留言）。邮箱不再来自表单——由提交链接里的 token 反查得到，
+// 故这里不收、不校验 email，杜绝用户在表单里冒充他人或往邮箱字段塞注入。
+export function validateContent(input, limits = LIMITS) {
   const get = (k) => (typeof input?.[k] === "string" ? input[k] : "");
   const title = get("title").trim();
   const focus = get("focus").trim();
   const message = get("message").trim();
-  const email = get("email").trim();
 
   const errors = [];
   if (!title) errors.push("title_required");
   if (title.length > limits.title) errors.push("title_too_long");
   if (focus.length > limits.focus) errors.push("focus_too_long");
   if (message.length > limits.message) errors.push("message_too_long");
-  if (!email) errors.push("email_required");
-  else if (email.length > limits.email || !isEmail(email)) errors.push("email_invalid");
 
   const clean = {
     title: sanitize(title),
     focus: sanitize(focus),
     message: sanitize(message),
-    email,
   };
-  // flags 始终计算（不影响 ok）：作为审批前的红旗，由 issue 正文呈现给作者。
+  // flags 始终计算（不影响 ok）：作为放行前的红旗，命中则降级人工复核。
   return { ok: errors.length === 0, errors, clean, flags: screenSubmission(clean) };
 }

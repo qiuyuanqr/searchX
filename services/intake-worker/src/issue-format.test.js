@@ -48,6 +48,25 @@ test("带 flags 时正文含安全初筛红旗 + 提示逐字核对；无 flags 
   expect(clean.body).not.toContain("自动安全初筛");
 });
 
+test("approved=true：label approved，正文标注自动放行", () => {
+  const r = formatIssue(
+    { title: "稳定币", focus: "", message: "", email: "a@x.com" },
+    { author: "qiuyuanqr", flags: [], approved: true }
+  );
+  expect(r.labels).toEqual(["approved"]);
+  expect(r.body).toContain("自动放行");
+});
+
+test("approved=false（命中红旗）：label pending，正文提示人工复核", () => {
+  const r = formatIssue(
+    { title: "x", focus: "", message: "", email: "a@x.com" },
+    { author: "qiuyuanqr", flags: ["代码围栏（```）"], approved: false }
+  );
+  expect(r.labels).toEqual(["pending"]);
+  expect(r.body).toContain("人工复核");
+  expect(r.body).toContain("代码围栏");
+});
+
 test("无侧重点/留言时不渲染对应小节", () => {
   const r = formatIssue(
     { title: "t", focus: "", message: "", email: "a@b.com" },

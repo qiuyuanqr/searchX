@@ -1,29 +1,34 @@
 // services/intake-worker/src/handler.test.js
 import { test, expect } from "bun:test";
 import { handleIntake } from "./handler.js";
+import { mintInvite } from "./invite.js";
 
 function fakeKV(seed = {}) {
   const m = new Map(Object.entries(seed));
-  return { store: m, async get(k){return m.has(k)?m.get(k):null;}, async put(k,v){m.set(k,v);} };
+  return {
+    store: m,
+    async get(k){ return m.has(k) ? m.get(k) : null; },
+    async put(k, v, opts){ m.set(k, v); if (this._puts) this._puts.push({ k, v, opts }); },
+    async delete(k){ m.delete(k); },
+    async list({ prefix } = {}){ return { keys: [...m.keys()].filter((k)=>!prefix||k.startsWith(prefix)).map((name)=>({name})), list_complete: true, cursor: "" }; },
+  };
 }
 
-const ENV = () => ({
+const ENV = (kv) => ({
   ALLOWED_ORIGIN: "https://qiuyuanqr.github.io",
-  TURNSTILE_SECRET: "TS",
   GITHUB_TOKEN: "GT",
   GITHUB_OWNER: "qiuyuanqr",
   GITHUB_REPO: "searchX",
   AUTHOR_LOGIN: "qiuyuanqr",
-  INTAKE_KV: fakeKV(),
+  INTAKE_KV: kv,
 });
 
-// 假 fetch：按 URL 分流 turnstile / github
-function routeFetch({ turnstile = true, issue = { number: 7, html_url: "https://x/7" } } = {}) {
+// 假 fetch：GitHub 建 Issue
+function routeFetch({ issue = { number: 7, html_url: "https://x/7" }, ok = true, status = 201 } = {}) {
   const calls = [];
   const fn = async (url, opts) => {
     calls.push({ url, opts });
-    if (String(url).includes("siteverify")) return { ok: true, json: async () => ({ success: turnstile }) };
-    if (String(url).includes("api.github.com")) return { ok: true, json: async () => issue };
+    if (String(url).includes("api.github.com")) return ok ? { ok: true, json: async () => issue } : { ok: false, status, text: async () => "boom" };
     return { ok: false, status: 404, text: async () => "nope" };
   };
   fn.calls = calls;
@@ -38,116 +43,121 @@ const post = (body) =>
   });
 
 const NOW = new Date("2026-06-03T10:00:00Z");
-const GOOD = { title: "稳定币清结算", focus: "机制", email: "alice@gmail.com", message: "", turnstile: "TKN" };
+
+// 预置一个授权 token → 邮箱
+async function withToken(email = "alice@gmail.com", token = "TOK") {
+  const kv = fakeKV();
+  await mintInvite(kv, email, { gen: () => token });
+  return kv;
+}
 
 test("OPTIONS 预检回 204 + CORS 头", async () => {
-  const res = await handleIntake(new Request("https://w.dev", { method: "OPTIONS" }), ENV());
+  const res = await handleIntake(new Request("https://w.dev", { method: "OPTIONS" }), ENV(fakeKV()));
   expect(res.status).toBe(204);
   expect(res.headers.get("access-control-allow-origin")).toBe("https://qiuyuanqr.github.io");
 });
 
 test("非 POST 回 405", async () => {
-  const res = await handleIntake(new Request("https://w.dev", { method: "GET" }), ENV());
+  const res = await handleIntake(new Request("https://w.dev", { method: "GET" }), ENV(fakeKV()));
   expect(res.status).toBe(405);
 });
 
-test("快乐路径：建 Issue、存打码前的真实邮箱进 KV、回 ok", async () => {
-  const env = ENV();
+test("无 token → 403 unauthorized，不建 Issue", async () => {
   const fetchImpl = routeFetch();
-  const res = await handleIntake(post(GOOD), env, { fetch: fetchImpl, now: NOW });
-  expect(res.status).toBe(200);
-  expect(await res.json()).toEqual({ ok: true });
-  // 邮箱以 sub:<number> 私有存 KV，供 M2b 用
-  expect(env.INTAKE_KV.store.get("sub:7")).toBe("alice@gmail.com");
-  // 发给 GitHub 的正文不含原始邮箱
-  const ghCall = fetchImpl.calls.find((c) => String(c.url).includes("api.github.com"));
-  expect(JSON.parse(ghCall.opts.body).body).not.toContain("alice@gmail.com");
-  expect(JSON.parse(ghCall.opts.body).body).toContain("a***@gmail.com");
-});
-
-test("Turnstile 失败 → 403，不建 Issue", async () => {
-  const fetchImpl = routeFetch({ turnstile: false });
-  const res = await handleIntake(post(GOOD), ENV(), { fetch: fetchImpl, now: NOW });
+  const res = await handleIntake(post({ title: "稳定币", focus: "机制" }), ENV(fakeKV()), { fetch: fetchImpl, now: NOW });
   expect(res.status).toBe(403);
+  expect((await res.json()).error).toBe("unauthorized");
   expect(fetchImpl.calls.some((c) => String(c.url).includes("api.github.com"))).toBe(false);
 });
 
-test("校验失败 → 400 + details", async () => {
-  const res = await handleIntake(post({ ...GOOD, title: "" }), ENV(), { fetch: routeFetch(), now: NOW });
+test("未知 token → 403", async () => {
+  const res = await handleIntake(post({ k: "GHOST", title: "稳定币" }), ENV(await withToken()), { fetch: routeFetch(), now: NOW });
+  expect(res.status).toBe(403);
+});
+
+test("快乐路径：有效 token + 干净内容 → 建 approved Issue、存映射邮箱、回 ok+approved", async () => {
+  const kv = await withToken();
+  const env = ENV(kv);
+  const fetchImpl = routeFetch();
+  const res = await handleIntake(post({ k: "TOK", title: "稳定币清结算", focus: "机制", message: "" }), env, { fetch: fetchImpl, now: NOW });
+  expect(res.status).toBe(200);
+  expect(await res.json()).toEqual({ ok: true, approved: true });
+  const ghCall = fetchImpl.calls.find((c) => String(c.url).includes("api.github.com"));
+  const body = JSON.parse(ghCall.opts.body);
+  expect(body.labels).toEqual(["approved"]);
+  // 邮箱以 sub:<number> 私有存 KV（真实邮箱来自 token 映射）
+  expect(kv.store.get("sub:7")).toBe("alice@gmail.com");
+  // 发给 GitHub 的正文不含原始邮箱、含打码
+  expect(body.body).not.toContain("alice@gmail.com");
+  expect(body.body).toContain("a***@gmail.com");
+});
+
+test("命中安全红旗 → 降级 pending（approved:false）", async () => {
+  const kv = await withToken();
+  const fetchImpl = routeFetch();
+  const res = await handleIntake(post({ k: "TOK", title: "标的", focus: "```js\nalert(1)\n```" }), ENV(kv), { fetch: fetchImpl, now: NOW });
+  expect(res.status).toBe(200);
+  expect((await res.json()).approved).toBe(false);
+  const body = JSON.parse(fetchImpl.calls.find((c) => String(c.url).includes("api.github.com")).opts.body);
+  expect(body.labels).toEqual(["pending"]);
+});
+
+test("校验失败（缺题目）→ 400", async () => {
+  const res = await handleIntake(post({ k: "TOK", title: "" }), ENV(await withToken()), { fetch: routeFetch(), now: NOW });
   expect(res.status).toBe(400);
   expect((await res.json()).error).toBe("invalid");
 });
 
-test("超限 → 429", async () => {
-  const env = ENV();
-  env.INTAKE_KV = fakeKV({ "rl:email:alice%40gmail.com:20260603": "4" });
-  const res = await handleIntake(post(GOOD), env, { fetch: routeFetch(), now: NOW });
+test("超每邮箱每日上限（默认 5）→ 429", async () => {
+  const kv = await withToken();
+  kv.store.set("rl:email:alice%40gmail.com:20260603", "5");
+  const res = await handleIntake(post({ k: "TOK", title: "稳定币" }), ENV(kv), { fetch: routeFetch(), now: NOW });
+  expect(res.status).toBe(429);
+});
+
+test("可配额度：MAX_PER_EMAIL_PER_DAY=2 时第 2 次即超限", async () => {
+  const kv = await withToken();
+  kv.store.set("rl:email:alice%40gmail.com:20260603", "2");
+  const env = { ...ENV(kv), MAX_PER_EMAIL_PER_DAY: "2" };
+  const res = await handleIntake(post({ k: "TOK", title: "稳定币" }), env, { fetch: routeFetch(), now: NOW });
   expect(res.status).toBe(429);
 });
 
 test("坏 JSON → 400 bad_json", async () => {
   const req = new Request("https://w.dev", { method: "POST", headers: { "content-type": "application/json" }, body: "{not json" });
-  const res = await handleIntake(req, ENV(), { fetch: routeFetch(), now: NOW });
+  const res = await handleIntake(req, ENV(await withToken()), { fetch: routeFetch(), now: NOW });
   expect(res.status).toBe(400);
   expect((await res.json()).error).toBe("bad_json");
 });
 
-test("GitHub 建 Issue 失败 → 502", async () => {
-  const fetchImpl = async (url) => {
-    if (String(url).includes("siteverify")) return { ok: true, json: async () => ({ success: true }) };
-    return { ok: false, status: 500, text: async () => "boom" };
-  };
-  const res = await handleIntake(post(GOOD), ENV(), { fetch: fetchImpl, now: NOW });
+test("GitHub 建 Issue 失败 → 502，且不消耗额度", async () => {
+  const kv = await withToken();
+  const res = await handleIntake(post({ k: "TOK", title: "稳定币" }), ENV(kv), { fetch: routeFetch({ ok: false, status: 500 }), now: NOW });
   expect(res.status).toBe(502);
+  expect([...kv.store.keys()].some((k) => k.startsWith("rl:"))).toBe(false);
 });
 
-test("建 Issue 失败(502) 不消耗当日额度（计数器不自增）", async () => {
-  const env = ENV();
-  const fetchImpl = async (url) => {
-    if (String(url).includes("siteverify")) return { ok: true, json: async () => ({ success: true }) };
-    return { ok: false, status: 500, text: async () => "boom" };
-  };
-  const res = await handleIntake(post(GOOD), env, { fetch: fetchImpl, now: NOW });
-  expect(res.status).toBe(502);
-  // peek 不计数、createIssue 失败前不 commit → 限频键不该出现
-  expect([...env.INTAKE_KV.store.keys()].some((k) => k.startsWith("rl:"))).toBe(false);
+test("快乐路径后才记一次额度（ip+email 各 +1）", async () => {
+  const kv = await withToken();
+  await handleIntake(post({ k: "TOK", title: "稳定币" }), ENV(kv), { fetch: routeFetch(), now: NOW });
+  expect(kv.store.get("rl:ip:5.5.5.5:20260603")).toBe("1");
+  expect(kv.store.get("rl:email:alice%40gmail.com:20260603")).toBe("1");
 });
 
-test("快乐路径：建 Issue 成功后才记一次额度", async () => {
-  const env = ENV();
-  await handleIntake(post(GOOD), env, { fetch: routeFetch(), now: NOW });
-  expect(env.INTAKE_KV.store.get("rl:ip:5.5.5.5:20260603")).toBe("1");
-  expect(env.INTAKE_KV.store.get("rl:email:alice%40gmail.com:20260603")).toBe("1");
-});
-
-test("提交者邮箱写 KV 时带 60 天过期（不无限期驻留）", async () => {
-  const puts = [];
-  const kv = {
-    store: new Map(),
-    async get(k) { return this.store.has(k) ? this.store.get(k) : null; },
-    async put(k, v, opts) { this.store.set(k, v); puts.push({ k, v, opts }); },
-  };
-  const env = { ...ENV(), INTAKE_KV: kv };
-  await handleIntake(post(GOOD), env, { fetch: routeFetch(), now: NOW });
-  const subPut = puts.find((p) => p.k === "sub:7");
+test("提交者邮箱写 KV 带 60 天过期", async () => {
+  const kv = await withToken();
+  kv._puts = [];
+  await handleIntake(post({ k: "TOK", title: "稳定币" }), ENV(kv), { fetch: routeFetch(), now: NOW });
+  const subPut = kv._puts.find((p) => p.k === "sub:7");
   expect(subPut).toBeTruthy();
   expect(subPut.opts?.expirationTtl).toBe(60 * 60 * 24 * 60);
 });
 
-test("下游抛错（fetch reject）→ 结构化 500 且带 CORS 头（非裸 500）", async () => {
+test("下游抛错（fetch reject）→ 结构化 500 且带 CORS 头", async () => {
+  const kv = await withToken();
   const fetchImpl = async () => { throw new Error("network down"); };
-  const res = await handleIntake(post(GOOD), ENV(), { fetch: fetchImpl, now: NOW });
+  const res = await handleIntake(post({ k: "TOK", title: "稳定币" }), ENV(kv), { fetch: fetchImpl, now: NOW });
   expect(res.status).toBe(500);
   expect((await res.json()).error).toBe("internal");
   expect(res.headers.get("access-control-allow-origin")).toBe("https://qiuyuanqr.github.io");
-});
-
-test("siteverify 返回非 JSON（res.json 抛）→ 500 而非裸抛", async () => {
-  const fetchImpl = async (url) => {
-    if (String(url).includes("siteverify"))
-      return { ok: true, json: async () => { throw new Error("bad json"); } };
-    return { ok: false, status: 404, text: async () => "" };
-  };
-  const res = await handleIntake(post(GOOD), ENV(), { fetch: fetchImpl, now: NOW });
-  expect(res.status).toBe(500);
 });
