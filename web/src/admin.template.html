@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>searchX · 授权管理</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="stylesheet" href="assets/feed.css">
+</head>
+<body data-pagefind-ignore>
+  <div class="wrap">
+    <header>
+      <div class="kicker"><span class="seal">研</span> 授权管理 · ADMIN</div>
+      <h1 class="brand">授权管理</h1>
+    </header>
+
+    <!-- 密钥闸：输对 ADMIN_KEY 之前只显示这个，面板与数据都不加载 -->
+    <div id="gate">
+      <p class="modal-lead">输入管理密钥进入。只有持密钥的你能管理授权名单。</p>
+      <label class="field">
+        <span class="field-label">管理密钥</span>
+        <input id="admin-key" class="search" type="password" autocomplete="off" placeholder="ADMIN_KEY">
+      </label>
+      <button id="enter" class="submit-btn" type="button">进入</button>
+      <p id="gate-msg" class="form-status" role="status" aria-live="polite" hidden></p>
+    </div>
+
+    <!-- 管理面板：加人 / 列表 / 复制链接 / 撤销 -->
+    <div id="panel" hidden>
+      <form id="add-form" class="submit-form">
+        <label class="field">
+          <span class="field-label">加一个授权邮箱</span>
+          <input id="add-email" class="search" type="email" autocomplete="off" placeholder="friend@example.com">
+        </label>
+        <button class="submit-btn" type="submit">生成专属链接</button>
+        <p id="add-msg" class="form-status" role="status" aria-live="polite" hidden></p>
+      </form>
+      <p class="modal-hint">把生成的「专属链接」私发给本人（微信/私聊都行）。他用链接打开站点即可提交，系统自动跑。撤销后该链接立即失效。</p>
+      <table class="people"><thead><tr><th>邮箱</th><th>专属链接</th><th>操作</th></tr></thead><tbody id="people"></tbody></table>
+      <p class="modal-hint"><button type="button" class="linklike" id="logout">退出（清除本机密钥）</button></p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { inviteLink, renderPeopleRows, describeAdminError } from "./assets/admin.js";
+    const WORKER = "{{WORKER_URL}}";
+    const base = new URL(".", document.baseURI).href; // 站点根（admin.html 同级），用于拼专属链接
+    const $ = (id) => document.getElementById(id);
+    let key = localStorage.getItem("searchx_admin_key") || "";
+
+    async function api(path, opts = {}) {
+      return fetch(WORKER + path, {
+        ...opts,
+        headers: { "content-type": "application/json", "x-admin-key": key, ...(opts.headers || {}) },
+      });
+    }
+    async function load() {
+      const r = await api("/admin/list");
+      if (!r.ok) throw r.status;            // 401/429 → 抛状态码，由调用方提示
+      const j = await r.json();
+      $("people").innerHTML = renderPeopleRows(j.people || [], base);
+    }
+    async function enter() {
+      key = $("admin-key").value.trim();
+      try {
+        await load();
+        localStorage.setItem("searchx_admin_key", key);
+        $("gate").hidden = true; $("panel").hidden = false; $("gate-msg").hidden = true;
+      } catch (s) {
+        key = "";                            // 验失败不留密钥
+        $("gate-msg").textContent = describeAdminError(s); $("gate-msg").hidden = false;
+      }
+    }
+    $("enter").addEventListener("click", enter);
+    $("admin-key").addEventListener("keydown", (e) => { if (e.key === "Enter") enter(); });
+
+    $("add-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = $("add-email").value.trim();
+      const r = await api("/admin/add", { method: "POST", body: JSON.stringify({ email }) });
+      if (r.ok) { $("add-email").value = ""; $("add-msg").hidden = true; await load(); }
+      else { $("add-msg").textContent = describeAdminError(r.status); $("add-msg").hidden = false; }
+    });
+
+    $("people").addEventListener("click", async (e) => {
+      const b = e.target.closest("button"); if (!b) return;
+      if (b.dataset.act === "copy") {
+        try { await navigator.clipboard.writeText(b.dataset.link); b.textContent = "已复制"; setTimeout(() => (b.textContent = "复制"), 1500); } catch {}
+      }
+      if (b.dataset.act === "revoke") {
+        if (!confirm("撤销 " + b.dataset.email + "？该专属链接将立即失效。")) return;
+        await api("/admin/remove", { method: "POST", body: JSON.stringify({ email: b.dataset.email }) });
+        await load();
+      }
+    });
+
+    $("logout").addEventListener("click", () => { localStorage.removeItem("searchx_admin_key"); location.reload(); });
+
+    if (key) enter();                        // 本机已存密钥 → 自动进
+  </script>
+</body>
+</html>

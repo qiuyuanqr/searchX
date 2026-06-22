@@ -14,6 +14,7 @@ export function build({
   assets = "web/src/assets",
   template = "web/src/index.template.html",
   submitTemplate = "web/src/submit.template.html",
+  adminTemplate = "web/src/admin.template.html",
   config = "web/src/site.config.json",
   dedup = "services/runner/src/dedup.js", // 查重纯函数：复制给浏览器表单用，单一源、不漂移
 } = {}) {
@@ -65,6 +66,11 @@ export function build({
   // submit.html：保留旧网址，跳转回主页并打开提交弹窗（#submit）
   const submitTpl = readFileSync(submitTemplate, "utf8");
   writeFileSync(join(out, "submit.html"), injectConfig(submitTpl, cfg));
+
+  // admin.html：授权管理页（纯密钥闸，注入 WORKER_URL）。noindex + data-pagefind-ignore，
+  // 站内任何位置不放入口链接（安全不靠藏网址，但也不主动暴露）。
+  const adminTpl = readFileSync(adminTemplate, "utf8");
+  writeFileSync(join(out, "admin.html"), injectConfig(adminTpl, cfg));
 
   return entries;
 }

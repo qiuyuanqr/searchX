@@ -90,6 +90,24 @@ test("首页注入提交配置（弹窗表单）；submit.html 跳转回主页",
   expect(existsSync(`${OUT}/assets/submit.js`)).toBe(true);
 });
 
+test("产出授权管理页 admin.html：注入 WORKER_URL、密钥闸、noindex、资产就位", () => {
+  build({
+    root: "web/build/fixtures/research",
+    out: OUT,
+    assets: "web/src/assets",
+    template: "web/src/index.template.html",
+    config: "web/build/fixtures/site.config.json",
+  });
+  expect(existsSync(`${OUT}/admin.html`)).toBe(true);
+  const admin = readFileSync(`${OUT}/admin.html`, "utf8");
+  expect(admin).toContain("https://worker.test.dev"); // WORKER_URL 已注入
+  expect(admin).not.toContain("{{WORKER_URL}}");
+  expect(admin).toContain('id="admin-key"');           // 密钥闸
+  expect(admin).toContain('id="panel"');
+  expect(admin).toContain("noindex");
+  expect(existsSync(`${OUT}/assets/admin.js`)).toBe(true);
+});
+
 test("报告副本注入了「返回档案 / 回到顶部」站点导航", () => {
   build({
     root: "web/build/fixtures/research",
