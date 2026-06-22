@@ -7,14 +7,6 @@
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/feed.css">
-<script>
-  // Turnstile 显式渲染：API 就绪后回调，实际渲染交给 feed.js（避免在 display:none 弹窗里 0 尺寸渲染）
-  window.onTurnstileReady = function () {
-    window.__turnstileReady = true;
-    if (typeof window.__renderTurnstile === "function") window.__renderTurnstile();
-  };
-</script>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileReady&render=explicit" async defer></script>
 </head>
 <body data-pagefind-ignore>
   <div class="wrap">
@@ -51,10 +43,11 @@
       <button type="button" class="modal-close" id="close-submit" aria-label="关闭">✕</button>
       <div class="kicker"><span class="seal">研</span> 提交调研请求</div>
       <h2 class="modal-title" id="submit-modal-title">提交一个调研请求</h2>
-      <p class="modal-lead">说清你想搞懂的对象（一个概念 / 一个人物 / 一种方法论 / 一个事件）。作者审核通过后会自动开始调研，结果会发到你留的邮箱，并出现在下面的调研档案里。</p>
+      <p class="modal-lead">说清你想搞懂的对象（一个概念 / 一个人物 / 一种方法论 / 一个事件）。提交后系统会自动开始调研，结果会发到你专属链接对应的邮箱，并出现在下面的调研档案里。</p>
       <p class="modal-hint">📈 想分析单只股票？直接填它的名字或代码（例：宁德时代 300750 / NVDA），系统会自动按「股票深度分析」来处理。</p>
 
-      <form id="submit-form" class="submit-form" data-worker="{{WORKER_URL}}" autocomplete="off">
+      <form id="submit-form" class="submit-form" data-worker="{{WORKER_URL}}" data-verify="{{WORKER_URL}}/verify" autocomplete="off">
+        <p id="auth-state" class="modal-hint" role="status" aria-live="polite" hidden></p>
         <label class="field">
           <span class="field-label">题目 <em>*</em></span>
           <input class="search" type="text" name="title" maxlength="160" required
@@ -67,27 +60,20 @@
                     placeholder="想重点了解的角度、想回答的具体问题…"></textarea>
         </label>
         <label class="field">
-          <span class="field-label">你的邮箱 <em>*</em></span>
-          <input class="search" type="email" name="email" maxlength="254" required
-                 placeholder="结果发到这里（不会公开）">
-        </label>
-        <label class="field">
           <span class="field-label">留言（可选）</span>
           <textarea class="search ta" name="message" maxlength="1000" rows="2"
                     placeholder="想对作者说的话…"></textarea>
         </label>
 
-        <div id="ts-widget" class="ts-widget" data-sitekey="{{TURNSTILE_SITE_KEY}}"></div>
-
         <button class="submit-btn" type="submit">提交请求</button>
         <p id="form-status" class="form-status" role="status" aria-live="polite" hidden></p>
-        <p class="fineprint">邮箱仅用于把结果发给你，不会出现在公开页面上。</p>
+        <p class="fineprint">结果会发到你专属链接对应的邮箱，不会出现在公开页面上。</p>
       </form>
 
       <div id="submit-done" class="submit-done" role="status" aria-live="polite" hidden>
         <div class="done-seal">✓</div>
         <h2 class="done-title">已提交</h2>
-        <p class="done-text">作者会尽快审核。审核通过后，研究结果会发到你留的邮箱，并出现在下面的调研档案里。</p>
+        <p class="done-text">系统会自动开始调研，研究结果会发到你专属链接对应的邮箱，并出现在下面的调研档案里。</p>
         <p class="done-sub"><button type="button" class="linklike" id="submit-again">再提一个 →</button></p>
       </div>
     </div>

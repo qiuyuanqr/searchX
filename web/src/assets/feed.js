@@ -1,5 +1,8 @@
-import { buildPayload, describeResult, renderSearchResultsHTML, describeExistingReport } from "./submit.js";
+import { buildPayload, tokenFromQuery, describeVerify, describeResult, renderSearchResultsHTML, describeExistingReport } from "./submit.js";
 import { findFreshReport } from "./dedup.js";
+
+// 专属链接里的 token（?k=…）：提交的唯一凭证。空 = 未授权，不能提交。
+const TOKEN = tokenFromQuery(location.search);
 
 const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -112,20 +115,7 @@ function bindSearch(){
   input.addEventListener("input", (e) => run(e.target.value.trim()));
 }
 
-// ── 提交弹窗（入口在首页内，不再跳独立网址）────────────────
-// Turnstile 显式渲染：弹窗默认 hidden(display:none)，在隐藏容器里 auto-render 会得到 0 尺寸，
-// 故只在弹窗可见时 render（API 就绪 / 打开弹窗 二者后到的那个触发）。
-let tsId = null;
-function renderTurnstile(){
-  if (tsId !== null) return;                              // 已渲染
-  const modal = document.getElementById("submit-modal");
-  if (!modal || modal.hidden) return;                     // 只在弹窗可见时渲染
-  const el = document.getElementById("ts-widget");
-  if (!el || !window.turnstile || !window.turnstile.render) return; // API 未就绪
-  tsId = window.turnstile.render(el, { sitekey: el.dataset.sitekey });
-}
-window.__renderTurnstile = renderTurnstile; // <head> 的 onTurnstileReady 就绪后会回调它
-
+// ── 提交弹窗（入口在首页内，仅持专属链接 ?k= 的人可提交）────────────────
 function bindSubmitModal(){
   const openBtn = document.getElementById("open-submit");
   const modal = document.getElementById("submit-modal");
@@ -140,10 +130,35 @@ function bindSubmitModal(){
   const titleInput = form.querySelector('input[name="title"]');
   const dupNotice = document.getElementById("dup-notice");
   const submitBtn = form.querySelector(".submit-btn");
+  const authState = document.getElementById("auth-state");
   let lastFocus = null;
+  let authorized = false;   // /verify 通过后才 true
+  let verified = false;     // 已验过一次（避免重复请求）
 
   const setStatus = (text, kind) => { statusEl.textContent = text; statusEl.dataset.kind = kind; statusEl.hidden = false; };
   const showForm = () => { form.hidden = false; done.hidden = true; statusEl.hidden = true; };
+
+  // 授权态：用 ?k= 调 /verify 确认 token 有效。未授权 → 回显提示 + 禁用提交。
+  function applyAuth(view){
+    authorized = view.authorized;
+    if (authState){ authState.textContent = view.text; authState.dataset.kind = view.authorized ? "ok" : "error"; authState.hidden = false; }
+    if (submitBtn){
+      if (view.authorized){ if (submitBtn.dataset.noauth){ delete submitBtn.dataset.noauth; submitBtn.disabled = false; } }
+      else { submitBtn.dataset.noauth = "1"; submitBtn.disabled = true; }
+    }
+  }
+  async function verifyToken(){
+    if (verified) return;                       // 每次会话只验一次
+    verified = true;
+    if (!TOKEN){ applyAuth(describeVerify({ ok: false })); return; }
+    try {
+      const r = await fetch(form.dataset.verify + "?k=" + encodeURIComponent(TOKEN));
+      const data = await r.json().catch(() => ({ ok: false }));
+      applyAuth(describeVerify(data));
+    } catch {
+      applyAuth(describeVerify({ ok: false }));
+    }
+  }
 
   // ── 提交即查重 ──
   // 清除提示并解除"重复"造成的禁用（注意：只解除查重禁用，不动"请求在途"那次禁用）。
@@ -171,7 +186,7 @@ function bindSubmitModal(){
     modal.hidden = false;
     document.body.classList.add("modal-lock");
     openBtn.setAttribute("aria-expanded", "true");
-    renderTurnstile();                       // 弹窗已可见，可安全渲染（API 未就绪则等回调）
+    verifyToken();                           // 用 ?k= 确认授权，未授权则禁用提交
     loadReports();                           // 预取报告清单，让首次输入即时可比对
     runDupCheck();                           // 题目若已有内容（如再次打开）立即查一次
     const f = firstField(); if (f) f.focus();
@@ -206,7 +221,6 @@ function bindSubmitModal(){
   again.addEventListener("click", () => {
     form.reset();
     clearDup();                              // 题目已清空，撤掉查重提示与禁用
-    if (tsId !== null && window.turnstile) window.turnstile.reset(tsId);
     showForm();
     const f = firstField(); if (f) f.focus();
   });
@@ -214,14 +228,13 @@ function bindSubmitModal(){
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const btn = form.querySelector(".submit-btn");
-    if (btn && btn.disabled) return;          // 防连点：请求在途时忽略重复提交
-    if (btn) btn.disabled = true;             // Turnstile token 一次性，连发会让第二次必败、闪现误导错误
+    if (btn && btn.disabled) return;          // 防连点 + 未授权（noauth）/查重禁用时不提交
+    if (!authorized) { setStatus(describeVerify({ ok: false }).text, "error"); return; } // 双保险
+    if (btn) btn.disabled = true;             // 请求在途时禁用，防连点
     const fd = new FormData(form);
-    const token = (window.turnstile && tsId !== null ? window.turnstile.getResponse(tsId) : "")
-      || (fd.get("cf-turnstile-response") || "").toString();
     const payload = buildPayload(
-      { title: fd.get("title"), focus: fd.get("focus"), email: fd.get("email"), message: fd.get("message") },
-      token
+      { title: fd.get("title"), focus: fd.get("focus"), message: fd.get("message") },
+      TOKEN
     );
     setStatus("提交中…", "pending");
     try {
@@ -237,7 +250,6 @@ function bindSubmitModal(){
         if (card) card.scrollTop = 0;
       } else {
         setStatus(out.text, out.kind);
-        if (tsId !== null && window.turnstile) window.turnstile.reset(tsId); // 失败后刷新验证
       }
     } catch {
       setStatus(describeResult({ ok: false }).text, "error");

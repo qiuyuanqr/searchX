@@ -1,15 +1,32 @@
 // 提交表单的纯逻辑：拼载荷 + 把响应映射成中文。
 // DOM 引导（打开/关闭弹窗、提交、Turnstile 渲染）统一由 feed.js 负责，feed.js 从这里 import 这两个纯函数。
-// 纯函数：从表单字段值 + turnstile token 拼 POST 载荷。
-export function buildPayload(fields, turnstileToken) {
+// 纯函数：从表单字段值 + 专属链接里的 token 拼 POST 载荷。
+// 邮箱不再由用户输入——由 token 在 Worker 端反查得到，故载荷不含 email。
+export function buildPayload(fields, token) {
   const s = (v) => (v == null ? "" : String(v)).trim();
   return {
+    k: token || "",
     title: s(fields.title),
     focus: s(fields.focus),
-    email: s(fields.email),
     message: s(fields.message),
-    turnstile: turnstileToken || "",
   };
+}
+
+// 纯函数：从 location.search 取专属链接里的 token（?k=…）；无则空串。
+export function tokenFromQuery(search) {
+  try {
+    return new URLSearchParams(search || "").get("k") || "";
+  } catch {
+    return "";
+  }
+}
+
+// 纯函数：把 /verify 响应映射成授权态。authorized=true 时回显打码邮箱。
+export function describeVerify(res) {
+  if (res && res.ok) {
+    return { authorized: true, email: (res.email || ""), text: `已授权：${res.email || ""}，可直接提交。` };
+  }
+  return { authorized: false, email: "", text: "需要专属链接才能提交。请联系作者获取你的专属链接，用它打开本页再提交。" };
 }
 
 // 纯函数：HTML 转义（覆盖元素内容与双引号属性两种场景）。
@@ -55,11 +72,11 @@ export function describeResult(res) {
     };
   }
   const map = {
-    invalid: "请检查：题目和邮箱必填，且长度别超限。",
+    invalid: "请检查：题目必填，且各项长度别超限。",
     bad_json: "提交格式有误，请重试。",
-    turnstile_failed: "人机验证未通过，请重试。",
+    unauthorized: "需要专属链接才能提交。请用作者给你的专属链接打开本页再提交。",
     ip_rate_limited: "今天提交太多次了，请明天再来。",
-    email_rate_limited: "这个邮箱今天提交太多次了，请明天再来。",
+    email_rate_limited: "你今天提交太多次了，请明天再来。",
     issue_create_failed: "服务器开小差了，请稍后重试。",
   };
   const code = res && res.error;

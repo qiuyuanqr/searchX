@@ -1,18 +1,32 @@
 import { test, expect } from "bun:test";
-import { buildPayload, describeResult, escapeHtml, renderSearchResultsHTML, describeExistingReport } from "./submit.js";
+import { buildPayload, tokenFromQuery, describeVerify, describeResult, escapeHtml, renderSearchResultsHTML, describeExistingReport } from "./submit.js";
 
-test("buildPayload 去空白并带上 turnstile token", () => {
+test("buildPayload 去空白、带 token、不含 email/turnstile", () => {
   const p = buildPayload(
-    { title: "  比特币挖矿  ", focus: " 能耗 ", email: " a@b.com ", message: "" },
-    "TKN"
+    { title: "  比特币挖矿  ", focus: " 能耗 ", message: "" },
+    "TOK"
   );
   expect(p).toEqual({
+    k: "TOK",
     title: "比特币挖矿",
     focus: "能耗",
-    email: "a@b.com",
     message: "",
-    turnstile: "TKN",
   });
+});
+
+test("tokenFromQuery：从 ?k= 取 token；无则空串", () => {
+  expect(tokenFromQuery("?k=abc123")).toBe("abc123");
+  expect(tokenFromQuery("")).toBe("");
+  expect(tokenFromQuery("?x=1")).toBe("");
+});
+
+test("describeVerify：有效回显邮箱并授权；无效给提示且不授权", () => {
+  const ok = describeVerify({ ok: true, email: "b***@x.com" });
+  expect(ok.authorized).toBe(true);
+  expect(ok.email).toBe("b***@x.com");
+  const no = describeVerify({ ok: false });
+  expect(no.authorized).toBe(false);
+  expect(no.text).toContain("专属链接");
 });
 
 test("describeResult: ok=true 给成功文案", () => {
@@ -20,8 +34,8 @@ test("describeResult: ok=true 给成功文案", () => {
 });
 
 test("describeResult: 已知错误码给对应中文", () => {
-  expect(describeResult({ ok: false, error: "turnstile_failed" }).text).toContain("人机验证");
-  expect(describeResult({ ok: false, error: "email_rate_limited" }).text).toContain("邮箱");
+  expect(describeResult({ ok: false, error: "unauthorized" }).text).toContain("专属链接");
+  expect(describeResult({ ok: false, error: "email_rate_limited" }).text).toContain("提交太多");
 });
 
 test("describeResult: 未知错误给兜底文案", () => {
