@@ -105,7 +105,10 @@ test("产出授权管理页 admin.html：注入 WORKER_URL、密钥闸、noindex
   expect(admin).toContain('id="admin-key"');           // 密钥闸
   expect(admin).toContain('id="panel"');
   expect(admin).toContain("noindex");
+  expect(admin).toContain("Content-Security-Policy");   // 严格 CSP
+  expect(admin).not.toContain("{{WORKER_URL}}");
   expect(existsSync(`${OUT}/assets/admin.js`)).toBe(true);
+  expect(existsSync(`${OUT}/assets/admin-page.js`)).toBe(true); // 外置脚本（配合 CSP）
 });
 
 test("报告副本注入了「返回档案 / 回到顶部」站点导航", () => {

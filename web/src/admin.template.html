@@ -4,11 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<!-- 严格 CSP：脚本只许同源（无 'unsafe-inline'，故脚本外置）；外联只许同源 + Worker。
+     即使页面被注入标记也无法执行新脚本、无法把 ADMIN_KEY 外发到攻击者域名。 -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' {{WORKER_URL}}; base-uri 'none'; form-action 'none'">
 <title>searchX · 授权管理</title>
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="stylesheet" href="assets/feed.css">
 </head>
-<body data-pagefind-ignore>
+<body data-pagefind-ignore data-worker="{{WORKER_URL}}">
   <div class="wrap">
     <header>
       <div class="kicker"><span class="seal">研</span> 授权管理 · ADMIN</div>
@@ -42,62 +46,7 @@
     </div>
   </div>
 
-  <script type="module">
-    import { inviteLink, renderPeopleRows, describeAdminError } from "./assets/admin.js";
-    const WORKER = "{{WORKER_URL}}";
-    const base = new URL(".", document.baseURI).href; // 站点根（admin.html 同级），用于拼专属链接
-    const $ = (id) => document.getElementById(id);
-    let key = localStorage.getItem("searchx_admin_key") || "";
-
-    async function api(path, opts = {}) {
-      return fetch(WORKER + path, {
-        ...opts,
-        headers: { "content-type": "application/json", "x-admin-key": key, ...(opts.headers || {}) },
-      });
-    }
-    async function load() {
-      const r = await api("/admin/list");
-      if (!r.ok) throw r.status;            // 401/429 → 抛状态码，由调用方提示
-      const j = await r.json();
-      $("people").innerHTML = renderPeopleRows(j.people || [], base);
-    }
-    async function enter() {
-      key = $("admin-key").value.trim();
-      try {
-        await load();
-        localStorage.setItem("searchx_admin_key", key);
-        $("gate").hidden = true; $("panel").hidden = false; $("gate-msg").hidden = true;
-      } catch (s) {
-        key = "";                            // 验失败不留密钥
-        $("gate-msg").textContent = describeAdminError(s); $("gate-msg").hidden = false;
-      }
-    }
-    $("enter").addEventListener("click", enter);
-    $("admin-key").addEventListener("keydown", (e) => { if (e.key === "Enter") enter(); });
-
-    $("add-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = $("add-email").value.trim();
-      const r = await api("/admin/add", { method: "POST", body: JSON.stringify({ email }) });
-      if (r.ok) { $("add-email").value = ""; $("add-msg").hidden = true; await load(); }
-      else { $("add-msg").textContent = describeAdminError(r.status); $("add-msg").hidden = false; }
-    });
-
-    $("people").addEventListener("click", async (e) => {
-      const b = e.target.closest("button"); if (!b) return;
-      if (b.dataset.act === "copy") {
-        try { await navigator.clipboard.writeText(b.dataset.link); b.textContent = "已复制"; setTimeout(() => (b.textContent = "复制"), 1500); } catch {}
-      }
-      if (b.dataset.act === "revoke") {
-        if (!confirm("撤销 " + b.dataset.email + "？该专属链接将立即失效。")) return;
-        await api("/admin/remove", { method: "POST", body: JSON.stringify({ email: b.dataset.email }) });
-        await load();
-      }
-    });
-
-    $("logout").addEventListener("click", () => { localStorage.removeItem("searchx_admin_key"); location.reload(); });
-
-    if (key) enter();                        // 本机已存密钥 → 自动进
-  </script>
+  <!-- 外置脚本（配合 script-src 'self'）：DOM 引导在 assets/admin-page.js，纯逻辑在 assets/admin.js -->
+  <script type="module" src="assets/admin-page.js"></script>
 </body>
 </html>

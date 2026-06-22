@@ -11,6 +11,18 @@ export function genToken(rand = (arr) => crypto.getRandomValues(arr)) {
 export const inviteKey = (token) => `invite:${token}`;
 export const allowKey = (email) => `allow:${encodeURIComponent(email)}`;
 
+// 容错解析 allow:* 值：损坏（非法 JSON）返回 null，绝不抛出。
+// 纵深防御——不假设 KV 数据一定干净（如控制台误改/未来其它写入路径），
+// 单条坏数据不该让整张授权列表或某次撤销崩成 500。
+function parseAllow(raw) {
+  try {
+    const o = JSON.parse(raw);
+    return o && typeof o === "object" && typeof o.token === "string" ? o : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function emailForToken(kv, token) {
   if (!token) return null;
   return (await kv.get(inviteKey(token))) || null;
@@ -18,10 +30,9 @@ export async function emailForToken(kv, token) {
 
 export async function mintInvite(kv, email, { now = Date.now, gen = genToken } = {}) {
   const existing = await kv.get(allowKey(email));
-  if (existing) {
-    const { token, addedAt } = JSON.parse(existing);
-    return { email, token, addedAt };
-  }
+  const parsed = existing && parseAllow(existing);
+  if (parsed) return { email, token: parsed.token, addedAt: parsed.addedAt };
+  // 无记录或记录损坏 → 重新铸一个有效的（自愈，覆盖坏数据）。
   const token = gen();
   const addedAt = now();
   await kv.put(inviteKey(token), email);
@@ -35,8 +46,9 @@ export async function listPeople(kv) {
   for (const { name } of keys) {
     const raw = await kv.get(name);
     if (!raw) continue;
-    const { token, addedAt } = JSON.parse(raw);
-    out.push({ email: decodeURIComponent(name.slice("allow:".length)), token, addedAt });
+    const parsed = parseAllow(raw);
+    if (!parsed) continue; // 跳过损坏条目，不拖垮整列表
+    out.push({ email: decodeURIComponent(name.slice("allow:".length)), token: parsed.token, addedAt: parsed.addedAt });
   }
   return out;
 }
@@ -44,9 +56,9 @@ export async function listPeople(kv) {
 export async function revoke(kv, email) {
   const raw = await kv.get(allowKey(email));
   if (!raw) return false;
-  const { token } = JSON.parse(raw);
-  await kv.delete(inviteKey(token));
-  await kv.delete(allowKey(email));
+  const parsed = parseAllow(raw);
+  if (parsed) await kv.delete(inviteKey(parsed.token)); // 能解析出 token 才删对应 invite 键
+  await kv.delete(allowKey(email));                      // 无论是否损坏，都清掉 allow 记录
   return true;
 }
 

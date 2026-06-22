@@ -76,3 +76,26 @@ test("含 : 的邮箱不污染键", async () => {
   await mintInvite(kv, "wei:rd@x.com", { now: () => 1, gen: () => "T" });
   expect(await kv.get(allowKey("wei:rd@x.com"))).toBeTruthy();
 });
+
+test("KV 坏数据：listPeople 跳过损坏条目、不抛", async () => {
+  const kv = fakeKV();
+  await mintInvite(kv, "good@x.com", { now: () => 1, gen: () => "TG" });
+  kv.store.set(allowKey("bad@x.com"), "{not json");     // 损坏
+  const people = await listPeople(kv);
+  expect(people).toEqual([{ email: "good@x.com", token: "TG", addedAt: 1 }]);
+});
+
+test("KV 坏数据：mintInvite 对损坏记录自愈重铸、不抛", async () => {
+  const kv = fakeKV();
+  kv.store.set(allowKey("a@x.com"), "garbage");
+  const r = await mintInvite(kv, "a@x.com", { now: () => 9, gen: () => "NEW" });
+  expect(r).toEqual({ email: "a@x.com", token: "NEW", addedAt: 9 });
+  expect(await emailForToken(kv, "NEW")).toBe("a@x.com");
+});
+
+test("KV 坏数据：revoke 清掉损坏的 allow 记录、不抛", async () => {
+  const kv = fakeKV();
+  kv.store.set(allowKey("a@x.com"), "garbage");
+  expect(await revoke(kv, "a@x.com")).toBe(true);
+  expect(await kv.get(allowKey("a@x.com"))).toBeNull();
+});

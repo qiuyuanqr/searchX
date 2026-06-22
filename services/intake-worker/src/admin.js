@@ -32,15 +32,17 @@ export async function handleAdmin(request, env, deps = {}) {
   const maxFails = parseInt(env.ADMIN_MAX_FAILS_PER_HOUR || "10", 10) || 10;
   const failKey = `afail:${encodeURIComponent(ip)}:${hourKey(now())}`;
 
-  // 失败限流：先看是否已锁定（即便后面给对密钥，锁定期内也先拒）
+  // 鉴权 + 失败限流：对密钥优先放行（清零失败计数——邻居 IP 的错误尝试绝不能把合法管理员锁在门外）；
+  // 错 / 空密钥才计数，达 maxFails 起一律 429（不泄露对错），否则 401。定长比较防时序侧信道、空密钥一律拒。
   const fails = parseInt((await kv.get(failKey)) || "0", 10);
-  if (fails >= maxFails) return json({ ok: false, error: "locked" }, 429);
-
-  // 鉴权：定长比较；未配 / 空密钥一律拒绝（防空密钥裸奔）
-  const provided = request.headers.get("x-admin-key") || "";
-  if (!env.ADMIN_KEY || !safeEqual(provided, env.ADMIN_KEY)) {
-    await kv.put(failKey, String(fails + 1), { expirationTtl: 7200 });
-    return json({ ok: false, error: "unauthorized" }, 401);
+  const keyOk = !!env.ADMIN_KEY && safeEqual(request.headers.get("x-admin-key") || "", env.ADMIN_KEY);
+  if (keyOk) {
+    if (fails) await kv.delete(failKey);
+  } else {
+    const n = fails + 1;
+    await kv.put(failKey, String(n), { expirationTtl: 7200 });
+    const locked = n >= maxFails;
+    return json({ ok: false, error: locked ? "locked" : "unauthorized" }, locked ? 429 : 401);
   }
 
   const { pathname } = new URL(request.url);

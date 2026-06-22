@@ -3,6 +3,10 @@ import { findFreshReport } from "./dedup.js";
 
 // 专属链接里的 token（?k=…）：提交的唯一凭证。空 = 未授权，不能提交。
 const TOKEN = tokenFromQuery(location.search);
+// 读到 token 后立即从地址栏 / 历史里抹掉 ?k=：避免 token 残留在浏览器历史、或随后续 referer 泄露。
+if (TOKEN && window.history && history.replaceState) {
+  try { history.replaceState(null, "", location.pathname + location.hash); } catch {}
+}
 
 const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -148,14 +152,15 @@ function bindSubmitModal(){
     }
   }
   async function verifyToken(){
-    if (verified) return;                       // 每次会话只验一次
-    verified = true;
-    if (!TOKEN){ applyAuth(describeVerify({ ok: false })); return; }
+    if (verified) return;                       // 已拿到确定结果就不重复验
+    if (!TOKEN){ verified = true; applyAuth(describeVerify({ ok: false })); return; }
     try {
       const r = await fetch(form.dataset.verify + "?k=" + encodeURIComponent(TOKEN));
       const data = await r.json().catch(() => ({ ok: false }));
+      verified = true;                          // 拿到服务端确定答复才缓存
       applyAuth(describeVerify(data));
     } catch {
+      // 瞬时网络故障：不缓存（verified 保持 false），关闭再打开弹窗可重试
       applyAuth(describeVerify({ ok: false }));
     }
   }

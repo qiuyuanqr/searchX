@@ -48,12 +48,14 @@ test("remove → token 失效", async () => {
   expect(await emailForToken(env.INTAKE_KV, "TA")).toBeNull();
 });
 
-test("失败限流：超阈值 → 429（即便后来给对密钥也先 429）", async () => {
+test("失败限流：错密钥累计达阈值 → 429；其后正确密钥仍放行并清零计数", async () => {
   const env = ENV({ ADMIN_MAX_FAILS_PER_HOUR: "2" });
-  await handleAdmin(req("GET", "/admin/list", { key: "X" }), env, { now: () => 0 }); // fail 1
-  await handleAdmin(req("GET", "/admin/list", { key: "X" }), env, { now: () => 0 }); // fail 2
-  const r = await handleAdmin(req("GET", "/admin/list", { key: "SECRET" }), env, { now: () => 0 });
-  expect(r.status).toBe(429);
+  expect((await handleAdmin(req("GET", "/admin/list", { key: "X" }), env, { now: () => 0 })).status).toBe(401); // fail 1
+  expect((await handleAdmin(req("GET", "/admin/list", { key: "X" }), env, { now: () => 0 })).status).toBe(429); // fail 2 → 锁定
+  expect((await handleAdmin(req("GET", "/admin/list", { key: "X" }), env, { now: () => 0 })).status).toBe(429); // 继续错 → 仍锁
+  // 对密钥优先放行（不被邻居 IP 的错误尝试锁住），并清零失败计数
+  expect((await handleAdmin(req("GET", "/admin/list", { key: "SECRET" }), env, { now: () => 0 })).status).toBe(200);
+  expect((await handleAdmin(req("GET", "/admin/list", { key: "X" }), env, { now: () => 0 })).status).toBe(401); // 已清零 → 错一次只 401
 });
 
 test("OPTIONS 预检 → 204 + CORS", async () => {
