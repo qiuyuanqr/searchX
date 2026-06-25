@@ -10,9 +10,10 @@
 
 ```
 searchX/
-├── .claude/skills/          ← 两个核心能力（skill）
+├── .claude/skills/          ← 三个能力（skill）
 │   ├── research/            通用深度调研：SKILL.md + templates/report.html（报告模板）
-│   └── stock/               单只股票深度投研（13 周情景 + 条件触发）；research 判定为股票时自动转交，也可直接 /stock
+│   ├── stock/               单只股票深度投研（13 周情景 + 条件触发）；research 判定为股票时自动转交，也可直接 /stock
+│   └── factcheck/           事实核查：核实真假 + 讲清原委 + 判断可信度（文本 / 图片 / 链接）；产出仅存本机 Obsidian，不上线
 ├── research/                ← 调研资产库（ARCHIVE_ROOT，也是站点数据源）
 │   ├── INDEX.md             总索引（按日期倒序 + 板块标签，可检索）
 │   └── <YYYY-MM-DD>_<主题>/  每次调研一个文件夹：report.html / sources.md / notes.md [+ data/]
@@ -33,7 +34,7 @@ searchX/
 
 ## 安装
 
-把整个 `searchX/` 放到 `/Users/yangqiuyuan/Coding/`，在该目录下启动 Claude Code 即生效——`.claude/skills/` 下的 skill 被识别为 `/research`、`/stock` 命令，`CLAUDE.md` 自动加载为项目约定。确认：输入 `/`，应能看到 `research`、`stock`。
+把整个 `searchX/` 放到 `/Users/yangqiuyuan/Coding/`，在该目录下启动 Claude Code 即生效——`.claude/skills/` 下的 skill 被识别为 `/research`、`/stock`、`/factcheck` 命令，`CLAUDE.md` 自动加载为项目约定。确认：输入 `/`，应能看到 `research`、`stock`、`factcheck`。
 
 依赖：跑测试 / 本地构建 / runner 前先 `bun install`。
 
@@ -43,6 +44,7 @@ searchX/
 /research <对象>
 /research <对象> | <侧重点>
 /stock <名称或代码>          # 单只股票；research 判定为股票类时也会自动转交给它
+/factcheck <待核实内容>       # 事实核查：真假 + 原委 + 可信度（支持文本 / 图片 / 链接）；结果存本机 Obsidian，不上线
 ```
 
 例：
@@ -64,6 +66,8 @@ research/<日期>_<主题>/
 ```
 
 同时在 Obsidian `<OBSIDIAN_VAULT>/Research/<主题>.md` 保存一份带 `[[双链]]` 的笔记，并自动 `git push` 触发 Pages 部署、发布到公开站。
+
+> `/factcheck` 的产出不同：只在本机 Obsidian `<OBSIDIAN_VAULT>/Factcheck/` 存一份核查笔记（真假裁定 + 原委 + 可信度），**不进仓库、不上线**——它是仅供自己看的私人核查档。
 
 ## 半自动流水线（朋友提交 → 自动上线）
 
