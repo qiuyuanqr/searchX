@@ -26,6 +26,8 @@
 - [2026-06-03 M2a · 提交入队流程](superpowers/plans/2026-06-03-m2a-intake-loop.md)
 - [2026-06-03 M2b · Runner](superpowers/plans/2026-06-03-m2b-runner.md)
 - [2026-06-23 授权用户自助调研、自动放行](superpowers/plans/2026-06-23-授权用户自助调研自动放行.md)
+- [2026-06-25 事实核查手机入口阶段1](superpowers/plans/2026-06-25-事实核查-手机入口-阶段1.md)
+- [2026-06-27 首页与详情页重设计](superpowers/plans/2026-06-27-首页与详情页重设计.md)
 
 **进度记录（progress）**
 - [2026-06-04 自动 runner + 全项目审计修复](progress/2026-06-04-runner-automation-and-audit.md)
