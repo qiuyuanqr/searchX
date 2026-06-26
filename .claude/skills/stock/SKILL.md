@@ -255,7 +255,7 @@ disable-model-invocation: false
   - `{{GLOSSARY}}` = 「名词小抄」：把报告出现的财务/行业术语（PE、毛利率、scale-up、良率…）集中成"术语→人话"对照表，填 `<section class="glossary"><h2>名词小抄</h2><dl><dt>术语</dt><dd>人话解释</dd>…</dl></section>`（股票类术语多，**必填**）
   - `{{SOURCES}}` = 来源清单，每条 `<li><span class="src-tag src-XXX">类型</span> <a href>标题</a> <em>日期</em> — 摘要</li>`；类型→配色类名固定映射同 research Step 4：监管→`src-reg`、披露→`src-disc`、媒体→`src-media`、研究→`src-research`、社区→`src-comm`
   - 报头"生成"行即**信息截止日期（北京时间）**
-- **notes.md frontmatter**：`type: 股票`；`related: ["[[算力]]", …]` 仅挂确有关联的板块（与报头一致）；其余字段同 research。
+- **notes.md frontmatter**：`type: 股票`；`related: ["[[算力]]", …]` 仅挂确有关联的板块（与报头一致）；其余字段同 research。板块名要**原样准确**（光模块 / 机器人 / 算力 / AI应用 / 航天）——它直接驱动首页板块筛选与卡片板块标签，写错就匹配不到。
 - **Step 6 隐私最终检查照常**：推送=公开发布，确认报告内**无任何用户私人信息**（持仓 / 负债 / 财务 / 健康 / 家庭）。
 
 ---
