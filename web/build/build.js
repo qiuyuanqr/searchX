@@ -15,6 +15,7 @@ export function build({
   template = "web/src/index.template.html",
   submitTemplate = "web/src/submit.template.html",
   adminTemplate = "web/src/admin.template.html",
+  checkTemplate = "web/src/check.template.html",
   config = "web/src/site.config.json",
   dedup = "services/runner/src/dedup.js", // 查重纯函数：复制给浏览器表单用，单一源、不漂移
 } = {}) {
@@ -71,6 +72,11 @@ export function build({
   // 站内任何位置不放入口链接（安全不靠藏网址，但也不主动暴露）。
   const adminTpl = readFileSync(adminTemplate, "utf8");
   writeFileSync(join(out, "admin.html"), injectConfig(adminTpl, cfg));
+
+  // check.html：私密事实核查提交页（纯密钥闸，注入 WORKER_URL）。noindex + data-pagefind-ignore，
+  // 站内不放入口链接；真正的锁在 Worker 端（CHECK_KEY 校验）。
+  const checkTpl = readFileSync(checkTemplate, "utf8");
+  writeFileSync(join(out, "check.html"), injectConfig(checkTpl, cfg));
 
   return entries;
 }

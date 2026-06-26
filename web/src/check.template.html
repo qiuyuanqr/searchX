@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<!-- 严格 CSP：脚本只许同源（无 'unsafe-inline'，故脚本外置）；外联只许同源 + Worker。
+     即使页面被注入标记也无法执行新脚本、无法把密钥外发到攻击者域名。 -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' {{WORKER_URL}}; base-uri 'none'; form-action 'none'">
+<title>searchX · 事实核查</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="stylesheet" href="assets/feed.css">
+</head>
+<body data-pagefind-ignore data-worker="{{WORKER_URL}}">
+  <div class="wrap">
+    <header>
+      <div class="kicker"><span class="seal">查</span> 事实核查 · FACTCHECK</div>
+      <h1 class="brand">事实核查</h1>
+    </header>
+
+    <!-- 密钥闸：输对 CHECK_KEY 之前只显示这个，表单不加载 -->
+    <div id="gate">
+      <p class="modal-lead">输入密钥进入。只有持密钥的你能提交核查。</p>
+      <label class="field">
+        <span class="field-label">密钥</span>
+        <input id="check-key" class="search" type="password" autocomplete="off" placeholder="CHECK_KEY">
+      </label>
+      <button id="enter" class="submit-btn" type="button">进入</button>
+      <p id="gate-msg" class="form-status" role="status" aria-live="polite" hidden></p>
+    </div>
+
+    <!-- 核查表单：密钥正确后显示 -->
+    <div id="form-area" hidden>
+      <form id="check-form" class="submit-form">
+        <label class="field">
+          <span class="field-label">核查内容（必填）</span>
+          <textarea id="check-text" class="search" rows="5" placeholder="把要核查的消息、说法、截图描述等粘进来……" required></textarea>
+        </label>
+        <label class="field">
+          <span class="field-label">链接（可选）</span>
+          <input id="check-link" class="search" type="url" autocomplete="off" placeholder="https://…">
+        </label>
+        <button id="submit-btn" class="submit-btn" type="submit">提交核查</button>
+        <p id="form-status" class="form-status" role="status" aria-live="polite" hidden></p>
+      </form>
+      <p class="modal-hint"><button type="button" class="linklike" id="logout">退出（清除本机密钥）</button></p>
+    </div>
+  </div>
+
+  <!-- 外置脚本（配合 script-src 'self'）：DOM 引导在 assets/check-page.js，纯逻辑在 assets/check.js -->
+  <script type="module" src="assets/check-page.js"></script>
+</body>
+</html>

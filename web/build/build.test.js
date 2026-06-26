@@ -111,6 +111,27 @@ test("产出授权管理页 admin.html：注入 WORKER_URL、密钥闸、noindex
   expect(existsSync(`${OUT}/assets/admin-page.js`)).toBe(true); // 外置脚本（配合 CSP）
 });
 
+test("产出事实核查页 check.html：注入 WORKER_URL、密钥闸、noindex、无残留 token", () => {
+  build({
+    root: "web/build/fixtures/research",
+    out: OUT,
+    assets: "web/src/assets",
+    template: "web/src/index.template.html",
+    config: "web/build/fixtures/site.config.json",
+  });
+  expect(existsSync(`${OUT}/check.html`)).toBe(true);
+  const check = readFileSync(`${OUT}/check.html`, "utf8");
+  expect(check).toContain("https://worker.test.dev"); // WORKER_URL 已注入
+  expect(check).not.toContain("{{WORKER_URL}}");       // 无残留 token
+  expect(check).not.toContain("{{");                   // 没有其它未替换 token
+  expect(check).toContain('id="check-key"');           // 密钥闸
+  expect(check).toContain('id="form-area"');           // 表单区
+  expect(check).toContain("noindex");                  // 私密页
+  expect(check).toContain("Content-Security-Policy");  // 严格 CSP
+  expect(existsSync(`${OUT}/assets/check.js`)).toBe(true);
+  expect(existsSync(`${OUT}/assets/check-page.js`)).toBe(true); // 外置脚本
+});
+
 test("报告副本注入了「返回档案 / 回到顶部」站点导航", () => {
   build({
     root: "web/build/fixtures/research",
