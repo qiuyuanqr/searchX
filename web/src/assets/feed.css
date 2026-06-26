@@ -1,6 +1,7 @@
 :root{
   --paper:#f7f4ee; --paper-2:#efe9df; --ink:#2c2823; --ink-soft:#5f594f;
   --muted:#9c9486; --rule:#e7e1d5; --hair:rgba(70,60,48,.08); --seal:#b14a31; --seal-soft:#c97a62; --card:#fcfaf5;
+  --measure:46rem; /* 正文列宽，浮动按钮据此贴列（与 .wrap 的 max-width 对齐） */
   --sans:ui-sans-serif,-apple-system,"PingFang SC","Hiragino Sans GB",sans-serif;
   --serif:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
 }
@@ -35,37 +36,39 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .chip:hover{border-color:var(--seal-soft); color:var(--seal); transform:translateY(-1px)}
 .chip.on{background:var(--seal); border-color:var(--seal); color:#fff}
 .rule-grad{height:1px; background:linear-gradient(90deg, transparent 0%, var(--hair) 16%, var(--hair) 84%, transparent 100%)}
-.article-list{list-style:none; margin-top:1rem}
-@keyframes riseIn{from{opacity:0; transform:translateY(16px)} to{opacity:1; transform:none}}
-.article-card{position:relative; animation:riseIn .58s cubic-bezier(.2,.7,.2,1) backwards}
-.article-card:nth-child(1){animation-delay:.04s}
-.article-card:nth-child(2){animation-delay:.11s}
-.article-card:nth-child(3){animation-delay:.18s}
-.article-card:nth-child(4){animation-delay:.25s}
+/* 吸顶筛选区：搜索 + 类型/板块两组 chips + 计数；滚动后底边浮现 */
+.filterbar{position:sticky; top:0; z-index:30; background:var(--paper);
+  margin:0 -1.5rem; padding:.55rem 1.5rem .5rem; border-bottom:1px solid transparent; transition:border-color .2s}
+.filterbar.stuck{border-bottom-color:var(--rule)}
+.filterbar .search-wrap{margin:.2rem 0 .65rem}
+.filterbar .chips{margin-bottom:0}
+.chips-board{margin-top:.4rem}
+.blabel{align-self:center; font-family:var(--sans); font-size:.7rem; color:var(--muted); margin-right:.1rem}
+.chip.bd{border-style:dashed}
+.count{font-family:var(--sans); font-size:.72rem; color:var(--muted); margin-top:.55rem}
+.article-list{list-style:none; margin-top:.4rem}
+@keyframes riseIn{from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none}}
+.article-card{animation:riseIn .5s cubic-bezier(.2,.7,.2,1) backwards}
 .article-card.hide{display:none}
-.article-card:not(:last-child)::after{content:""; display:block; height:1px; margin:.8rem 1.4rem;
-  background:linear-gradient(90deg, transparent 0%, var(--hair) 30%, var(--hair) 70%, transparent 100%)}
-.card-link{position:relative; display:block; text-decoration:none; color:inherit;
-  background:var(--card); border-radius:13px; padding:1.05rem 1.4rem 1rem; box-shadow:0 1px 2px rgba(0,0,0,.03);
-  transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
-  transition:transform .18s ease, box-shadow .32s ease; will-change:transform}
-.card-link::before{content:""; position:absolute; left:0; top:16px; bottom:16px; width:3px; border-radius:3px;
-  background:var(--seal); transform:scaleY(0); transform-origin:center; opacity:0; transition:transform .3s ease, opacity .3s ease}
-.card-link:hover{box-shadow:0 14px 30px rgba(0,0,0,.11);
-  transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-4px) scale(1.012)}
-.card-link:hover::before{transform:scaleY(1); opacity:.9}
-.card-link:active{transition:transform .08s ease; transform:perspective(900px) translateY(-1px) scale(.993)}
-.card-top{display:flex; justify-content:space-between; align-items:center; font-family:var(--sans);
-  font-size:.67rem; letter-spacing:.14em; text-transform:uppercase}
-.ctype{color:var(--seal); font-weight:700}
-.cdate{color:var(--muted); letter-spacing:.1em}
-.card-title{font-family:var(--serif); font-size:1.42rem; line-height:1.22; font-weight:600; letter-spacing:-.01em;
-  margin:.35rem 0 .3rem; display:inline-block; transition:color .22s ease, transform .22s ease}
-.card-link:hover .card-title{color:var(--seal); transform:translateY(-2px)}
-.lead{color:var(--ink-soft); font-size:.98rem; line-height:1.6; margin:0}
-.card-foot{margin-top:.6rem; display:flex; justify-content:space-between; align-items:center;
-  font-family:var(--sans); font-size:.75rem; color:var(--muted)}
-.srcs{font-variant-numeric:tabular-nums; margin-left:auto}
+.month-sep{font-family:var(--sans); font-size:.7rem; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--muted); padding:1.1rem .55rem .35rem}
+.month-sep.hide{display:none}
+.card-link{position:relative; display:flex; gap:.7rem; align-items:flex-start; text-decoration:none; color:inherit;
+  padding:.7rem .55rem .75rem; border-radius:9px; transition:background .18s ease}
+.card-link::before{content:""; position:absolute; left:0; top:.65rem; bottom:.65rem; width:3px; border-radius:3px;
+  background:var(--seal); transform:scaleX(0); transform-origin:left; opacity:0; transition:transform .22s ease, opacity .22s ease}
+.card-link:hover{background:var(--card)}
+.card-link:hover::before{transform:scaleX(1); opacity:.9}
+.article-card:not(:last-child) .card-link{box-shadow:inset 0 -1px 0 var(--hair)}
+.ctype{flex:none; margin-top:.18rem; font-family:var(--sans); font-size:.6rem; font-weight:600; letter-spacing:.05em;
+  color:var(--seal); border:1px solid var(--rule); border-radius:5px; padding:.1rem .42rem}
+.card-body{min-width:0; flex:1}
+.card-title{font-family:var(--serif); font-size:1.12rem; line-height:1.3; font-weight:600; margin:0;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:color .2s ease}
+.card-link:hover .card-title{color:var(--seal)}
+.lead{color:var(--ink-soft); font-size:.86rem; line-height:1.45; margin:.16rem 0 0;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.card-meta{font-family:var(--sans); font-size:.7rem; color:var(--muted); margin-top:.32rem}
 .results{margin-top:1rem; display:flex; flex-direction:column; gap:.7rem}
 .result a{display:block; text-decoration:none; color:inherit; background:var(--card); border-radius:13px;
   padding:1.1rem 1.4rem; box-shadow:0 1px 2px rgba(0,0,0,.03); transition:box-shadow .25s ease, transform .18s ease}
@@ -75,7 +78,7 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .result .ex mark{background:rgba(177,74,49,.18); color:inherit; padding:0 .1em; border-radius:2px}
 .empty{margin-top:2rem; text-align:center; color:var(--muted); font-family:var(--sans); font-size:.9rem}
 /* 右下角浮动按钮：刷新（常驻）+ 回到顶部（滚动后浮现），共用外观 */
-.to-top, .to-refresh{position:fixed; right:20px; width:44px; height:44px; border-radius:50%;
+.to-top, .to-refresh{position:fixed; right:max(20px, calc((100vw - var(--measure)) / 2 - 56px)); width:44px; height:44px; border-radius:50%;
   background:var(--card); border:1px solid var(--rule); color:var(--seal); font-size:1.15rem;
   display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:50;
   box-shadow:0 4px 14px rgba(0,0,0,.1);

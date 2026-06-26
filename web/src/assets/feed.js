@@ -1,5 +1,6 @@
 import { buildPayload, tokenFromQuery, describeVerify, describeResult, renderSearchResultsHTML, describeExistingReport } from "./submit.js";
 import { findFreshReport } from "./dedup.js";
+import { computeFeedView } from "./feed-filter.js";
 
 // 专属链接里的 token（?k=…）：提交的唯一凭证。空 = 未授权，不能提交。
 const TOKEN = tokenFromQuery(location.search);
@@ -26,25 +27,6 @@ function todayBeijing(){
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai" }).format(new Date());
 }
 
-// 卡片 3D 倾斜
-function bindTilt(){
-  if (reduce) return;
-  const MAX = 4;
-  document.querySelectorAll(".card-link").forEach((card) => {
-    card.addEventListener("pointermove", (e) => {
-      const r = card.getBoundingClientRect();
-      const px = (e.clientX - r.left) / r.width;
-      const py = (e.clientY - r.top) / r.height;
-      card.style.setProperty("--ry", ((px - 0.5) * 2 * MAX).toFixed(2) + "deg");
-      card.style.setProperty("--rx", (-(py - 0.5) * 2 * MAX).toFixed(2) + "deg");
-    });
-    card.addEventListener("pointerleave", () => {
-      card.style.setProperty("--rx", "0deg");
-      card.style.setProperty("--ry", "0deg");
-    });
-  });
-}
-
 // 回到顶部
 function bindToTop(){
   const toTop = document.querySelector(".to-top");
@@ -58,27 +40,59 @@ function bindToTop(){
   toTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }));
 }
 
-// 标签筛选（type: / board:）
+// 吸顶筛选区：滚动后加底边分隔
+function bindStuck(){
+  const bar = document.querySelector(".filterbar");
+  if (!bar) return;
+  const onScroll = () => bar.classList.toggle("stuck", window.scrollY > 4);
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+}
+
+// 两组独立筛选（类型 / 板块），AND 组合；联动月分隔可见性与计数。
 function bindChips(){
-  const chips = document.getElementById("chips");
-  const cards = [...document.querySelectorAll("#feed .article-card")];
+  const typeChips = document.getElementById("chips-type");
+  const boardChips = document.getElementById("chips-board");
+  const feed = document.getElementById("feed");
   const empty = document.getElementById("empty");
-  chips.addEventListener("click", (e) => {
-    const chip = e.target.closest(".chip");
-    if (!chip) return;
-    chips.querySelectorAll(".chip").forEach((c) => c.classList.remove("on"));
+  const countEl = document.getElementById("count");
+  const nodes = [...feed.children]; // li.article-card / li.month-sep（有序）
+  const items = nodes.map((n) =>
+    n.classList.contains("month-sep")
+      ? { kind: "sep" }
+      : { kind: "card", type: n.dataset.type || "", boards: (n.dataset.boards || "").split(",").filter(Boolean) }
+  );
+  let activeType = "all";
+  let activeBoard = null;
+
+  function apply(){
+    const { visible, count } = computeFeedView(items, { type: activeType, board: activeBoard });
+    nodes.forEach((n, i) => n.classList.toggle("hide", !visible[i]));
+    if (countEl) countEl.textContent = `共 ${count} 篇`;
+    empty.hidden = count > 0;
+  }
+
+  typeChips.addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip"); if (!chip) return;
+    typeChips.querySelectorAll(".chip").forEach((c) => c.classList.remove("on"));
     chip.classList.add("on");
     const f = chip.dataset.filter;
-    let shown = 0;
-    cards.forEach((card) => {
-      let ok = f === "all";
-      if (f.startsWith("type:")) ok = card.dataset.type === f.slice(5);
-      if (f.startsWith("board:")) ok = (card.dataset.boards || "").split(",").includes(f.slice(6));
-      card.classList.toggle("hide", !ok);
-      if (ok) shown++;
-    });
-    empty.hidden = shown > 0;
+    activeType = f === "all" ? "all" : f.slice(5); // type:概念 → 概念
+    apply();
   });
+
+  boardChips.addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip"); if (!chip) return;
+    const name = chip.dataset.filter.slice(6); // board:算力 → 算力
+    if (activeBoard === name) { activeBoard = null; chip.classList.remove("on"); } // 再点取消
+    else {
+      boardChips.querySelectorAll(".chip").forEach((c) => c.classList.remove("on"));
+      chip.classList.add("on"); activeBoard = name;
+    }
+    apply();
+  });
+
+  apply(); // 初始计数
 }
 
 // Pagefind 全文检索：输入即查，清空回到信息流
@@ -88,9 +102,12 @@ function bindSearch(){
   const input = document.getElementById("q");
   const feed = document.getElementById("feed");
   const results = document.getElementById("results");
-  const chips = document.getElementById("chips");
+  const typeChips = document.getElementById("chips-type");
+  const boardChips = document.getElementById("chips-board");
+  const countEl = document.getElementById("count");
   const empty = document.getElementById("empty");
   let pf;
+  const setChrome = (show) => [typeChips, boardChips, countEl].forEach((el) => { if (el) el.hidden = !show; });
 
   async function ensure(){
     // 相对“页面”而非“本模块”解析：feed.js 在 /assets/ 下，须按 document.baseURI 定位站点根的 pagefind。
@@ -102,8 +119,8 @@ function bindSearch(){
     }
     return pf;
   }
-  function showFeed(){ results.hidden = true; results.innerHTML = ""; feed.hidden = false; chips.hidden = false; }
-  function showResults(){ feed.hidden = true; chips.hidden = true; results.hidden = false; }
+  function showFeed(){ results.hidden = true; results.innerHTML = ""; feed.hidden = false; setChrome(true); }
+  function showResults(){ feed.hidden = true; setChrome(false); results.hidden = false; }
 
   const run = debounce(async (q) => {
     if (!q) { showFeed(); empty.hidden = true; return; }
@@ -274,8 +291,8 @@ function bindRefresh(){
   btn.addEventListener("click", () => location.reload());
 }
 
-bindTilt();
 bindToTop();
+bindStuck();
 bindChips();
 bindSearch();
 bindSubmitModal();
