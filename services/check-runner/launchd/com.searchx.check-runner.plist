@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  searchX check-runner 定时任务（仅在常驻不关机的 Mac mini 上加载）。
+  安装：cp 本文件到 ~/Library/LaunchAgents/ 后 launchctl bootstrap，详见 ../README.md「定时无人值守」。
+  StartInterval=300 即每 5 分钟一跑；改 900=15 分钟、1800=30 分钟、3600=1 小时。
+  RunAtLoad=false：加载时不立即跑，避免装好瞬间就触发；要立刻验证用 launchctl kickstart。
+  与 com.searchx.runner（research runner）Label 不同，两者可并存、各自独立运行。
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.searchx.check-runner</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/yangqiuyuan/Coding/searchX/services/check-runner/scheduled-run.sh</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/yangqiuyuan/Coding/searchX</string>
+
+  <key>StartInterval</key>
+  <integer>300</integer>
+
+  <key>RunAtLoad</key>
+  <false/>
+
+  <key>ProcessType</key>
+  <string>Background</string>
+
+  <key>StandardOutPath</key>
+  <string>/Users/yangqiuyuan/Library/Logs/searchx-check-runner/launchd.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/yangqiuyuan/Library/Logs/searchx-check-runner/launchd.err.log</string>
+</dict>
+</plist>
