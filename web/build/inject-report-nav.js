@@ -48,7 +48,7 @@ table tbody tr:nth-child(even) td:first-child{background:var(--card)}
 table thead th:first-child{z-index:2; background:var(--accent-bg)}
 /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
 .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
-.sx-nav-btn{position:fixed; right:20px; width:44px; height:44px; border-radius:50%;
+.sx-nav-btn{position:fixed; right:max(20px, calc((100vw - var(--measure)) / 2 - 56px)); width:44px; height:44px; border-radius:50%;
   background:var(--card); border:1px solid var(--rule); color:var(--seal); font-size:1.15rem;
   display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:50;
   text-decoration:none; box-shadow:0 4px 14px rgba(0,0,0,.1);
@@ -59,8 +59,37 @@ table thead th:first-child{z-index:2; background:var(--accent-bg)}
 .sx-home svg{width:19px; height:19px}
 .sx-top{bottom:74px; opacity:0; transform:translateY(10px); pointer-events:none}
 .sx-top.show{opacity:1; transform:none; pointer-events:auto}
-@media (prefers-reduced-motion: reduce){ .sx-nav-btn{transition:none !important} }
+/* 顶部阅读进度条 */
+.sx-progress{position:fixed; top:0; left:0; right:0; height:3px; z-index:60; background:transparent}
+.sx-progress>i{display:block; height:100%; width:0; background:var(--seal); transition:width .1s linear}
+/* 自动目录：电脑端正文左侧吸顶侧栏（窄屏隐藏，退回浮层） */
+.sx-toc{position:fixed; top:0; bottom:0; display:none; flex-direction:column; justify-content:center;
+  width:170px; left:max(20px, calc((100vw - var(--measure)) / 2 - 190px)); z-index:40; pointer-events:none}
+.sx-toc nav{pointer-events:auto; max-height:74vh; overflow-y:auto}
+.sx-toc .h{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.66rem; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:.6rem}
+.sx-toc a{display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.8rem;
+  line-height:1.35; color:var(--ink-soft); padding:.32rem 0 .32rem .6rem; border-left:2px solid transparent;
+  text-decoration:none; cursor:pointer; transition:color .15s, border-color .15s}
+.sx-toc a:hover{color:var(--seal)}
+.sx-toc a.on{color:var(--seal); border-left-color:var(--seal); font-weight:600}
+/* 手机端目录浮层 */
+.sx-toc-sheet{position:fixed; inset:0; z-index:70; display:none; background:rgba(20,16,10,.42)}
+.sx-toc-sheet.open{display:block}
+.sx-toc-sheet .panel{position:absolute; left:0; right:0; bottom:0; max-height:70vh; overflow-y:auto;
+  background:var(--paper); border-top:1px solid var(--rule); border-radius:16px 16px 0 0; padding:1rem 1.2rem 1.4rem}
+.sx-toc-sheet .grip{width:34px; height:4px; border-radius:2px; background:var(--rule); margin:0 auto .8rem}
+.sx-toc-sheet a{display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.95rem;
+  color:var(--ink-soft); padding:.6rem 0; border-bottom:1px solid var(--rule); text-decoration:none}
+.sx-toc-sheet a.on{color:var(--seal); font-weight:600}
+.sx-toc-btn{bottom:128px; font-size:1.3rem}
+@media (min-width:1100px){ .sx-toc{display:flex} .sx-toc-btn{display:none} }
+@media (prefers-reduced-motion: reduce){ .sx-nav-btn{transition:none !important} .sx-progress>i{transition:none} .sx-toc a{transition:none} }
 </style>
+<div class="sx-progress" aria-hidden="true"><i></i></div>
+<aside class="sx-toc" aria-label="目录"><nav><div class="h">目录</div></nav></aside>
+<button type="button" class="sx-nav-btn sx-toc-btn" aria-label="目录" title="目录">≡</button>
+<div class="sx-toc-sheet"><div class="panel"><div class="grip"></div></div></div>
 <a class="sx-nav-btn sx-home" href="${homeHref}" aria-label="返回调研档案首页" title="返回档案首页">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 9.8V19h13V9.8"/></svg>
 </a>
@@ -69,7 +98,54 @@ table thead th:first-child{z-index:2; background:var(--accent-bg)}
 (function(){
   var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var top = document.querySelector(".sx-top");
-  function onScroll(){ (window.scrollY > 420) ? top.classList.add("show") : top.classList.remove("show"); }
+  var bar = document.querySelector(".sx-progress > i");
+
+  // 自动目录：固定区块 + 正文 h2，按文档顺序
+  var secs = [];
+  function add(el, label){ if (!el) return; if (!el.id) el.id = "sx-sec-" + secs.length; secs.push({ id: el.id, label: label }); }
+  add(document.querySelector(".tldr"), "核心结论");
+  add(document.querySelector(".findings"), "关键发现");
+  document.querySelectorAll("main h2").forEach(function(h){ add(h, h.textContent.trim()); });
+  add(document.querySelector("section.risks"), "风险与争议");
+  add(document.querySelector(".glossary"), "名词小抄");
+  add(document.querySelector("section.sources"), "来源清单");
+
+  function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function linksHtml(){ return secs.map(function(s){ return '<a href="#" data-id="' + esc(s.id) + '">' + esc(s.label) + '</a>'; }).join(""); }
+  var aside = document.querySelector(".sx-toc");
+  var deskNav = document.querySelector(".sx-toc nav");
+  var sheet = document.querySelector(".sx-toc-sheet");
+  var sheetPanel = sheet.querySelector(".panel");
+  var tocBtn = document.querySelector(".sx-toc-btn");
+  if (secs.length){
+    deskNav.insertAdjacentHTML("beforeend", linksHtml());
+    sheetPanel.insertAdjacentHTML("beforeend", linksHtml());
+  } else {
+    aside.style.display = "none";   // 没有可索引区块：藏掉目录入口
+    tocBtn.style.display = "none";
+  }
+  function jump(id){ var t = document.getElementById(id); if (t) t.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }); }
+  document.querySelectorAll(".sx-toc a, .sx-toc-sheet a").forEach(function(a){
+    a.addEventListener("click", function(e){ e.preventDefault(); jump(a.dataset.id); sheet.classList.remove("open"); });
+  });
+  tocBtn.addEventListener("click", function(){ sheet.classList.add("open"); });
+  sheet.addEventListener("click", function(e){ if (e.target === sheet) sheet.classList.remove("open"); });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape") sheet.classList.remove("open"); });
+
+  function spy(){
+    var y = window.scrollY + 120, cur = secs.length ? secs[0].id : null;
+    for (var i = 0; i < secs.length; i++){
+      var el = document.getElementById(secs[i].id);
+      if (el && el.getBoundingClientRect().top + window.scrollY <= y) cur = secs[i].id;
+    }
+    document.querySelectorAll(".sx-toc a, .sx-toc-sheet a").forEach(function(a){ a.classList.toggle("on", a.dataset.id === cur); });
+  }
+
+  function onScroll(){
+    (window.scrollY > 420) ? top.classList.add("show") : top.classList.remove("show");
+    if (bar){ var h = document.documentElement.scrollHeight - window.innerHeight; bar.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + "%"; }
+    spy();
+  }
   window.addEventListener("scroll", onScroll, { passive:true });
   onScroll();
   top.addEventListener("click", function(){ window.scrollTo({ top:0, behavior: reduce ? "auto" : "smooth" }); });
