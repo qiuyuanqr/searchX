@@ -57,6 +57,13 @@ test("parseNote 清洗 tldr 里的 markdown 噪声（纸感卡片用纯文本）
   expect(e.tldr).toBe("衔接 other-note 的 重点，参考 code 与 链接。");
 });
 
+test("parseNote 清洗 tldr 里漏进的 HTML 标签（卡片是纯文本展示层）", () => {
+  const raw = "---\ntype: 股票\n---\n\n# 晋拓股份\n\n" +
+    "> 「压铸老兵」组合，但 <strong>实控人</strong> 5 个月套现 3 亿。\n";
+  const e = parseNote(raw, "2026-06-24_jintuo");
+  expect(e.tldr).toBe("「压铸老兵」组合，但 实控人 5 个月套现 3 亿。");
+});
+
 // 回退：部分报告（如股票）用「## 一句话」标题段落而非 > 引用块作结论，导语不该为空。
 test("parseNote 回退：无 > 引用块时取「## 一句话」段落作导语", () => {
   const raw =

@@ -7,6 +7,7 @@ export function cleanInline(s) {
     .replace(/\[\[([^\]]+)\]\]/g, "$1")       // [[双链]] → 双链
     .replace(/\*\*([^*]+)\*\*/g, "$1")        // **加粗** → 加粗
     .replace(/`([^`]+)`/g, "$1")              // `代码` → 代码
+    .replace(/<[^>]+>/g, "")                  // 漏进的 HTML 标签（如 <strong>）→ 去掉，卡片是纯文本展示层
     .replace(/\s+/g, " ")
     .trim();
 }
