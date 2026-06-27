@@ -4,6 +4,11 @@
 // 任务只存 KV，绝不进公开 GitHub Issue。
 import { safeEqual } from "./safe-equal.js";
 
+const TTL = 7 * 24 * 3600;                 // 任务与图片字节统一 7 天过期
+const IMG_MAX_COUNT = 9;                    // 单次最多 9 张
+const IMG_MAX_BYTES = 6 * 1024 * 1024;     // 单图上限 6 MiB
+const IMG_MIME_ALLOW = new Set(["image/jpeg", "image/png", "image/webp"]);
+
 // runner 端点（pending / done）是服务端 runner 调用、不经浏览器，无需 CORS，用裸 json。
 const json = (obj, status = 200) =>
   new Response(JSON.stringify(obj), {
@@ -47,21 +52,54 @@ export async function handleCheckSubmit(request, env, { now }) {
     return corsJson({ ok: false, error: "unauthorized" }, 401);
   }
 
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return corsJson({ ok: false, error: "bad json" }, 400);
+  // multipart（带图片）走 formData；其余按 JSON（纯文本/链接，向后兼容）。
+  const ct = request.headers.get("content-type") || "";
+  let text = "", link = "", imageFiles = [];
+
+  if (ct.includes("multipart/form-data")) {
+    let form;
+    try {
+      form = await request.formData();
+    } catch {
+      return corsJson({ ok: false, error: "bad form" }, 400);
+    }
+    text = String(form.get("text") || "").trim();
+    link = String(form.get("link") || "").trim();
+    // 只收带 arrayBuffer() 的 File/Blob，过滤掉误填进 images 的纯字符串字段。
+    imageFiles = form.getAll("images").filter((f) => f && typeof f.arrayBuffer === "function");
+  } else {
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return corsJson({ ok: false, error: "bad json" }, 400);
+    }
+    text = String(body.text || "").trim();
+    link = String(body.link || "").trim();
   }
 
-  const text = (body.text || "").trim();
-  const link = (body.link || "").trim();
-  if (!text && !link) return corsJson({ ok: false, error: "empty" }, 400);
   if (text.length > 4000 || link.length > 1000) return corsJson({ ok: false, error: "too long" }, 400);
+  if (imageFiles.length > IMG_MAX_COUNT) return corsJson({ ok: false, error: "too many" }, 400);
+  // 先整体校验所有图，再落库——避免部分写入后才发现某张不合法。
+  for (const f of imageFiles) {
+    if (f.size > IMG_MAX_BYTES || !IMG_MIME_ALLOW.has(f.type)) {
+      return corsJson({ ok: false, error: "bad image" }, 400);
+    }
+  }
+  if (!text && !link && imageFiles.length === 0) return corsJson({ ok: false, error: "empty" }, 400);
 
   const id = crypto.randomUUID();
-  const task = { text, link, status: "pending", createdAt: now() };
-  await env.INTAKE_KV.put(`check:${id}`, JSON.stringify(task), { expirationTtl: 7 * 24 * 3600 });
+  const images = [];
+  for (let n = 0; n < imageFiles.length; n++) {
+    const f = imageFiles[n];
+    await env.INTAKE_KV.put(`checkimg:${id}:${n}`, await f.arrayBuffer(), {
+      expirationTtl: TTL,
+      metadata: { mime: f.type },
+    });
+    images.push({ mime: f.type, size: f.size });
+  }
+  const task = { text, link, status: "pending", createdAt: now(), images };
+  await env.INTAKE_KV.put(`check:${id}`, JSON.stringify(task), { expirationTtl: TTL });
   return corsJson({ ok: true, id }, 201);
 }
 
@@ -81,6 +119,16 @@ export async function handleCheckPending(request, env) {
   return json({ ok: true, tasks });
 }
 
+// GET /check/<id>/image/<n> —— runner 凭 CHECK_RUNNER_SECRET 取某张图片字节
+export async function handleCheckImage(request, env, id, n) {
+  if (!runnerAuthed(request, env)) return json({ ok: false, error: "unauthorized" }, 401);
+
+  const got = await env.INTAKE_KV.getWithMetadata(`checkimg:${id}:${n}`, "arrayBuffer");
+  if (!got || got.value == null) return json({ ok: false, error: "not found" }, 404);
+  const mime = (got.metadata && got.metadata.mime) || "application/octet-stream";
+  return new Response(got.value, { status: 200, headers: { "content-type": mime } });
+}
+
 // POST /check/<id>/done —— runner 标记完成
 export async function handleCheckDone(request, env, id) {
   if (!runnerAuthed(request, env)) return json({ ok: false, error: "unauthorized" }, 401);
@@ -91,6 +139,12 @@ export async function handleCheckDone(request, env, id) {
   const t = parseTask(raw);
   if (!t) return json({ ok: false, error: "not found" }, 404); // 值损坏，任务已不可用，按 404 处理
   t.status = "done";
-  await env.INTAKE_KV.put(`check:${id}`, JSON.stringify(t), { expirationTtl: 7 * 24 * 3600 });
+  await env.INTAKE_KV.put(`check:${id}`, JSON.stringify(t), { expirationTtl: TTL });
+  // 隐私加固：任务跑完即清图片字节（云端只停留到处理完）。best-effort——
+  // 删失败不该影响 done 的 200（任务已标完成，图片随 7 天 TTL 兜底过期）。
+  const imgs = Array.isArray(t.images) ? t.images : [];
+  for (let n = 0; n < imgs.length; n++) {
+    try { await env.INTAKE_KV.delete(`checkimg:${id}:${n}`); } catch {}
+  }
   return json({ ok: true });
 }

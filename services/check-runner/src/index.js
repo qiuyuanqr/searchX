@@ -3,11 +3,11 @@
 // 副作用集中在此（spawn claude / nodemailer / 文件锁 / 网络），不单测——逻辑都在被注入的纯函数里。
 
 import nodemailer from "nodemailer";
-import { mkdirSync, openSync, closeSync, writeSync, readFileSync, rmSync, statSync } from "fs";
+import { mkdirSync, openSync, closeSync, writeSync, writeFileSync, readFileSync, rmSync, statSync } from "fs";
 import { join } from "path";
-import { homedir } from "os";
+import { homedir, tmpdir } from "os";
 import { loadCheckRunnerConfig } from "./config.js";
-import { fetchPendingChecks, markCheckDone } from "./poll.js";
+import { fetchPendingChecks, markCheckDone, fetchCheckImage } from "./poll.js";
 import { buildFactcheckPrompt } from "./factcheck-cmd.js";
 import { runOnce } from "./runner.js";
 import { sendEmail } from "../../runner/src/email.js";
@@ -48,6 +48,36 @@ function acquireLock() {
   if (!Number.isInteger(pid) && ageMs < STALE_MS) return null;
   try { rmSync(path, { recursive: true, force: true }); } catch {}
   return createLockExclusive(path) ? makeRelease(path) : null;
+}
+
+function extFromMime(mime) {
+  if (mime === "image/jpeg") return "jpg";
+  if (mime === "image/png") return "png";
+  if (mime === "image/webp") return "webp";
+  return "bin";
+}
+
+// 把一条任务的图片逐张下载、落成本机临时文件，返回 { imagePaths, cleanup }。
+// 无图返回空、空 cleanup。下载中途出错：先清半成品临时文件，再抛错（runOnce 据此把该条按失败重跑）。
+async function prepareCheckImages(task, { workerUrl, secret }) {
+  const imgs = Array.isArray(task.images) ? task.images : [];
+  if (!imgs.length) return { imagePaths: [], cleanup: () => {} };
+  const dir = join(tmpdir(), "searchx-check", task.id);
+  const cleanup = () => { try { rmSync(dir, { recursive: true, force: true }); } catch {} };
+  try {
+    mkdirSync(dir, { recursive: true });
+    const imagePaths = [];
+    for (let n = 0; n < imgs.length; n++) {
+      const { bytes, mime } = await fetchCheckImage({ workerUrl, secret, id: task.id, n });
+      const p = join(dir, `${n}.${extFromMime(mime)}`);
+      writeFileSync(p, bytes);
+      imagePaths.push(p);
+    }
+    return { imagePaths, cleanup };
+  } catch (err) {
+    cleanup();
+    throw err;
+  }
 }
 
 // 核查完成通知邮件：只说"去 Obsidian 查"，绝不回显核查内容细节（隐私红线）。
@@ -104,6 +134,8 @@ async function main() {
       fetchPendingChecks({ workerUrl: config.workerUrl, secret: config.secret }),
     markDone: (id) =>
       markCheckDone({ workerUrl: config.workerUrl, secret: config.secret, id }),
+    prepareImages: (task) =>
+      prepareCheckImages(task, { workerUrl: config.workerUrl, secret: config.secret }),
     buildPrompt: buildFactcheckPrompt,
     runFactcheck: async (prompt) => {
       console.log(`→ claude -p ${JSON.stringify(prompt)}`);

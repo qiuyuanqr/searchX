@@ -136,4 +136,101 @@ describe("runOnce", () => {
     expect(marked).toBe(false);
     expect(notified).toBe(false);
   });
+
+  // ── 图片：prepareImages 落本地文件 + cleanup ───────────────────
+
+  it("带图任务：prepareImages 的 imagePaths 传给 buildPrompt，成功后 cleanup 被调用", async () => {
+    const tasks = [{ id: "t0", text: "看图", link: "", status: "pending", images: [{ mime: "image/jpeg", size: 3 }] }];
+    let cleaned = 0;
+    let promptArg = null;
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async () => {},
+      runFactcheck: async () => 0,
+      prepareImages: async (t) => ({
+        imagePaths: [`/tmp/${t.id}/0.jpg`],
+        cleanup: () => { cleaned++; },
+      }),
+      buildPrompt: (t) => { promptArg = t; return "/factcheck x"; },
+      notify: null,
+      log: () => {},
+    };
+    const result = await runOnce({}, deps);
+    expect(result).toEqual({ processed: 1, done: 1, fail: 0 });
+    expect(promptArg.imagePaths).toEqual(["/tmp/t0/0.jpg"]);
+    expect(cleaned).toBe(1);
+  });
+
+  it("runFactcheck 失败：cleanup 仍被调用（finally），任务不 markDone", async () => {
+    const tasks = [{ id: "t0", text: "看图", images: [{ mime: "image/jpeg", size: 3 }] }];
+    let cleaned = 0, marked = 0;
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async () => { marked++; },
+      runFactcheck: async () => 1,
+      prepareImages: async () => ({ imagePaths: ["/tmp/t0/0.jpg"], cleanup: () => { cleaned++; } }),
+      buildPrompt: () => "/factcheck x",
+      notify: null,
+      log: () => {},
+    };
+    const result = await runOnce({}, deps);
+    expect(result).toEqual({ processed: 1, done: 0, fail: 1 });
+    expect(marked).toBe(0);
+    expect(cleaned).toBe(1);
+  });
+
+  it("markDone 抛错：cleanup 仍被调用（finally）", async () => {
+    const tasks = [{ id: "t0", text: "看图", images: [{ mime: "image/jpeg", size: 3 }] }];
+    let cleaned = 0;
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async () => { throw new Error("done 502"); },
+      runFactcheck: async () => 0,
+      prepareImages: async () => ({ imagePaths: ["/tmp/t0/0.jpg"], cleanup: () => { cleaned++; } }),
+      buildPrompt: () => "/factcheck x",
+      notify: null,
+      log: () => {},
+    };
+    const result = await runOnce({}, deps);
+    expect(result).toEqual({ processed: 1, done: 0, fail: 1 });
+    expect(cleaned).toBe(1);
+  });
+
+  it("prepareImages 抛错：计 fail、不 runFactcheck、不 markDone、继续后续", async () => {
+    const tasks = [
+      { id: "t0", text: "坏图", images: [{ mime: "image/jpeg", size: 3 }] },
+      { id: "t1", text: "好任务", images: [] },
+    ];
+    let ran = 0, marked = [];
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id) => { marked.push(id); },
+      runFactcheck: async () => { ran++; return 0; },
+      prepareImages: async (t) => {
+        if (t.id === "t0") throw new Error("image 500");
+        return { imagePaths: [], cleanup: () => {} };
+      },
+      buildPrompt: () => "/factcheck x",
+      notify: null,
+      log: () => {},
+    };
+    const result = await runOnce({}, deps);
+    expect(result).toEqual({ processed: 2, done: 1, fail: 1 });
+    expect(ran).toBe(1);            // 只有 t1 跑了 runFactcheck
+    expect(marked).toEqual(["t1"]); // t0 未 markDone
+  });
+
+  it("无 prepareImages dep（纯文本场景）：照常工作", async () => {
+    const tasks = makeTasks(1);
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async () => {},
+      runFactcheck: async () => 0,
+      buildPrompt: (t) => `/factcheck ${t.text}`,
+      notify: null,
+      log: () => {},
+    };
+    const result = await runOnce({}, deps);
+    expect(result).toEqual({ processed: 1, done: 1, fail: 0 });
+  });
 });

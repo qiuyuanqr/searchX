@@ -18,3 +18,14 @@ export async function markCheckDone({ workerUrl, secret, id }, fetchImpl = fetch
   });
   if (!r.ok) throw new Error(`done ${r.status}`);
 }
+
+// 取某条任务的第 n 张图片字节（runner 密钥鉴权）。返回 { bytes:Uint8Array, mime }。
+export async function fetchCheckImage({ workerUrl, secret, id, n }, fetchImpl = fetch) {
+  const r = await fetchImpl(`${workerUrl}/check/${id}/image/${n}`, {
+    headers: { "x-check-runner-secret": secret },
+  });
+  if (!r.ok) throw new Error(`image ${r.status}`);
+  const buf = await r.arrayBuffer();
+  const mime = (r.headers && r.headers.get("content-type")) || "application/octet-stream";
+  return { bytes: new Uint8Array(buf), mime };
+}

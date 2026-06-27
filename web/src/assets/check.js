@@ -40,3 +40,27 @@ export function describeCheckResult(ok) {
   if (ok) return { kind: "success", text: "已提交，稍后在 Obsidian 查看核查结果。" };
   return { kind: "error", text: "提交失败，请稍后重试。" };
 }
+
+// 纯函数：按长边等比缩放尺寸。长边 ≤ maxEdge 原样返回（不放大），否则缩到长边 = maxEdge。
+// 保字迹优先：截图只在确实过大时才缩，给模型读图留余量。退化输入（0）原样返回、不崩。
+export function fitDimensions(w, h, maxEdge) {
+  const W = Math.max(0, Math.round(w || 0));
+  const H = Math.max(0, Math.round(h || 0));
+  if (!W || !H) return { width: W, height: H };
+  const longest = Math.max(W, H);
+  if (longest <= maxEdge) return { width: W, height: H };
+  const scale = maxEdge / longest;
+  return { width: Math.round(W * scale), height: Math.round(H * scale) };
+}
+
+// 纯函数：校验提交是否可发。图片 / 文字 / 链接至少一项；并各自限长 / 限张。返回 { ok, reason }。
+export function validateCheckSubmission({ text, link, imageCount } = {}) {
+  const t = (text == null ? "" : String(text)).trim();
+  const l = (link == null ? "" : String(link)).trim();
+  const n = imageCount || 0;
+  if (!t && !l && !n) return { ok: false, reason: "图片、文字、链接至少填一项。" };
+  if (t.length > 4000) return { ok: false, reason: "核查内容过长（上限 4000 字）。" };
+  if (l.length > 1000) return { ok: false, reason: "链接过长。" };
+  if (n > 9) return { ok: false, reason: "最多 9 张图片。" };
+  return { ok: true, reason: "" };
+}

@@ -1,9 +1,64 @@
 // web/src/assets/check-page.js — 事实核查提交页的 DOM 引导（外置脚本，配合严格 CSP `script-src 'self'`）。
 // 纯逻辑（载荷构造 / 密钥读写 / 状态文案）在 check.js；本文件只做事件绑定与 fetch。
-import { buildCheckPayload, validateCheckPayload, readKey, saveKey, clearKey, describeCheckResult } from "./check.js";
+import { readKey, saveKey, clearKey, describeCheckResult, fitDimensions, validateCheckSubmission } from "./check.js";
 
 const WORKER = document.body.dataset.worker || "";   // {{WORKER_URL}} 注入在 body data-worker
 const $ = (id) => document.getElementById(id);
+
+const MAX_IMAGES = 9;
+const MAX_EDGE = 2000;     // 长边超此值才缩（保字迹优先）
+const JPEG_QUALITY = 0.9;
+
+// 已选图片：每项 { blob, url }。blob 是重编码后的 JPEG（归一化 HEIC、按需缩小）；url 是预览 object URL。
+let selected = [];
+
+// 在 canvas 上把任意可解码图片重编码为 JPEG：归一化格式（含 iOS HEIC）、长边超限才等比缩。
+// 解码失败（如不支持的格式）抛错，调用方据此跳过该张。
+async function processImage(file) {
+  const bitmap = await createImageBitmap(file);
+  const { width, height } = fitDimensions(bitmap.width, bitmap.height, MAX_EDGE);
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext("2d").drawImage(bitmap, 0, 0, width, height);
+  if (bitmap.close) bitmap.close();
+  const blob = await new Promise((res) => canvas.toBlob(res, "image/jpeg", JPEG_QUALITY));
+  if (!blob) throw new Error("encode failed");
+  return blob;
+}
+
+function renderPreviews() {
+  const box = $("img-preview");
+  box.textContent = "";
+  for (let i = 0; i < selected.length; i++) {
+    const item = selected[i];
+    const thumb = document.createElement("div");
+    thumb.className = "thumb";
+    const img = document.createElement("img");
+    img.src = item.url;
+    img.alt = `图片 ${i + 1}`;
+    const del = document.createElement("button");
+    del.type = "button";
+    del.textContent = "×";
+    del.setAttribute("aria-label", `移除图片 ${i + 1}`);
+    del.addEventListener("click", () => removeImage(i));
+    thumb.append(img, del);
+    box.append(thumb);
+  }
+  box.hidden = selected.length === 0;
+}
+
+function removeImage(i) {
+  const [gone] = selected.splice(i, 1);
+  if (gone) URL.revokeObjectURL(gone.url);
+  renderPreviews();
+}
+
+function clearImages() {
+  for (const it of selected) URL.revokeObjectURL(it.url);
+  selected = [];
+  renderPreviews();
+}
 
 // 密钥存 localStorage：输一次后此设备持久免登，关标签 / 重开浏览器都不丢。
 // 仅手动点「退出」、清浏览器缓存、或换设备时才需重输；Worker 若改密钥则提交时 401 自动退回密钥闸。
@@ -68,12 +123,31 @@ async function enter(presetKey) {
 $("enter").addEventListener("click", () => enter());
 $("check-key").addEventListener("keydown", (e) => { if (e.key === "Enter") enter(); });
 
+// 选图：逐张重编码为 JPEG → 加入 selected → 渲染预览。超 9 张拒收并提示。
+$("check-images").addEventListener("change", async (e) => {
+  const files = [...(e.target.files || [])];
+  e.target.value = "";   // 清空，便于移除后重选同一文件
+  if (!files.length) return;
+  for (const f of files) {
+    if (selected.length >= MAX_IMAGES) {
+      setStatus(`最多 ${MAX_IMAGES} 张图片，多余的已忽略。`, "error");
+      break;
+    }
+    try {
+      const blob = await processImage(f);
+      selected.push({ blob, url: URL.createObjectURL(blob) });
+    } catch {
+      setStatus("有一张图片无法读取，已跳过。", "error");
+    }
+  }
+  renderPreviews();
+});
+
 $("check-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const text = $("check-text").value;
   const link = $("check-link").value;
-  const payload = buildCheckPayload(text, link);
-  const v = validateCheckPayload(payload);
+  const v = validateCheckSubmission({ text, link, imageCount: selected.length });
   if (!v.ok) { setStatus(v.reason, "error"); return; }
 
   const btn = $("submit-btn");
@@ -81,10 +155,14 @@ $("check-form").addEventListener("submit", async (e) => {
   setStatus("提交中…", "pending");
 
   try {
+    const fd = new FormData();
+    fd.append("text", text.trim());
+    fd.append("link", link.trim());
+    selected.forEach((it, i) => fd.append("images", it.blob, `img-${i}.jpg`));
     const r = await fetch(WORKER + "/check", {
       method: "POST",
-      headers: { "content-type": "application/json", "x-check-key": key },
-      body: JSON.stringify(payload),
+      headers: { "x-check-key": key },   // 不手设 content-type，让浏览器带 multipart 边界
+      body: fd,
     });
     if (r.status === 401) {
       // 密钥失效（可能 Worker 重置）→ 退回密钥闸
@@ -100,6 +178,7 @@ $("check-form").addEventListener("submit", async (e) => {
     if (result.kind === "success") {
       $("check-text").value = "";
       $("check-link").value = "";
+      clearImages();
     }
   } catch {
     setStatus("网络错误，请检查连接后重试。", "error");

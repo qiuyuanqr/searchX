@@ -26,4 +26,30 @@ describe("buildFactcheckPrompt", () => {
   it("text 带首尾空白会被去掉", () => {
     expect(buildFactcheckPrompt({ text: "  消息  " })).toBe("/factcheck 消息");
   });
+
+  it("text + 图片路径：追加 Read 指引段", () => {
+    expect(
+      buildFactcheckPrompt({ text: "看看这张图", imagePaths: ["/tmp/a/0.jpg", "/tmp/a/1.png"] })
+    ).toBe(
+      "/factcheck 看看这张图\n附图为本地文件，请用 Read 逐张打开后纳入核查：\n/tmp/a/0.jpg\n/tmp/a/1.png"
+    );
+  });
+
+  it("仅图片（无 text/link）：命令后直接接图片指引段", () => {
+    expect(buildFactcheckPrompt({ imagePaths: ["/tmp/a/0.jpg"] })).toBe(
+      "/factcheck 附图为本地文件，请用 Read 逐张打开后纳入核查：\n/tmp/a/0.jpg"
+    );
+  });
+
+  it("imagePaths 为空数组：与无图等价", () => {
+    expect(buildFactcheckPrompt({ text: "消息", imagePaths: [] })).toBe("/factcheck 消息");
+  });
+
+  it("link + 图片：三段拼接", () => {
+    expect(
+      buildFactcheckPrompt({ link: "https://x.com", imagePaths: ["/tmp/a/0.jpg"] })
+    ).toBe(
+      "/factcheck 链接：https://x.com\n附图为本地文件，请用 Read 逐张打开后纳入核查：\n/tmp/a/0.jpg"
+    );
+  });
 });

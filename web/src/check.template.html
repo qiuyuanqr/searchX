@@ -7,10 +7,18 @@
 <meta name="referrer" content="no-referrer">
 <!-- 严格 CSP：脚本只许同源（无 'unsafe-inline'，故脚本外置）；外联只许同源 + Worker。
      即使页面被注入标记也无法执行新脚本、无法把密钥外发到攻击者域名。 -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' {{WORKER_URL}}; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' {{WORKER_URL}}; base-uri 'none'; form-action 'none'">
 <title>searchX · 事实核查</title>
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="stylesheet" href="assets/feed.css">
+<style>
+  /* 选图预览网格（style-src 允许 unsafe-inline；只服务本页，不进公开站 feed.css） */
+  .img-preview { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin: .25rem 0 .75rem; }
+  .img-preview .thumb { position: relative; aspect-ratio: 1 / 1; border: 1px solid currentColor; border-radius: 4px; overflow: hidden; opacity: .9; }
+  .img-preview .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .img-preview .thumb button { position: absolute; top: 2px; right: 2px; width: 22px; height: 22px; line-height: 20px; padding: 0; border: none; border-radius: 50%; background: rgba(0,0,0,.6); color: #fff; font-size: 15px; cursor: pointer; }
+  .field-hint { font-size: .85em; opacity: .65; margin: .25rem 0 0; }
+</style>
 </head>
 <body data-pagefind-ignore data-worker="{{WORKER_URL}}">
   <div class="wrap">
@@ -34,13 +42,19 @@
     <div id="form-area" hidden>
       <form id="check-form" class="submit-form">
         <label class="field">
-          <span class="field-label">核查内容（必填）</span>
-          <textarea id="check-text" class="search" rows="5" placeholder="把要核查的消息、说法、截图描述等粘进来……" required></textarea>
+          <span class="field-label">核查内容（选填）</span>
+          <textarea id="check-text" class="search" rows="5" placeholder="把要核查的消息、说法、截图描述等粘进来……"></textarea>
         </label>
         <label class="field">
-          <span class="field-label">链接（可选）</span>
+          <span class="field-label">链接（选填）</span>
           <input id="check-link" class="search" type="url" autocomplete="off" placeholder="https://…">
         </label>
+        <label class="field">
+          <span class="field-label">图片（选填，最多 9 张）</span>
+          <input id="check-images" class="search" type="file" accept="image/*" multiple>
+        </label>
+        <div id="img-preview" class="img-preview" hidden></div>
+        <p class="field-hint">图片 / 文字 / 链接至少填一项。</p>
         <button id="submit-btn" class="submit-btn" type="submit">提交核查</button>
         <p id="form-status" class="form-status" role="status" aria-live="polite" hidden></p>
       </form>

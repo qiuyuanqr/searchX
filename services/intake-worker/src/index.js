@@ -3,7 +3,7 @@ import { handleIntake } from "./handler.js";
 import { handleSubRead } from "./sub-read.js";
 import { handleAdmin } from "./admin.js";
 import { handleVerify } from "./verify.js";
-import { handleCheckSubmit, handleCheckPending, handleCheckDone } from "./check.js";
+import { handleCheckSubmit, handleCheckPending, handleCheckDone, handleCheckImage } from "./check.js";
 
 export default {
   async fetch(request, env) {
@@ -30,6 +30,12 @@ export default {
         return new Response(JSON.stringify({ ok: false, error: "not found" }), { status: 404, headers: { "content-type": "application/json" } });
       if (request.method === "POST")
         return handleCheckDone(request, env, doneMatch[1]);
+      return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers: { "content-type": "application/json" } });
+    }
+    const imgMatch = pathname.match(/^\/check\/([^/]+)\/image\/(\d+)$/);
+    if (imgMatch) {
+      if (request.method === "GET")
+        return handleCheckImage(request, env, imgMatch[1], Number(imgMatch[2]));
       return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers: { "content-type": "application/json" } });
     }
     if (pathname.startsWith("/check/"))

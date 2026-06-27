@@ -1,6 +1,6 @@
 // services/check-runner/src/poll.test.js
 import { describe, it, expect } from "bun:test";
-import { fetchPendingChecks, markCheckDone } from "./poll.js";
+import { fetchPendingChecks, markCheckDone, fetchCheckImage } from "./poll.js";
 
 const BASE = "https://fake.worker.dev";
 const SECRET = "test-secret";
@@ -61,5 +61,40 @@ describe("markCheckDone", () => {
   it("非 2xx 抛错", async () => {
     const fakeFetch = async () => ({ ok: false, status: 404 });
     await expect(markCheckDone({ workerUrl: BASE, secret: SECRET, id: "x" }, fakeFetch)).rejects.toThrow("done 404");
+  });
+});
+
+describe("fetchCheckImage", () => {
+  it("调对 URL/头部，返回 {bytes, mime}", async () => {
+    const raw = new Uint8Array([1, 2, 3, 4]);
+    const fakeFetch = async (url, opts) => {
+      expect(url).toBe(`${BASE}/check/abc/image/2`);
+      expect(opts.headers["x-check-runner-secret"]).toBe(SECRET);
+      return {
+        ok: true,
+        headers: { get: (h) => (h === "content-type" ? "image/png" : null) },
+        arrayBuffer: async () => raw.buffer,
+      };
+    };
+    const got = await fetchCheckImage({ workerUrl: BASE, secret: SECRET, id: "abc", n: 2 }, fakeFetch);
+    expect(got.mime).toBe("image/png");
+    expect(got.bytes).toEqual(raw);
+  });
+
+  it("无 content-type 时 mime 兜底 octet-stream", async () => {
+    const fakeFetch = async () => ({
+      ok: true,
+      headers: { get: () => null },
+      arrayBuffer: async () => new Uint8Array([1]).buffer,
+    });
+    const got = await fetchCheckImage({ workerUrl: BASE, secret: SECRET, id: "x", n: 0 }, fakeFetch);
+    expect(got.mime).toBe("application/octet-stream");
+  });
+
+  it("非 2xx 抛错", async () => {
+    const fakeFetch = async () => ({ ok: false, status: 404 });
+    await expect(
+      fetchCheckImage({ workerUrl: BASE, secret: SECRET, id: "x", n: 0 }, fakeFetch)
+    ).rejects.toThrow("image 404");
   });
 });
