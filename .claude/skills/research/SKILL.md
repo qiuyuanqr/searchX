@@ -152,6 +152,8 @@ X/Twitter 自 2023 起关闭免费 API 且强反爬，**无法稳定、完整拉
 把 `notes.md` 写到 Obsidian vault 的 Research 子目录（路径见 CLAUDE.md 的 `OBSIDIAN_VAULT`）：
 `<OBSIDIAN_VAULT>/Research/<topic-slug>.md`
 
+> **库路径护栏（必守）**：`OBSIDIAN_VAULT` 见 CLAUDE.md / CLAUDE.local.md。**若找不到该变量、或 `OBSIDIAN_VAULT` 根目录不存在 → 停下来问用户要正确路径，绝不自行猜测落点、绝不改写 `CLAUDE.local.md`（它是用户私有配置，不归 skill 动）、绝不写进仓库目录。** 仅 `Research/` 子目录不存在时直接 `mkdir -p` 创建，不必反问。（同 factcheck SKILL §保存一节的护栏；stock 复用本 Step 5，受同一约束。）
+
 文件头 frontmatter：
 ```yaml
 ---
