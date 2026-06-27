@@ -217,6 +217,20 @@ test("pending：无任务时返回空数组", async () => {
   expect((await res.json()).tasks).toEqual([]);
 });
 
+test("pending：损坏条目被跳过、不拖垮整列表（其它仍正常返回）", async () => {
+  const kv = fakeKV({
+    "check:id-bad": "{ 这不是合法 JSON",
+    "check:id-ok": JSON.stringify({ text: "待核查", link: "", status: "pending", createdAt: NOW() }),
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  const res = await getPending(env, { "x-check-runner-secret": "RS_GOOD" });
+  expect(res.status).toBe(200);
+  const body = await res.json();
+  expect(body.ok).toBe(true);
+  expect(body.tasks).toHaveLength(1);
+  expect(body.tasks[0].id).toBe("id-ok");
+});
+
 // ── POST /check/<id>/done ──────────────────────────────────────
 
 function postDone(env, id, headers = {}) {
@@ -243,6 +257,16 @@ test("done：错 runner secret → 401", async () => {
 test("done：id 不存在 → 404", async () => {
   const res = await postDone(ENV(), "nonexistent", { "x-check-runner-secret": "RS_GOOD" });
   expect(res.status).toBe(404);
+});
+
+test("done：损坏值 → 干净的 404 结构化错误，而非未处理的 500", async () => {
+  const kv = fakeKV({
+    "check:id-bad": "{ 这不是合法 JSON",
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  const res = await postDone(env, "id-bad", { "x-check-runner-secret": "RS_GOOD" });
+  expect(res.status).toBe(404);
+  expect((await res.json()).ok).toBe(false);
 });
 
 test("done：标记成功 → status 变 done", async () => {

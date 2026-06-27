@@ -7,7 +7,8 @@ export async function fetchPendingChecks({ workerUrl, secret }, fetchImpl = fetc
   });
   if (!r.ok) throw new Error(`pending ${r.status}`);
   const { tasks } = await r.json();
-  return tasks;
+  // 守一手：响应缺 tasks 字段或非数组时回空数组，避免 runOnce 里对 tasks.length / for…of 抛错。
+  return Array.isArray(tasks) ? tasks : [];
 }
 
 export async function markCheckDone({ workerUrl, secret, id }, fetchImpl = fetch) {

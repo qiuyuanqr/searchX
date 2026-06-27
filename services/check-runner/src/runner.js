@@ -20,7 +20,16 @@ export async function runOnce(config, deps) {
       log(`核查失败 ${t.id}（退出码 ${code}），留待重跑`);
       continue;
     }
-    await markDone(t.id);
+    // 标完成必须兜底：markDone 抛错（Worker 非 2xx）若冒泡会中止整批、本批后续任务全被跳过。
+    // 失败时计入 fail、不计成功、不发通知，continue 到下一条；任务保持 pending、下轮会重跑
+    //（at-least-once，重复跑整条 /factcheck 可接受），目标是别因一条标记失败拖垮整批。
+    try {
+      await markDone(t.id);
+    } catch (err) {
+      fail++;
+      log(`标记完成失败 ${t.id}（${err.message}），任务仍 pending、留待下轮重跑`);
+      continue;
+    }
     done++;
     log(`核查完成 ${t.id}`);
     if (notify) {

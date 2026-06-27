@@ -1,4 +1,5 @@
 import { test, expect } from "bun:test";
+import { createHash } from "node:crypto";
 import { injectReportNav } from "./inject-report-nav.js";
 
 const BASE = `<!doctype html><html><head></head><body><h1>正文</h1></body></html>`;
@@ -127,4 +128,65 @@ test("目录脚本按固定区块顺序 + 正文 h2 扫描", () => {
 
 test("窄屏阈值：电脑侧栏宽屏才显示", () => {
   expect(injectReportNav(BASE)).toContain("@media (min-width:1100px)");
+});
+
+// CSP：防存储型 XSS。只放行本文件注入的那段导航脚本（按哈希白名单），
+// 其它任何内联脚本被挡；script-src 绝不含 unsafe-inline。
+test("往 <head> 注入 CSP meta", () => {
+  const out = injectReportNav(BASE);
+  expect(out).toContain('http-equiv="Content-Security-Policy"');
+  expect(out).toContain("default-src 'none'");
+  expect(out).toContain("script-src 'sha256-");
+  // CSP 落在 <head> 内
+  expect(out.indexOf("Content-Security-Policy")).toBeLessThan(out.indexOf("</head>"));
+});
+
+test("CSP 的 sha256 与被注入脚本文本一致", () => {
+  const out = injectReportNav(BASE);
+  // 取出注入的那段 <script>...</script> 内容
+  const m = out.match(/<script>([\s\S]*?)<\/script>/);
+  expect(m).not.toBeNull();
+  const want = createHash("sha256").update(m[1]).digest("base64");
+  expect(out).toContain(`'sha256-${want}'`);
+});
+
+test("script-src 不含 unsafe-inline（其它内联脚本会被挡）", () => {
+  const out = injectReportNav(BASE);
+  const csp = out.match(/content="(default-src[^"]*)"/);
+  expect(csp).not.toBeNull();
+  const scriptSrc = csp[1].split(";").find((d) => d.trim().startsWith("script-src"));
+  expect(scriptSrc).toBeDefined();
+  expect(scriptSrc).not.toContain("unsafe-inline");
+});
+
+test("CSP 允许内联 <style> 与外部链接：style-src unsafe-inline、img/font 放开", () => {
+  const out = injectReportNav(BASE);
+  expect(out).toContain("style-src 'unsafe-inline'");
+  expect(out).toContain("img-src 'self' data: https:");
+  expect(out).toContain("base-uri 'none'");
+  expect(out).toContain("form-action 'none'");
+});
+
+// F7：正文里出现字面 </body> / viewport 标签时，注入仍要落到真正的文档末尾 / 头部。
+test("正文含字面 </body> 时，导航仍注入到真正的文档末尾", () => {
+  const html = `<html><head></head><body><pre>示例代码：</body> 字样</pre></body></html>`;
+  const out = injectReportNav(html);
+  // 只注入一次
+  expect(out.split("sx-nav-btn sx-home").length - 1).toBe(1);
+  // 导航必须落在最后一个 </body> 之前（真正文末），而不是正文里那个字面标签处
+  const firstBody = out.indexOf("</body>");
+  const lastBody = out.lastIndexOf("</body>");
+  expect(lastBody).toBeGreaterThan(firstBody); // 确实有两个 </body>
+  // 不能注在第一个（正文里的）之前——那会插进代码块、把示例标签当成真文末
+  expect(out.indexOf("sx-home")).toBeGreaterThan(firstBody);
+  expect(out.indexOf("sx-home")).toBeLessThan(lastBody);
+});
+
+test("正文含字面 </head> 时，favicon/CSP 仍注入到真正的文档头部末尾", () => {
+  const html = `<html><head><title>x</title></head><body><pre>文中写了 </head> 字样</pre></body></html>`;
+  const out = injectReportNav(html);
+  // favicon 只注入一次，落在真正的 </head>（第一个，即头部）之前
+  expect(out.split("favicon.png").length - 1).toBe(1);
+  const headEnd = out.indexOf("</head>");
+  expect(out.indexOf("favicon.png")).toBeLessThan(headEnd);
 });

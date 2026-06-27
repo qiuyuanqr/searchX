@@ -46,6 +46,31 @@ describe("runOnce", () => {
     expect(markedDone).toEqual(["task-0", "task-2"]);
   });
 
+  it("markDone 抛错：计入 fail、不冒泡、继续后续、不发该条 notify", async () => {
+    const tasks = makeTasks(3);
+    const markedDone = [];
+    const notified = [];
+    const deps = {
+      fetchPending: async () => tasks,
+      // task-1 的 markDone 抛错（Worker 非 2xx）
+      markDone: async (id) => {
+        if (id === "task-1") throw new Error("done 502");
+        markedDone.push(id);
+      },
+      runFactcheck: async () => 0,
+      buildPrompt: (t) => `/factcheck ${t.text}`,
+      notify: async (t) => { notified.push(t.id); },
+      log: () => {},
+    };
+    // 异常被吞、不冒出 runOnce
+    const result = await runOnce({}, deps);
+    expect(result).toEqual({ processed: 3, done: 2, fail: 1 });
+    // task-1 markDone 失败，未计成功，后续 task-2 仍被处理
+    expect(markedDone).toEqual(["task-0", "task-2"]);
+    // markDone 失败的那条不发通知（任务仍 pending、下轮会重跑）
+    expect(notified).toEqual(["task-0", "task-2"]);
+  });
+
   it("notify 抛错被吞、不影响主流程与计数", async () => {
     const tasks = makeTasks(2);
     const markedDone = [];

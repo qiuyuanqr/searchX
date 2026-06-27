@@ -8,7 +8,7 @@ const INJECTION_PATTERNS = [
   { label: "疑似指令覆盖（忽略以上指令 / ignore previous）",
     re: /(ignore|disregard|forget)\b[^.\n]{0,24}\b(previous|above|prior|earlier|instruction|system\s*prompt)|(忽略|无视|忘记|忘掉)(以上|上述|之前|前面|先前|刚才)[^。\n]{0,8}(指令|提示|规则|要求|设定|命令)/i },
   { label: "疑似对话角色标记（system:/assistant:）",
-    re: /^[ \t>]*(system|assistant|developer)\s*[:：]/im },
+    re: /(^|[\s>])(system|assistant|developer|user)\s*[:：]/im },
   { label: "shell 命令执行特征（curl|sh / rm -rf / $() / sudo）",
     re: /\brm\s+-rf\b|\b(curl|wget)\b[^\n]{0,40}\|\s*(sh|bash)\b|\|\s*(sh|bash)\b|\bsudo\b|\$\([^)]/i },
   { label: "代码围栏（```）", re: /```/ },
@@ -23,6 +23,21 @@ export function screenSubmission(clean) {
   for (const p of INJECTION_PATTERNS) if (p.re.test(blob)) flags.add(p.label);
   if (/https?:\/\//i.test(clean.title || "")) flags.add("题目里出现网址");
   return [...flags];
+}
+
+// 最高危类：命中即硬拒绝（让 validateContent 返回 ok:false），不再只降级人工。
+// 只挑"正常调研标题/侧重点里绝不该出现"的 HTML / 脚本注入：live 的 <script>/<iframe>/<object>/<embed>
+// 或 javascript: 协议，没有任何合法选题需要，宁可整条拒收（下游是全权限 headless claude）。
+// 注意：shell 命令、敏感路径、机密字样这些只打红旗、降级人工复核——不硬拒。因为本引擎本就
+// 调研科技/安全类话题，"sudo 提权漏洞史 / process.env 配置 / ../ 路径"都是正常选题，硬拒会误伤合法提交；
+// 它们命中红旗后进 pending、由作者人工核对放行，人工闸仍在。
+const HARD_REJECT = [
+  /<\s*(script|iframe|object|embed)\b|javascript:/i, // HTML / 脚本注入
+];
+
+export function hardRejectSubmission(clean) {
+  const blob = [clean.title, clean.focus, clean.message].filter(Boolean).join("\n");
+  return HARD_REJECT.some((re) => re.test(blob));
 }
 
 const sanitize = (s) =>
@@ -47,6 +62,8 @@ export function validateContent(input, limits = LIMITS) {
     focus: sanitize(focus),
     message: sanitize(message),
   };
-  // flags 始终计算（不影响 ok）：作为放行前的红旗，命中则降级人工复核。
+  // HTML / 脚本注入命中 → 直接拒收：加错误码 forbidden_content，令 ok:false。
+  if (hardRejectSubmission(clean)) errors.push("forbidden_content");
+  // flags 始终计算（不影响 ok）：作为放行前的红旗，其余高信号模式（含 shell / 路径 / 机密）命中只降级人工复核。
   return { ok: errors.length === 0, errors, clean, flags: screenSubmission(clean) };
 }

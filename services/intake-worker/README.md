@@ -30,7 +30,7 @@ GitHub Issues → runner 取 approved 自动跑 /research（pending 等作者手
 
 - **仓库是公开的，Issue 也公开。** 提交者的**真实邮箱绝不进 Issue 正文**——`formatIssue` 内部调 `maskEmail`，Issue 里只出现 `a***@gmail.com`（定长掩码：星号个数固定，不靠它透露本地名长度；单字符本地名连首字母也不露，输出 `***@gmail.com`）。
 - 真实邮箱由 Worker 写进**私有 KV**（提交记录键 `sub:<issue号>`，60 天过期；授权名单键 `allow:<email>` 长期有效），只有持 Cloudflare 凭据的人能读。
-- **任何密钥永不入库**：`GITHUB_TOKEN` / `SUB_READ_SECRET` / `ADMIN_KEY` 只作为 Worker 机密存在 Cloudflare；仓库里只有 `wrangler.toml` 的公开 `[vars]` 和注释。`site.config.json` 里只放**公开值**（Worker URL）。
+- **任何密钥永不入库**：`GITHUB_TOKEN` / `SUB_READ_SECRET` / `ADMIN_KEY` / `CHECK_KEY` / `CHECK_RUNNER_SECRET` 只作为 Worker 机密存在 Cloudflare；仓库里只有 `wrangler.toml` 的公开 `[vars]` 和注释。`site.config.json` 里只放**公开值**（Worker URL）。
 
 ## 文件
 
@@ -77,12 +77,16 @@ Settings → Developer settings → **Fine-grained tokens** → Generate：
 - Permissions → Repository → **Issues: Read and write**（其余全 No access）。
 - 复制 token（形如 `github_pat_…`）。**只贴进 Cloudflare 机密，绝不入库。**
 
-### 3. 生成管理密钥 `ADMIN_KEY`
+### 3. 生成三把随机密钥 `ADMIN_KEY` / `CHECK_KEY` / `CHECK_RUNNER_SECRET`
 ```bash
-openssl rand -hex 24
+openssl rand -hex 24   # ADMIN_KEY：admin.html 授权管理页的唯一钥匙，只有你一个人持有
+openssl rand -hex 24   # CHECK_KEY：作者提交私密核查任务（POST /check）
+openssl rand -hex 24   # CHECK_RUNNER_SECRET：check-runner 取/标任务，与 runner 侧 .env 同值
 ```
-记下输出 → 第 5 步设为 Worker secret `ADMIN_KEY`。它是 `admin.html` 授权管理页的唯一钥匙，只有你一个人持有。
-（授权改造后**不再需要 Turnstile**——提交由专属链接 token 鉴权；如旧版已配 `TURNSTILE_SECRET` 可保留不用或清理。）
+各记下输出 → 第 5 步设为对应 Worker secret。
+- `ADMIN_KEY` / `CHECK_KEY` / `CHECK_RUNNER_SECRET` 都漏配则相应路由静默 401：`/admin/*` 进不去、`/check` 提交失败、check-runner 取不到任务。
+- `CHECK_RUNNER_SECRET` 须与 check-runner 本机 `.env` 里的同名变量**同值**（见 [check-runner README](../check-runner/README.md)）。
+（授权改造后**不再需要 Turnstile**——提交由专属链接 token 鉴权；`TURNSTILE_SECRET` 已作废，旧版若配过可直接删。）
 
 ### 4. 建 KV namespace
 - wrangler：`bun x wrangler kv namespace create INTAKE_KV` → 把回显的 `id` 填进 `wrangler.toml` 的 `[[kv_namespaces]] id`。
@@ -93,9 +97,11 @@ openssl rand -hex 24
 **A · wrangler（若 `bun x wrangler` 可用）**
 ```bash
 cd services/intake-worker
-bun x wrangler secret put GITHUB_TOKEN        # 粘 fine-grained PAT
-bun x wrangler secret put ADMIN_KEY           # 粘第 3 步生成的管理密钥
-bun x wrangler secret put SUB_READ_SECRET     # runner 取邮箱用（见 runner README）
+bun x wrangler secret put GITHUB_TOKEN          # 粘 fine-grained PAT
+bun x wrangler secret put ADMIN_KEY             # 粘第 3 步生成的管理密钥
+bun x wrangler secret put SUB_READ_SECRET       # runner 取邮箱用（见 runner README）
+bun x wrangler secret put CHECK_KEY             # 作者提交核查任务（第 3 步生成）
+bun x wrangler secret put CHECK_RUNNER_SECRET   # check-runner 取/标任务（第 3 步生成，与 runner 侧同值）
 bun x wrangler deploy
 ```
 记下 Worker URL（形如 `https://searchx-intake.<subdomain>.workers.dev`）。
@@ -110,7 +116,7 @@ bun run build:worker && cat services/intake-worker/dist/worker.js | pbcopy
 ```
 Workers & Pages → Create Worker → 编辑器**粘贴刚拷贝的内容**（即最新构建的 `dist/worker.js`）→ Settings：
 - **Variables**：加 `GITHUB_OWNER=qiuyuanqr`、`GITHUB_REPO=searchX`、`AUTHOR_LOGIN=qiuyuanqr`、`ALLOWED_ORIGIN=https://qiuyuanqr.github.io`、`MAX_PER_EMAIL_PER_DAY=5`、`ADMIN_MAX_FAILS_PER_HOUR=10`（与 `wrangler.toml [vars]` 一致）。
-- **Secrets（加密变量）**：加 `GITHUB_TOKEN`、`ADMIN_KEY`、`SUB_READ_SECRET`。
+- **Secrets（加密变量）**：加 `GITHUB_TOKEN`、`ADMIN_KEY`、`SUB_READ_SECRET`、`CHECK_KEY`、`CHECK_RUNNER_SECRET`（后两把见第 3 步；漏配则 `/check` 路由静默 401）。
 - **KV Namespace Bindings**：绑 `INTAKE_KV` → 第 4 步建的 namespace。
 - 部署，记下 Worker URL。
 

@@ -20,4 +20,8 @@ ADMIN_MAX_FAILS_PER_HOUR = "10"    # 单 IP 错误 ADMIN_KEY 尝试上限，超�
 
 # 机密不写这里——用 dashboard 或 `bun x wrangler secret put`：
 #   GITHUB_TOKEN, SUB_READ_SECRET, ADMIN_KEY
-#   （TURNSTILE_SECRET 在授权路径已不用，可保留或清理）
+#   CHECK_KEY, CHECK_RUNNER_SECRET   ← /check 私密核查路由要用（漏配则 /check 静默 401）
+#     这两把各用 `openssl rand -hex 24` 生成：
+#       CHECK_KEY           作者提交核查任务（POST /check）
+#       CHECK_RUNNER_SECRET check-runner 取/标任务（/check/pending、/check/<id>/done，与 runner 侧同值）
+#   （TURNSTILE_SECRET 已作废：授权路径改用专属链接 token 鉴权，旧版若配过可直接删）

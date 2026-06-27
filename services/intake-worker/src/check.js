@@ -16,6 +16,18 @@ function runnerAuthed(request, env) {
   return !!env.CHECK_RUNNER_SECRET && safeEqual(s, env.CHECK_RUNNER_SECRET);
 }
 
+// 容错解析 check:* 值：损坏（非法 JSON）返回 null，绝不抛出。
+// 纵深防御——不假设 KV 数据一定干净（如控制台误改），
+// 单条坏数据不该让整张 pending 列表或某次 done 崩成 500。
+function parseTask(raw) {
+  try {
+    const o = JSON.parse(raw);
+    return o && typeof o === "object" ? o : null;
+  } catch {
+    return null;
+  }
+}
+
 // POST /check —— 作者凭 CHECK_KEY 提交一条核查任务。
 // 浏览器前端跨域调用：所有响应带 CORS、并处理 OPTIONS 预检（allow-headers 必含 x-check-key）。
 export async function handleCheckSubmit(request, env, { now }) {
@@ -62,7 +74,8 @@ export async function handleCheckPending(request, env) {
   for (const k of list.keys) {
     const raw = await env.INTAKE_KV.get(k.name);
     if (!raw) continue;
-    const t = JSON.parse(raw);
+    const t = parseTask(raw);
+    if (!t) continue; // 跳过损坏条目，不拖垮整列表
     if (t.status === "pending") tasks.push({ id: k.name.slice("check:".length), ...t });
   }
   return json({ ok: true, tasks });
@@ -75,7 +88,8 @@ export async function handleCheckDone(request, env, id) {
   const raw = await env.INTAKE_KV.get(`check:${id}`);
   if (!raw) return json({ ok: false, error: "not found" }, 404);
 
-  const t = JSON.parse(raw);
+  const t = parseTask(raw);
+  if (!t) return json({ ok: false, error: "not found" }, 404); // 值损坏，任务已不可用，按 404 处理
   t.status = "done";
   await env.INTAKE_KV.put(`check:${id}`, JSON.stringify(t), { expirationTtl: 7 * 24 * 3600 });
   return json({ ok: true });

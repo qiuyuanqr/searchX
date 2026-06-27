@@ -29,6 +29,18 @@ describe("fetchPendingChecks", () => {
     const result = await fetchPendingChecks({ workerUrl: BASE, secret: SECRET }, fakeFetch);
     expect(result).toEqual([]);
   });
+
+  it("响应缺 tasks 字段时返回空数组、不抛错", async () => {
+    const fakeFetch = async () => ({ ok: true, json: async () => ({ ok: true }) });
+    const result = await fetchPendingChecks({ workerUrl: BASE, secret: SECRET }, fakeFetch);
+    expect(result).toEqual([]);
+  });
+
+  it("tasks 非数组时返回空数组、不抛错", async () => {
+    const fakeFetch = async () => ({ ok: true, json: async () => ({ ok: true, tasks: "oops" }) });
+    const result = await fetchPendingChecks({ workerUrl: BASE, secret: SECRET }, fakeFetch);
+    expect(result).toEqual([]);
+  });
 });
 
 describe("markCheckDone", () => {

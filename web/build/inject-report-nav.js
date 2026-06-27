@@ -1,7 +1,90 @@
+import { createHash } from "node:crypto";
+
 // 构建时给报告副本（web/dist/r/<dir>/index.html）注入站点导航：
 // 一个常驻的「返回档案首页」按钮 + 一个滚动后出现的「回到顶部」按钮，
 // 圆形纸感样式复刻主页 .to-top，并复用报告自身的配色变量（自动适配深色模式）。
 // 注意：只注入到 dist 副本，原始 research/<dir>/report.html（归档/Obsidian 用）保持纯净。
+
+// 导航交互脚本（进度条 / 目录 / 回到顶部）。单独抽出来：CSP 要按它的内容算 sha256 白名单，
+// 只有这段脚本被放行，报告正文里任何其它内联脚本都会被浏览器挡下（见下方 buildCsp）。
+const NAV_SCRIPT = `
+(function(){
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var top = document.querySelector(".sx-top");
+  var bar = document.querySelector(".sx-progress > i");
+
+  // 自动目录：固定区块 + 正文 h2，按文档顺序
+  var secs = [];
+  function add(el, label){ if (!el) return; if (!el.id) el.id = "sx-sec-" + secs.length; secs.push({ id: el.id, label: label }); }
+  add(document.querySelector(".tldr"), "核心结论");
+  add(document.querySelector(".findings"), "关键发现");
+  document.querySelectorAll("main h2").forEach(function(h){ add(h, h.textContent.trim()); });
+  add(document.querySelector("section.risks"), "风险与争议");
+  add(document.querySelector(".glossary"), "名词小抄");
+  add(document.querySelector("section.sources"), "来源清单");
+
+  function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function linksHtml(){ return secs.map(function(s){ return '<a href="#" data-id="' + esc(s.id) + '">' + esc(s.label) + '</a>'; }).join(""); }
+  var aside = document.querySelector(".sx-toc");
+  var deskNav = document.querySelector(".sx-toc nav");
+  var sheet = document.querySelector(".sx-toc-sheet");
+  var sheetPanel = sheet.querySelector(".panel");
+  var tocBtn = document.querySelector(".sx-toc-btn");
+  if (secs.length){
+    deskNav.insertAdjacentHTML("beforeend", linksHtml());
+    sheetPanel.insertAdjacentHTML("beforeend", linksHtml());
+  } else {
+    aside.style.display = "none";   // 没有可索引区块：藏掉目录入口
+    tocBtn.style.display = "none";
+  }
+  function jump(id){ var t = document.getElementById(id); if (t) t.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }); }
+  document.querySelectorAll(".sx-toc a, .sx-toc-sheet a").forEach(function(a){
+    a.addEventListener("click", function(e){ e.preventDefault(); jump(a.dataset.id); sheet.classList.remove("open"); });
+  });
+  tocBtn.addEventListener("click", function(){ sheet.classList.add("open"); });
+  sheet.addEventListener("click", function(e){ if (e.target === sheet) sheet.classList.remove("open"); });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape") sheet.classList.remove("open"); });
+
+  function spy(){
+    var y = window.scrollY + 120, cur = secs.length ? secs[0].id : null;
+    for (var i = 0; i < secs.length; i++){
+      var el = document.getElementById(secs[i].id);
+      if (el && el.getBoundingClientRect().top + window.scrollY <= y) cur = secs[i].id;
+    }
+    document.querySelectorAll(".sx-toc a, .sx-toc-sheet a").forEach(function(a){ a.classList.toggle("on", a.dataset.id === cur); });
+  }
+
+  function onScroll(){
+    (window.scrollY > 420) ? top.classList.add("show") : top.classList.remove("show");
+    if (bar){ var h = document.documentElement.scrollHeight - window.innerHeight; bar.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + "%"; }
+    spy();
+  }
+  window.addEventListener("scroll", onScroll, { passive:true });
+  onScroll();
+  top.addEventListener("click", function(){ window.scrollTo({ top:0, behavior: reduce ? "auto" : "smooth" }); });
+})();
+`;
+
+// 严格 CSP（防存储型 XSS）：report.html 由全权限 headless Claude 生成、原样上线公开站主域。
+//   default-src none：默认什么都不许加载；
+//   script-src 只放行上面 NAV_SCRIPT 的 sha256（绝不含 unsafe-inline）——别的内联脚本一律被挡；
+//   style-src unsafe-inline：报告全靠内联 <style>，必须放开；
+//   img-src self data: https:、font-src self data:：放开图片 / 字体；
+//   base-uri none、form-action none：禁改 <base>、禁表单提交外发。
+//   外部 <a href> 是页面跳转、不受这些指令约束，正常工作。
+function buildCsp() {
+  const hash = createHash("sha256").update(NAV_SCRIPT).digest("base64");
+  return [
+    "default-src 'none'",
+    `script-src 'sha256-${hash}'`,
+    "style-src 'unsafe-inline'",
+    "img-src 'self' data: https:",
+    "font-src 'self' data:",
+    "base-uri 'none'",
+    "form-action 'none'",
+  ].join("; ");
+}
+
 export function injectReportNav(html, {
   homeHref = "../../index.html",
   faviconHref = "../../assets/favicon.png",
@@ -9,8 +92,12 @@ export function injectReportNav(html, {
   // 站点 favicon（报告在 /r/<dir>/ 下，故上两级到 /assets）。注入到 <head>，
   // 让单独打开/分享的报告页也带站点图标，而非浏览器默认首字母。
   const favicon = `<link rel="icon" type="image/png" href="${faviconHref}">`;
+  // CSP meta：和导航脚本同处一地，按脚本内容算哈希，注入与放行一致不漂移。
+  const csp = `<meta http-equiv="Content-Security-Policy" content="${buildCsp()}">`;
+  const headInject = csp + "\n" + favicon;
+  // 注入到 <head> 末尾（第一个 </head>，即真正的头部结束；正文里若出现字面 </head> 不受影响）。
   const headM = html.match(/<\/head>/i);
-  if (headM) html = html.replace(headM[0], favicon + "\n" + headM[0]);
+  if (headM) html = html.replace(headM[0], headInject + "\n" + headM[0]);
 
   // 移动端防误放大：把报告副本的 viewport 锁成「禁触摸缩放」。覆盖所有存量报告
   // （其原始 report.html 可能仍是旧 viewport），无需逐个改归档文件。
@@ -94,65 +181,13 @@ table thead th:first-child{z-index:2; background:var(--accent-bg)}
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 9.8V19h13V9.8"/></svg>
 </a>
 <button type="button" class="sx-nav-btn sx-top" aria-label="回到顶部" title="回到顶部">↑</button>
-<script>
-(function(){
-  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var top = document.querySelector(".sx-top");
-  var bar = document.querySelector(".sx-progress > i");
+<script>${NAV_SCRIPT}</script>`;
 
-  // 自动目录：固定区块 + 正文 h2，按文档顺序
-  var secs = [];
-  function add(el, label){ if (!el) return; if (!el.id) el.id = "sx-sec-" + secs.length; secs.push({ id: el.id, label: label }); }
-  add(document.querySelector(".tldr"), "核心结论");
-  add(document.querySelector(".findings"), "关键发现");
-  document.querySelectorAll("main h2").forEach(function(h){ add(h, h.textContent.trim()); });
-  add(document.querySelector("section.risks"), "风险与争议");
-  add(document.querySelector(".glossary"), "名词小抄");
-  add(document.querySelector("section.sources"), "来源清单");
-
-  function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-  function linksHtml(){ return secs.map(function(s){ return '<a href="#" data-id="' + esc(s.id) + '">' + esc(s.label) + '</a>'; }).join(""); }
-  var aside = document.querySelector(".sx-toc");
-  var deskNav = document.querySelector(".sx-toc nav");
-  var sheet = document.querySelector(".sx-toc-sheet");
-  var sheetPanel = sheet.querySelector(".panel");
-  var tocBtn = document.querySelector(".sx-toc-btn");
-  if (secs.length){
-    deskNav.insertAdjacentHTML("beforeend", linksHtml());
-    sheetPanel.insertAdjacentHTML("beforeend", linksHtml());
-  } else {
-    aside.style.display = "none";   // 没有可索引区块：藏掉目录入口
-    tocBtn.style.display = "none";
+  // 注入到真正的文档末尾：用最后一个 </body>，而非第一个。报告正文（如代码块里）若出现字面
+  // </body>，第一个匹配会落在正文中间、把导航插进代码块；取最后一个才稳。
+  const lastBody = html.toLowerCase().lastIndexOf("</body>");
+  if (lastBody !== -1) {
+    return html.slice(0, lastBody) + snippet + "\n" + html.slice(lastBody);
   }
-  function jump(id){ var t = document.getElementById(id); if (t) t.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }); }
-  document.querySelectorAll(".sx-toc a, .sx-toc-sheet a").forEach(function(a){
-    a.addEventListener("click", function(e){ e.preventDefault(); jump(a.dataset.id); sheet.classList.remove("open"); });
-  });
-  tocBtn.addEventListener("click", function(){ sheet.classList.add("open"); });
-  sheet.addEventListener("click", function(e){ if (e.target === sheet) sheet.classList.remove("open"); });
-  document.addEventListener("keydown", function(e){ if (e.key === "Escape") sheet.classList.remove("open"); });
-
-  function spy(){
-    var y = window.scrollY + 120, cur = secs.length ? secs[0].id : null;
-    for (var i = 0; i < secs.length; i++){
-      var el = document.getElementById(secs[i].id);
-      if (el && el.getBoundingClientRect().top + window.scrollY <= y) cur = secs[i].id;
-    }
-    document.querySelectorAll(".sx-toc a, .sx-toc-sheet a").forEach(function(a){ a.classList.toggle("on", a.dataset.id === cur); });
-  }
-
-  function onScroll(){
-    (window.scrollY > 420) ? top.classList.add("show") : top.classList.remove("show");
-    if (bar){ var h = document.documentElement.scrollHeight - window.innerHeight; bar.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + "%"; }
-    spy();
-  }
-  window.addEventListener("scroll", onScroll, { passive:true });
-  onScroll();
-  top.addEventListener("click", function(){ window.scrollTo({ top:0, behavior: reduce ? "auto" : "smooth" }); });
-})();
-</script>`;
-
-  const m = html.match(/<\/body>/i);
-  if (m) return html.replace(m[0], snippet + "\n" + m[0]);
   return html + snippet;
 }

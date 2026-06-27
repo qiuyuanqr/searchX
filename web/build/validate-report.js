@@ -23,5 +23,25 @@ export function findReportDefects(html) {
     }
   }
 
+  // 3) 脚本类内容（防存储型 XSS）。report.html 由全权限 headless Claude 生成、原样上线
+  //    公开站主域，模板和真实报告都只有内联 <style> + 外部 <a>，绝不该出现脚本。命中任一即拦下，
+  //    配合 inject-report-nav 注入的 CSP（只放行注入脚本的哈希）形成双重防护。
+  if (/<script\b/i.test(s)) {
+    defects.push("出现 <script>（报告不应含脚本，疑似注入）");
+  }
+  // 内联事件处理器：限定在开标签内、且 on<词> 前有空白（属性分隔），避免误伤正文里的
+  // content= 等以 on 结尾的属性名 / 文字。
+  const onM = s.match(/<[^>]*\son([a-z]+)\s*=/i);
+  if (onM) {
+    defects.push(`出现内联事件处理器 on${onM[1]}=（报告不应含事件处理器，疑似注入）`);
+  }
+  if (/javascript:/i.test(s)) {
+    defects.push("出现 javascript: 协议（报告不应含脚本式链接，疑似注入）");
+  }
+  const frameM = s.match(/<(iframe|object|embed)\b/i);
+  if (frameM) {
+    defects.push(`出现 <${frameM[1].toLowerCase()}>（报告不应嵌入外部内容，疑似注入）`);
+  }
+
   return defects;
 }

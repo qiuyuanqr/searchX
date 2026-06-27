@@ -47,8 +47,8 @@ bun test                          # 跑全部测试
 
 | 变量 | 必填 | 说明 |
 |---|---|---|
-| `CHECK_RUNNER_WORKER_URL` | ✅ | Worker 基址，如 `https://searchx-intake.qiuyuanqr.workers.dev` |
-| `CHECK_RUNNER_SECRET` | ✅ | 与 Worker secret `CHECK_RUNNER_SECRET` 同值 |
+| `CHECK_RUNNER_WORKER_URL` | ✅ | Worker 基址，如 `https://searchx-intake.qiuyuanqr.workers.dev`（即 intake-worker 部署地址） |
+| `CHECK_RUNNER_SECRET` | ✅ | 与 Worker secret `CHECK_RUNNER_SECRET` **同值**（runner 凭它取/标任务；不一致则 `/check/pending` 静默 401，取不到任务） |
 | `CHECK_RUNNER_SMTP_USER` | — | Gmail 地址（两个 SMTP 都填才启用通知邮件，缺一则 notify 关闭） |
 | `CHECK_RUNNER_SMTP_PASS` | — | Gmail 应用专用密码 |
 | `CHECK_RUNNER_AUTHOR_EMAIL` | — | 通知邮件收件人，默认同 `CHECK_RUNNER_SMTP_USER` |
@@ -63,6 +63,8 @@ CHECK_RUNNER_SECRET=<与 Worker CHECK_RUNNER_SECRET 同值>
 CHECK_RUNNER_SMTP_USER=<Gmail 地址>
 CHECK_RUNNER_SMTP_PASS=<Gmail 应用专用密码>
 ```
+
+> Worker 侧（intake-worker）须配两把 `/check` 路由密钥才能跑通：`CHECK_KEY`（作者提交核查任务）与 `CHECK_RUNNER_SECRET`（runner 取/标任务，与本机 `.env` 同值）。生成与设置见 [intake-worker README](../intake-worker/README.md) 的部署步骤；漏配则 `/check` 路由静默 401。
 
 ## 运行
 
