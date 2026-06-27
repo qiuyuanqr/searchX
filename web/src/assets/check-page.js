@@ -5,8 +5,12 @@ import { buildCheckPayload, validateCheckPayload, readKey, saveKey, clearKey, de
 const WORKER = document.body.dataset.worker || "";   // {{WORKER_URL}} 注入在 body data-worker
 const $ = (id) => document.getElementById(id);
 
-// 密钥只放 sessionStorage（关标签即清），不进 localStorage（缩小 XSS 窃取窗口）。
-let key = readKey(sessionStorage);
+// 密钥存 localStorage：输一次后此设备持久免登，关标签 / 重开浏览器都不丢。
+// 仅手动点「退出」、清浏览器缓存、或换设备时才需重输；Worker 若改密钥则提交时 401 自动退回密钥闸。
+// 取舍：明文密钥长期留在本机浏览器（不再是关标签即清）。此页为私人提交页 + 严格 CSP（script-src 'self'），
+// XSS 面极窄，密钥泄露最坏后果仅是他人能投递核查任务、读不到任何数据，权衡下可接受。
+const store = localStorage;
+let key = readKey(store);
 
 function showGate() {
   $("gate").hidden = false;
@@ -56,7 +60,7 @@ async function enter(presetKey) {
   }
   if (probeOk) {
     key = candidate;
-    saveKey(sessionStorage, key);
+    saveKey(store, key);
     showForm();
   }
 }
@@ -84,7 +88,7 @@ $("check-form").addEventListener("submit", async (e) => {
     });
     if (r.status === 401) {
       // 密钥失效（可能 Worker 重置）→ 退回密钥闸
-      clearKey(sessionStorage);
+      clearKey(store);
       key = "";
       showGate();
       $("gate-msg").textContent = "密钥已失效，请重新输入。";
@@ -105,7 +109,7 @@ $("check-form").addEventListener("submit", async (e) => {
 });
 
 $("logout").addEventListener("click", () => {
-  clearKey(sessionStorage);
+  clearKey(store);
   location.reload();
 });
 

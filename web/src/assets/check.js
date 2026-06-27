@@ -19,13 +19,12 @@ export function validateCheckPayload(payload) {
   return { ok: true, reason: "" };
 }
 
-// 纯函数：从 sessionStorage 读密钥（key 名固定）。
-// 传入 storage 对象方便单测注入 fake。
+// 纯函数：从传入的 storage 读密钥（key 名固定）。调用方注入 localStorage（持久免登）或单测 fake。
 export function readKey(storage) {
   try { return storage.getItem("searchx_check_key") || ""; } catch { return ""; }
 }
 
-// 纯函数：把密钥写入 sessionStorage。
+// 纯函数：把密钥写入传入的 storage。
 export function saveKey(storage, key) {
   try { storage.setItem("searchx_check_key", key); } catch {}
 }
