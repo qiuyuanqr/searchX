@@ -37,7 +37,7 @@ export function clearKey(storage) {
 
 // 纯函数：把服务端状态码映射成给用户看的中文。
 // 注：401（密钥失效）在 check-page.js 提前专门处理（清密钥、退回密钥闸），不会走到这里。
-export function describeCheckResult(status, ok) {
+export function describeCheckResult(ok) {
   if (ok) return { kind: "success", text: "已提交，稍后在 Obsidian 查看核查结果。" };
   return { kind: "error", text: "提交失败，请稍后重试。" };
 }

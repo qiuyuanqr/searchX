@@ -91,7 +91,7 @@ $("check-form").addEventListener("submit", async (e) => {
       $("gate-msg").hidden = false;
       return;
     }
-    const result = describeCheckResult(r.status, r.ok);
+    const result = describeCheckResult(r.ok);
     setStatus(result.text, result.kind);
     if (result.kind === "success") {
       $("check-text").value = "";

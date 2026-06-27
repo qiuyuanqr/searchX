@@ -69,13 +69,13 @@ test("readKey / saveKey / clearKey 在 fake storage 上正常工作", () => {
 // --- describeCheckResult ---
 
 test("describeCheckResult：ok=true → success", () => {
-  const r = describeCheckResult(200, true);
+  const r = describeCheckResult(true);
   expect(r.kind).toBe("success");
   expect(r.text).toContain("Obsidian");
 });
 
-test("describeCheckResult：其它非 2xx → error，可重试", () => {
-  const r = describeCheckResult(500, false);
+test("describeCheckResult：ok=false → error，可重试", () => {
+  const r = describeCheckResult(false);
   expect(r.kind).toBe("error");
   expect(r.text).toContain("重试");
 });

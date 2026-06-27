@@ -1,6 +1,7 @@
 // services/intake-worker/src/check.test.js
 import { test, expect } from "bun:test";
 import { handleCheckSubmit, handleCheckPending, handleCheckDone } from "./check.js";
+import worker from "./index.js";
 
 function fakeKV(seed = {}) {
   const m = new Map(Object.entries(seed));
@@ -276,4 +277,61 @@ test("隔离：CHECK_RUNNER_SECRET 用在 /check 提交无效", async () => {
   const res = await postCheck(env, { "x-check-key": "RS_GOOD" }, { text: "hello" });
   expect(res.status).toBe(401);
   expect(env.INTAKE_KV.store.size).toBe(0);
+});
+
+// ── Minor 1/2：路由方法兜底 + done id 边界（经 index.js 路由分发）──────────
+
+function workerReq(method, path, headers = {}, body = undefined) {
+  return worker.fetch(
+    new Request(`https://w.dev${path}`, {
+      method,
+      headers: { "content-type": "application/json", ...headers },
+      body: body != null ? JSON.stringify(body) : undefined,
+    }),
+    ENV(),
+  );
+}
+
+test("路由：GET /check（错方法）→ 405，不落到 handleIntake", async () => {
+  const res = await workerReq("GET", "/check");
+  expect(res.status).toBe(405);
+  const body = await res.json();
+  expect(body.error).toBe("method_not_allowed");
+});
+
+test("路由：PUT /check（错方法）→ 405", async () => {
+  const res = await workerReq("PUT", "/check");
+  expect(res.status).toBe(405);
+  expect((await res.json()).error).toBe("method_not_allowed");
+});
+
+test("路由：POST /check/pending（错方法）→ 405", async () => {
+  const res = await workerReq("POST", "/check/pending", { "x-check-runner-secret": "RS_GOOD" });
+  expect(res.status).toBe(405);
+  expect((await res.json()).error).toBe("method_not_allowed");
+});
+
+test("路由：DELETE /check/pending（错方法）→ 405", async () => {
+  const res = await workerReq("DELETE", "/check/pending", { "x-check-runner-secret": "RS_GOOD" });
+  expect(res.status).toBe(405);
+  expect((await res.json()).error).toBe("method_not_allowed");
+});
+
+test("路由：GET /check/some-id/done（错方法）→ 405", async () => {
+  const res = await workerReq("GET", "/check/some-id/done", { "x-check-runner-secret": "RS_GOOD" });
+  expect(res.status).toBe(405);
+  expect((await res.json()).error).toBe("method_not_allowed");
+});
+
+test("路由：未知子路径 /check/foo/bar → 404", async () => {
+  const res = await workerReq("GET", "/check/foo/bar");
+  expect(res.status).toBe(404);
+  expect((await res.json()).error).toBe("not found");
+});
+
+test("Minor 2：POST /check/pending/done（id=pending 保留字）→ 404", async () => {
+  // id="pending" 不合法边界：明确返回 404
+  const res = await workerReq("POST", "/check/pending/done", { "x-check-runner-secret": "RS_GOOD" });
+  expect(res.status).toBe(404);
+  expect((await res.json()).error).toBe("not found");
 });

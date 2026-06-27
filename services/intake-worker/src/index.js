@@ -14,13 +14,26 @@ export default {
 
     // 私密核查任务路由（/check/*）—— 任务只进 KV，不进公开 GitHub Issue。
     // OPTIONS 也走 handleCheckSubmit（它处理预检），别让预检穿透到 handleIntake（其 allow-headers 不含 x-check-key）。
-    if (pathname === "/check" && (request.method === "POST" || request.method === "OPTIONS"))
-      return handleCheckSubmit(request, env, { now: () => new Date().toISOString() });
-    if (pathname === "/check/pending" && request.method === "GET")
-      return handleCheckPending(request, env);
+    if (pathname === "/check") {
+      if (request.method === "POST" || request.method === "OPTIONS")
+        return handleCheckSubmit(request, env, { now: () => new Date().toISOString() });
+      return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers: { "content-type": "application/json" } });
+    }
+    if (pathname === "/check/pending") {
+      if (request.method === "GET") return handleCheckPending(request, env);
+      return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers: { "content-type": "application/json" } });
+    }
     const doneMatch = pathname.match(/^\/check\/([^/]+)\/done$/);
-    if (doneMatch && request.method === "POST")
-      return handleCheckDone(request, env, doneMatch[1]);
+    if (doneMatch) {
+      // Minor 2：id="pending" 边界——此路径不合法（/check/pending 精确匹配已在上面处理）
+      if (doneMatch[1] === "pending")
+        return new Response(JSON.stringify({ ok: false, error: "not found" }), { status: 404, headers: { "content-type": "application/json" } });
+      if (request.method === "POST")
+        return handleCheckDone(request, env, doneMatch[1]);
+      return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers: { "content-type": "application/json" } });
+    }
+    if (pathname.startsWith("/check/"))
+      return new Response(JSON.stringify({ ok: false, error: "not found" }), { status: 404, headers: { "content-type": "application/json" } });
 
     return handleIntake(request, env);                                       // 站内表单提交（token 鉴权）
   },
