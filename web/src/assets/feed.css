@@ -105,10 +105,12 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
   padding:.6rem 1.5rem; cursor:pointer; transition:transform .18s ease, box-shadow .25s ease, background .2s}
 .submit-btn:hover{transform:translateY(-2px); box-shadow:0 10px 22px rgba(177,74,49,.22)}
 .submit-btn:active{transform:translateY(0) scale(.98)}
-.form-status{font-family:var(--sans); font-size:.86rem; margin:0}
-.form-status[data-kind="success"]{color:var(--seal)}
-.form-status[data-kind="error"]{color:#b3402c}
-.form-status[data-kind="pending"]{color:var(--muted)}
+/* 提交状态：横幅式（带底色 + 左侧色条），比纯文字更难被忽略 */
+.form-status{font-family:var(--sans); font-size:.9rem; line-height:1.5; margin:0;
+  padding:.6rem .85rem; border-radius:8px; border-left:3px solid currentColor; font-weight:500}
+.form-status[data-kind="success"]{color:var(--seal); background:rgba(177,74,49,.1)}
+.form-status[data-kind="error"]{color:#b3402c; background:rgba(179,64,44,.1)}
+.form-status[data-kind="pending"]{color:var(--ink-soft); background:var(--paper-2)}
 .fineprint{font-family:var(--sans); font-size:.74rem; color:var(--muted); margin:0}
 .dup-notice{font-family:var(--sans); font-size:.82rem; line-height:1.5; color:var(--ink-soft); margin:-.2rem 0 .2rem;
   padding:.55rem .7rem; background:var(--paper-2); border:1px solid var(--rule); border-left:3px solid var(--seal); border-radius:8px}
@@ -144,9 +146,17 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .linklike:hover{border-bottom:1px solid var(--seal-soft)}
 body.modal-lock{overflow:hidden}
 @media (max-width:520px){
-  .modal-backdrop{padding:2.4vh .6rem}
-  .modal-card{width:100%; padding:1.4rem 1rem 1.2rem}
-  .modal-title{font-size:1.32rem}
+  /* 手机端：收紧留白 + 字号，并让卡片不超过视口高度（内部滚动），关键操作尽量一屏可见 */
+  .modal-backdrop{padding:1.4vh .6rem; align-items:stretch}
+  .modal-card{width:100%; padding:1.2rem 1rem 1.1rem; max-height:97vh; overflow-y:auto;
+    overscroll-behavior:contain; -webkit-overflow-scrolling:touch}
+  .modal-title{font-size:1.28rem; margin-top:.3rem}
+  .modal-lead{font-size:.85rem; line-height:1.5; margin-top:.4rem}
+  .modal-hint{font-size:.8rem; line-height:1.45; padding:.45rem .65rem; margin-top:.55rem}
+  .modal-card .submit-form{margin-top:.85rem; gap:.7rem}
+  .field{gap:.3rem}
+  .search.ta{min-height:2.1rem}
+  .fineprint{display:none}   /* 同样的话术 modal-lead 已经说过，手机端省一行 */
 }
 @media (max-width:344px){
   .modal-card{padding:1.2rem .7rem 1.1rem}
