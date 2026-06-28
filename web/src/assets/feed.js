@@ -156,7 +156,11 @@ function bindSubmitModal(){
   let authorized = false;   // /verify 通过后才 true
   let verified = false;     // 已验过一次（避免重复请求）
 
-  const setStatus = (text, kind) => { statusEl.textContent = text; statusEl.dataset.kind = kind; statusEl.hidden = false; };
+  const setStatus = (text, kind) => {
+    statusEl.textContent = text; statusEl.dataset.kind = kind; statusEl.hidden = false;
+    // 把提示滚到可视区——避免在长表单/手机上「点了提交却看不到任何反应」
+    try { statusEl.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" }); } catch {}
+  };
   const showForm = () => { form.hidden = false; done.hidden = true; statusEl.hidden = true; };
 
   // 授权态：用 ?k= 调 /verify 确认 token 有效。未授权 → 回显提示 + 禁用提交。
@@ -250,9 +254,14 @@ function bindSubmitModal(){
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const btn = form.querySelector(".submit-btn");
-    if (btn && btn.disabled) return;          // 防连点 + 未授权（noauth）/查重禁用时不提交
+    if (btn && btn.disabled) {                 // 防连点 + 未授权（noauth）/查重禁用时不提交
+      // 回车提交到禁用按钮时，别让用户「点了没反应」——把禁用原因显式说出来
+      if (btn.dataset.noauth) setStatus(describeVerify({ ok: false }).text, "error");
+      return;
+    }
     if (!authorized) { setStatus(describeVerify({ ok: false }).text, "error"); return; } // 双保险
-    if (btn) btn.disabled = true;             // 请求在途时禁用，防连点
+    const origLabel = btn ? btn.textContent : "";
+    if (btn) { btn.disabled = true; btn.textContent = "提交中…"; } // 请求在途：禁用 + 文案，防连点且给出明确反馈
     const fd = new FormData(form);
     const payload = buildPayload(
       { title: fd.get("title"), focus: fd.get("focus"), message: fd.get("message") },
@@ -276,7 +285,7 @@ function bindSubmitModal(){
     } catch {
       setStatus(describeResult({ ok: false }).text, "error");
     } finally {
-      if (btn) btn.disabled = false;          // 无论成败都恢复，允许失败后重试
+      if (btn) { btn.disabled = false; btn.textContent = origLabel; } // 无论成败都恢复，允许失败后重试
     }
   });
 
