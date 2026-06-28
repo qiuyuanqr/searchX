@@ -118,6 +118,18 @@ test("自动目录骨架：电脑侧栏 + 手机浮层 + 目录按钮", () => {
   expect(out).toContain('aria-label="目录"');
 });
 
+test("目录浮层防滑动穿透：面板/遮罩加 overscroll-behavior:contain，且打开时锁整页滚动", () => {
+  const out = injectReportNav(BASE);
+  // 面板内部滚动不外漏 + 遮罩吞手势（touch-action:none）/面板可纵向滚（pan-y）
+  expect(out).toContain("overscroll-behavior:contain");
+  expect(out).toContain("touch-action:none");
+  expect(out).toContain("touch-action:pan-y");
+  // 浮层打开时锁住整页滚动：html/body 一起锁，脚本里切换 sx-toc-open 类
+  expect(out).toContain("html.sx-toc-open,body.sx-toc-open{overflow:hidden}");
+  expect(out).toContain('document.documentElement.classList.toggle("sx-toc-open"');
+  expect(out).toContain('document.body.classList.toggle("sx-toc-open"');
+});
+
 test("目录脚本按固定区块顺序 + 正文 h2 扫描", () => {
   const out = injectReportNav(BASE);
   expect(out).toContain("核心结论");

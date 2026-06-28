@@ -38,12 +38,16 @@ const NAV_SCRIPT = `
     tocBtn.style.display = "none";
   }
   function jump(id){ var t = document.getElementById(id); if (t) t.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }); }
+  // 打开/关闭目录浮层时一并锁/解锁整页滚动，防止滑动穿透到下面的报告页。
+  function lock(on){ document.documentElement.classList.toggle("sx-toc-open", on); document.body.classList.toggle("sx-toc-open", on); }
+  function openSheet(){ sheet.classList.add("open"); lock(true); }
+  function closeSheet(){ sheet.classList.remove("open"); lock(false); }
   document.querySelectorAll(".sx-toc a, .sx-toc-sheet a").forEach(function(a){
-    a.addEventListener("click", function(e){ e.preventDefault(); jump(a.dataset.id); sheet.classList.remove("open"); });
+    a.addEventListener("click", function(e){ e.preventDefault(); jump(a.dataset.id); closeSheet(); });
   });
-  tocBtn.addEventListener("click", function(){ sheet.classList.add("open"); });
-  sheet.addEventListener("click", function(e){ if (e.target === sheet) sheet.classList.remove("open"); });
-  document.addEventListener("keydown", function(e){ if (e.key === "Escape") sheet.classList.remove("open"); });
+  tocBtn.addEventListener("click", openSheet);
+  sheet.addEventListener("click", function(e){ if (e.target === sheet) closeSheet(); });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape") closeSheet(); });
 
   function spy(){
     var y = window.scrollY + 120, cur = secs.length ? secs[0].id : null;
@@ -152,7 +156,7 @@ table thead th:first-child{z-index:2; background:var(--accent-bg)}
 /* 自动目录：电脑端正文左侧吸顶侧栏（窄屏隐藏，退回浮层） */
 .sx-toc{position:fixed; top:0; bottom:0; display:none; flex-direction:column; justify-content:center;
   width:170px; left:max(20px, calc((100vw - var(--measure)) / 2 - 190px)); z-index:40; pointer-events:none}
-.sx-toc nav{pointer-events:auto; max-height:74vh; overflow-y:auto}
+.sx-toc nav{pointer-events:auto; max-height:74vh; overflow-y:auto; overscroll-behavior:contain}
 .sx-toc .h{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.66rem; letter-spacing:.16em;
   text-transform:uppercase; color:var(--muted); margin-bottom:.6rem}
 .sx-toc a{display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.8rem;
@@ -161,10 +165,18 @@ table thead th:first-child{z-index:2; background:var(--accent-bg)}
 .sx-toc a:hover{color:var(--seal)}
 .sx-toc a.on{color:var(--seal); border-left-color:var(--seal); font-weight:600}
 /* 手机端目录浮层 */
-.sx-toc-sheet{position:fixed; inset:0; z-index:70; display:none; background:rgba(20,16,10,.42)}
+/* 整张浮层吞掉触摸手势（touch-action:none）：在半透明遮罩上拖动只会被拦下，不会带着下面的报告页一起滚——
+   修复「滑目录时报告页跟着动」。点击遮罩关闭仍正常（tap/click 不受 touch-action 影响）。 */
+.sx-toc-sheet{position:fixed; inset:0; z-index:70; display:none; background:rgba(20,16,10,.42);
+  touch-action:none; overscroll-behavior:contain}
 .sx-toc-sheet.open{display:block}
+/* 面板内部可上下滚（touch-action:pan-y）；overscroll-behavior:contain 让滚到顶/底时不把滚动「漏」给下面的报告页。 */
 .sx-toc-sheet .panel{position:absolute; left:0; right:0; bottom:0; max-height:70vh; overflow-y:auto;
+  overscroll-behavior:contain; -webkit-overflow-scrolling:touch; touch-action:pan-y;
   background:var(--paper); border-top:1px solid var(--rule); border-radius:16px 16px 0 0; padding:1rem 1.2rem 1.4rem}
+/* 浮层打开时锁住整页滚动（与首页提交弹窗的 modal-lock 同一招），双保险防穿透。
+   标准模式下视口滚动根是 <html>，故 html/body 一起锁，wheel/触控都不漏。 */
+html.sx-toc-open,body.sx-toc-open{overflow:hidden}
 .sx-toc-sheet .grip{width:34px; height:4px; border-radius:2px; background:var(--rule); margin:0 auto .8rem}
 .sx-toc-sheet a{display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.95rem;
   color:var(--ink-soft); padding:.6rem 0; border-bottom:1px solid var(--rule); text-decoration:none}
