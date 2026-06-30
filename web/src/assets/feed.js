@@ -1,11 +1,15 @@
-import { buildPayload, tokenFromQuery, describeVerify, describeResult, renderSearchResultsHTML, describeExistingReport } from "./submit.js";
+import { buildPayload, tokenFromQuery, resolveToken, clearStoredToken, describeVerify, describeResult, renderSearchResultsHTML, describeExistingReport } from "./submit.js";
 import { findFreshReport } from "./dedup.js";
 import { computeFeedView } from "./feed-filter.js";
 
+// 取 localStorage，沙箱/隐私模式下属性访问本身可能抛错 → 兜成 null（resolveToken 再静默降级）。
+function safeStorage(){ try { return window.localStorage; } catch { return null; } }
+
 // 专属链接里的 token（?k=…）：提交的唯一凭证。空 = 未授权，不能提交。
-const TOKEN = tokenFromQuery(location.search);
-// 读到 token 后立即从地址栏 / 历史里抹掉 ?k=：避免 token 残留在浏览器历史、或随后续 referer 泄露。
-if (TOKEN && window.history && history.replaceState) {
+// 优先取地址栏 ?k=，没有则回退本机存储——这样点开报告再返回首页、刷新、从手机主屏图标冷启动重开，都还在授权态。
+const TOKEN = resolveToken(location.search, safeStorage());
+// 地址栏若带了 ?k=，读完（已落盘）立即从地址栏 / 历史里抹掉：避免 token 残留浏览器历史、或随后续 referer 泄露。
+if (tokenFromQuery(location.search) && window.history && history.replaceState) {
   try { history.replaceState(null, "", location.pathname + location.hash); } catch {}
 }
 
@@ -179,6 +183,7 @@ function bindSubmitModal(){
       const r = await fetch(form.dataset.verify + "?k=" + encodeURIComponent(TOKEN));
       const data = await r.json().catch(() => ({ ok: false }));
       verified = true;                          // 拿到服务端确定答复才缓存
+      if (!data || !data.ok) clearStoredToken(safeStorage()); // 服务端判定无效/已撤销 → 清掉本机失效 token，下次不再误判已授权
       applyAuth(describeVerify(data));
     } catch {
       // 瞬时网络故障：不缓存（verified 保持 false），关闭再打开弹窗可重试

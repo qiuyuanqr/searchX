@@ -1,5 +1,16 @@
 import { test, expect } from "bun:test";
-import { buildPayload, tokenFromQuery, describeVerify, describeResult, escapeHtml, renderSearchResultsHTML, describeExistingReport } from "./submit.js";
+import { buildPayload, tokenFromQuery, resolveToken, clearStoredToken, TOKEN_STORAGE_KEY, describeVerify, describeResult, escapeHtml, renderSearchResultsHTML, describeExistingReport } from "./submit.js";
+
+// 假 storage：Map 撑起 get/set/remove；可选 throwOn 模拟隐私模式下方法抛错。
+function fakeStorage(init = {}, throwOn = new Set()) {
+  const m = new Map(Object.entries(init));
+  return {
+    getItem: (k) => { if (throwOn.has("get")) throw new Error("blocked"); return m.has(k) ? m.get(k) : null; },
+    setItem: (k, v) => { if (throwOn.has("set")) throw new Error("blocked"); m.set(k, String(v)); },
+    removeItem: (k) => { if (throwOn.has("remove")) throw new Error("blocked"); m.delete(k); },
+    _map: m,
+  };
+}
 
 test("buildPayload 去空白、带 token、不含 email/turnstile", () => {
   const p = buildPayload(
@@ -18,6 +29,40 @@ test("tokenFromQuery：从 ?k= 取 token；无则空串", () => {
   expect(tokenFromQuery("?k=abc123")).toBe("abc123");
   expect(tokenFromQuery("")).toBe("");
   expect(tokenFromQuery("?x=1")).toBe("");
+});
+
+test("resolveToken：URL 有 ?k= → 返回它并写进 storage（覆盖旧值）", () => {
+  const s = fakeStorage({ [TOKEN_STORAGE_KEY]: "OLD" });
+  expect(resolveToken("?k=NEW", s)).toBe("NEW");
+  expect(s._map.get(TOKEN_STORAGE_KEY)).toBe("NEW"); // 新链接覆盖旧 token
+});
+
+test("resolveToken：URL 无 ?k= 但 storage 有 → 回退到 storage（返回首页/刷新/主屏重开场景）", () => {
+  const s = fakeStorage({ [TOKEN_STORAGE_KEY]: "SAVED" });
+  expect(resolveToken("", s)).toBe("SAVED");
+  expect(resolveToken("?x=1", s)).toBe("SAVED");
+});
+
+test("resolveToken：URL 无、storage 无 → 空串", () => {
+  expect(resolveToken("", fakeStorage())).toBe("");
+});
+
+test("resolveToken：storage 不可用（隐私模式）也不崩", () => {
+  // setItem 抛错：URL 有 token 仍照常返回（只是没存住）
+  expect(resolveToken("?k=NEW", fakeStorage({}, new Set(["set"])))).toBe("NEW");
+  // getItem 抛错：URL 无 token 时降级为空串，不抛
+  expect(resolveToken("", fakeStorage({}, new Set(["get"])))).toBe("");
+  // storage 为 null/undefined 也不崩
+  expect(resolveToken("?k=NEW", null)).toBe("NEW");
+  expect(resolveToken("", undefined)).toBe("");
+});
+
+test("clearStoredToken：删掉本机 token；storage 不可用也不崩", () => {
+  const s = fakeStorage({ [TOKEN_STORAGE_KEY]: "X" });
+  clearStoredToken(s);
+  expect(s._map.has(TOKEN_STORAGE_KEY)).toBe(false);
+  expect(() => clearStoredToken(fakeStorage({}, new Set(["remove"])))).not.toThrow();
+  expect(() => clearStoredToken(null)).not.toThrow();
 });
 
 test("describeVerify：有效回显邮箱并授权；无效给提示且不授权", () => {

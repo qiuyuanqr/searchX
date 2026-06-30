@@ -21,6 +21,26 @@ export function tokenFromQuery(search) {
   }
 }
 
+// 本机持久化 token 的键。token 永不过期、是提交的唯一凭证，存 localStorage 让授权能跨整页跳转
+// （点开报告→返回首页）、刷新、以及从手机主屏图标冷启动后恢复——这些导航都不带 ?k=。
+export const TOKEN_STORAGE_KEY = "searchx_invite_token";
+
+// 纯函数：解析当前可用的 token。优先用 URL 里的 ?k=（并落盘覆盖旧值，支持换人/换链接）；
+// URL 没有就回退到 storage。storage 不可用（隐私模式、被禁用、为 null）时静默降级，绝不抛出。
+export function resolveToken(search, storage) {
+  const fromUrl = tokenFromQuery(search);
+  if (fromUrl) {
+    try { storage && storage.setItem(TOKEN_STORAGE_KEY, fromUrl); } catch {}
+    return fromUrl;
+  }
+  try { return (storage && storage.getItem(TOKEN_STORAGE_KEY)) || ""; } catch { return ""; }
+}
+
+// 纯函数：清掉本机存的 token（服务端判定其无效/已撤销时调用，避免失效凭证赖在设备上）。
+export function clearStoredToken(storage) {
+  try { storage && storage.removeItem(TOKEN_STORAGE_KEY); } catch {}
+}
+
 // 纯函数：把 /verify 响应映射成授权态。authorized=true 时回显打码邮箱。
 export function describeVerify(res) {
   if (res && res.ok) {
