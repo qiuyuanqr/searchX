@@ -411,3 +411,51 @@ test("查重命中但回信失败 → 仍贴 done、评论提示手动告知、e
     /\/issues\/9\/comments$/.test(c.url) && JSON.parse(c.opts.body).body.includes("手动告知")
   )).toBe(true);
 });
+
+// —— 同批次内动态查重：第一条跑完研究后，scanDirs() 重新读磁盘应能看到新产出，
+// 从而拦下同批次内第二条同标的重复提交（GitHub issues 列表默认按 created 倒序，新的在前）——
+test("同批次两条同标的 approved Issue（短时间内重复提交）：第一条跑完研究，第二条被查重拦下，不重复调研", async () => {
+  // 倒序：后提交的 25 在前，先提交的 24 在后（模拟真实 GitHub /issues? 默认排序）
+  const ISSUES = [
+    { number: 25, title: "海光信息", body: "", labels: [{ name: "approved" }] },
+    { number: 24, title: "海光信息", body: "", labels: [{ name: "approved" }] },
+  ];
+  const fetchImpl = async (url, opts = {}) => {
+    const u = String(url);
+    if (u.includes("/issues?")) return { ok: true, json: async () => ISSUES };
+    if (/\/issues\/(24|25)\/labels$/.test(u)) return { ok: true, json: async () => [] };
+    if (/\/issues\/(24|25)\/comments$/.test(u)) return { ok: true, json: async () => ({}) };
+    if (/\/sub\/(24|25)$/.test(u)) return { ok: true, json: async () => ({ ok: true, email: "u@x.com" }) };
+    return { ok: false, status: 404, json: async () => ({}) };
+  };
+  fetchImpl.calls = [];
+  const rawFetch = fetchImpl;
+  const wrapped = async (url, opts) => { wrapped.calls.push({ url: String(url), opts: opts || {} }); return rawFetch(url, opts); };
+  wrapped.calls = [];
+
+  let dirs = []; // 这只票之前从未研究过
+  let ran = 0;
+  const sent = [];
+  const summary = await runOnce(CONFIG, {
+    fetchImpl: wrapped,
+    scanDirs: () => dirs.slice(),
+    runResearch: async () => {
+      ran++;
+      dirs.push({
+        dir: "2026-06-30_haiguang-688041", date: "2026-06-30", type: "股票",
+        title: "海光信息（688041.SH）", tldr: "国产CPU/DCU龙头", slug: "haiguang-688041",
+        tags: ["research", "海光信息", "688041", "半导体"], href: "r/2026-06-30_haiguang-688041/",
+      });
+      return true;
+    },
+    sendEmail: async (m) => { sent.push(m); }, log: () => {},
+    today: () => "2026-06-30",
+  });
+
+  expect(ran).toBe(1); // 关键：只真正 spawn 了一次 claude / 跑了一次研究
+  expect(summary.processed).toBe(2);
+  expect(summary.published).toBe(1);
+  expect(summary.deduped).toBe(1);
+  expect(summary.failed).toBe(0);
+  expect(summary.emailed).toBe(2); // 第一条「调研完成」信 + 第二条「已有报告」回信
+});
