@@ -82,8 +82,9 @@ function showForm() {
   loadRecent();
 }
 
-// ── 最近核查列表：拉 /check/recent 渲染；有排队中任务时每 20 秒自动刷新，全终态即停 ──
-const POLL_MS = 20000;
+// ── 最近核查列表：拉 /check/recent 渲染；有排队中任务时每 50 秒自动刷新，全终态即停 ──
+// （核查一趟通常要几分钟，20 秒轮询太勤；50 秒足够手机端"回来看一眼就有"）
+const POLL_MS = 50000;
 let pollTimer = null;
 
 function renderRecent(tasks) {

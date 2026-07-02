@@ -24,7 +24,8 @@ export async function runOnce(config, deps) {
       retired++;
       log(`任务 ${t.id} 已失败 ${attempts.get(t.id)} 次（上限 ${maxAttempts}），退休不再重试`);
       try {
-        await markDone(t.id, { outcome: "failed" });
+        // summary 会回显到手机核查页——让"已失败"章旁边有原因和下一步，不用翻邮件/日志
+        await markDone(t.id, { outcome: "failed", summary: `连续失败 ${maxAttempts} 次，已停止重试，请重新提交一次` });
       } catch (err) {
         log(`退休标记失败 ${t.id}（${err.message}），下轮再试退休`);
         continue;

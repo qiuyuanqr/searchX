@@ -21,6 +21,24 @@ function runnerAuthed(request, env) {
   return !!env.CHECK_RUNNER_SECRET && safeEqual(s, env.CHECK_RUNNER_SECRET);
 }
 
+// ── CHECK_KEY 在线暴力猜测限频 ─────────────────────────────────
+// 同一 IP 在窗口内密钥错够 FAIL_LIMIT 次 → 该 IP 后续请求（含正确密钥）一律 429，
+// 直到计数随 TTL 过期。只数失败，正常使用（偶尔输错一两次）远达不到。
+// get-then-put 有竞态、KV 又是最终一致——这里只求"把无限次在线穷举压到有限次"，够用。
+const FAIL_LIMIT = 20;
+const FAIL_WINDOW_TTL = 3600; // 1 小时（每次失败续期，滑动窗口）
+
+async function authFailuresExceeded(env, ip) {
+  const n = parseInt(await env.INTAKE_KV.get(`checkfail:${ip}`), 10);
+  return Number.isInteger(n) && n >= FAIL_LIMIT;
+}
+
+async function recordAuthFailure(env, ip) {
+  const key = `checkfail:${ip}`;
+  const n = (parseInt(await env.INTAKE_KV.get(key), 10) || 0) + 1;
+  await env.INTAKE_KV.put(key, String(n), { expirationTtl: FAIL_WINDOW_TTL });
+}
+
 // 容错解析 check:* 值：损坏（非法 JSON）返回 null，绝不抛出。
 // 纵深防御——不假设 KV 数据一定干净（如控制台误改），
 // 单条坏数据不该让整张 pending 列表或某次 done 崩成 500。
@@ -47,8 +65,11 @@ export async function handleCheckSubmit(request, env, { now }) {
 
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
 
+  const ip = request.headers.get("cf-connecting-ip") || "0.0.0.0";
+  if (await authFailuresExceeded(env, ip)) return corsJson({ ok: false, error: "rate_limited" }, 429);
   const key = request.headers.get("x-check-key") || "";
   if (!env.CHECK_KEY || !safeEqual(key, env.CHECK_KEY)) {
+    await recordAuthFailure(env, ip);
     return corsJson({ ok: false, error: "unauthorized" }, 401);
   }
 
@@ -118,8 +139,11 @@ export async function handleCheckRecent(request, env) {
 
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
 
+  const ip = request.headers.get("cf-connecting-ip") || "0.0.0.0";
+  if (await authFailuresExceeded(env, ip)) return corsJson({ ok: false, error: "rate_limited" }, 429);
   const key = request.headers.get("x-check-key") || "";
   if (!env.CHECK_KEY || !safeEqual(key, env.CHECK_KEY)) {
+    await recordAuthFailure(env, ip);
     return corsJson({ ok: false, error: "unauthorized" }, 401);
   }
 

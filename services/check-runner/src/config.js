@@ -38,5 +38,11 @@ export function loadCheckRunnerConfig(env) {
       const n = parseInt(env.CHECK_RUNNER_MAX_ATTEMPTS, 10);
       return Number.isInteger(n) && n >= 1 ? n : 3;
     })(),
+    // claude 子进程硬超时（分钟，默认 30）：挂死的子进程会让单实例锁一直被活进程持有、
+    // 整条管道停摆，必须有到点强杀。非法值回落默认。
+    claudeTimeoutMs: (() => {
+      const n = parseInt(env.CHECK_RUNNER_TIMEOUT_MINUTES, 10);
+      return (Number.isInteger(n) && n >= 1 ? n : 30) * 60_000;
+    })(),
   };
 }

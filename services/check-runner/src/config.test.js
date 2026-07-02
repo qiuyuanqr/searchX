@@ -82,4 +82,17 @@ describe("loadCheckRunnerConfig", () => {
     expect(loadCheckRunnerConfig({ ...BASE, CHECK_RUNNER_MAX_ATTEMPTS: "abc" }).maxAttempts).toBe(3);
     expect(loadCheckRunnerConfig({ ...BASE, CHECK_RUNNER_MAX_ATTEMPTS: "0" }).maxAttempts).toBe(3);
   });
+
+  it("claudeTimeoutMs 默认 30 分钟", () => {
+    expect(loadCheckRunnerConfig(BASE).claudeTimeoutMs).toBe(30 * 60_000);
+  });
+
+  it("claudeTimeoutMs 可被 CHECK_RUNNER_TIMEOUT_MINUTES 覆盖（分钟）", () => {
+    expect(loadCheckRunnerConfig({ ...BASE, CHECK_RUNNER_TIMEOUT_MINUTES: "45" }).claudeTimeoutMs).toBe(45 * 60_000);
+  });
+
+  it("claudeTimeoutMs 非法值（非数字 / <1）回落默认 30 分钟", () => {
+    expect(loadCheckRunnerConfig({ ...BASE, CHECK_RUNNER_TIMEOUT_MINUTES: "abc" }).claudeTimeoutMs).toBe(30 * 60_000);
+    expect(loadCheckRunnerConfig({ ...BASE, CHECK_RUNNER_TIMEOUT_MINUTES: "0" }).claudeTimeoutMs).toBe(30 * 60_000);
+  });
 });

@@ -52,18 +52,23 @@ function postCheck(env, headers = {}, body = {}) {
   );
 }
 
-test("提交：无 x-check-key → 401，且不写 KV", async () => {
+// 密钥错时唯一允许写入的是 checkfail:* 失败计数——任务/图片键一律不许出现
+const noTaskKeys = (env) =>
+  [...env.INTAKE_KV.store.keys()].filter((k) => !k.startsWith("checkfail:")).length === 0;
+
+test("提交：无 x-check-key → 401，且不写任务 KV", async () => {
   const env = ENV();
   const res = await postCheck(env, {}, { text: "hello" });
   expect(res.status).toBe(401);
-  expect(env.INTAKE_KV.store.size).toBe(0);
+  expect(noTaskKeys(env)).toBe(true);
 });
 
-test("提交：错 key → 401，且不写 KV", async () => {
+test("提交：错 key → 401，且不写任务 KV、失败计数 +1", async () => {
   const env = ENV();
   const res = await postCheck(env, { "x-check-key": "WRONG_KEY" }, { text: "hello" });
   expect(res.status).toBe(401);
-  expect(env.INTAKE_KV.store.size).toBe(0);
+  expect(noTaskKeys(env)).toBe(true);
+  expect(env.INTAKE_KV.store.get("checkfail:0.0.0.0")).toBe("1");
 });
 
 test("提交：等长错 key → 401（恒定时间比较仍判错）", async () => {
@@ -71,7 +76,7 @@ test("提交：等长错 key → 401（恒定时间比较仍判错）", async ()
   const env = ENV();
   const res = await postCheck(env, { "x-check-key": "CK_BAAD" }, { text: "hello" });
   expect(res.status).toBe(401);
-  expect(env.INTAKE_KV.store.size).toBe(0);
+  expect(noTaskKeys(env)).toBe(true);
 });
 
 test("提交：未配 CHECK_KEY → 401（防空密钥裸奔）", async () => {
@@ -307,7 +312,7 @@ test("隔离：CHECK_RUNNER_SECRET 用在 /check 提交无效", async () => {
   const env = ENV();
   const res = await postCheck(env, { "x-check-key": "RS_GOOD" }, { text: "hello" });
   expect(res.status).toBe(401);
-  expect(env.INTAKE_KV.store.size).toBe(0);
+  expect(noTaskKeys(env)).toBe(true); // 只允许出现 checkfail:* 失败计数
 });
 
 // ── Minor 1/2：路由方法兜底 + done id 边界（经 index.js 路由分发）──────────
@@ -441,11 +446,11 @@ test("multipart：全空（无文本/链接/图）→ 400 empty，不写 KV", as
   expect(env.INTAKE_KV.store.size).toBe(0);
 });
 
-test("multipart：错 key → 401，不写 KV", async () => {
+test("multipart：错 key → 401，不写任务 KV", async () => {
   const env = ENV();
   const res = await postCheckMultipart(env, { key: "WRONG", images: [jpg()] });
   expect(res.status).toBe(401);
-  expect(env.INTAKE_KV.store.size).toBe(0);
+  expect(noTaskKeys(env)).toBe(true); // 只允许出现 checkfail:* 失败计数
 });
 
 test("multipart：图片超 9 张 → 400 too many，不写 KV", async () => {
@@ -779,4 +784,40 @@ test("路由：Minor2 同款边界——id='recent' 不可当任务 id 用（/ch
   const res = await workerReq("POST", "/check/recent/done", { "x-check-runner-secret": "RS_GOOD" });
   expect(res.status).toBe(404);
   expect((await res.json()).error).toBe("not found");
+});
+
+// ── CHECK_KEY 暴力猜测限频（每 IP 每小时 20 次失败 → 429）────────
+
+test("限频：同 IP 密钥错满 20 次后，第 21 次（即使密钥正确）→ 429", async () => {
+  const env = ENV();
+  for (let i = 0; i < 20; i++) {
+    const res = await postCheck(env, { "x-check-key": "WRONG" }, { text: "x" });
+    expect(res.status).toBe(401);
+  }
+  expect(env.INTAKE_KV.store.get("checkfail:0.0.0.0")).toBe("20");
+  // 窗口内该 IP 被锁：正确密钥也 429（标准 lockout，等 TTL 过期）
+  const locked = await postCheck(env, { "x-check-key": "CK_GOOD" }, { text: "x" });
+  expect(locked.status).toBe(429);
+  expect((await locked.json()).error).toBe("rate_limited");
+});
+
+test("限频：未达上限时，几次输错不影响正确密钥提交", async () => {
+  const env = ENV();
+  for (let i = 0; i < 3; i++) await postCheck(env, { "x-check-key": "WRONG" }, { text: "x" });
+  const ok = await postCheck(env, { "x-check-key": "CK_GOOD" }, { text: "正常提交" });
+  expect(ok.status).toBe(201);
+});
+
+test("限频：/check/recent 与 /check 共享同一失败计数", async () => {
+  const env = ENV();
+  for (let i = 0; i < 20; i++) await getRecent(env, { "x-check-key": "WRONG" });
+  const locked = await getRecent(env, { "x-check-key": "CK_GOOD" });
+  expect(locked.status).toBe(429);
+});
+
+test("限频：成功提交不计数（checkfail 键不出现）", async () => {
+  const env = ENV();
+  const res = await postCheck(env, { "x-check-key": "CK_GOOD" }, { text: "干净提交" });
+  expect(res.status).toBe(201);
+  expect(env.INTAKE_KV.store.has("checkfail:0.0.0.0")).toBe(false);
 });

@@ -86,6 +86,7 @@ openssl rand -hex 24   # CHECK_RUNNER_SECRET：check-runner 取/标任务，与 
 各记下输出 → 第 5 步设为对应 Worker secret。
 - `ADMIN_KEY` / `CHECK_KEY` / `CHECK_RUNNER_SECRET` 都漏配则相应路由静默 401：`/admin/*` 进不去、`/check` 提交失败、check-runner 取不到任务。
 - `CHECK_RUNNER_SECRET` 须与 check-runner 本机 `.env` 里的同名变量**同值**（见 [check-runner README](../check-runner/README.md)）。
+- `CHECK_KEY` 有在线暴力猜测防护（与 `/admin/*` 同款思路）：同一 IP 一小时内密钥错满 20 次，`/check`、`/check/recent` 对该 IP 一律 429，计数随 KV TTL 自动过期。自己在手机上偶尔输错一两次不受影响。
 （授权改造后**不再需要 Turnstile**——提交由专属链接 token 鉴权；`TURNSTILE_SECRET` 已作废，旧版若配过可直接删。）
 
 ### 4. 建 KV namespace

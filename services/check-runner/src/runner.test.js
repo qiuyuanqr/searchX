@@ -467,7 +467,7 @@ describe("runOnce", () => {
     expect(cleaned).toBe(1);
   });
 
-  it("退休路径：markDone 带 {outcome:'failed'}", async () => {
+  it("退休路径：markDone 带 {outcome:'failed'} 和一行原因 summary（回显到手机页）", async () => {
     const tasks = makeTasks(1);
     const attempts = memoryAttempts({ "task-0": 3 });
     const doneArgs = [];
@@ -483,7 +483,9 @@ describe("runOnce", () => {
     };
     const result = await runOnce({}, deps);
     expect(result).toEqual({ processed: 1, done: 0, fail: 0, retired: 1 });
-    expect(doneArgs).toEqual([["task-0", { outcome: "failed" }]]);
+    expect(doneArgs).toEqual([
+      ["task-0", { outcome: "failed", summary: "连续失败 3 次，已停止重试，请重新提交一次" }],
+    ]);
   });
 
   it("无 prepareVerdict dep：markDone 带 {outcome:'done', summary:''}（与 Worker 兼容）", async () => {

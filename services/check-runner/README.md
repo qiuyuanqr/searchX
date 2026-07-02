@@ -55,6 +55,7 @@ bun test                          # 跑全部测试
 | `CHECK_RUNNER_AUTHOR_EMAIL` | — | 通知邮件收件人，默认同 `CHECK_RUNNER_SMTP_USER` |
 | `CHECK_RUNNER_CLAUDE_ARGS` | — | 传给 `claude -p` 的额外参数，默认 `--permission-mode bypassPermissions` |
 | `CHECK_RUNNER_MAX_ATTEMPTS` | — | 同一任务失败达此次数后停止重试（退休），默认 `3` |
+| `CHECK_RUNNER_TIMEOUT_MINUTES` | — | claude 子进程硬超时（分钟），默认 `30`。到点先 TERM、宽限 10 秒再 KILL，按失败计入重试计数。没有它，一次挂死的 claude 会一直持有单实例锁、让整条管道停摆 |
 
 写到仓库根的 `.env`（已 gitignore，bun 自动加载）：
 
@@ -82,7 +83,8 @@ bun run check-runner
 
 - runner 为每条任务准备结论文件 `<tmpdir>/searchx-check/<id>/verdict.txt`，并在 prompt 里让 `/factcheck` 核查完写入**一行结论**（`裁定（把握度）：一句话真相`）。
 - 跑完后 runner 读该文件，随 `POST /check/<id>/done` 的 body `{ outcome, summary }` 上报；手机 check.html 的「最近核查」区凭 `CHECK_KEY` 拉 `GET /check/recent` 显示状态与这行结论。
-- **读不到结论文件就降级为无结论、照常 markDone**——回显是增强，不是硬依赖。退休任务上报 `outcome: "failed"`（页面显示"已失败"）。
+- **读不到结论文件就降级为无结论、照常 markDone**——回显是增强，不是硬依赖。退休任务上报 `outcome: "failed"` + 一行原因 summary（页面显示"已失败"和"连续失败 N 次，已停止重试，请重新提交一次"）。
+- **注入边界**：prompt 里用户提交的 text / link 包在 `≡≡≡待核查内容 开始/结束≡≡≡` 分隔线之内（内容里伪造的分隔线记号会被压掉）；附图路径与结论文件路径这两条 runner 真实指令放在分隔线之外，且 skill 侧只认系统临时目录 `searchx-check/<id>/` 下的路径。
 - 结论只在作者自己的私密通道流转（KV 7 天过期、凭密钥），通知邮件照旧不含内容明文。
 
 ## 失败 / 重跑语义

@@ -193,7 +193,19 @@ async function main() {
         stdin: "ignore",
         env: childEnv,
       });
-      return proc.exited;
+      // 硬超时：claude 挂死会让单实例锁被活进程一直持有，后续 launchd tick 全部跳过、
+      // 整条管道停摆。到点先 TERM、宽限 10 秒再 KILL；超时按失败计（attempts 接住、走退休）。
+      let timedOut = false;
+      const termTimer = setTimeout(() => { timedOut = true; try { proc.kill(); } catch {} }, config.claudeTimeoutMs);
+      const killTimer = setTimeout(() => { try { proc.kill(9); } catch {} }, config.claudeTimeoutMs + 10_000);
+      const code = await proc.exited;
+      clearTimeout(termTimer);
+      clearTimeout(killTimer);
+      if (timedOut) {
+        console.log(`✗ 核查超时（${Math.round(config.claudeTimeoutMs / 60_000)} 分钟），已终止 claude 子进程`);
+        return 124; // 即使被 TERM 后进程以 0 退出，也按超时失败处理
+      }
+      return code;
     },
     attempts: makeAttemptsStore(),
     notify: transport
