@@ -81,6 +81,22 @@ async function prepareCheckImages(task, { workerUrl, secret }) {
   }
 }
 
+// 结论信号文件：/factcheck 按 prompt 指令把一行结论写到这里，runner 读后随 markDone 上报，
+// 回显到手机核查页。与图片临时文件同目录，任一 cleanup 都会连目录一并清掉。
+function prepareCheckVerdict(task) {
+  const dir = join(tmpdir(), "searchx-check", task.id);
+  mkdirSync(dir, { recursive: true });
+  const verdictPath = join(dir, "verdict.txt");
+  return {
+    verdictPath,
+    // 只取第一行（防模型多写），读不到返回 null（runOnce 降级为无结论）
+    readVerdict: () => {
+      try { return readFileSync(verdictPath, "utf8").split("\n")[0].trim(); } catch { return null; }
+    },
+    cleanup: () => { try { rmSync(dir, { recursive: true, force: true }); } catch {} },
+  };
+}
+
 // 核查完成通知邮件：只说"去 Obsidian 查"，绝不回显核查内容细节（隐私红线）。
 function composeCheckDoneNotice({ authorEmail, fromEmail }) {
   return {
@@ -160,10 +176,11 @@ async function main() {
   const summary = await runOnce(config, {
     fetchPending: () =>
       fetchPendingChecks({ workerUrl: config.workerUrl, secret: config.secret }),
-    markDone: (id) =>
-      markCheckDone({ workerUrl: config.workerUrl, secret: config.secret, id }),
+    markDone: (id, info = {}) =>
+      markCheckDone({ workerUrl: config.workerUrl, secret: config.secret, id, ...info }),
     prepareImages: (task) =>
       prepareCheckImages(task, { workerUrl: config.workerUrl, secret: config.secret }),
+    prepareVerdict: prepareCheckVerdict,
     buildPrompt: buildFactcheckPrompt,
     runFactcheck: async (prompt) => {
       console.log(`→ claude -p ${JSON.stringify(prompt)}`);

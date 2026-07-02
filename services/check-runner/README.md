@@ -32,7 +32,7 @@ Cloudflare KV（check:* 键）
 |---|---|
 | `src/config.js` | `loadCheckRunnerConfig(env)` 读配置、校验必填（两个必填 + 可选 SMTP） |
 | `src/poll.js` | `fetchPendingChecks` / `markCheckDone`（注入 fetch，离线可测） |
-| `src/factcheck-cmd.js` | `buildFactcheckPrompt({text,link})` 拼 /factcheck 命令（纯函数） |
+| `src/factcheck-cmd.js` | `buildFactcheckPrompt({text,link,imagePaths,verdictPath})` 拼 /factcheck 命令（纯函数） |
 | `src/attempts.js` | 任务级失败计数（毒任务封顶用），持久化经注入 load/save，离线可测 |
 | `src/runner.js` | `runOnce(config,deps)` 编排，全部副作用经 deps 注入 |
 | `src/index.js` | 装配入口：抢锁、装配真实依赖（spawn claude / nodemailer / fetch / 计数文件）后跑 `runOnce` |
@@ -67,6 +67,8 @@ CHECK_RUNNER_SMTP_PASS=<Gmail 应用专用密码>
 ```
 
 > Worker 侧（intake-worker）须配两把 `/check` 路由密钥才能跑通：`CHECK_KEY`（作者提交核查任务）与 `CHECK_RUNNER_SECRET`（runner 取/标任务，与本机 `.env` 同值）。生成与设置见 [intake-worker README](../intake-worker/README.md) 的部署步骤；漏配则 `/check` 路由静默 401。
+>
+> 另：`/factcheck` 核对 A 股行情类声明时优先用 akshare（SKILL Step 2.6），Mac mini 建议装上：`python3 -m pip install --user akshare`（`setup-macmini.sh` 会自动装）。没装不阻塞——skill 自动降级为 WebSearch 多源交叉。
 
 ## 运行
 
@@ -75,6 +77,13 @@ CHECK_RUNNER_SMTP_PASS=<Gmail 应用专用密码>
 ```bash
 bun run check-runner
 ```
+
+## 结论回显（手机核查页显示一行结论）
+
+- runner 为每条任务准备结论文件 `<tmpdir>/searchx-check/<id>/verdict.txt`，并在 prompt 里让 `/factcheck` 核查完写入**一行结论**（`裁定（把握度）：一句话真相`）。
+- 跑完后 runner 读该文件，随 `POST /check/<id>/done` 的 body `{ outcome, summary }` 上报；手机 check.html 的「最近核查」区凭 `CHECK_KEY` 拉 `GET /check/recent` 显示状态与这行结论。
+- **读不到结论文件就降级为无结论、照常 markDone**——回显是增强，不是硬依赖。退休任务上报 `outcome: "failed"`（页面显示"已失败"）。
+- 结论只在作者自己的私密通道流转（KV 7 天过期、凭密钥），通知邮件照旧不含内容明文。
 
 ## 失败 / 重跑语义
 

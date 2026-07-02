@@ -62,6 +62,35 @@ describe("markCheckDone", () => {
     const fakeFetch = async () => ({ ok: false, status: 404 });
     await expect(markCheckDone({ workerUrl: BASE, secret: SECRET, id: "x" }, fakeFetch)).rejects.toThrow("done 404");
   });
+
+  it("带 summary：POST body 为 JSON {outcome:'done', summary}，content-type json", async () => {
+    let body = null, ct = "";
+    const fakeFetch = async (url, opts) => {
+      body = JSON.parse(opts.body);
+      ct = opts.headers["content-type"];
+      return { ok: true };
+    };
+    await markCheckDone(
+      { workerUrl: BASE, secret: SECRET, id: "t1", outcome: "done", summary: "属实（高）：确有其事" },
+      fakeFetch,
+    );
+    expect(ct).toBe("application/json");
+    expect(body).toEqual({ outcome: "done", summary: "属实（高）：确有其事" });
+  });
+
+  it("outcome:failed（退休）：body 只带 outcome，无 summary", async () => {
+    let body = null;
+    const fakeFetch = async (url, opts) => { body = JSON.parse(opts.body); return { ok: true }; };
+    await markCheckDone({ workerUrl: BASE, secret: SECRET, id: "t1", outcome: "failed" }, fakeFetch);
+    expect(body).toEqual({ outcome: "failed" });
+  });
+
+  it("不带 outcome/summary（旧调用形态）：body 为 {outcome:'done'}", async () => {
+    let body = null;
+    const fakeFetch = async (url, opts) => { body = JSON.parse(opts.body); return { ok: true }; };
+    await markCheckDone({ workerUrl: BASE, secret: SECRET, id: "t1" }, fakeFetch);
+    expect(body).toEqual({ outcome: "done" });
+  });
 });
 
 describe("fetchCheckImage", () => {

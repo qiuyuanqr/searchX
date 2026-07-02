@@ -1,6 +1,9 @@
 // web/src/assets/check-page.js — 事实核查提交页的 DOM 引导（外置脚本，配合严格 CSP `script-src 'self'`）。
 // 纯逻辑（载荷构造 / 密钥读写 / 状态文案）在 check.js；本文件只做事件绑定与 fetch。
-import { readKey, saveKey, clearKey, describeCheckResult, fitDimensions, validateCheckSubmission } from "./check.js";
+import {
+  readKey, saveKey, clearKey, describeCheckResult, fitDimensions, validateCheckSubmission,
+  describeTaskStatus, formatTaskTime, shouldKeepPolling,
+} from "./check.js";
 
 const WORKER = document.body.dataset.worker || "";   // {{WORKER_URL}} 注入在 body data-worker
 const $ = (id) => document.getElementById(id);
@@ -76,6 +79,64 @@ function showGate() {
 function showForm() {
   $("gate").hidden = true;
   $("form-area").hidden = false;
+  loadRecent();
+}
+
+// ── 最近核查列表：拉 /check/recent 渲染；有排队中任务时每 20 秒自动刷新，全终态即停 ──
+const POLL_MS = 20000;
+let pollTimer = null;
+
+function renderRecent(tasks) {
+  const box = $("recent-list");
+  box.textContent = "";
+  if (!tasks.length) {
+    const p = document.createElement("p");
+    p.className = "field-hint";
+    p.textContent = "最近 7 天没有核查任务。";
+    box.append(p);
+    return;
+  }
+  for (const t of tasks) {
+    const item = document.createElement("div");
+    item.className = "task-item";
+    const head = document.createElement("div");
+    head.className = "task-head";
+    const time = document.createElement("span");
+    time.className = "task-time";
+    time.textContent = formatTaskTime(t.createdAt);
+    const st = describeTaskStatus(t.status);
+    const chip = document.createElement("span");
+    chip.className = "task-chip";
+    chip.dataset.kind = st.kind;
+    chip.textContent = st.label;
+    head.append(time, chip);
+    const snip = document.createElement("p");
+    snip.className = "task-snippet";
+    snip.textContent = t.textSnippet || "（无摘要）";
+    item.append(head, snip);
+    if (t.summary) {
+      const sum = document.createElement("p");
+      sum.className = "task-summary";
+      sum.textContent = t.summary;
+      item.append(sum);
+    }
+    box.append(item);
+  }
+}
+
+async function loadRecent() {
+  if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
+  if (!key) return;
+  try {
+    const r = await fetch(WORKER + "/check/recent", { headers: { "x-check-key": key } });
+    if (!r.ok) return; // 401/5xx 静默：密钥失效在提交路径统一处理，列表失败可手动刷新
+    const { tasks } = await r.json();
+    const list = Array.isArray(tasks) ? tasks : [];
+    renderRecent(list);
+    if (shouldKeepPolling(list) && document.visibilityState === "visible") {
+      pollTimer = setTimeout(loadRecent, POLL_MS);
+    }
+  } catch {} // 网络错误静默，手动刷新可重试
 }
 
 // 对齐站点约定（feed.js）：状态色靠 CSS `.form-status[data-kind="success"|"error"|"pending"]`。
@@ -179,6 +240,7 @@ $("check-form").addEventListener("submit", async (e) => {
       $("check-text").value = "";
       $("check-link").value = "";
       clearImages();
+      loadRecent(); // 新任务立即出现在列表并开始轮询
     }
   } catch {
     setStatus("网络错误，请检查连接后重试。", "error");
@@ -190,6 +252,12 @@ $("check-form").addEventListener("submit", async (e) => {
 $("logout").addEventListener("click", () => {
   clearKey(store);
   location.reload();
+});
+
+$("recent-refresh").addEventListener("click", () => loadRecent());
+// 切回前台且表单已解锁 → 刷新一次（顺带按需重启轮询）
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && !$("form-area").hidden) loadRecent();
 });
 
 // 本机会话已存密钥 → 直接显示表单（不用重输）

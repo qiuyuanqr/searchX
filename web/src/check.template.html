@@ -18,6 +18,18 @@
   .img-preview .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .img-preview .thumb button { position: absolute; top: 2px; right: 2px; width: 22px; height: 22px; line-height: 20px; padding: 0; border: none; border-radius: 50%; background: rgba(0,0,0,.6); color: #fff; font-size: 15px; cursor: pointer; }
   .field-hint { font-size: .85em; opacity: .65; margin: .25rem 0 0; }
+  /* 最近核查列表（复用 .form-status 的三色 data-kind 约定） */
+  .recent { margin-top: 1.5rem; }
+  .recent-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: .5rem; }
+  .task-item { border-top: 1px solid rgba(0,0,0,.12); padding: .6rem 0; }
+  .task-head { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; }
+  .task-time { font-size: .8em; opacity: .6; }
+  .task-chip { font-size: .78em; padding: .1rem .5rem; border-radius: 999px; white-space: nowrap; }
+  .task-chip[data-kind="success"] { color: var(--seal); background: rgba(177,74,49,.1); }
+  .task-chip[data-kind="error"] { color: #b3402c; background: rgba(179,64,44,.1); }
+  .task-chip[data-kind="pending"] { color: var(--ink-soft); background: var(--paper-2); }
+  .task-snippet { margin: .25rem 0 0; font-size: .9em; opacity: .85; overflow-wrap: anywhere; }
+  .task-summary { margin: .3rem 0 0; font-size: .9em; line-height: 1.5; }
 </style>
 </head>
 <body data-pagefind-ignore data-worker="{{WORKER_URL}}">
@@ -58,6 +70,16 @@
         <button id="submit-btn" class="submit-btn" type="submit">提交核查</button>
         <p id="form-status" class="form-status" role="status" aria-live="polite" hidden></p>
       </form>
+
+      <!-- 最近核查：提交后在这里看状态（排队中/已完成/已失败）与一行结论，不用等邮件+Obsidian -->
+      <div class="recent">
+        <div class="recent-head">
+          <span class="field-label">最近核查</span>
+          <button type="button" class="linklike" id="recent-refresh">刷新</button>
+        </div>
+        <div id="recent-list" aria-live="polite"></div>
+      </div>
+
       <p class="modal-hint"><button type="button" class="linklike" id="logout">退出（清除本机密钥）</button></p>
     </div>
   </div>

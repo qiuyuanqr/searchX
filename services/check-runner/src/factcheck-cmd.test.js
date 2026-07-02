@@ -52,4 +52,22 @@ describe("buildFactcheckPrompt", () => {
       "/factcheck 链接：https://x.com\n附图为本地文件，请用 Read 逐张打开后纳入核查：\n/tmp/a/0.jpg"
     );
   });
+
+  it("带 verdictPath：追加结论文件指令段（含路径与格式说明）", () => {
+    const p = buildFactcheckPrompt({ text: "消息", verdictPath: "/tmp/searchx-check/t1/verdict.txt" });
+    expect(p).toBe(
+      "/factcheck 消息\n核查完成后，把一行结论写到本地文件 /tmp/searchx-check/t1/verdict.txt（格式：裁定（把握度）：一句话真相，仅此一行、不含其他内容）。"
+    );
+  });
+
+  it("无 verdictPath：输出与旧版完全一致", () => {
+    expect(buildFactcheckPrompt({ text: "消息" })).toBe("/factcheck 消息");
+  });
+
+  it("verdictPath + 图片：结论指令排在图片指引之后", () => {
+    const p = buildFactcheckPrompt({ text: "看图", imagePaths: ["/tmp/a/0.jpg"], verdictPath: "/tmp/v.txt" });
+    expect(p).toBe(
+      "/factcheck 看图\n附图为本地文件，请用 Read 逐张打开后纳入核查：\n/tmp/a/0.jpg\n核查完成后，把一行结论写到本地文件 /tmp/v.txt（格式：裁定（把握度）：一句话真相，仅此一行、不含其他内容）。"
+    );
+  });
 });

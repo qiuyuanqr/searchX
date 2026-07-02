@@ -1,6 +1,6 @@
 // services/intake-worker/src/check.test.js
 import { test, expect } from "bun:test";
-import { handleCheckSubmit, handleCheckPending, handleCheckDone, handleCheckImage } from "./check.js";
+import { handleCheckSubmit, handleCheckPending, handleCheckDone, handleCheckImage, handleCheckRecent } from "./check.js";
 import worker from "./index.js";
 
 function fakeKV(seed = {}) {
@@ -582,4 +582,201 @@ test("路由：POST /check/t1/image/0（错方法）→ 405", async () => {
 test("路由：GET /check/t1/image/0（无 secret）→ 401（命中 image 处理器）", async () => {
   const res = await workerReq("GET", "/check/t1/image/0");
   expect(res.status).toBe(401);
+});
+
+// ── done 带 outcome / summary（结论回显）───────────────────────
+
+function postDoneBody(env, id, body) {
+  return handleCheckDone(
+    new Request(`https://w.dev/check/${id}/done`, {
+      method: "POST",
+      headers: { "x-check-runner-secret": "RS_GOOD", "content-type": "application/json" },
+      body: JSON.stringify(body),
+    }),
+    env,
+    id,
+  );
+}
+
+const pendingTask = (over = {}) =>
+  JSON.stringify({ text: "核查任务", link: "", status: "pending", createdAt: NOW(), ...over });
+
+test("done：body {outcome:'done', summary} → status=done 且 summary 存入", async () => {
+  const kv = fakeKV({ "check:t1": pendingTask() });
+  const env = ENV({ INTAKE_KV: kv });
+  const res = await postDoneBody(env, "t1", { outcome: "done", summary: "不实（高）：系旧闻拼接" });
+  expect(res.status).toBe(200);
+  const stored = JSON.parse(kv.store.get("check:t1"));
+  expect(stored.status).toBe("done");
+  expect(stored.summary).toBe("不实（高）：系旧闻拼接");
+});
+
+test("done：body {outcome:'failed'} → status=failed（退休任务）", async () => {
+  const kv = fakeKV({ "check:t1": pendingTask() });
+  const env = ENV({ INTAKE_KV: kv });
+  const res = await postDoneBody(env, "t1", { outcome: "failed" });
+  expect(res.status).toBe(200);
+  expect(JSON.parse(kv.store.get("check:t1")).status).toBe("failed");
+});
+
+test("done：failed 同样清图（隐私加固不因失败而免）", async () => {
+  const kv = fakeKV({
+    "check:t1": pendingTask({ images: [{ mime: "image/jpeg", size: 3 }] }),
+    "checkimg:t1:0": new Uint8Array([1, 2, 3]).buffer,
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  const res = await postDoneBody(env, "t1", { outcome: "failed" });
+  expect(res.status).toBe(200);
+  expect(kv.store.has("checkimg:t1:0")).toBe(false);
+});
+
+test("done：无 body → 行为同旧版（status=done，无 summary）", async () => {
+  const kv = fakeKV({ "check:t1": pendingTask() });
+  const env = ENV({ INTAKE_KV: kv });
+  const res = await postDone(env, "t1", { "x-check-runner-secret": "RS_GOOD" });
+  expect(res.status).toBe(200);
+  const stored = JSON.parse(kv.store.get("check:t1"));
+  expect(stored.status).toBe("done");
+  expect(stored.summary).toBeUndefined();
+});
+
+test("done：坏 JSON body → 容错按无 body 处理（不把 done 卡死）", async () => {
+  const kv = fakeKV({ "check:t1": pendingTask() });
+  const env = ENV({ INTAKE_KV: kv });
+  const res = await handleCheckDone(
+    new Request("https://w.dev/check/t1/done", {
+      method: "POST",
+      headers: { "x-check-runner-secret": "RS_GOOD", "content-type": "application/json" },
+      body: "not json",
+    }),
+    env,
+    "t1",
+  );
+  expect(res.status).toBe(200);
+  expect(JSON.parse(kv.store.get("check:t1")).status).toBe("done");
+});
+
+test("done：非法 outcome 按 done 处理；summary 超 200 字截断", async () => {
+  const kv = fakeKV({ "check:t1": pendingTask() });
+  const env = ENV({ INTAKE_KV: kv });
+  const res = await postDoneBody(env, "t1", { outcome: "weird", summary: "长".repeat(300) });
+  expect(res.status).toBe(200);
+  const stored = JSON.parse(kv.store.get("check:t1"));
+  expect(stored.status).toBe("done");
+  expect(stored.summary).toBe("长".repeat(200));
+});
+
+// ── GET /check/recent（作者凭 CHECK_KEY 查最近任务）────────────
+
+function getRecent(env, headers = {}) {
+  return handleCheckRecent(
+    new Request("https://w.dev/check/recent", { method: "GET", headers }),
+    env,
+  );
+}
+
+test("recent：无 x-check-key → 401（带 CORS 头，前端能读到错误）", async () => {
+  const res = await getRecent(ENV());
+  expect(res.status).toBe(401);
+  expect(res.headers.get("access-control-allow-origin")).toBe("https://qiuyuanqr.github.io");
+});
+
+test("recent：错 key → 401", async () => {
+  const res = await getRecent(ENV(), { "x-check-key": "WRONG" });
+  expect(res.status).toBe(401);
+});
+
+test("recent：未配 CHECK_KEY → 401（防空密钥裸奔）", async () => {
+  const res = await getRecent(ENV({ CHECK_KEY: "" }), { "x-check-key": "" });
+  expect(res.status).toBe(401);
+});
+
+test("recent：凭据隔离——CHECK_RUNNER_SECRET 无效", async () => {
+  const res = await getRecent(ENV(), { "x-check-key": "RS_GOOD" });
+  expect(res.status).toBe(401);
+});
+
+test("recent：OPTIONS 预检 → 204 + CORS（allow-headers 含 x-check-key）", async () => {
+  const res = await handleCheckRecent(
+    new Request("https://w.dev/check/recent", { method: "OPTIONS" }),
+    ENV(),
+  );
+  expect(res.status).toBe(204);
+  expect(res.headers.get("access-control-allow-origin")).toBe("https://qiuyuanqr.github.io");
+  expect(res.headers.get("access-control-allow-headers")).toContain("x-check-key");
+});
+
+test("recent：返回轻量视图（id/createdAt/status/textSnippet/summary），按 createdAt 降序", async () => {
+  const kv = fakeKV({
+    "check:t-old": JSON.stringify({ text: "旧任务", link: "", status: "done", createdAt: "2026-07-01T08:00:00.000Z", summary: "属实（高）：确有其事" }),
+    "check:t-new": JSON.stringify({ text: "新任务", link: "", status: "pending", createdAt: "2026-07-02T09:00:00.000Z" }),
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  const res = await getRecent(env, { "x-check-key": "CK_GOOD" });
+  expect(res.status).toBe(200);
+  expect(res.headers.get("access-control-allow-origin")).toBe("https://qiuyuanqr.github.io");
+  const body = await res.json();
+  expect(body.ok).toBe(true);
+  expect(body.tasks.map((t) => t.id)).toEqual(["t-new", "t-old"]);
+  expect(body.tasks[0]).toEqual({
+    id: "t-new", createdAt: "2026-07-02T09:00:00.000Z", status: "pending", textSnippet: "新任务",
+  });
+  expect(body.tasks[1].summary).toBe("属实（高）：确有其事");
+  expect(body.tasks[1].status).toBe("done");
+});
+
+test("recent：textSnippet 截前 40 字；无 text 用 link 域名；只有图用 N 张图", async () => {
+  const kv = fakeKV({
+    "check:t-text": JSON.stringify({ text: "字".repeat(60), link: "", status: "pending", createdAt: "2026-07-02T03:00:00.000Z" }),
+    "check:t-link": JSON.stringify({ text: "", link: "https://mp.weixin.qq.com/s/abc", status: "pending", createdAt: "2026-07-02T02:00:00.000Z" }),
+    "check:t-img": JSON.stringify({ text: "", link: "", status: "pending", createdAt: "2026-07-02T01:00:00.000Z", images: [{ mime: "image/jpeg", size: 3 }, { mime: "image/png", size: 4 }] }),
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  const body = await (await getRecent(env, { "x-check-key": "CK_GOOD" })).json();
+  expect(body.tasks[0].textSnippet).toBe("字".repeat(40));
+  expect(body.tasks[1].textSnippet).toBe("mp.weixin.qq.com");
+  expect(body.tasks[2].textSnippet).toBe("2 张图");
+});
+
+test("recent：不回传 text 全文 / link 全文 / images 字节等重字段", async () => {
+  const kv = fakeKV({
+    "check:t1": JSON.stringify({ text: "字".repeat(60), link: "https://example.com/x", status: "pending", createdAt: NOW(), images: [{ mime: "image/jpeg", size: 3 }] }),
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  const body = await (await getRecent(env, { "x-check-key": "CK_GOOD" })).json();
+  const keys = Object.keys(body.tasks[0]).sort();
+  expect(keys).toEqual(["createdAt", "id", "status", "textSnippet"]);
+});
+
+test("recent：损坏条目跳过、不拖垮列表；无任务返回空数组", async () => {
+  const kv = fakeKV({
+    "check:bad": "{ 不是 JSON",
+    "check:ok": JSON.stringify({ text: "好的", link: "", status: "pending", createdAt: NOW() }),
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  const body = await (await getRecent(env, { "x-check-key": "CK_GOOD" })).json();
+  expect(body.tasks).toHaveLength(1);
+  expect(body.tasks[0].id).toBe("ok");
+
+  const empty = await (await getRecent(ENV(), { "x-check-key": "CK_GOOD" })).json();
+  expect(empty.tasks).toEqual([]);
+});
+
+// ── 路由：/check/recent 经 index.js 分发 ────────────────────────
+
+test("路由：GET /check/recent（无 key）→ 401（命中 recent 处理器，不落 404）", async () => {
+  const res = await workerReq("GET", "/check/recent");
+  expect(res.status).toBe(401);
+});
+
+test("路由：POST /check/recent（错方法）→ 405", async () => {
+  const res = await workerReq("POST", "/check/recent", { "x-check-key": "CK_GOOD" });
+  expect(res.status).toBe(405);
+  expect((await res.json()).error).toBe("method_not_allowed");
+});
+
+test("路由：Minor2 同款边界——id='recent' 不可当任务 id 用（/check/recent/done → 404）", async () => {
+  const res = await workerReq("POST", "/check/recent/done", { "x-check-runner-secret": "RS_GOOD" });
+  expect(res.status).toBe(404);
+  expect((await res.json()).error).toBe("not found");
 });

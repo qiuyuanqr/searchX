@@ -103,6 +103,58 @@ export async function handleCheckSubmit(request, env, { now }) {
   return corsJson({ ok: true, id }, 201);
 }
 
+// GET /check/recent —— 作者凭 CHECK_KEY 查最近任务（手机核查页状态区用）。
+// 只回轻量视图 { id, createdAt, status, textSnippet, summary? }，按 createdAt 降序；
+// 绝不回 text/link 全文、更不回图片字节。浏览器跨域调用，带 CORS + OPTIONS 预检。
+export async function handleCheckRecent(request, env) {
+  const cors = {
+    "access-control-allow-origin": env.ALLOWED_ORIGIN,
+    "access-control-allow-methods": "GET, OPTIONS",
+    "access-control-allow-headers": "content-type, x-check-key",
+    vary: "origin",
+  };
+  const corsJson = (obj, status = 200) =>
+    new Response(JSON.stringify(obj), { status, headers: { "content-type": "application/json", ...cors } });
+
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+
+  const key = request.headers.get("x-check-key") || "";
+  if (!env.CHECK_KEY || !safeEqual(key, env.CHECK_KEY)) {
+    return corsJson({ ok: false, error: "unauthorized" }, 401);
+  }
+
+  const list = await env.INTAKE_KV.list({ prefix: "check:" });
+  const tasks = [];
+  for (const k of list.keys) {
+    const raw = await env.INTAKE_KV.get(k.name);
+    if (!raw) continue;
+    const t = parseTask(raw);
+    if (!t) continue; // 跳过损坏条目
+    const view = {
+      id: k.name.slice("check:".length),
+      createdAt: t.createdAt || "",
+      status: t.status || "pending",
+      textSnippet: taskSnippet(t),
+    };
+    if (t.summary) view.summary = t.summary;
+    tasks.push(view);
+  }
+  tasks.sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0));
+  return corsJson({ ok: true, tasks });
+}
+
+// 任务的可辨认摘要：text 前 40 字 > link 域名 > "N 张图"。够作者认出是哪条即可。
+function taskSnippet(t) {
+  const text = String(t.text || "").trim();
+  if (text) return text.slice(0, 40);
+  const link = String(t.link || "").trim();
+  if (link) {
+    try { return new URL(link).hostname; } catch { return link.slice(0, 40); }
+  }
+  const n = Array.isArray(t.images) ? t.images.length : 0;
+  return n > 0 ? `${n} 张图` : "";
+}
+
 // GET /check/pending —— runner 凭 CHECK_RUNNER_SECRET 取待处理任务
 export async function handleCheckPending(request, env) {
   if (!runnerAuthed(request, env)) return json({ ok: false, error: "unauthorized" }, 401);
@@ -129,7 +181,10 @@ export async function handleCheckImage(request, env, id, n) {
   return new Response(got.value, { status: 200, headers: { "content-type": mime } });
 }
 
-// POST /check/<id>/done —— runner 标记完成
+// POST /check/<id>/done —— runner 标记完成。
+// 可选 JSON body { outcome: "done"|"failed", summary }：failed 用于退休任务，
+// summary 是一行结论（≤200 字），供 /check/recent 回显给作者手机页。
+// 无 body / 坏 body 一律按旧行为（status=done、无 summary）容错处理——别把 done 卡死。
 export async function handleCheckDone(request, env, id) {
   if (!runnerAuthed(request, env)) return json({ ok: false, error: "unauthorized" }, 401);
 
@@ -138,7 +193,17 @@ export async function handleCheckDone(request, env, id) {
 
   const t = parseTask(raw);
   if (!t) return json({ ok: false, error: "not found" }, 404); // 值损坏，任务已不可用，按 404 处理
-  t.status = "done";
+
+  let outcome = "", summary = "";
+  try {
+    const body = await request.json();
+    if (body && typeof body === "object") {
+      outcome = String(body.outcome || "");
+      summary = String(body.summary || "").trim().slice(0, 200);
+    }
+  } catch {}
+  t.status = outcome === "failed" ? "failed" : "done";
+  if (summary) t.summary = summary;
   await env.INTAKE_KV.put(`check:${id}`, JSON.stringify(t), { expirationTtl: TTL });
   // 隐私加固：任务跑完即清图片字节（云端只停留到处理完）。best-effort——
   // 删失败不该影响 done 的 200（任务已标完成，图片随 7 天 TTL 兜底过期）。

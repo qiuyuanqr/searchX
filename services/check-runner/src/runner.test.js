@@ -383,4 +383,121 @@ describe("runOnce", () => {
     const result = await runOnce({}, deps);
     expect(result).toEqual({ processed: 1, done: 0, fail: 1, retired: 0 });
   });
+
+  // ── 结论回显：prepareVerdict 信号文件 → markDone 带 outcome/summary ──
+
+  it("prepareVerdict：verdictPath 传给 buildPrompt，成功后 readVerdict 的结论随 markDone 上报，cleanup 被调", async () => {
+    const tasks = makeTasks(1);
+    let promptArg = null, doneArgs = [], cleaned = 0;
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id, info) => { doneArgs.push([id, info]); },
+      runFactcheck: async () => 0,
+      prepareVerdict: (t) => ({
+        verdictPath: `/tmp/searchx-check/${t.id}/verdict.txt`,
+        readVerdict: () => "属实（高）：确有其事",
+        cleanup: () => { cleaned++; },
+      }),
+      buildPrompt: (t) => { promptArg = t; return "/factcheck x"; },
+      notify: null,
+      log: () => {},
+    };
+    const result = await runOnce({}, deps);
+    expect(result).toEqual({ processed: 1, done: 1, fail: 0, retired: 0 });
+    expect(promptArg.verdictPath).toBe("/tmp/searchx-check/task-0/verdict.txt");
+    expect(doneArgs).toEqual([["task-0", { outcome: "done", summary: "属实（高）：确有其事" }]]);
+    expect(cleaned).toBe(1);
+  });
+
+  it("readVerdict 返回 null / 抛错：降级为无 summary，照常 markDone（结论回显不是硬依赖）", async () => {
+    const tasks = makeTasks(2); // task-0 读到 null、task-1 读取抛错
+    const doneArgs = [];
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id, info) => { doneArgs.push([id, info]); },
+      runFactcheck: async () => 0,
+      prepareVerdict: (t) => ({
+        verdictPath: `/tmp/${t.id}/verdict.txt`,
+        readVerdict: () => { if (t.id === "task-1") throw new Error("读文件失败"); return null; },
+        cleanup: () => {},
+      }),
+      buildPrompt: () => "/factcheck x",
+      notify: null,
+      log: () => {},
+    };
+    const result = await runOnce({}, deps);
+    expect(result).toEqual({ processed: 2, done: 2, fail: 0, retired: 0 });
+    expect(doneArgs).toEqual([
+      ["task-0", { outcome: "done", summary: "" }],
+      ["task-1", { outcome: "done", summary: "" }],
+    ]);
+  });
+
+  it("prepareVerdict 本身抛错：降级为不带结论文件，任务照常核查", async () => {
+    const tasks = makeTasks(1);
+    let promptArg = null, doneArgs = [];
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id, info) => { doneArgs.push([id, info]); },
+      runFactcheck: async () => 0,
+      prepareVerdict: () => { throw new Error("mkdir 失败"); },
+      buildPrompt: (t) => { promptArg = t; return "/factcheck x"; },
+      notify: null,
+      log: () => {},
+    };
+    const result = await runOnce({}, deps);
+    expect(result).toEqual({ processed: 1, done: 1, fail: 0, retired: 0 });
+    expect(promptArg.verdictPath).toBeUndefined();
+    expect(doneArgs).toEqual([["task-0", { outcome: "done", summary: "" }]]);
+  });
+
+  it("runFactcheck 失败：verdict cleanup 仍被调（finally）", async () => {
+    const tasks = makeTasks(1);
+    let cleaned = 0;
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async () => {},
+      runFactcheck: async () => 1,
+      prepareVerdict: () => ({ verdictPath: "/tmp/v.txt", readVerdict: () => null, cleanup: () => { cleaned++; } }),
+      buildPrompt: () => "/factcheck x",
+      notify: null,
+      log: () => {},
+    };
+    await runOnce({}, deps);
+    expect(cleaned).toBe(1);
+  });
+
+  it("退休路径：markDone 带 {outcome:'failed'}", async () => {
+    const tasks = makeTasks(1);
+    const attempts = memoryAttempts({ "task-0": 3 });
+    const doneArgs = [];
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id, info) => { doneArgs.push([id, info]); },
+      runFactcheck: async () => 0,
+      buildPrompt: (t) => `/factcheck ${t.text}`,
+      attempts,
+      notifyFailure: null,
+      notify: null,
+      log: () => {},
+    };
+    const result = await runOnce({}, deps);
+    expect(result).toEqual({ processed: 1, done: 0, fail: 0, retired: 1 });
+    expect(doneArgs).toEqual([["task-0", { outcome: "failed" }]]);
+  });
+
+  it("无 prepareVerdict dep：markDone 带 {outcome:'done', summary:''}（与 Worker 兼容）", async () => {
+    const tasks = makeTasks(1);
+    const doneArgs = [];
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id, info) => { doneArgs.push([id, info]); },
+      runFactcheck: async () => 0,
+      buildPrompt: (t) => `/factcheck ${t.text}`,
+      notify: null,
+      log: () => {},
+    };
+    await runOnce({}, deps);
+    expect(doneArgs).toEqual([["task-0", { outcome: "done", summary: "" }]]);
+  });
 });

@@ -6,7 +6,7 @@
 // 全部副作用经 deps 注入，离线可测。
 
 export async function runOnce(config, deps) {
-  const { fetchPending, markDone, runFactcheck, buildPrompt, prepareImages, attempts, notify, notifyFailure, log } = deps;
+  const { fetchPending, markDone, runFactcheck, buildPrompt, prepareImages, prepareVerdict, attempts, notify, notifyFailure, log } = deps;
   const maxAttempts = config.maxAttempts || 3;
 
   const tasks = await fetchPending();
@@ -24,7 +24,7 @@ export async function runOnce(config, deps) {
       retired++;
       log(`任务 ${t.id} 已失败 ${attempts.get(t.id)} 次（上限 ${maxAttempts}），退休不再重试`);
       try {
-        await markDone(t.id);
+        await markDone(t.id, { outcome: "failed" });
       } catch (err) {
         log(`退休标记失败 ${t.id}（${err.message}），下轮再试退休`);
         continue;
@@ -56,9 +56,20 @@ export async function runOnce(config, deps) {
       }
     }
 
+    // 结论信号文件（回显到手机核查页用）：prepareVerdict 给出路径与读取函数。
+    // 任何一步失败都降级为"不带结论"，绝不影响核查主流程（结论回显是增强，不是硬依赖）。
+    let verdict = null;
+    if (prepareVerdict) {
+      try {
+        verdict = prepareVerdict(t);
+      } catch (err) {
+        log(`结论文件准备失败 ${t.id}（${err.message}），本条不回显结论`);
+      }
+    }
+
     // cleanup 必须在成功 / 失败 / markDone 抛错任一路径都执行 → 放进 finally。
     try {
-      const prompt = buildPrompt({ ...t, imagePaths });
+      const prompt = buildPrompt({ ...t, imagePaths, ...(verdict ? { verdictPath: verdict.verdictPath } : {}) });
       log(`→ 开始核查 ${t.id}`);
       const code = await runFactcheck(prompt);
       if (code !== 0) {
@@ -71,8 +82,12 @@ export async function runOnce(config, deps) {
       // 失败时计入 fail、不计成功、不发通知，continue 到下一条；任务保持 pending、下轮会重跑
       //（at-least-once，重复跑整条 /factcheck 可接受），目标是别因一条标记失败拖垮整批。
       // markDone 反复失败同样计入 attempts：达上限后走退休路径，不再每轮重跑整条 /factcheck。
+      let summary = "";
+      if (verdict) {
+        try { summary = String(verdict.readVerdict() || "").trim(); } catch {} // 读不到就不回显
+      }
       try {
-        await markDone(t.id);
+        await markDone(t.id, { outcome: "done", summary });
       } catch (err) {
         fail++;
         recordFailure(t.id);
@@ -91,6 +106,7 @@ export async function runOnce(config, deps) {
       }
     } finally {
       try { cleanup(); } catch {}
+      if (verdict) { try { verdict.cleanup(); } catch {} }
     }
   }
 

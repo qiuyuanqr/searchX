@@ -53,6 +53,31 @@ export function fitDimensions(w, h, maxEdge) {
   return { width: Math.round(W * scale), height: Math.round(H * scale) };
 }
 
+// 纯函数：最近核查列表的状态章文案与配色（kind 对齐 .form-status 的三色约定）。
+export function describeTaskStatus(status) {
+  if (status === "pending") return { label: "排队中", kind: "pending" };
+  if (status === "done") return { label: "已完成", kind: "success" };
+  if (status === "failed") return { label: "已失败", kind: "error" };
+  return { label: status || "未知", kind: "pending" };
+}
+
+// 纯函数：ISO 时间 → 北京时间 "MM-DD HH:mm" 显示；非法输入返回空串。
+export function formatTaskTime(iso) {
+  const d = new Date(iso || "");
+  if (isNaN(d.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("zh-CN", {
+    timeZone: "Asia/Shanghai",
+    month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
+  }).formatToParts(d);
+  const get = (type) => (parts.find((p) => p.type === type) || {}).value || "";
+  return `${get("month")}-${get("day")} ${get("hour")}:${get("minute")}`;
+}
+
+// 纯函数：列表里还有排队中的任务才继续轮询，全部终态即停。
+export function shouldKeepPolling(tasks) {
+  return Array.isArray(tasks) && tasks.some((t) => t && t.status === "pending");
+}
+
 // 纯函数：校验提交是否可发。图片 / 文字 / 链接至少一项；并各自限长 / 限张。返回 { ok, reason }。
 export function validateCheckSubmission({ text, link, imageCount } = {}) {
   const t = (text == null ? "" : String(text)).trim();

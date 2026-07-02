@@ -8,6 +8,9 @@ import {
   describeCheckResult,
   fitDimensions,
   validateCheckSubmission,
+  describeTaskStatus,
+  formatTaskTime,
+  shouldKeepPolling,
 } from "./check.js";
 
 // --- buildCheckPayload ---
@@ -134,4 +137,56 @@ test("validateCheckSubmission：link 超 1000 → not ok", () => {
 
 test("validateCheckSubmission：图片超 9 张 → not ok", () => {
   expect(validateCheckSubmission({ text: "", link: "", imageCount: 10 }).ok).toBe(false);
+});
+
+// --- describeTaskStatus（最近核查列表的状态章）---
+
+test("describeTaskStatus：pending → 排队中 / pending 色", () => {
+  expect(describeTaskStatus("pending")).toEqual({ label: "排队中", kind: "pending" });
+});
+
+test("describeTaskStatus：done → 已完成 / success 色", () => {
+  expect(describeTaskStatus("done")).toEqual({ label: "已完成", kind: "success" });
+});
+
+test("describeTaskStatus：failed → 已失败 / error 色", () => {
+  expect(describeTaskStatus("failed")).toEqual({ label: "已失败", kind: "error" });
+});
+
+test("describeTaskStatus：未知状态兜底为原文 / pending 色（不崩）", () => {
+  expect(describeTaskStatus("weird")).toEqual({ label: "weird", kind: "pending" });
+  expect(describeTaskStatus("")).toEqual({ label: "未知", kind: "pending" });
+});
+
+// --- formatTaskTime（ISO → 北京时间 MM-DD HH:mm）---
+
+test("formatTaskTime：UTC ISO 转北京时间显示", () => {
+  // 2026-07-02T01:30:00Z = 北京时间 09:30
+  expect(formatTaskTime("2026-07-02T01:30:00.000Z")).toBe("07-02 09:30");
+});
+
+test("formatTaskTime：跨日换算（UTC 深夜 = 北京次日）", () => {
+  // 2026-07-01T18:05:00Z = 北京时间 07-02 02:05
+  expect(formatTaskTime("2026-07-01T18:05:00.000Z")).toBe("07-02 02:05");
+});
+
+test("formatTaskTime：非法输入返回空串（不崩）", () => {
+  expect(formatTaskTime("not a date")).toBe("");
+  expect(formatTaskTime("")).toBe("");
+  expect(formatTaskTime(undefined)).toBe("");
+});
+
+// --- shouldKeepPolling（有排队中任务才继续轮询）---
+
+test("shouldKeepPolling：含 pending → true", () => {
+  expect(shouldKeepPolling([{ status: "done" }, { status: "pending" }])).toBe(true);
+});
+
+test("shouldKeepPolling：全终态 → false", () => {
+  expect(shouldKeepPolling([{ status: "done" }, { status: "failed" }])).toBe(false);
+});
+
+test("shouldKeepPolling：空列表 / 非数组 → false", () => {
+  expect(shouldKeepPolling([])).toBe(false);
+  expect(shouldKeepPolling(null)).toBe(false);
 });
