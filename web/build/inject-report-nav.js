@@ -16,6 +16,7 @@ const NAV_SCRIPT = `
   // 自动目录：固定区块 + 正文 h2，按文档顺序
   var secs = [];
   function add(el, label){ if (!el) return; if (!el.id) el.id = "sx-sec-" + secs.length; secs.push({ id: el.id, label: label }); }
+  add(document.querySelector(".plain"), "先说人话");
   add(document.querySelector(".tldr"), "核心结论");
   add(document.querySelector(".findings"), "关键发现");
   document.querySelectorAll("main h2").forEach(function(h){ add(h, h.textContent.trim()); });

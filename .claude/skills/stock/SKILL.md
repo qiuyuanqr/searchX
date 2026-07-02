@@ -247,10 +247,10 @@ disable-model-invocation: false
 
 - **类型**：`TYPE = 股票`；`slug` 用 拼音/英文 + 代码（如 `ningde-times-300750`、`nvidia-nvda`）。
 - **report.html**（填 `.claude/skills/research/templates/report.html` 的 token）：
-  - `{{TLDR}}` = A 节方向判断 + 一句话操作倾向（条件式）
+  - `{{TLDR}}` = **两句封顶**：方向判断一句 + 条件式操作倾向一句。估值、资金面等论据不塞进来——关键发现与正文里已有
   - `{{PLAIN}}` = 「先说人话」：零术语 + 一个生活化比方，把这家公司**做什么、靠什么赚钱**讲给完全不懂股票/这行的人（2–3 句纯文本；遵 research 开头「易懂规则」）
   - `{{KEY_FINDINGS}}` = A 节核心驱动 Top3 + 核心风险 Top3 + 整体置信度（`<li>` 列表）
-  - `{{BODY}}` = **B–M 全部**，已渲染 HTML：小结用 `<p>`，**C 财务表 / K 三情景表用 `<table>`**，竞品对比 / 案例用 `<div class="case">`，条件式触发 / 提示用 `<div class="callout">`；关键数据就地 `<a href>` 挂一手来源
+  - `{{BODY}}` = **B–M 全部**，已渲染 HTML：小结用 `<p>`，**C 财务表 / K 三情景表用 `<table>`**，竞品对比 / 案例用 `<div class="case">`，条件式触发 / 提示用 `<div class="callout">`；关键数据就地 `<a href>` 挂一手来源。**A–M 字母只是内部框架代号，不进公开报告**：章节标题直接写中文名（`<h2>公司快照</h2>`，不带「B.」前缀），正文交叉引用也用节名（如"见行业地位一节"），不写"见 D 节"
   - `{{MASTHEAD_BOARDS}}` = 该股**确有关联**的五大板块，填 `<span><b>关联板块</b> 算力 · AI应用</span>`；无关联则填空字符串
   - `{{RISKS}}` = A 节核心风险 + M 节关键漏洞（`<li>`）
   - `{{LIMITATION_BLOCK}}` = 留空字符串（股票类无人物时间线局限）
