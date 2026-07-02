@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>虚拟币是干嘛的 · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation;
+  }
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 概念</div>
+    <h1>虚拟币是干嘛的</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-07-02（北京时间）</span>
+      <span><b>类型</b> 概念</span>
+      <span><b>来源</b> 15 条</span>
+    </div>
+  </header>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    「虚拟币」是把好几种本质不同的东西混装的口语大伞——加密货币（比特币、以太坊）、稳定币（USDT）、央行数字货币（数字人民币）、平台点数（Q币）彼此并不是一回事。它被宣传成"去中心化、绕开银行的钱"，但比特币问世十几年，现实中主要充当高波动的投机与储值资产，而非日常货币；真正大规模跑通的实用场景，是锚定美元、价格不动的稳定币（跨境结算与交易媒介）。行业同时伴生剧烈波动、交易所暴雷、诈骗、洗钱与能耗争议。中国境内自 2021 年起将相关业务定性为"非法金融活动"全面禁止，与官方发行的数字人民币是两回事。
+  </div>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    你可以把「虚拟币」想成一大堆长得像"钱"、但来路和用途各不相同的数字筹码。有的像赌场里能大涨大跌的筹码（比特币这类，很多人拿它赌涨跌、或存着当"数字黄金"）；有的像和 1 美元死死绑在一起的代金券，专门用来在网上快速转账（稳定币）；还有的其实就是 Q币、游戏点卡那种只能在自己家平台里花的点数。它们最大的共同点不是"能买东西"，而是"能在网上不经过银行地转来转去"——好处是快、能跨国，坏处是没人兜底、骗局多、价格能一夜腰斩。中国境内是禁止买卖这类币的。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li><b>先别把它当"一种东西"。</b>「虚拟币」至少含四类本质不同的东西：<b>加密货币</b>（比特币/以太坊，去中心化、无人担保）、<b>稳定币</b>（锚定美元的 USDT，价格不波动）、<b>央行数字货币</b>（数字人民币，国家发行、有法偿性）、<b>平台点数</b>（Q币/游戏币，只能在自家生态花）。把它们混为一谈，是几乎所有误解的起点。</li>
+      <li><b>宣传的用途和现实的用途差很远。</b>比特币白皮书 2008 年说要做"点对点的电子现金"、绕开银行付款；但十几年后，它现实中主要的角色是<b>高波动的投机与储值标的</b>，日常付款几乎没跑起来。萨尔瓦多曾把比特币定为法定货币，两年后在 IMF 压力下于 2025 年撤回。</li>
+      <li><b>真正大规模"有用"的是稳定币。</b>锚定美元、价格不动的稳定币成了加密世界的"现金"和跨境结算管道，市值约 3000 亿美元、2025 年链上转账规模号称约 33 万亿美元（但链上原始数字被程序刷量放大，实际可比口径要大打折扣）。美国 2025 年 7 月通过《GENIUS 法案》首次为它立规。</li>
+      <li><b>风险是硬币的另一面。</b>价格暴涨暴跌、交易所暴雷（2022 年 FTX 崩盘、约 80–90 亿美元客户资金缺口）、"杀猪盘"诈骗与洗钱（稳定币占非法链上交易额的 84%，但非法活动占全部加密交易额仍不到 1%）、以及比特币挖矿的巨大耗电（约等于挪威一国全年用电、占全球约 0.5%）都是其固有代价。</li>
+      <li><b>中国境内全面禁止，且与数字人民币是两回事。</b>央行等部门 2021 年定性虚拟货币相关业务为"非法金融活动"，2026 年 2 月进一步升级（新增对 RWA 与挂钩人民币稳定币的管控）。官方发行的数字人民币是中心化的法定货币，不在被禁之列。</li>
+    </ul>
+  </div>
+
+  <main>
+
+    <h2>一、先分清：「虚拟币」根本不是一种东西</h2>
+    <p>回答"虚拟币是干嘛的"，最容易犯的错，是把它当成<strong>一种</strong>东西。它其实是一个口语大伞，底下装着好几样来路、用途、监管待遇都不同的东西。就像"车"这个字，既能指自行车也能指坦克——不分清就没法谈"车是干嘛的"。按中国学界和监管的口径，广义"虚拟货币"至少可分成这么几类（<a href="https://zh.wikipedia.org/zh-hans/%E8%99%9A%E6%8B%9F%E8%B4%A7%E5%B8%81">维基百科·虚拟货币</a>、<a href="https://www.nsfc.gov.cn/csc/20345/20348/pdf/2021/202104-627-635.pdf">《中国科学基金》虚拟货币的分类及演变</a>）：</p>
+    <table>
+      <thead><tr><th>类别</th><th>典型例子</th><th>谁发行</th><th>价格</th><th>主要用途</th></tr></thead>
+      <tbody>
+        <tr><td>平台点数</td><td>Q币、游戏金币、林登币</td><td>公司</td><td>固定</td><td>只在自家生态里买虚拟商品/服务</td></tr>
+        <tr><td>加密货币</td><td>比特币 BTC、以太坊 ETH</td><td>无人（去中心化）</td><td>剧烈波动</td><td>投机、储值、转账、跑智能合约</td></tr>
+        <tr><td>稳定币</td><td>USDT、USDC</td><td>私营公司</td><td>锚定 1 美元</td><td>加密世界的"现金"、跨境结算</td></tr>
+        <tr><td>央行数字货币</td><td>数字人民币 e-CNY</td><td>国家央行</td><td>= 法币</td><td>官方法定货币的数字形态（常被误归入，实为对立面，详见第五节）</td></tr>
+      </tbody>
+    </table>
+    <p>本文重点谈中间两类（加密货币、稳定币）——它们才是大家平时说"炒币"时指的东西；末尾会把容易被混淆的<strong>数字人民币</strong>单独拎出来讲，因为它和前面几种恰恰相反。</p>
+
+    <h2>二、底层是怎么转起来的：一本"谁都能抄、谁也改不了"的公共账本</h2>
+    <p>先用一句人话说清：<strong>加密货币的核心不是"币"，而是一本记账方式很特别的账本</strong>。平时你银行卡里的钱，本质是银行数据库里的一个数字，改不改、认不认，银行说了算。加密货币想做的，是让这本账<strong>不归任何一家机构管</strong>，而是全网成千上万台电脑各存一份、互相对账。</p>
+    <p>这本账本就叫<strong>区块链</strong>（把交易一批批打包成"区块"，一个接一个用密码学锁成"链"）。打个比方：想象一个小区群里有个共享记账本，谁给谁转了钱都当众喊一嗓子记上，而且每一页都盖着上一页内容的"骑缝章"——你想偷改第 3 页，第 4 页往后的章全对不上，全群立刻发现。这就是"<strong>去中心化</strong>"（没有中心机构，大家共同维护）和"账本不可篡改"的直观来源。</p>
+    <p>那"谁来记账、凭什么信"？比特币用的办法叫<strong>工作量证明</strong>（也就是俗称的"<strong>挖矿</strong>"）：让全球的电脑抢答一道纯拼算力的数学题，谁先算出谁就获得记这一页账的权利，并得到新币作为奖励。这既是新币的发行方式，也是"让作弊的成本高到不划算"的安保机制——想篡改账本，你得凑齐超过全网一半的算力，几乎不可能。这套设计最早由化名<strong>中本聪（Satoshi Nakamoto）</strong>的人在 2008 年的<a href="https://bitcoin.org/bitcoin.pdf">比特币白皮书</a>里提出，标题就叫《比特币：一种点对点的电子现金系统》，开宗明义要做"不经过金融机构、直接点对点发送的在线支付"。</p>
+    <div class="callout">一句话记住三个词：<strong>区块链</strong>是那本公共账本，<strong>去中心化</strong>是"没人当家、大家共管"，<strong>挖矿</strong>是靠拼算力争夺记账权并顺便发行新币。</div>
+
+    <h2>三、它到底"干嘛的"：四种被宣称的用途，和它们的现实成绩</h2>
+    <p>加密货币被鼓吹的用途主要有四种。诚实地看，它们的"理想"和"现实"落差很大——这正是理解"虚拟币是干嘛的"最关键的一节。</p>
+
+    <h3>用途 1：当"数字黄金"——储值与对冲</h3>
+    <p>比特币总量被代码写死在 2100 万枚、永不增发，支持者据此把它类比成"数字黄金"：政府印钞会稀释法币，而比特币稀缺、抗通胀。这是目前<strong>相对最跑得通</strong>的叙事——2024 年美国批准比特币现货 ETF（一种在股票账户里就能买、跟踪比特币价格的基金），把大机构的钱引了进来；进入 2026 年，连加州公务员养老基金 CalPERS 这类保守机构都配了约 1% 仓位（<a href="https://www.dlnews.com/articles/markets/bitcoin-etfs-to-top-180-billion-usd-in-2026-say-analysts/">DL News</a>）。但"数字黄金"的软肋也在这：真正的黄金几十年波动温和，而比特币一年内腰斩或翻倍都是常事，用它"保值"更像坐过山车。</p>
+
+    <h3>用途 2：当"钱"——日常支付与跨境转账</h3>
+    <p>这是白皮书的初心，也是<strong>现实中摔得最惨</strong>的一个。价格剧烈波动让它天生不适合当日常货币：没人愿意用一杯可能明天值两杯钱的咖啡去付账。最有说服力的反面案例，就是萨尔瓦多。</p>
+    <div class="case">
+      <p><strong>萨尔瓦多：全球首个把比特币定为法定货币的国家，两年后撤回。</strong>2021 年，萨尔瓦多立法强制商家接受比特币付款、政府还动用公共资金补贴。结果据 <a href="https://www.imf.org/en/publications/cr/issues/2025/03/19/el-salvador-selected-issues-565394">IMF 的评估</a>，实施一年多后普通人和商家的实际使用"仍然极少"，也没带来预期的普惠金融改善。为换取 IMF 14 亿美元贷款，萨尔瓦多于 2025 年 1 月修法，<strong>取消了比特币的法定货币地位</strong>、不再强制商家接受、不能再用于缴税（<a href="https://www.forbes.com/sites/digital-assets/2025/02/28/el-salvadors-bitcoin-law-changes-to-secure-imf-funding/">Forbes</a>）。这被普遍解读为"比特币当日常货币"这条路的一次现实证伪。</p>
+    </div>
+
+    <h3>用途 3：当"可编程的钱"——智能合约与去中心化金融（DeFi）</h3>
+    <p>如果说比特币是"只能转账的账本"，<strong>以太坊</strong>（由 Vitalik Buterin 等人发起）则更进一步：它让账本上能跑<strong>智能合约</strong>——一段写死在链上、满足条件就自动执行、谁也改不了的程序。用人话说，就是"自动售货机版的合同"：你投币、它吐货，中间不需要售货员，也没法赖账。</p>
+    <p>基于此长出了<strong>去中心化金融（DeFi）</strong>：把银行、交易所干的活（借贷、兑换、理财）改写成智能合约，让两个陌生人不经过金融机构就能直接交易（<a href="https://ethereum.org/defi/">ethereum.org</a>）。比如 Uniswap 让你无需对手方就能兑换代币，Aave、Compound 让你无需银行就能借贷。这块技术上确有新意，但也是黑客攻击、代码漏洞、"卷款跑路"的重灾区，普通人门槛高、风险大。</p>
+
+    <h3>用途 4（现实中最大的一个）：投机与赌博</h3>
+    <p>剥掉所有叙事，加密货币在现实里<strong>被使用得最多的方式，就是买涨买跌的投机</strong>。这一点在"迷因币"（meme coin）上最赤裸：这类币大多毫无实际功能，价格纯靠社交媒体炒作和社群情绪驱动，被券商和监管反复类比为"赌场筹码"、赌博多过投资（<a href="https://www.schwab.com/learn/story/what-are-meme-coins-uses-and-risks-to-know">嘉信理财 Schwab</a>）。理解这一层很重要：当有人问"虚拟币是干嘛的"，最诚实的回答往往是——<strong>对大多数参与者来说，它现在主要是一个高波动的投机标的，而不是一种"货币"。</strong></p>
+
+    <h2>四、这轮真正"跑通"的部分：稳定币</h2>
+    <p>前面几种都磕磕绊绊，唯独<strong>稳定币</strong>是加密行业这些年真正大规模落地的实用工具。它的设计很简单：发行公司每发 1 枚币，就在银行/国债里存 1 美元做储备，让币价死死锚定在 1 美元——把加密世界的"过山车"熨平成"稳定的代金券"。这样它既保留了"链上转账快、跨国、不经过银行"的好处，又不用忍受比特币的暴涨暴跌。</p>
+    <p>结果是它成了加密世界的"<strong>现金</strong>"和跨境结算管道：你想买比特币，通常先把美元换成 USDT，再用 USDT 交易——它是无数交易对的"另一条腿"。规模上，稳定币总市值约 3000 亿美元、并在 2026 年一度突破 <a href="https://bitcoinfoundation.org/news/stablecoin-news/stablecoin-market-cap-tops-321b/">3210 亿美元</a>，其中泰达公司（Tether）发行的 USDT 约占六成（约 1880 亿美元）。它在<strong>外汇管制严、本币不稳的新兴市场</strong>尤其有真实需求——尼日利亚、埃及等国居民拿它当"数字美元"存钱、汇款（<a href="https://www.chainalysis.com/blog/stablecoin-utility-future-of-payments/">Chainalysis</a>）。</p>
+    <div class="callout">要点：加密世界里，<strong>剧烈波动的是比特币这类，价格不动的是稳定币</strong>。稳定币不是用来"赌涨"的，而是用来"当美元花、快速转"的——这是两种完全不同的东西。</div>
+    <p>正因为它开始像真钱一样流转，监管也跟上了：美国于 2025 年 7 月 18 日通过《<strong>GENIUS 法案</strong>》，首次为美元稳定币立联邦规矩——必须 1:1 足额储备、只能持有现金和短期国债、不得拿比特币等加密资产充数、持有人有赎回权（<a href="https://www.ssga.com/us/en/intermediary/insights/genius-act-explained-what-it-means-for-crypto-and-digital-assets">道富环球 SSGA 解读</a>）。这被视为加密资产走向正规监管的第一步。</p>
+    <div class="limitation">
+      关于"稳定币转账规模已超越 Visa+万事达"（2025 年约 <a href="https://crypto.news/stablecoins-now-move-more-money-than-visa-and-mastercard-combined/">33 万亿美元 vs 25.5 万亿美元</a>）这个流传很广的说法，需要打个折：链上"原始转账额"被做市机器人、自动套利等程序性流量大幅放大，与 Visa 统计的真实消费笔数口径完全不同；剔除这些后的"调整后"规模要小得多。所以稳定币的增长是真的、势头是真的，但"已超越 Visa"更像营销口径，不宜直接对标。
+    </div>
+
+    <h2>五、别混淆：数字人民币（央行数字货币）恰恰相反</h2>
+    <p>很多人把"数字人民币"也归进"虚拟币"，这是个典型误解——它俩几乎是对立面。加密货币的灵魂是"<strong>去中心化、没人当家</strong>"；而<strong>数字人民币（e-CNY）</strong>是中国央行发行的法定货币的数字形态，是彻底"<strong>中心化</strong>"的：由央行统一发行和管理，采用"中心化管理、双层运营"架构，具有和纸币同等的法偿性（你不能拒收）。它主要靠成熟的集中式系统支撑全国零售支付，区块链只在部分环节用于溯源，并非追求去中心化。</p>
+    <table>
+      <thead><tr><th>维度</th><th>比特币（加密货币）</th><th>数字人民币（CBDC）</th></tr></thead>
+      <tbody>
+        <tr><td>谁发行</td><td>没有发行方，代码规则决定</td><td>中国人民银行</td></tr>
+        <tr><td>是不是法定货币</td><td>不是，无法偿性</td><td>是，法定货币的数字形态</td></tr>
+        <tr><td>去中心化?</td><td>去中心化</td><td>中心化</td></tr>
+        <tr><td>价格</td><td>剧烈波动</td><td>始终 = 1 元人民币</td></tr>
+        <tr><td>在中国境内</td><td>相关业务属"非法金融活动"</td><td>官方主推、合法</td></tr>
+      </tbody>
+    </table>
+    <p>换句话说：数字人民币是"钱换了个数字外壳、国家仍全程兜底"；比特币是"想彻底甩开国家和银行的另一套东西"。它俩长得像，内核完全相反。</p>
+
+    <h2>六、争议与风险：硬币的另一面</h2>
+    <p>把加密货币讲清楚，绕不开它固有的几类风险——这些不是偶发事故，而是其设计的副产品。</p>
+    <h3>暴涨暴跌与交易所暴雷</h3>
+    <p>价格没有基本面锚，情绪一转就是断崖。更要命的是，很多人把币存在中心化交易所里，而这些平台一旦出事、资金往往血本无归。</p>
+    <div class="case">
+      <p><strong>FTX：曾估值 320 亿美元的全球第二大交易所，几天内归零。</strong>2022 年 11 月，媒体曝出 FTX 与其关联交易公司挪用客户资金，引发挤兑；11 月 11 日 FTX 及上百家关联实体申请破产，约 <strong>80–90 亿美元客户存款不知去向</strong>，被检方称为"美国史上最大金融欺诈之一"。创始人 Sam Bankman-Fried 于 2023 年被判欺诈罪成立，2024 年 3 月获刑 <strong>25 年</strong>（<a href="https://en.wikipedia.org/wiki/Bankruptcy_of_FTX">Wikipedia·FTX 破产</a>）。它提醒人们：号称"去中心化"的行业，用户的钱其实大量托付在中心化平台手里，而这些平台可能既无监管、也无兜底。</p>
+    </div>
+    <h3>诈骗与洗钱</h3>
+    <p>加密货币"匿名、跨国、难追回"的特点，被犯罪分子高效利用。最典型的是"<strong>杀猪盘</strong>"（pig butchering）：骗子先在网上以恋爱/交友养熟感情（"养猪"），再诱骗受害者往假投资平台里转币（"杀猪"），而收款几乎清一色用稳定币 USDT（<a href="https://www.trmlabs.com/glossary/pig-butchering-scam">TRM Labs</a>）。宏观上，据区块链分析公司 Chainalysis，2025 年流入非法地址的加密资产至少 <a href="https://www.chainalysis.com/blog/2026-crypto-crime-report-introduction/">1540 亿美元</a>，其中<strong>稳定币占了非法交易额的 84%</strong>。需要平衡地说：非法活动占全部加密交易额的比例<strong>仍低于 1%</strong>——绝对金额巨大、但占比不高，两个事实都成立。</p>
+    <h3>能耗与环境</h3>
+    <p>比特币"挖矿"靠拼算力，全网电老虎。据剑桥大学的测算，比特币年耗电约 138 TWh（部分口径更高至约 175 TWh），<strong>超过挪威整个国家一年的用电</strong>，约占全球用电量的 0.5% 上下；不过其中约 52% 已来自可再生能源与核电（<a href="https://www.jbs.cam.ac.uk/2025/cambridge-study-sustainable-energy-rising-in-bitcoin-mining/">剑桥商学院</a>）。这也是中国整治"挖矿"的重要理由之一。</p>
+    <h3>没人兜底、错了没法撤</h3>
+    <p>去中心化的另一面是"出事没人管"：私钥（相当于账户的唯一钥匙）一旦丢失或被盗，币就永久找不回；转错地址、被智能合约漏洞卷走，通常也无法像银行那样撤销或申诉。自由与"自负盈亏"是同一枚硬币。</p>
+
+    <h2>七、中国怎么管的：定性"非法金融活动"，全面禁止</h2>
+    <p>中国对加密货币的态度非常明确且严格。标志性的是 2021 年 9 月央行等十部门发布的《关于进一步防范和处置虚拟货币<strong>交易炒作</strong>风险的通知》（银发〔2021〕237 号，俗称"924 新规"），把话讲死：<strong>虚拟货币"不具有与法定货币等同的法律地位"，相关业务活动"属于非法金融活动"，"一律严格禁止，坚决依法取缔"</strong>（<a href="https://www.csrc.gov.cn/csrc/c100028/c7614318/content.shtml">证监会转载全文</a>）。同期发改委等部门发文<a href="https://www.ndrc.gov.cn/xxgk/zcfb/tz/202109/t20210924_1297474.html">整治虚拟货币"挖矿"活动</a>，把挖矿列为淘汰类产业清退。</p>
+    <p>到 2026 年 2 月 6 日，央行等八部门进一步升级，发布《关于进一步防范和处置虚拟货币<strong>等相关</strong>风险的通知》（银发〔2026〕42 号），<strong>废止并替代</strong>了 2021 年的 237 号文。据官方<a href="https://www.csrc.gov.cn/csrc/c100028/c7614320/content.shtml">答记者问</a>，定性没变（仍是"非法金融活动"），但把网新增了两个当下的热点：一是"<strong>现实世界资产代币化（RWA）</strong>"相关的投机炒作，二是明确"未经相关部门依法依规同意，境内外任何单位和个人不得在境外发行<strong>挂钩人民币的稳定币</strong>"。可见监管是"境内严禁、境外严管"的持续收紧。</p>
+    <div class="callout">对身在中国境内的普通人，这一节是最实际的落点：买卖、兑换、炒作虚拟货币在境内是被明令禁止的非法金融活动，参与产生的损失自担、且不受法律保护。</div>
+
+    <h2>八、和"算力"的关联</h2>
+    <p>五大常关注板块里，加密货币和<strong>算力</strong>有一条真实的产业链条。比特币"挖矿"催生了专用矿机（ASIC 芯片）产业；而以太坊等早期挖矿依赖显卡（GPU），历史上曾是英伟达等 GPU 厂商的一大需求来源——2020–2021 年"挖矿潮"一度和游戏玩家抢显卡、推高价格。如今以太坊已转向不靠挖矿的机制、且 AI 训练成了 GPU 需求的绝对主力，加密对算力硬件的拉动已明显减弱，但"币价涨→矿机/显卡需求起"的传导链在历史上确实存在，理解算力板块的周期时值得留一眼。</p>
+
+    <h2>下次看什么（监控信号）</h2>
+    <ul>
+      <li><strong>稳定币立法落地</strong>：美国《GENIUS 法案》配套细则如何执行、合规稳定币（如 Tether 新推的 USAT）能否做大——这决定稳定币是走向"正规美元管道"还是继续野蛮生长。</li>
+      <li><strong>中国 42 号文的执行</strong>：2026 年新规对 RWA 和"挂钩人民币稳定币"的管控如何落地，香港等地的合规试点与内地监管如何联动。</li>
+      <li><strong>比特币 ETF 的机构资金流</strong>：2026 年比特币现货 ETF 的净流入/流出（分析师预期年底管理规模可达 1800–2200 亿美元），是判断"数字黄金"叙事成色的直接温度计。</li>
+      <li><strong>下一次大暴雷或大诈骗案</strong>：交易所/稳定币发行方的储备透明度、是否再出 FTX 式挤兑，直接检验行业的对手方风险是否真的改善。</li>
+      <li><strong>Chainalysis 年度犯罪报告</strong>：每年初发布的非法交易额与占比，是衡量"洗钱/诈骗"这条负面用途走向的公开标尺。</li>
+    </ul>
+
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li><b>价格极端波动</b>：无基本面锚，一年内腰斩或翻倍都属常态，用作"货币"或"保值"都很勉强。</li>
+      <li><b>平台/对手方风险</b>：币多存于中心化交易所，平台暴雷（如 FTX）往往血本无归，且多数无监管、无兜底。</li>
+      <li><b>诈骗与洗钱高发</b>："杀猪盘"等骗局几乎清一色用 USDT 收款；稳定币占非法链上交易额 84%（但非法占全部交易额仍 <1%）。</li>
+      <li><b>境内非法</b>：中国境内相关业务被定性为"非法金融活动"全面禁止，参与损失自担、不受法律保护。</li>
+      <li><b>能耗与环境争议</b>：比特币挖矿年耗电超挪威一国、约占全球 0.5% 上下，是各国限制挖矿的重要理由。</li>
+      <li><b>稳定币脱锚/储备风险</b>：稳定币"锚定 1 美元"并非铁律，依赖储备真实且充足；历史上出现过脱锚甚至归零（如 2022 年算法稳定币 UST 崩盘、2023 年 USDC 因关联银行倒闭短暂跌破 1 美元）。</li>
+      <li><b>技术不可逆风险</b>：私钥丢失/被盗则永久损失，转错或遭合约漏洞通常无法撤销申诉。</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl>
+    <dt>区块链</dt><dd>一本全网多台电脑共同保存、一页盖着上一页"骑缝章"、谁也改不了的公共账本，是加密货币的技术底座。</dd>
+    <dt>去中心化</dt><dd>没有中心机构当家，账本由全网参与者共同维护——与银行"一家说了算"相反。</dd>
+    <dt>加密货币</dt><dd>用密码学保护、跑在区块链上、无人担保的数字资产，如比特币、以太坊，价格剧烈波动。</dd>
+    <dt>挖矿 / 工作量证明</dt><dd>让电脑拼算力抢答数学题来争夺记账权、并顺便发行新币的机制；既发币又防作弊，但极耗电。</dd>
+    <dt>私钥 / 钱包</dt><dd>控制你那份币的唯一"钥匙"；丢了或被盗，币就永久找不回，没有客服能帮你找回。</dd>
+    <dt>稳定币</dt><dd>价格锚定 1 美元的加密货币（如 USDT），靠等额储备维持不波动，是加密世界的"现金"和跨境转账工具。</dd>
+    <dt>央行数字货币（CBDC）</dt><dd>国家央行发行的法定货币数字形态（如数字人民币），中心化、有法偿性，与去中心化的加密货币相反。</dd>
+    <dt>智能合约</dt><dd>写在链上、满足条件就自动执行、谁也改不了的程序，像"自动售货机版的合同"。</dd>
+    <dt>DeFi（去中心化金融）</dt><dd>用智能合约把借贷、兑换、理财等金融服务改成"不经过银行"的版本，门槛与风险都高。</dd>
+    <dt>迷因币（meme coin）</dt><dd>多无实际功能、纯靠社群炒作的币，被普遍类比为赌场筹码。</dd>
+    <dt>RWA（现实世界资产代币化）</dt><dd>把房产、债权等现实资产的权益写成链上代币；2026 年成为中国新规重点管控的对象。</dd>
+  </dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.csrc.gov.cn/csrc/c100028/c7614318/content.shtml">《关于进一步防范和处置虚拟货币等相关风险的通知》（银发〔2026〕42号）全文</a> <em>2026-02-06</em> — 央行等八部门，定性虚拟货币相关业务为"非法金融活动"，一律严格禁止。</li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.csrc.gov.cn/csrc/c100028/c7614320/content.shtml">央行等有关负责人就 2026 年 42 号文答记者问</a> <em>2026-02-06</em> — 新增对 RWA、挂钩人民币稳定币的管控；定性延续 2021 年立场。</li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.ndrc.gov.cn/xxgk/zcfb/tz/202109/t20210924_1297474.html">关于整治虚拟货币"挖矿"活动的通知（发改运行〔2021〕1283号）</a> <em>2021-09</em> — 发改委等，将挖矿列为淘汰类清退，理由含高耗电。</li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.imf.org/en/publications/cr/issues/2025/03/19/el-salvador-selected-issues-565394">IMF：El Salvador — Selected Issues</a> <em>2025-03</em> — 评估萨尔瓦多比特币法定货币试验：使用极少、未改善普惠金融。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://bitcoin.org/bitcoin.pdf">比特币白皮书《Bitcoin: A Peer-to-Peer Electronic Cash System》（中本聪，bitcoin.org 原件）</a> <em>2008</em> — 加密货币原始设计文档，提出点对点电子现金构想。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://ethereum.org/defi/">ethereum.org：What is DeFi?</a> <em>检索于 2026-07</em> — 以太坊官方对智能合约与去中心化金融用途的说明。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.chainalysis.com/blog/2026-crypto-crime-report-introduction/">Chainalysis 2026 Crypto Crime Report（介绍）</a> <em>2026</em> — 2025 年非法地址流入 ≥1540 亿美元、占比 <1%、稳定币占非法交易额 84%。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.jbs.cam.ac.uk/2025/cambridge-study-sustainable-energy-rising-in-bitcoin-mining/">剑桥商学院：Bitcoin 挖矿可持续能源占比研究</a> <em>2025</em> — 比特币年耗电约 138 TWh、占全球约 0.78%、可再生+核电占约 52%。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.ssga.com/us/en/intermediary/insights/genius-act-explained-what-it-means-for-crypto-and-digital-assets">道富环球 SSGA：GENIUS Act explained</a> <em>2025</em> — 2025-07-18 签署，稳定币须 1:1 储备、限现金/短债、持有人有赎回权。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.chainalysis.com/blog/stablecoin-utility-future-of-payments/">Chainalysis：Stablecoin Utility and the Future of Payments</a> <em>2025</em> — 稳定币主导用途仍是交易媒介，新兴市场（尼日利亚/埃及等）需求真实。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://bitcoinfoundation.org/news/stablecoin-news/stablecoin-market-cap-tops-321b/">Stablecoin Market Cap Tops $321B</a> <em>2026-05</em> — 稳定币总市值突破 3210 亿美元，Tether/USDT 约占三分之二。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://crypto.news/stablecoins-now-move-more-money-than-visa-and-mastercard-combined/">crypto.news：稳定币转账量超 Visa+万事达</a> <em>2025</em> — 2025 年链上约 33 万亿美元 vs 25.5 万亿美元（原始口径，含程序刷量）。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.forbes.com/sites/digital-assets/2025/02/28/el-salvadors-bitcoin-law-changes-to-secure-imf-funding/">Forbes：El Salvador's Bitcoin Law Changes</a> <em>2025-02</em> — 2025 年 1 月取消比特币法定货币地位，以换取 IMF 14 亿美元贷款。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://en.wikipedia.org/wiki/Bankruptcy_of_FTX">Wikipedia：Bankruptcy of FTX</a> <em>检索于 2026-07</em> — FTX 2022-11 破产、约 80–90 亿美元客户资金缺口，SBF 2024-03 获刑 25 年。</li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://www.schwab.com/learn/story/what-are-meme-coins-uses-and-risks-to-know">嘉信理财 Schwab：What Are Meme Coins</a> <em>检索于 2026-07</em> — 迷因币多无实际功能、纯炒作驱动，风险类比赌博。</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-07-02 · 内容定格于生成时点，更新请重跑生成新版本
+  </footer>
+
+</div>
+</body>
+</html>
