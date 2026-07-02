@@ -3,7 +3,8 @@
 <!--
   searchX check-runner 定时任务（仅在常驻不关机的 Mac mini 上加载）。
   安装：cp 本文件到 ~/Library/LaunchAgents/ 后 launchctl bootstrap，详见 ../README.md「定时无人值守」。
-  StartInterval=300 即每 5 分钟一跑；改 900=15 分钟、1800=30 分钟、3600=1 小时。
+  StartInterval=60 即每分钟一跑（轮询只是一次带密钥的 HTTP GET，无任务即退出、不烧 Claude 额度；
+  单实例锁保证核查跑超过 1 分钟时下次触发直接跳过）。改 300=5 分钟、900=15 分钟、3600=1 小时。
   RunAtLoad=false：加载时不立即跑，避免装好瞬间就触发；要立刻验证用 launchctl kickstart。
   与 com.searchx.runner（research runner）Label 不同，两者可并存、各自独立运行。
 -->
@@ -21,7 +22,7 @@
   <string>/Users/yangqiuyuan/Coding/searchX</string>
 
   <key>StartInterval</key>
-  <integer>300</integer>
+  <integer>60</integer>
 
   <key>RunAtLoad</key>
   <false/>

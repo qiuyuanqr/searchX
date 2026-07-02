@@ -25,7 +25,7 @@ describe("runOnce", () => {
       log: () => {},
     };
     const result = await runOnce({}, deps);
-    expect(result).toEqual({ processed: 3, done: 3, fail: 0 });
+    expect(result).toEqual({ processed: 3, done: 3, fail: 0, retired: 0 });
     expect(markedDone).toEqual(["task-0", "task-1", "task-2"]);
   });
 
@@ -42,7 +42,7 @@ describe("runOnce", () => {
       log: () => {},
     };
     const result = await runOnce({}, deps);
-    expect(result).toEqual({ processed: 3, done: 2, fail: 1 });
+    expect(result).toEqual({ processed: 3, done: 2, fail: 1, retired: 0 });
     expect(markedDone).toEqual(["task-0", "task-2"]);
   });
 
@@ -64,7 +64,7 @@ describe("runOnce", () => {
     };
     // 异常被吞、不冒出 runOnce
     const result = await runOnce({}, deps);
-    expect(result).toEqual({ processed: 3, done: 2, fail: 1 });
+    expect(result).toEqual({ processed: 3, done: 2, fail: 1, retired: 0 });
     // task-1 markDone 失败，未计成功，后续 task-2 仍被处理
     expect(markedDone).toEqual(["task-0", "task-2"]);
     // markDone 失败的那条不发通知（任务仍 pending、下轮会重跑）
@@ -87,7 +87,7 @@ describe("runOnce", () => {
       log: () => {},
     };
     const result = await runOnce({}, deps);
-    expect(result).toEqual({ processed: 2, done: 2, fail: 0 });
+    expect(result).toEqual({ processed: 2, done: 2, fail: 0, retired: 0 });
     expect(markedDone).toEqual(["task-0", "task-1"]);
     expect(notifyCallCount).toBe(2); // notify 被调用了，只是错误被吞
   });
@@ -102,7 +102,7 @@ describe("runOnce", () => {
       log: () => {},
     };
     const result = await runOnce({}, deps);
-    expect(result).toEqual({ processed: 0, done: 0, fail: 0 });
+    expect(result).toEqual({ processed: 0, done: 0, fail: 0, retired: 0 });
   });
 
   it("notify 为 null 时跳过（不报错）", async () => {
@@ -116,7 +116,7 @@ describe("runOnce", () => {
       log: () => {},
     };
     const result = await runOnce({}, deps);
-    expect(result).toEqual({ processed: 1, done: 1, fail: 0 });
+    expect(result).toEqual({ processed: 1, done: 1, fail: 0, retired: 0 });
   });
 
   it("fetchPending 抛错：整轮 reject、不调 runFactcheck/markDone/notify", async () => {
@@ -156,7 +156,7 @@ describe("runOnce", () => {
       log: () => {},
     };
     const result = await runOnce({}, deps);
-    expect(result).toEqual({ processed: 1, done: 1, fail: 0 });
+    expect(result).toEqual({ processed: 1, done: 1, fail: 0, retired: 0 });
     expect(promptArg.imagePaths).toEqual(["/tmp/t0/0.jpg"]);
     expect(cleaned).toBe(1);
   });
@@ -174,7 +174,7 @@ describe("runOnce", () => {
       log: () => {},
     };
     const result = await runOnce({}, deps);
-    expect(result).toEqual({ processed: 1, done: 0, fail: 1 });
+    expect(result).toEqual({ processed: 1, done: 0, fail: 1, retired: 0 });
     expect(marked).toBe(0);
     expect(cleaned).toBe(1);
   });
@@ -192,7 +192,7 @@ describe("runOnce", () => {
       log: () => {},
     };
     const result = await runOnce({}, deps);
-    expect(result).toEqual({ processed: 1, done: 0, fail: 1 });
+    expect(result).toEqual({ processed: 1, done: 0, fail: 1, retired: 0 });
     expect(cleaned).toBe(1);
   });
 
@@ -215,7 +215,7 @@ describe("runOnce", () => {
       log: () => {},
     };
     const result = await runOnce({}, deps);
-    expect(result).toEqual({ processed: 2, done: 1, fail: 1 });
+    expect(result).toEqual({ processed: 2, done: 1, fail: 1, retired: 0 });
     expect(ran).toBe(1);            // 只有 t1 跑了 runFactcheck
     expect(marked).toEqual(["t1"]); // t0 未 markDone
   });
@@ -231,6 +231,156 @@ describe("runOnce", () => {
       log: () => {},
     };
     const result = await runOnce({}, deps);
-    expect(result).toEqual({ processed: 1, done: 1, fail: 0 });
+    expect(result).toEqual({ processed: 1, done: 1, fail: 0, retired: 0 });
+  });
+
+  // ── 毒任务封顶：attempts 计数 + 达上限退休 ───────────────────
+
+  // 内存版 attempts store，接口同 createAttemptsStore
+  function memoryAttempts(initial = {}) {
+    const map = { ...initial };
+    return {
+      get: (id) => map[id] || 0,
+      increment: (id) => (map[id] = (map[id] || 0) + 1),
+      clear: (id) => { delete map[id]; },
+      dump: () => ({ ...map }),
+    };
+  }
+
+  it("runFactcheck 失败 → attempts.increment；成功 → attempts.clear", async () => {
+    const tasks = makeTasks(2); // task-0 成功、task-1 失败
+    const attempts = memoryAttempts({ "task-0": 1 }); // task-0 曾失败过一次
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async () => {},
+      runFactcheck: async (prompt) => (prompt.includes("消息 1") ? 1 : 0),
+      buildPrompt: (t) => `/factcheck ${t.text}`,
+      attempts,
+      notify: null,
+      log: () => {},
+    };
+    const result = await runOnce({}, deps);
+    expect(result).toEqual({ processed: 2, done: 1, fail: 1, retired: 0 });
+    expect(attempts.dump()).toEqual({ "task-1": 1 }); // task-0 成功后计数被清
+  });
+
+  it("prepareImages 抛错 / markDone 抛错：都计入 attempts", async () => {
+    const tasks = [
+      { id: "t-img", text: "坏图", images: [{ mime: "image/jpeg", size: 3 }] },
+      { id: "t-done", text: "标记失败", images: [] },
+    ];
+    const attempts = memoryAttempts();
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id) => { if (id === "t-done") throw new Error("done 502"); },
+      runFactcheck: async () => 0,
+      prepareImages: async (t) => {
+        if (t.id === "t-img") throw new Error("image 500");
+        return { imagePaths: [], cleanup: () => {} };
+      },
+      buildPrompt: () => "/factcheck x",
+      attempts,
+      notify: null,
+      log: () => {},
+    };
+    const result = await runOnce({}, deps);
+    expect(result).toEqual({ processed: 2, done: 0, fail: 2, retired: 0 });
+    expect(attempts.dump()).toEqual({ "t-img": 1, "t-done": 1 });
+  });
+
+  it("达上限任务：不跑 claude，markDone 退休 + notifyFailure + 清计数，计入 retired", async () => {
+    const tasks = makeTasks(2); // task-0 已达上限、task-1 正常
+    const attempts = memoryAttempts({ "task-0": 3 });
+    const markedDone = [], failNotified = [];
+    let ran = 0;
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id) => { markedDone.push(id); },
+      runFactcheck: async () => { ran++; return 0; },
+      buildPrompt: (t) => `/factcheck ${t.text}`,
+      attempts,
+      notifyFailure: async (t) => { failNotified.push(t.id); },
+      notify: null,
+      log: () => {},
+    };
+    const result = await runOnce({ maxAttempts: 3 }, deps);
+    expect(result).toEqual({ processed: 2, done: 1, fail: 0, retired: 1 });
+    expect(ran).toBe(1); // 只有 task-1 真正跑了 claude
+    expect(markedDone).toEqual(["task-0", "task-1"]); // task-0 被退休标 done
+    expect(failNotified).toEqual(["task-0"]);
+    expect(attempts.dump()).toEqual({}); // 两条计数都被清
+  });
+
+  it("退休时 markDone 抛错：不通知、不清计数、仍计 retired、继续后续（下轮再试退休）", async () => {
+    const tasks = makeTasks(2);
+    const attempts = memoryAttempts({ "task-0": 3 });
+    const failNotified = [];
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id) => { if (id === "task-0") throw new Error("done 502"); },
+      runFactcheck: async () => 0,
+      buildPrompt: (t) => `/factcheck ${t.text}`,
+      attempts,
+      notifyFailure: async (t) => { failNotified.push(t.id); },
+      notify: null,
+      log: () => {},
+    };
+    const result = await runOnce({ maxAttempts: 3 }, deps);
+    expect(result).toEqual({ processed: 2, done: 1, fail: 0, retired: 1 });
+    expect(failNotified).toEqual([]); // 退休未成功，不发通知（防每轮重复发信）
+    expect(attempts.dump()["task-0"]).toBe(3); // 计数保留，下轮继续走退休
+  });
+
+  it("notifyFailure 抛错被吞：退休照常完成", async () => {
+    const tasks = makeTasks(1);
+    const attempts = memoryAttempts({ "task-0": 3 });
+    const markedDone = [];
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id) => { markedDone.push(id); },
+      runFactcheck: async () => 0,
+      buildPrompt: (t) => `/factcheck ${t.text}`,
+      attempts,
+      notifyFailure: async () => { throw new Error("SMTP 挂了"); },
+      notify: null,
+      log: () => {},
+    };
+    const result = await runOnce({ maxAttempts: 3 }, deps);
+    expect(result).toEqual({ processed: 1, done: 0, fail: 0, retired: 1 });
+    expect(markedDone).toEqual(["task-0"]);
+    expect(attempts.dump()).toEqual({}); // 计数已清
+  });
+
+  it("maxAttempts 默认 3：计数 2 的任务照常跑，计数 3 的退休", async () => {
+    const tasks = makeTasks(2); // task-0 计数 2、task-1 计数 3
+    const attempts = memoryAttempts({ "task-0": 2, "task-1": 3 });
+    let ran = [];
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async () => {},
+      runFactcheck: async () => 0,
+      buildPrompt: (t) => { ran.push(t.id); return `/factcheck ${t.text}`; },
+      attempts,
+      notifyFailure: null,
+      notify: null,
+      log: () => {},
+    };
+    const result = await runOnce({}, deps); // 不传 maxAttempts → 默认 3
+    expect(result).toEqual({ processed: 2, done: 1, fail: 0, retired: 1 });
+    expect(ran).toEqual(["task-0"]);
+  });
+
+  it("无 attempts dep：行为与旧版一致（失败任务留待重跑，不退休）", async () => {
+    const tasks = makeTasks(1);
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async () => {},
+      runFactcheck: async () => 1,
+      buildPrompt: (t) => `/factcheck ${t.text}`,
+      notify: null,
+      log: () => {},
+    };
+    const result = await runOnce({}, deps);
+    expect(result).toEqual({ processed: 1, done: 0, fail: 1, retired: 0 });
   });
 });

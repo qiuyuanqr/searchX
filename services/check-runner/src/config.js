@@ -33,5 +33,10 @@ export function loadCheckRunnerConfig(env) {
     claudeArgs: (env.CHECK_RUNNER_CLAUDE_ARGS || "--permission-mode bypassPermissions")
       .split(/\s+/)
       .filter(Boolean),
+    // 同一任务失败达此次数后退休（不再重试）；非法值回落默认 3
+    maxAttempts: (() => {
+      const n = parseInt(env.CHECK_RUNNER_MAX_ATTEMPTS, 10);
+      return Number.isInteger(n) && n >= 1 ? n : 3;
+    })(),
   };
 }

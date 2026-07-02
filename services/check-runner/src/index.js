@@ -9,6 +9,7 @@ import { homedir, tmpdir } from "os";
 import { loadCheckRunnerConfig } from "./config.js";
 import { fetchPendingChecks, markCheckDone, fetchCheckImage } from "./poll.js";
 import { buildFactcheckPrompt } from "./factcheck-cmd.js";
+import { createAttemptsStore } from "./attempts.js";
 import { runOnce } from "./runner.js";
 import { sendEmail } from "../../runner/src/email.js";
 
@@ -96,6 +97,33 @@ function composeCheckDoneNotice({ authorEmail, fromEmail }) {
   };
 }
 
+// 核查失败（退休）通知邮件：同样不回显核查内容明文，任务 id 不算内容、可带上便于查日志。
+function composeCheckFailedNotice({ authorEmail, fromEmail, taskId, maxAttempts }) {
+  return {
+    from: fromEmail,
+    to: authorEmail,
+    subject: "【searchX 核查失败】有一条核查任务已停止重试",
+    text: [
+      `有一条私密核查任务连续失败 ${maxAttempts} 次，已停止重试（任务 ${taskId}）。`,
+      "",
+      "可在手机核查页重新提交一次；排查原因请看 Mac mini 日志：",
+      "~/Library/Logs/searchx-check-runner/check-runner.log",
+      "",
+      "—— searchX 核查 runner",
+    ].join("\n"),
+  };
+}
+
+// attempts 失败计数的本机持久化：JSON 文件放在与锁文件同目录。
+function makeAttemptsStore() {
+  const path = join(homedir(), "Library", "Application Support", "searchx-check-runner", "attempts.json");
+  mkdirSync(join(path, ".."), { recursive: true });
+  return createAttemptsStore({
+    load: () => JSON.parse(readFileSync(path, "utf8")), // 文件不存在 / 损坏 → store 内部按空表处理
+    save: (map) => writeFileSync(path, JSON.stringify(map)),
+  });
+}
+
 async function main() {
   if (!Bun.which("claude")) {
     console.error("✗ 找不到 claude CLI（/factcheck 依赖它）");
@@ -150,10 +178,22 @@ async function main() {
       });
       return proc.exited;
     },
+    attempts: makeAttemptsStore(),
     notify: transport
       ? async (_task) => {
           // 邮件正文绝不含核查内容明文（隐私红线）——只提示"去 Obsidian 看"
           const msg = composeCheckDoneNotice({ authorEmail: config.authorEmail, fromEmail: config.smtpUser });
+          await sendEmail(msg, { transport });
+        }
+      : null,
+    notifyFailure: transport
+      ? async (task) => {
+          const msg = composeCheckFailedNotice({
+            authorEmail: config.authorEmail,
+            fromEmail: config.smtpUser,
+            taskId: task.id,
+            maxAttempts: config.maxAttempts,
+          });
           await sendEmail(msg, { transport });
         }
       : null,

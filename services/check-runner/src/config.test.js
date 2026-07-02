@@ -67,4 +67,19 @@ describe("loadCheckRunnerConfig", () => {
     });
     expect(cfg.authorEmail).toBe("author@example.com");
   });
+
+  it("maxAttempts 默认 3", () => {
+    const cfg = loadCheckRunnerConfig(BASE);
+    expect(cfg.maxAttempts).toBe(3);
+  });
+
+  it("maxAttempts 可被 CHECK_RUNNER_MAX_ATTEMPTS 覆盖", () => {
+    const cfg = loadCheckRunnerConfig({ ...BASE, CHECK_RUNNER_MAX_ATTEMPTS: "5" });
+    expect(cfg.maxAttempts).toBe(5);
+  });
+
+  it("maxAttempts 非法值（非数字 / <1）回落默认 3", () => {
+    expect(loadCheckRunnerConfig({ ...BASE, CHECK_RUNNER_MAX_ATTEMPTS: "abc" }).maxAttempts).toBe(3);
+    expect(loadCheckRunnerConfig({ ...BASE, CHECK_RUNNER_MAX_ATTEMPTS: "0" }).maxAttempts).toBe(3);
+  });
 });

@@ -33,8 +33,9 @@ Cloudflare KV（check:* 键）
 | `src/config.js` | `loadCheckRunnerConfig(env)` 读配置、校验必填（两个必填 + 可选 SMTP） |
 | `src/poll.js` | `fetchPendingChecks` / `markCheckDone`（注入 fetch，离线可测） |
 | `src/factcheck-cmd.js` | `buildFactcheckPrompt({text,link})` 拼 /factcheck 命令（纯函数） |
+| `src/attempts.js` | 任务级失败计数（毒任务封顶用），持久化经注入 load/save，离线可测 |
 | `src/runner.js` | `runOnce(config,deps)` 编排，全部副作用经 deps 注入 |
-| `src/index.js` | 装配入口：抢锁、装配真实依赖（spawn claude / nodemailer / fetch）后跑 `runOnce` |
+| `src/index.js` | 装配入口：抢锁、装配真实依赖（spawn claude / nodemailer / fetch / 计数文件）后跑 `runOnce` |
 
 ## 本地开发 / 测试
 
@@ -53,6 +54,7 @@ bun test                          # 跑全部测试
 | `CHECK_RUNNER_SMTP_PASS` | — | Gmail 应用专用密码 |
 | `CHECK_RUNNER_AUTHOR_EMAIL` | — | 通知邮件收件人，默认同 `CHECK_RUNNER_SMTP_USER` |
 | `CHECK_RUNNER_CLAUDE_ARGS` | — | 传给 `claude -p` 的额外参数，默认 `--permission-mode bypassPermissions` |
+| `CHECK_RUNNER_MAX_ATTEMPTS` | — | 同一任务失败达此次数后停止重试（退休），默认 `3` |
 
 写到仓库根的 `.env`（已 gitignore，bun 自动加载）：
 
@@ -76,7 +78,9 @@ bun run check-runner
 
 ## 失败 / 重跑语义
 
-- **退出码≠0**（claude 崩了 / skill 报错）：不标 done，任务留在 KV 里，下轮自动重试。
+- **退出码≠0**（claude 崩了 / skill 报错）：不标 done，任务留在 KV 里，下轮自动重试，同时该任务的失败计数 +1。
+- **失败达上限（默认 3 次，可用 `CHECK_RUNNER_MAX_ATTEMPTS` 调）**：任务"退休"——不再跑 claude，直接标 done 让它从 pending 消失，并发一封"核查失败、已停止重试"的通知邮件（不含核查内容明文）。这是毒任务封顶：没有它，一条永远跑不成功的任务会在 KV 7 天 TTL 内每轮完整烧一次 claude。
+- **失败计数存本机** `~/Library/Application Support/searchx-check-runner/attempts.json`，条目 8 天自动过期（略长于任务 KV 的 7 天 TTL）；文件丢失只是多重试几次，无碍。
 - **标 done 之后**：任务从 `/check/pending` 消失，不会重复处理。
 - **notify 失败**（SMTP 出错）：记日志、不影响 markDone 和任务计数。
 
@@ -84,7 +88,7 @@ bun run check-runner
 
 **组成：**
 - `services/check-runner/scheduled-run.sh` —— launchd 调用的包装（补 PATH、cd 仓库根、落日志）。
-- `services/check-runner/launchd/com.searchx.check-runner.plist` —— LaunchAgent 模板（`StartInterval=300` 即 5 分钟）。
+- `services/check-runner/launchd/com.searchx.check-runner.plist` —— LaunchAgent 模板（`StartInterval=60` 即每分钟轮询一次；轮询本身只是一次 HTTP GET，无任务即退出，单实例锁防重叠）。
 - 日志：`~/Library/Logs/searchx-check-runner/check-runner.log`。
 
 **安装（仅在常驻不关机的 Mac mini 上做）：**
