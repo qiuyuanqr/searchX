@@ -1,6 +1,7 @@
 :root{
   --paper:#f7f4ee; --paper-2:#efe9df; --ink:#2c2823; --ink-soft:#5f594f;
   --muted:#9c9486; --rule:#e7e1d5; --hair:rgba(70,60,48,.08); --seal:#b14a31; --seal-soft:#c97a62; --card:#fcfaf5;
+  --accent-bg:#efeadd; --err:#b3402c;
   --measure:46rem; /* 正文列宽，浮动按钮据此贴列（与 .wrap 的 max-width 对齐） */
   --sans:ui-sans-serif,-apple-system,"PingFang SC","Hiragino Sans GB",sans-serif;
   --serif:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
@@ -9,6 +10,7 @@
   :root{
     --paper:#17150f; --paper-2:#1e1b14; --ink:#efe9dc; --ink-soft:#c0b9a8;
     --muted:#857d6f; --rule:#332f25; --hair:rgba(240,233,220,.07); --seal:#e57c61; --seal-soft:#c97a62; --card:#1d1a13;
+    --accent-bg:#211d15; --err:#e0735a;
   }
 }
 *{box-sizing:border-box; margin:0; padding:0}
@@ -21,12 +23,18 @@ body{background:var(--paper); color:var(--ink); font-family:var(--serif);
   touch-action:manipulation; -webkit-text-size-adjust:100%}
 .wrap{max-width:46rem; margin:0 auto; padding:1.9rem 1.5rem 5.5rem}
 .kicker{font-family:var(--sans); font-size:.68rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:.55rem}
+@media (max-width:430px){ .kicker-en{display:none} } /* 窄屏藏英文副标，防顶栏折行 */
 .seal{display:inline-flex; align-items:center; justify-content:center; width:1.35rem; height:1.35rem; border:1.4px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.6rem; font-weight:700; transform:rotate(-4deg)}
 h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-spacing:-.015em; margin:.45rem 0 0}
 .search-wrap{position:relative; margin:1.2rem 0 .95rem}
 .search-wrap::before{content:"🔍"; position:absolute; left:13px; top:50%; transform:translateY(-50%); font-size:.82rem; opacity:.45}
 .search{width:100%; font-family:var(--sans); font-size:.92rem; color:var(--ink); background:var(--card);
   border:1px solid var(--rule); border-radius:10px; padding:.65rem .9rem .65rem 2.3rem; outline:none; transition:border-color .2s, box-shadow .2s}
+.search-wrap .search{padding-right:2.4rem} /* 给右侧清除按钮留位（只限带清除按钮的搜索框，不影响弹窗表单） */
+.search-clear{position:absolute; right:5px; top:50%; transform:translateY(-50%); width:2rem; height:2rem;
+  border:0; border-radius:50%; background:transparent; color:var(--muted); font-size:.82rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:color .18s, background .18s}
+.search-clear:hover{color:var(--seal); background:var(--paper-2)}
 .search::placeholder{color:var(--muted)}
 .search:focus{border-color:var(--seal-soft); box-shadow:0 0 0 3px rgba(177,74,49,.09)}
 /* 触屏设备：输入框字号≥16px，阻止 iOS 点击输入框时自动放大整页（所有表单控件共用 .search） */
@@ -34,12 +42,15 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .chips{display:flex; flex-wrap:wrap; gap:.42rem; font-family:var(--sans); font-size:.76rem; margin-bottom:1rem}
 .chip{padding:.26rem .78rem; border:1px solid var(--rule); border-radius:20px; color:var(--ink-soft); cursor:pointer; transition:all .2s; background:transparent; user-select:none}
 .chip:hover{border-color:var(--seal-soft); color:var(--seal); transform:translateY(-1px)}
+.chip:focus-visible{outline:2px solid var(--seal-soft); outline-offset:2px}
 .chip.on{background:var(--seal); border-color:var(--seal); color:#fff}
 .rule-grad{height:1px; background:linear-gradient(90deg, transparent 0%, var(--hair) 16%, var(--hair) 84%, transparent 100%)}
-/* 吸顶筛选区：搜索 + 类型/板块两组 chips + 计数；滚动后底边浮现 */
+/* 吸顶筛选区：搜索 + 类型/板块两组 chips + 计数；吸住后底边浮现。
+   注意：它必须是 .wrap 的直接子元素（sticky 受父容器约束）；窄屏整条高约 250px 太占屏，不吸顶。 */
 .filterbar{position:sticky; top:0; z-index:30; background:var(--paper);
   margin:0 -1.5rem; padding:.55rem 1.5rem .5rem; border-bottom:1px solid transparent; transition:border-color .2s}
 .filterbar.stuck{border-bottom-color:var(--rule)}
+@media (max-width:520px){ .filterbar{position:static} }
 .filterbar .search-wrap{margin:.2rem 0 .65rem}
 .filterbar .chips{margin-bottom:0}
 .chips-board{margin-top:.4rem}
@@ -68,6 +79,10 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .card-link:hover .card-title{color:var(--seal)}
 .lead{color:var(--ink-soft); font-size:.86rem; line-height:1.45; margin:.16rem 0 0;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+/* 窄屏：单行截断只剩十几个字，信息量太低——改两行截断 */
+@media (max-width:520px){
+  .lead{white-space:normal; display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical}
+}
 .card-meta{font-family:var(--sans); font-size:.7rem; color:var(--muted); margin-top:.32rem}
 .results{margin-top:1rem; display:flex; flex-direction:column; gap:.7rem}
 .result a{display:block; text-decoration:none; color:inherit; background:var(--card); border-radius:13px;
@@ -76,6 +91,7 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .result h3{font-family:var(--serif); font-size:1.2rem; font-weight:600; margin-bottom:.3rem}
 .result .ex{color:var(--ink-soft); font-size:.92rem; line-height:1.55}
 .result .ex mark{background:rgba(177,74,49,.18); color:inherit; padding:0 .1em; border-radius:2px}
+.result .rmeta{font-family:var(--sans); font-size:.7rem; color:var(--muted); margin-top:.4rem}
 .empty{margin-top:2rem; text-align:center; color:var(--muted); font-family:var(--sans); font-size:.9rem}
 /* 右下角浮动按钮：刷新（常驻）+ 回到顶部（滚动后浮现），共用外观 */
 .to-top, .to-refresh{position:fixed; right:max(20px, calc((100vw - var(--measure)) / 2 - 56px)); width:44px; height:44px; border-radius:50%;
@@ -88,6 +104,10 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .to-refresh{bottom:20px}                                                          /* 常驻最底 */
 .to-top{bottom:74px; opacity:0; transform:translateY(10px); pointer-events:none}  /* 叠其上方，滚动后浮现 */
 .to-top.show{opacity:1; transform:none; pointer-events:auto}
+/* 窄屏下按钮会压住正文列：向下滚（阅读）时藏起，向上滚/近顶时再浮现（feed.js 切 body.fab-hide） */
+@media (max-width:900px){
+  body.fab-hide .to-top, body.fab-hide .to-refresh{opacity:0; transform:translateY(14px); pointer-events:none}
+}
 @media (prefers-reduced-motion: reduce){
   html{scroll-behavior:auto}
   .article-card{animation:none}
@@ -105,11 +125,13 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
   padding:.6rem 1.5rem; cursor:pointer; transition:transform .18s ease, box-shadow .25s ease, background .2s}
 .submit-btn:hover{transform:translateY(-2px); box-shadow:0 10px 22px rgba(177,74,49,.22)}
 .submit-btn:active{transform:translateY(0) scale(.98)}
+/* 禁用态（未授权 / 查重拦截 / 请求在途）：一眼可辨不可点，去掉悬浮动效。写在 hover/active 之后以覆盖之 */
+.submit-btn:disabled{opacity:.45; cursor:not-allowed; transform:none; box-shadow:none}
 /* 提交状态：横幅式（带底色 + 左侧色条），比纯文字更难被忽略 */
 .form-status{font-family:var(--sans); font-size:.9rem; line-height:1.5; margin:0;
   padding:.6rem .85rem; border-radius:8px; border-left:3px solid currentColor; font-weight:500}
 .form-status[data-kind="success"]{color:var(--seal); background:rgba(177,74,49,.1)}
-.form-status[data-kind="error"]{color:#b3402c; background:rgba(179,64,44,.1)}
+.form-status[data-kind="error"]{color:var(--err); background:rgba(179,64,44,.1)}
 .form-status[data-kind="pending"]{color:var(--ink-soft); background:var(--paper-2)}
 .fineprint{font-family:var(--sans); font-size:.74rem; color:var(--muted); margin:0}
 .dup-notice{font-family:var(--sans); font-size:.82rem; line-height:1.5; color:var(--ink-soft); margin:-.2rem 0 .2rem;
@@ -117,7 +139,7 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .dup-notice a{color:var(--seal); border-bottom:1px solid transparent; transition:border-color .2s}
 .dup-notice a:hover{border-bottom-color:var(--seal-soft)}
 @media (prefers-reduced-motion: reduce){ .submit-btn{transition:none !important} }
-.kicker .submit-link{margin-left:auto; font-family:var(--sans); font-size:.7rem; letter-spacing:.06em; text-transform:none;
+.kicker .submit-link{margin-left:auto; flex:none; white-space:nowrap; font-family:var(--sans); font-size:.7rem; letter-spacing:.06em; text-transform:none;
   color:var(--seal); background:none; border:0; padding:0; cursor:pointer; line-height:inherit;
   border-bottom:1px solid transparent; transition:border-color .2s}
 .kicker .submit-link:hover{border-bottom-color:var(--seal-soft)}
@@ -138,8 +160,10 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .modal-close:hover{color:var(--seal); border-color:var(--seal-soft); transform:rotate(90deg)}
 .modal-title{font-family:var(--serif); font-size:1.5rem; font-weight:600; letter-spacing:-.01em; margin:.4rem 0 0}
 .modal-lead{color:var(--ink-soft); font-size:.92rem; line-height:1.6; margin:.5rem 0 0}
-.modal-hint{background:var(--accent-bg,#efeadd); border-left:3px solid var(--seal); border-radius:0 6px 6px 0;
+.modal-hint{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 6px 6px 0;
   padding:.5rem .8rem; margin:.7rem 0 0; font-size:.84rem; line-height:1.5; color:var(--ink-soft)}
+/* 未授权提示是阻断性信息，必须与普通贴士拉开层级 */
+.modal-hint[data-kind="error"]{border-left-color:var(--err); color:var(--err); background:rgba(179,64,44,.08)}
 .modal-card .submit-form{margin-top:1.1rem}
 .ts-widget{min-height:65px}
 .linklike{background:none; border:0; padding:0; font:inherit; color:var(--seal); cursor:pointer}

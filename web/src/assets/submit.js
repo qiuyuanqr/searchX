@@ -85,16 +85,37 @@ export function escapeHtml(s) {
     .replace(/"/g, "&quot;");
 }
 
+// 纯函数：按 Pagefind 命中的 URL 反查 reports.json 里的报告条目（拿日期/类型等元信息）。
+// Pagefind 的 URL 是站点根相对（如 /r/2026-07-03_xxx/，子路径部署则带前缀），清单里 href 是
+// 相对路径（r/2026-07-03_xxx/）——归一化后按路径后缀匹配；查不到返回 null（结果卡退化为无元信息）。
+export function findReportMeta(url, entries) {
+  if (!url) return null;
+  let u = String(url).split(/[?#]/)[0].replace(/index\.html$/, "");
+  if (!u.endsWith("/")) u += "/";
+  for (const e of entries || []) {
+    if (!e || !e.href) continue;
+    let h = String(e.href);
+    if (!h.endsWith("/")) h += "/";
+    if (u === h || u.endsWith("/" + h)) return e;
+  }
+  return null;
+}
+
 // 纯函数：把 Pagefind 命中项渲染成搜索结果列表 HTML。
 // title 与 url 来自被检索的报告内容，直接拼进 innerHTML 会有 DOM-XSS，必须先转义；
 // excerpt 是 Pagefind 生成的高亮片段（含 <mark>），按其约定原样保留。
-export function renderSearchResultsHTML(items) {
+// entries（可选）= reports.json 清单：能反查到条目时，结果卡带「日期 · 类型」元信息，与信息流卡片一致。
+export function renderSearchResultsHTML(items, entries) {
   return items
     .map((d) => {
       const url = escapeHtml(d.url);
       const title = escapeHtml(d.meta && d.meta.title) || "(无标题)";
       const ex = d.excerpt == null ? "" : String(d.excerpt);
-      return `<div class="result"><a href="${url}"><h3>${title}</h3><p class="ex">${ex}</p></a></div>`;
+      const entry = findReportMeta(d.url, entries);
+      const meta = entry
+        ? `<div class="rmeta">${escapeHtml(String(entry.date || "").replace(/-/g, "·"))}${entry.type ? " · " + escapeHtml(entry.type) : ""}</div>`
+        : "";
+      return `<div class="result"><a href="${url}"><h3>${title}</h3><p class="ex">${ex}</p>${meta}</a></div>`;
     })
     .join("");
 }

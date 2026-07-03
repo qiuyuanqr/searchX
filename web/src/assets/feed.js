@@ -31,24 +31,31 @@ function todayBeijing(){
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai" }).format(new Date());
 }
 
-// 回到顶部
+// 回到顶部 + 窄屏浮动按钮避让：下滚（阅读）时藏起按钮，上滚/近顶再浮现（CSS 只在窄屏应用 fab-hide）
 function bindToTop(){
   const toTop = document.querySelector(".to-top");
   const firstCard = document.querySelector(".article-card");
+  let lastY = window.scrollY, acc = 0;
   function onScroll(){
+    const y = window.scrollY;
     const t = firstCard ? (firstCard.offsetTop + firstCard.offsetHeight / 3) : 140;
-    (window.scrollY > t) ? toTop.classList.add("show") : toTop.classList.remove("show");
+    toTop.classList.toggle("show", y > t);
+    // 位移按同方向累计、反向清零：慢速拖动（每帧 1–3px）也能过阈值，且不被 iOS 回弹抖动误触
+    const d = y - lastY; lastY = y;
+    if (d) acc = (d > 0) === (acc > 0) ? acc + d : d;
+    if (acc > 24 && y > 300) document.body.classList.add("fab-hide");
+    else if (acc < -24 || y <= 300) document.body.classList.remove("fab-hide");
   }
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
   toTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }));
 }
 
-// 吸顶筛选区：滚动后加底边分隔
+// 吸顶筛选区：真正吸住（贴到视口顶）才亮底边分隔
 function bindStuck(){
   const bar = document.querySelector(".filterbar");
   if (!bar) return;
-  const onScroll = () => bar.classList.toggle("stuck", window.scrollY > 4);
+  const onScroll = () => bar.classList.toggle("stuck", bar.getBoundingClientRect().top <= 0.5);
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
 }
@@ -72,29 +79,42 @@ function bindChips(){
   function apply(){
     const { visible, count } = computeFeedView(items, { type: activeType, board: activeBoard });
     nodes.forEach((n, i) => n.classList.toggle("hide", !visible[i]));
-    if (countEl) countEl.textContent = `共 ${count} 篇`;
+    // feedText 存起来：搜索态会把计数改成「找到 N 条」，清空搜索时由 bindSearch 用它还原
+    if (countEl) { countEl.dataset.feedText = `共 ${count} 篇`; countEl.textContent = countEl.dataset.feedText; }
     empty.hidden = count > 0;
   }
 
-  typeChips.addEventListener("click", (e) => {
-    const chip = e.target.closest(".chip"); if (!chip) return;
-    typeChips.querySelectorAll(".chip").forEach((c) => c.classList.remove("on"));
-    chip.classList.add("on");
+  const setPressed = (group, activeChip) =>
+    group.querySelectorAll(".chip").forEach((c) => {
+      c.classList.toggle("on", c === activeChip);
+      c.setAttribute("aria-pressed", c === activeChip ? "true" : "false");
+    });
+
+  function activateType(chip){
+    setPressed(typeChips, chip);
     const f = chip.dataset.filter;
     activeType = f === "all" ? "all" : f.slice(5); // type:概念 → 概念
     apply();
-  });
+  }
 
-  boardChips.addEventListener("click", (e) => {
-    const chip = e.target.closest(".chip"); if (!chip) return;
+  function toggleBoard(chip){
     const name = chip.dataset.filter.slice(6); // board:算力 → 算力
-    if (activeBoard === name) { activeBoard = null; chip.classList.remove("on"); } // 再点取消
-    else {
-      boardChips.querySelectorAll(".chip").forEach((c) => c.classList.remove("on"));
-      chip.classList.add("on"); activeBoard = name;
-    }
+    if (activeBoard === name) { activeBoard = null; setPressed(boardChips, null); } // 再点取消
+    else { activeBoard = name; setPressed(boardChips, chip); }
     apply();
-  });
+  }
+
+  // 点击与键盘（Enter / 空格）同一入口：chips 是 span[role=button]，键盘可达
+  const bindChipGroup = (group, fn) => {
+    group.addEventListener("click", (e) => { const c = e.target.closest(".chip"); if (c) fn(c); });
+    group.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      const c = e.target.closest(".chip"); if (!c) return;
+      e.preventDefault(); fn(c);
+    });
+  };
+  bindChipGroup(typeChips, activateType);
+  bindChipGroup(boardChips, toggleBoard);
 
   apply(); // 初始计数
 }
@@ -104,6 +124,7 @@ function debounce(fn, ms){ let t; return (...a) => { clearTimeout(t); t = setTim
 
 function bindSearch(){
   const input = document.getElementById("q");
+  const clearBtn = document.getElementById("q-clear");
   const feed = document.getElementById("feed");
   const results = document.getElementById("results");
   const typeChips = document.getElementById("chips-type");
@@ -111,7 +132,8 @@ function bindSearch(){
   const countEl = document.getElementById("count");
   const empty = document.getElementById("empty");
   let pf;
-  const setChrome = (show) => [typeChips, boardChips, countEl].forEach((el) => { if (el) el.hidden = !show; });
+  // 搜索态只藏两组筛选 chips；计数保留、改显示「找到 N 条」
+  const setChrome = (show) => [typeChips, boardChips].forEach((el) => { if (el) el.hidden = !show; });
 
   async function ensure(){
     // 相对“页面”而非“本模块”解析：feed.js 在 /assets/ 下，须按 document.baseURI 定位站点根的 pagefind。
@@ -123,21 +145,35 @@ function bindSearch(){
     }
     return pf;
   }
-  function showFeed(){ results.hidden = true; results.innerHTML = ""; feed.hidden = false; setChrome(true); }
-  function showResults(){ feed.hidden = true; setChrome(false); results.hidden = false; }
+  function showFeed(){
+    results.hidden = true; results.innerHTML = ""; feed.hidden = false; setChrome(true);
+    if (countEl) countEl.textContent = countEl.dataset.feedText || ""; // 还原信息流计数
+  }
+  function showResults(n){
+    feed.hidden = true; setChrome(false); results.hidden = false;
+    if (countEl) countEl.textContent = `找到 ${n} 条`;
+  }
 
   const run = debounce(async (q) => {
     if (!q) { showFeed(); empty.hidden = true; return; }
     const engine = await ensure();
     const search = await engine.search(q);
     const items = await Promise.all(search.results.slice(0, 20).map((r) => r.data()));
-    if (!items.length) { showResults(); results.innerHTML = ""; empty.hidden = false; return; }
+    if (!items.length) { showResults(0); results.innerHTML = ""; empty.hidden = false; return; }
     empty.hidden = true;
-    results.innerHTML = renderSearchResultsHTML(items); // title/url 在此函数内已转义，防 DOM-XSS
-    showResults();
+    // 传 reports.json 清单：结果卡带上日期/类型元信息（取不到清单则退化为纯标题+摘录）
+    results.innerHTML = renderSearchResultsHTML(items, await loadReports()); // title/url 在此函数内已转义，防 DOM-XSS
+    showResults(items.length);
   }, 180);
 
-  input.addEventListener("input", (e) => run(e.target.value.trim()));
+  input.addEventListener("input", (e) => {
+    const q = e.target.value.trim();
+    if (clearBtn) clearBtn.hidden = !q;
+    run(q);
+  });
+  if (clearBtn) clearBtn.addEventListener("click", () => {
+    input.value = ""; clearBtn.hidden = true; input.focus(); run("");
+  });
 }
 
 // ── 提交弹窗（入口在首页内，仅持专属链接 ?k= 的人可提交）────────────────
@@ -196,10 +232,14 @@ function bindSubmitModal(){
   }
 
   // ── 提交即查重 ──
-  // 清除提示并解除"重复"造成的禁用（注意：只解除查重禁用，不动"请求在途"那次禁用）。
+  // 清除提示并解除"重复"造成的禁用。只解除查重这一种禁用：未授权（noauth）的禁用必须保留，
+  // 否则「未授权 → 输入已有题目 → 清空」会把按钮误恢复成可点（提交时虽有双保险拦截，但按钮态骗人）。
   function clearDup(){
     if (dupNotice){ dupNotice.hidden = true; dupNotice.innerHTML = ""; }
-    if (submitBtn && submitBtn.dataset.dupBlocked){ delete submitBtn.dataset.dupBlocked; submitBtn.disabled = false; }
+    if (submitBtn && submitBtn.dataset.dupBlocked){
+      delete submitBtn.dataset.dupBlocked;
+      if (!submitBtn.dataset.noauth) submitBtn.disabled = false;
+    }
   }
   async function runDupCheck(){
     if (!titleInput || !dupNotice) return;

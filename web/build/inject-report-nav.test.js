@@ -130,6 +130,45 @@ test("目录浮层防滑动穿透：面板/遮罩加 overscroll-behavior:contain
   expect(out).toContain('document.body.classList.toggle("sx-toc-open"');
 });
 
+test("外部来源链接补 target=_blank + rel=noopener：点来源不离开报告页", () => {
+  const out = injectReportNav(BASE);
+  expect(out).toContain(`a[href^="http"]`);
+  expect(out).toContain(`a.target = "_blank"`);
+  expect(out).toContain(`a.rel = "noopener"`);
+});
+
+test("目录点击先关浮层（解除滚动锁）再跳转，避免锁滚动状态下平滑滚动被吞", () => {
+  const out = injectReportNav(BASE);
+  expect(out).toContain("closeSheet(); jump(");
+});
+
+test("打开目录浮层时把当前章节滚到面板中部（长目录也一眼见高亮）", () => {
+  const out = injectReportNav(BASE);
+  expect(out).toContain('sheetPanel.querySelector("a.on")');
+  expect(out).toContain("sheetPanel.scrollTop");
+});
+
+test("窄屏下滚阅读时藏浮动按钮、上滚再浮现：脚本切 body.sx-fab-hide + CSS 只在窄屏生效", () => {
+  const out = injectReportNav(BASE);
+  expect(out).toContain('classList.add("sx-fab-hide")');
+  expect(out).toContain('classList.remove("sx-fab-hide")');
+  // 隐藏规则包在窄屏媒体查询里，宽屏（按钮在页边留白、不压正文）不受影响
+  expect(out).toContain("@media (max-width:900px){\n  body.sx-fab-hide .sx-nav-btn");
+});
+
+test("表格加 data-pagefind-ignore：裸数字表格不进全文索引、摘录不再是无意义数字串", () => {
+  const html = `<html><head></head><body><table><tr><td>682 亿</td></tr></table><table class="x"><tr><td>1</td></tr></table></body></html>`;
+  const out = injectReportNav(html);
+  expect(out).toContain("<table data-pagefind-ignore><tr>");
+  expect(out).toContain(`<table data-pagefind-ignore class="x">`);
+});
+
+test("表格已带 data-pagefind-ignore 时不重复加（幂等）", () => {
+  const html = `<html><head></head><body><table data-pagefind-ignore><tr><td>1</td></tr></table></body></html>`;
+  const out = injectReportNav(html);
+  expect(out.match(/data-pagefind-ignore/g).length).toBe(1);
+});
+
 test("目录脚本按固定区块顺序 + 正文 h2 扫描", () => {
   const out = injectReportNav(BASE);
   expect(out).toContain("核心结论");

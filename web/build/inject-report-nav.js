@@ -13,6 +13,9 @@ const NAV_SCRIPT = `
   var top = document.querySelector(".sx-top");
   var bar = document.querySelector(".sx-progress > i");
 
+  // 外部来源链接一律新标签页打开：点来源不离开报告页（手机上尤其容易丢阅读位置）
+  document.querySelectorAll('a[href^="http"]').forEach(function(a){ a.target = "_blank"; a.rel = "noopener"; });
+
   // 自动目录：固定区块 + 正文 h2，按文档顺序
   var secs = [];
   function add(el, label){ if (!el) return; if (!el.id) el.id = "sx-sec-" + secs.length; secs.push({ id: el.id, label: label }); }
@@ -41,10 +44,16 @@ const NAV_SCRIPT = `
   function jump(id){ var t = document.getElementById(id); if (t) t.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }); }
   // 打开/关闭目录浮层时一并锁/解锁整页滚动，防止滑动穿透到下面的报告页。
   function lock(on){ document.documentElement.classList.toggle("sx-toc-open", on); document.body.classList.toggle("sx-toc-open", on); }
-  function openSheet(){ sheet.classList.add("open"); lock(true); }
+  function openSheet(){
+    sheet.classList.add("open"); lock(true);
+    // 长目录（面板只显示得下一半）：打开时把当前章节滚到面板中部，读到后半篇也一眼见高亮
+    var on = sheetPanel.querySelector("a.on");
+    if (on) sheetPanel.scrollTop = Math.max(0, on.offsetTop - sheetPanel.clientHeight / 2);
+  }
   function closeSheet(){ sheet.classList.remove("open"); lock(false); }
   document.querySelectorAll(".sx-toc a, .sx-toc-sheet a").forEach(function(a){
-    a.addEventListener("click", function(e){ e.preventDefault(); jump(a.dataset.id); closeSheet(); });
+    // 先关浮层（解除整页滚动锁）再跳转：锁着滚动时发起平滑滚动在部分浏览器会被吞掉
+    a.addEventListener("click", function(e){ e.preventDefault(); closeSheet(); jump(a.dataset.id); });
   });
   tocBtn.addEventListener("click", openSheet);
   sheet.addEventListener("click", function(e){ if (e.target === sheet) closeSheet(); });
@@ -59,9 +68,17 @@ const NAV_SCRIPT = `
     document.querySelectorAll(".sx-toc a, .sx-toc-sheet a").forEach(function(a){ a.classList.toggle("on", a.dataset.id === cur); });
   }
 
+  var lastY = window.scrollY, acc = 0;
   function onScroll(){
-    (window.scrollY > 420) ? top.classList.add("show") : top.classList.remove("show");
-    if (bar){ var h = document.documentElement.scrollHeight - window.innerHeight; bar.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + "%"; }
+    var y = window.scrollY;
+    (y > 420) ? top.classList.add("show") : top.classList.remove("show");
+    if (bar){ var h = document.documentElement.scrollHeight - window.innerHeight; bar.style.width = (h > 0 ? (y / h) * 100 : 0) + "%"; }
+    // 窄屏下浮动按钮会压住正文：下滚（阅读）时藏起，上滚/近顶再浮现（CSS 只在窄屏应用 sx-fab-hide）。
+    // 位移按同方向累计、反向清零：慢速拖动（每帧 1–3px）也能过阈值，且不被 iOS 回弹抖动误触。
+    var d = y - lastY; lastY = y;
+    if (d) acc = (d > 0) === (acc > 0) ? acc + d : d;
+    if (acc > 24 && y > 300) document.body.classList.add("sx-fab-hide");
+    else if (acc < -24 || y <= 300) document.body.classList.remove("sx-fab-hide");
     spy();
   }
   window.addEventListener("scroll", onScroll, { passive:true });
@@ -103,6 +120,10 @@ export function injectReportNav(html, {
   // 注入到 <head> 末尾（第一个 </head>，即真正的头部结束；正文里若出现字面 </head> 不受影响）。
   const headM = html.match(/<\/head>/i);
   if (headM) html = html.replace(headM[0], headInject + "\n" + headM[0]);
+
+  // 表格不进全文索引（data-pagefind-ignore）：表格里的裸数字串会被 Pagefind 摘成
+  // 「682 亿. 82.10. 15.15.」这类无意义摘录；关键事实正文都有，摘录落在正文段落上更可读。
+  html = html.replace(/<table(?=[\s>])(?![^>]*data-pagefind-ignore)/gi, "<table data-pagefind-ignore");
 
   // 移动端防误放大：把报告副本的 viewport 锁成「禁触摸缩放」。覆盖所有存量报告
   // （其原始 report.html 可能仍是旧 viewport），无需逐个改归档文件。
@@ -151,6 +172,10 @@ table thead th:first-child{z-index:2; background:var(--accent-bg)}
 .sx-home svg{width:19px; height:19px}
 .sx-top{bottom:74px; opacity:0; transform:translateY(10px); pointer-events:none}
 .sx-top.show{opacity:1; transform:none; pointer-events:auto}
+/* 窄屏下按钮压正文：下滚（阅读）时藏起，上滚/近顶再浮现（脚本切 body.sx-fab-hide） */
+@media (max-width:900px){
+  body.sx-fab-hide .sx-nav-btn{opacity:0; transform:translateY(14px); pointer-events:none}
+}
 /* 顶部阅读进度条 */
 .sx-progress{position:fixed; top:0; left:0; right:0; height:3px; z-index:60; background:transparent}
 .sx-progress>i{display:block; height:100%; width:0; background:var(--seal); transition:width .1s linear}
