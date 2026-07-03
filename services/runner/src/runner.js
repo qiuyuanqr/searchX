@@ -9,17 +9,59 @@ import { buildResearchPrompt } from "./research-cmd.js";
 import { diffNewDirs } from "./research-output.js";
 import { findFreshReport } from "./dedup.js";
 import { fetchSubmitterEmail } from "./sub-fetch.js";
-import { composeEmail, composeExistingEmail, composeAuthorDigest, composeParkNotice } from "./email.js";
+import { composeEmail, composeExistingEmail, composeAuthorDigest, composeParkNotice, composeFailureStopNotice } from "./email.js";
 
 export async function runOnce(config, deps) {
   const { fetchImpl, scanDirs, runResearch, sendEmail, log, bumpDailyCount,
     today = () => new Date().toISOString().slice(0, 10),
     verifyPublished = async () => true,
     loadPending = async () => [], savePending = async () => {},
-    readParkSignal = async () => null, clearParkSignal = async () => {} } = deps;
+    readParkSignal = async () => null, clearParkSignal = async () => {},
+    loadFailures = async () => ({}), saveFailures = async () => {} } = deps;
   const gh = { owner: config.owner, repo: config.repo, token: config.githubToken };
+  const maxFailures = config.maxFailures ?? 3;
 
   const summary = { processed: 0, published: 0, emailed: 0, deduped: 0, parked: 0, failed: 0 };
+
+  // 连续失败计数（issue 号 → 次数，跨 tick 存本地文件）。「研究未产出→留待重跑」的 Issue
+  // 若持续失败，launchd 每 5 分钟一 tick 会全额重跑一次 /research（每次都真实花额度），
+  // 一整天可烧上百次——达 maxFailures 即自动停跑止损。成功即清零（连续语义，偶发故障不累计）。
+  const failures = await loadFailures();
+
+  // 失败停跑：贴 done（复用幂等标记停止重跑，与「核验未过 park 贴 done」同一先例）→ 作者专信
+  // → 评论说明恢复方式。贴 done 是真正的止损动作，必须最先做且失败可重试：贴不上就保留计数、
+  // 返回 false——下一轮会在跑研究之前先重试停跑；此时不发信不评论（每 5 分钟一 tick，重复发
+  // 就是邮件轰炸；scheduled-run.sh 的限频报警会兜底知会作者）。
+  async function stopRetrying(issue, topic, count) {
+    try {
+      await addLabel({ ...gh, number: issue.number, label: "done" }, fetchImpl);
+    } catch (err) {
+      log(`#${issue.number} 连续失败停跑：贴 done 失败（${err.message}），计数保留，下一轮先重试停跑（不会先重跑研究）`);
+      return false;
+    }
+    delete failures[issue.number]; // 已止损；作者移除 done 恢复后从零重新计数
+    summary.parked++;
+    log(`#${issue.number} 连续 ${count} 次研究未产出，已自动停跑（贴 done 止损），不再自动重跑`);
+    try {
+      await sendEmail(composeFailureStopNotice({
+        topic, issueNumber: issue.number, count,
+        authorEmail: config.authorEmail, fromEmail: config.smtpUser,
+      }));
+      log(`#${issue.number} 已邮件通知作者（停跑）`);
+    } catch (err) {
+      log(`#${issue.number} 停跑通知邮件发送失败：${err.message}`);
+    }
+    try {
+      await commentIssue(
+        { ...gh, number: issue.number,
+          body: `⛔ 连续 ${count} 次研究未产出，已自动停止重跑（贴 \`done\` 止损，不再消耗额度）并邮件通知作者。人工排查修复后如需重试：移除本 Issue 的 \`done\` 标签，下一轮定时 runner 会重新排队（失败计数已清零）。` },
+        fetchImpl
+      );
+    } catch (e) {
+      log(`#${issue.number} 停跑评论失败（不影响已发通知）：${e.message}`);
+    }
+    return true;
+  }
 
   // 取提交者邮箱并发一封「已上线」邮件。复用于正常路径与补发路径。
   async function emailSubmitter({ number, topic, title, tldr, url }) {
@@ -67,6 +109,15 @@ export async function runOnce(config, deps) {
     summary.processed++;
     const { topic, focus } = parseIssueRequest(issue);
     log(`#${issue.number} 开始：${topic}`);
+
+    // —— 失败停跑闸（先于一切花钱动作）——
+    // 已达阈值的 Issue 直接停跑，绝不再 spawn claude。正常路径在失败分支达阈值时就地停跑，
+    // 走到这里的是「上一轮贴 done 没贴上、计数保留」的重试：必须先补完成止损，不能先烧一次研究。
+    const prevFails = Number(failures[issue.number]) || 0;
+    if (prevFails >= maxFailures) {
+      if (!(await stopRetrying(issue, topic, prevFails))) summary.failed++;
+      continue;
+    }
 
     const existing = scanDirs();
 
@@ -162,9 +213,16 @@ export async function runOnce(config, deps) {
 
     if (!ok || newDirs.length === 0) {
       summary.failed++;
-      log(`#${issue.number} 研究未产出（claude 退出码非 0 或无新文件夹），不贴 done，留待重跑`);
+      const count = prevFails + 1;
+      failures[issue.number] = count;
+      if (count >= maxFailures) {
+        await stopRetrying(issue, topic, count); // 达阈值就地止损，不必等下一轮再烧一次
+      } else {
+        log(`#${issue.number} 研究未产出（claude 退出码非 0 或无新文件夹），连续第 ${count}/${maxFailures} 次，不贴 done，留待重跑`);
+      }
       continue;
     }
+    delete failures[issue.number]; // 研究成功即清零：只有「连续」失败才累计停跑
 
     // 正常每次 /research 只产出 1 个文件夹（SKILL Step 4），故取首个新目录即可。
     const entry = after.find((e) => newDirs.includes(e.dir));
@@ -254,6 +312,12 @@ export async function runOnce(config, deps) {
 
   // 持久化「上线待确认」队列：含本轮新失败的 + 上一轮仍未补发成功的。
   await savePending(pending);
+
+  // 持久化失败计数，并修剪掉不在 approved 队列里的残留（已 done / 被人工处理的），防状态文件
+  // 无限膨胀。被人工干预过的 Issue 若日后重新 approved 会从零重新计数——作者已介入，给新预算。
+  const inQueue = new Set(issues.map((i) => String(i.number)));
+  for (const k of Object.keys(failures)) if (!inQueue.has(k)) delete failures[k];
+  await saveFailures(failures);
 
   log(`完成：处理 ${summary.processed}、上线 ${summary.published}、发信 ${summary.emailed}、查重跳过 ${summary.deduped}、搁置 ${summary.parked}、失败 ${summary.failed}`);
   return summary;

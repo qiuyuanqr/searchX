@@ -22,6 +22,15 @@ function parseDedupWindow(raw) {
   return Number.isFinite(n) && n >= 0 ? n : DEFAULT_DEDUP_WINDOW_DAYS;
 }
 
+// 失败停跑阈值：同一 Issue 连续「研究未产出」达此次数即自动贴 done 停跑（止损）。
+// 默认 3；空 / 非法 / 小于 1 回退默认（launchd 每 5 分钟一 tick，没有阈值就是每 tick 全额重跑）。
+const DEFAULT_MAX_FAILURES = 3;
+function parseMaxFailures(raw) {
+  if (raw === undefined || String(raw).trim() === "") return DEFAULT_MAX_FAILURES;
+  const n = Math.floor(Number(raw));
+  return Number.isFinite(n) && n >= 1 ? n : DEFAULT_MAX_FAILURES;
+}
+
 export function loadRunnerConfig(env) {
   const missing = REQUIRED.filter((k) => !env[k] || !String(env[k]).trim());
   if (missing.length) {
@@ -40,6 +49,7 @@ export function loadRunnerConfig(env) {
     authorEmail: t(env.RUNNER_AUTHOR_EMAIL || env.RUNNER_SMTP_USER), // 缺省=发信账号，不在代码里硬写个人邮箱
     siteBase: trimUrl(env.RUNNER_SITE_BASE || "https://qiuyuanqr.github.io/searchX"),
     dedupWindowDays: parseDedupWindow(env.RUNNER_DEDUP_WINDOW_DAYS),
+    maxFailures: parseMaxFailures(env.RUNNER_MAX_FAILURES),
     claudeArgs: (env.RUNNER_CLAUDE_ARGS || "--permission-mode bypassPermissions")
       .split(/\s+/)
       .filter(Boolean),

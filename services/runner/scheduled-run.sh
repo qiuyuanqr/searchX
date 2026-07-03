@@ -42,7 +42,8 @@ code=$?
 echo "[$(ts)] ──────── 结束 (exit=$code)" >> "$LOG"
 
 # runner 真失败才报警（跳过/空队列都是 exit 0）：失败不能只躺在这份没人看的日志里。
-# 常见失败=研究未产出，会被下个 tick 自动重跑；报警是让作者知道「在烧额度重试」，可及时人工介入。
+# 常见失败=研究未产出，会被下个 tick 自动重跑；同一 Issue 连续失败 3 次由 runner 自动贴 done
+# 停跑止损并给作者发「已停跑」专信。报警是让作者知道「在重试」，可及时人工介入。
 if [ "$code" -ne 0 ]; then
   bun services/runner/src/alert-cli.js runner-failed "定时 runner 退出码 $code，日志：$LOG" >> "$LOG" 2>&1 || true
 fi

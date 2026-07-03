@@ -71,6 +71,24 @@ export function composeParkNotice({ topic, reason, unresolved = [], folder, auth
   return { from: fromEmail, to: authorEmail, subject, text: lines.join("\n") };
 }
 
+// 失败停跑通知：同一 Issue 连续 count 次「研究未产出」，runner 已自动贴 done 止损、停止重跑。
+// 只发作者（无 cc，绝不发提交者）；只含运维信息（主题 / Issue 号 / 次数 / 恢复方式），
+// 不含任何用户私人信息。不发这封信作者只会看到限频的通用报警，不知道"已经自动止损、该人工排查了"。
+export function composeFailureStopNotice({ topic, issueNumber, count, authorEmail, fromEmail }) {
+  const subject = `【searchX 已停跑】${topic}——连续 ${count} 次研究未产出`;
+  const lines = [
+    `调研「${topic}」（Issue #${issueNumber}）连续 ${count} 次研究未产出，已自动停止重跑（贴 done 标签止损，不再消耗额度）。`,
+    "",
+    "常见原因：claude CLI 异常退出、额度用尽、网络故障、或题目本身让 /research 无法完成。",
+    "排查日志：~/Library/Logs/searchx-runner/runner.log",
+    "",
+    "人工确认问题解决后，如需重试：在 GitHub 上移除该 Issue 的 done 标签，下一轮定时 runner 会重新排队（失败计数已清零）。",
+    "",
+    "—— searchX 自动调研流水线",
+  ];
+  return { from: fromEmail, to: authorEmail, subject, text: lines.join("\n") };
+}
+
 // 注入 transport（nodemailer），便于离线单测。
 export async function sendEmail(message, { transport }) {
   return transport.sendMail(message);

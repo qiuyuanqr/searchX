@@ -311,6 +311,155 @@ test("park 时发信失败：仍清信号、贴 done、评论，parked 照计数
   )).toBe(true);
 });
 
+// —— 失败退避 / 自动停跑 ——
+// 背景：launchd 每 5 分钟一 tick，「研究未产出→不贴 done 留待重跑」的 Issue 若持续失败，
+// 会被每 tick 全额重跑一次 /research（每次都真实花额度），一整天可烧上百次。
+// 止损：本地文件记每 Issue 连续失败次数（经 loadFailures/saveFailures 注入），
+// 达 config.maxFailures（默认 3）即贴 done 停止重跑 + 作者专信 + 评论说明恢复方式。
+const FAIL_CONFIG = { ...CONFIG, maxFailures: 3 };
+
+test("失败退避：第 1 次研究未产出 → 计数 1 持久化、不贴 done、不发信、failed 计数", async () => {
+  const fetchImpl = makeFetch();
+  let saved;
+  const sent = [];
+  const summary = await runOnce(FAIL_CONFIG, {
+    fetchImpl, scanDirs: () => [], runResearch: async () => false,
+    sendEmail: async (m) => sent.push(m), log: () => {},
+    loadFailures: async () => ({}),
+    saveFailures: async (m) => { saved = m; },
+  });
+  expect(summary.failed).toBe(1);
+  expect(summary.parked).toBe(0);
+  expect(saved).toEqual({ 7: 1 });
+  expect(sent.length).toBe(0);
+  expect(fetchImpl.calls.some((c) => /\/labels$/.test(c.url))).toBe(false); // 未达阈值不贴 done
+});
+
+test("失败退避：连续第 3 次失败 → 贴 done 止损、作者专信、评论说明恢复方式、计数清零、parked 计数", async () => {
+  const fetchImpl = makeFetch();
+  let saved;
+  const sent = [];
+  let ran = 0;
+  const summary = await runOnce(FAIL_CONFIG, {
+    fetchImpl, scanDirs: () => [], runResearch: async () => { ran++; return false; },
+    sendEmail: async (m) => sent.push(m), log: () => {},
+    loadFailures: async () => ({ 7: 2 }), // 前两轮已各失败一次
+    saveFailures: async (m) => { saved = m; },
+  });
+  expect(ran).toBe(1);              // 第 3 次是本轮真实跑失败的
+  expect(summary.failed).toBe(1);
+  expect(summary.parked).toBe(1);
+  // 贴 done 止损（幂等标记，下个 tick 不再选中）
+  expect(fetchImpl.calls.some((c) =>
+    /\/issues\/7\/labels$/.test(c.url) && JSON.parse(c.opts.body).labels.includes("done")
+  )).toBe(true);
+  // 作者专信：to=作者、无 cc、主题标停跑
+  expect(sent.length).toBe(1);
+  expect(sent[0].to).toBe("me@g.com");
+  expect(sent[0].cc).toBeUndefined();
+  expect(sent[0].subject).toContain("已停跑");
+  expect(sent[0].text).toContain("连续 3 次");
+  // 评论说明连续失败次数与恢复方式（移除 done 标签）
+  expect(fetchImpl.calls.some((c) =>
+    /\/issues\/7\/comments$/.test(c.url)
+      && JSON.parse(c.opts.body).body.includes("连续 3 次")
+      && JSON.parse(c.opts.body).body.includes("done")
+  )).toBe(true);
+  // 计数清零：作者移除 done 恢复后从零重新计数
+  expect(saved).toEqual({});
+});
+
+test("失败退避：已达阈值的 Issue 下一轮开跑前即拦下——绝不再 spawn 研究，补完成停跑动作", async () => {
+  // 场景：上一轮第 3 次失败时贴 done 没贴上（如 PAT 瞬断），计数 3 保留、Issue 仍 approved。
+  // 本轮必须先于一切花钱动作停跑，而不是先烧一次研究再说。
+  const fetchImpl = makeFetch();
+  let saved;
+  const sent = [];
+  let ran = 0;
+  const summary = await runOnce(FAIL_CONFIG, {
+    fetchImpl, scanDirs: () => [], runResearch: async () => { ran++; return false; },
+    sendEmail: async (m) => sent.push(m), log: () => {},
+    loadFailures: async () => ({ 7: 3 }),
+    saveFailures: async (m) => { saved = m; },
+  });
+  expect(ran).toBe(0);              // 关键：没花额度
+  expect(summary.parked).toBe(1);
+  expect(summary.failed).toBe(0);   // 本轮没有新失败，停跑成功落地
+  expect(fetchImpl.calls.some((c) =>
+    /\/issues\/7\/labels$/.test(c.url) && JSON.parse(c.opts.body).labels.includes("done")
+  )).toBe(true);
+  expect(sent.length).toBe(1);      // 停跑专信这轮补发
+  expect(saved).toEqual({});
+});
+
+test("失败退避：停跑贴 done 失败 → 计数保留待下轮重试停跑、不发停跑信（防每 5 分钟邮件轰炸）", async () => {
+  const fetchImpl = async (url, opts = {}) => {
+    const u = String(url);
+    if (u.includes("/issues?")) return { ok: true, json: async () => ISSUE_LIST };
+    if (/\/issues\/\d+\/labels$/.test(u)) return { ok: false, status: 403, text: async () => "forbidden" };
+    if (/\/issues\/\d+\/comments$/.test(u)) return { ok: true, json: async () => ({}) };
+    return { ok: false, status: 404, json: async () => ({}) };
+  };
+  let saved;
+  const sent = [];
+  const summary = await runOnce(FAIL_CONFIG, {
+    fetchImpl, scanDirs: () => [], runResearch: async () => false,
+    sendEmail: async (m) => sent.push(m), log: () => {},
+    loadFailures: async () => ({ 7: 2 }),
+    saveFailures: async (m) => { saved = m; },
+  });
+  expect(saved).toEqual({ 7: 3 }); // 止损没落地，计数保留 → 下一轮循环顶部先重试停跑
+  expect(sent.length).toBe(0);     // 不发信：止损未落地就发，会每 tick 重复轰炸
+  expect(summary.failed).toBe(1);
+  expect(summary.parked).toBe(0);
+});
+
+test("失败退避：停跑专信发送失败 → 仍已贴 done、仍评论、计数照清（尽力而为不中止）", async () => {
+  const fetchImpl = makeFetch();
+  let saved;
+  const summary = await runOnce(FAIL_CONFIG, {
+    fetchImpl, scanDirs: () => [], runResearch: async () => false,
+    sendEmail: async () => { throw new Error("smtp down"); }, log: () => {},
+    loadFailures: async () => ({ 7: 2 }),
+    saveFailures: async (m) => { saved = m; },
+  });
+  expect(summary.parked).toBe(1);
+  expect(saved).toEqual({});
+  expect(fetchImpl.calls.some((c) =>
+    /\/issues\/7\/labels$/.test(c.url) && JSON.parse(c.opts.body).labels.includes("done")
+  )).toBe(true);
+  expect(fetchImpl.calls.some((c) =>
+    /\/issues\/7\/comments$/.test(c.url) && JSON.parse(c.opts.body).body.includes("连续 3 次")
+  )).toBe(true);
+});
+
+test("失败退避：曾失败过的 Issue 本轮成功 → 计数清零（连续失败语义，偶发故障不累计）", async () => {
+  const fetchImpl = makeFetch();
+  const world = makeWorld();
+  let saved;
+  const summary = await runOnce(FAIL_CONFIG, {
+    fetchImpl, scanDirs: world.scanDirs, runResearch: world.runResearch,
+    sendEmail: async () => {}, log: () => {},
+    loadFailures: async () => ({ 7: 2 }),
+    saveFailures: async (m) => { saved = m; },
+  });
+  expect(summary.published).toBe(1);
+  expect(saved).toEqual({});
+});
+
+test("失败退避：不在 approved 队列的残留计数被修剪（防状态文件无限膨胀）", async () => {
+  const fetchImpl = makeFetch();
+  const world = makeWorld();
+  let saved;
+  await runOnce(FAIL_CONFIG, {
+    fetchImpl, scanDirs: world.scanDirs, runResearch: world.runResearch,
+    sendEmail: async () => {}, log: () => {},
+    loadFailures: async () => ({ 99: 2 }), // #99 已被人工处理（不在 approved 队列）
+    saveFailures: async (m) => { saved = m; },
+  });
+  expect(saved).toEqual({}); // 残留清掉；#99 若日后重新 approved，从零重新计数（作者已介入，给新预算）
+});
+
 // —— 查重：同标的且在时效窗口内已有报告 → 不重复调研，自动回信 ——
 // scanDirs 返回一个 30 天内的同股票报告（type=股票、tags 含中文名+代码），runner 应在 spawn 前拦下。
 function makeStockFetch(issues) {

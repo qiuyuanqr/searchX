@@ -72,6 +72,24 @@ function savePending(list) {
   writeFileSync(pendingFile(), JSON.stringify(list, null, 2));
 }
 
+// 「连续失败计数」持久状态（issue 号 → 次数）：同一 Issue 连续「研究未产出」的次数，跨 tick
+// 存本地 JSON。达 config.maxFailures（默认 3，RUNNER_MAX_FAILURES 可调）即自动贴 done 停跑
+// 止损——否则 launchd 每 5 分钟一 tick，持续失败的 Issue 会被每 tick 全额重跑一次 /research。
+function failuresFile() {
+  return join(homedir(), "Library", "Application Support", "searchx-runner", "research-failures.json");
+}
+function loadFailures() {
+  try {
+    const data = JSON.parse(readFileSync(failuresFile(), "utf8"));
+    return data && typeof data === "object" && !Array.isArray(data) ? data : {};
+  } catch { return {}; }
+}
+function saveFailures(map) {
+  const dir = join(homedir(), "Library", "Application Support", "searchx-runner");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(failuresFile(), JSON.stringify(map, null, 2));
+}
+
 // 当日完成计数：按「北京时间」分日存一个计数文件，每完成一篇 +1，返回 { date, count }。
 // 供作者汇总邮件报「今日累计完成几篇」。纯本地文件、零额外 API。
 function bumpDailyCount() {
@@ -173,6 +191,8 @@ async function main() {
     savePending,
     readParkSignal,
     clearParkSignal,
+    loadFailures,
+    saveFailures,
   });
 
   process.exit(summary.failed > 0 ? 1 : 0);

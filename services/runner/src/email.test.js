@@ -1,6 +1,6 @@
 // services/runner/src/email.test.js
 import { test, expect } from "bun:test";
-import { composeEmail, composeExistingEmail, composeAuthorDigest, composeParkNotice, sendEmail } from "./email.js";
+import { composeEmail, composeExistingEmail, composeAuthorDigest, composeParkNotice, composeFailureStopNotice, sendEmail } from "./email.js";
 
 test("composeEmail：主题含标题、正文含 TLDR 与链接、抄送作者、from 用 smtpUser", () => {
   const m = composeEmail({
@@ -106,6 +106,25 @@ test("composeParkNotice：无 reason/unresolved/folder 也不报错、不留噪�
   expect(m.text).not.toContain("搁置原因：");
   expect(m.text).not.toContain("没解决的硬错：");
   expect(m.text).not.toContain("本地草稿");
+});
+
+test("composeFailureStopNotice：只发作者（无 cc）、主题标『已停跑』、正文含 Issue 号/连续次数/恢复方式", () => {
+  const m = composeFailureStopNotice({
+    topic: "奥比中光",
+    issueNumber: 12,
+    count: 3,
+    authorEmail: "me@gmail.com",
+    fromEmail: "me@gmail.com",
+  });
+  expect(m.to).toBe("me@gmail.com");
+  expect(m.cc).toBeUndefined();             // 绝不抄送提交者
+  expect(m.from).toBe("me@gmail.com");
+  expect(m.subject).toContain("已停跑");
+  expect(m.subject).toContain("奥比中光");
+  expect(m.text).toContain("#12");
+  expect(m.text).toContain("连续 3 次");
+  expect(m.text).toContain("done");         // 恢复方式：移除 done 标签重新排队
+  expect(m.text).toContain("不再");         // 点明已止损、不再自动重跑
 });
 
 test("sendEmail 调用注入的 transport.sendMail", async () => {
