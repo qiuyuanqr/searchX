@@ -1,7 +1,7 @@
 // web/src/assets/check-page.js — 事实核查提交页的 DOM 引导（外置脚本，配合严格 CSP `script-src 'self'`）。
 // 纯逻辑（载荷构造 / 密钥读写 / 状态文案）在 check.js；本文件只做事件绑定与 fetch。
 import {
-  readKey, saveKey, clearKey, describeCheckResult, describeSubmitError, describeRecentError,
+  readKey, saveKey, clearKey, keyFromHash, describeCheckResult, describeSubmitError, describeRecentError,
   submitTimeoutMs, fitDimensions, validateCheckSubmission,
   describeTaskStatus, formatTaskTime, shouldKeepPolling,
 } from "./check.js";
@@ -293,5 +293,23 @@ document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && !$("form-area").hidden) loadRecent();
 });
 
-// 本机会话已存密钥 → 直接显示表单（不用重输）
+// 免密专属链接：check.html#k=<密钥> —— 打开即存密钥、直进表单，换设备也不用手输。
+// 链接里的密钥优先于本机已存值（Worker 重置密钥后发新链接即可覆盖旧的）。
+// 不做在线探测：专属链接在弱网/被墙时也要能进表单；密钥若错，提交时 401 会自动退回密钥闸。
+// 存好后立刻把密钥从地址栏抹掉，避免常驻屏幕被旁人瞥见（收藏的链接本身不受影响）。
+// 收下专属链接 hash 里的密钥（有则覆盖本机已存值——Worker 重置密钥后发新链接即可换钥），
+// 并立刻把密钥从地址栏抹掉，避免常驻屏幕被旁人瞥见（收藏的链接本身不受影响）。返回是否收到。
+function adoptHashKey() {
+  const hashKey = keyFromHash(location.hash);
+  if (!hashKey) return false;
+  key = hashKey;
+  saveKey(store, key);
+  history.replaceState(null, "", location.pathname + location.search);
+  return true;
+}
+adoptHashKey();
+// 页面已开着时在地址栏输专属链接只改 hash、不重载脚本 → 靠 hashchange 补上同样的接收逻辑
+window.addEventListener("hashchange", () => { if (adoptHashKey()) showForm(); });
+
+// 已有密钥（本机存过或专属链接刚带来）→ 直接显示表单（不用重输）
 if (key) showForm();

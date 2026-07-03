@@ -3,6 +3,7 @@ import {
   readKey,
   saveKey,
   clearKey,
+  keyFromHash,
   describeCheckResult,
   describeSubmitError,
   describeRecentError,
@@ -29,6 +30,28 @@ test("readKey / saveKey / clearKey 在 fake storage 上正常工作", () => {
   expect(readKey(storage)).toBe("MY_KEY"); // 存后读得到
   clearKey(storage);
   expect(readKey(storage)).toBe("");       // 清除后为空
+});
+
+// --- keyFromHash（免密专属链接 #k=<key>）---
+
+test("keyFromHash：#k=<key> → 取出密钥", () => {
+  expect(keyFromHash("#k=abc123")).toBe("abc123");
+});
+
+test("keyFromHash：URL 编码与首尾空白被规整", () => {
+  expect(keyFromHash("#k=%20abc%20")).toBe("abc");   // 编码的空格解码后被 trim
+  expect(keyFromHash("#k=a%2Bb")).toBe("a+b");        // 编码字符正常解码
+});
+
+test("keyFromHash：非法 URL 编码不崩，按原文返回", () => {
+  expect(keyFromHash("#k=a%zz")).toBe("a%zz");
+});
+
+test("keyFromHash：无 hash / 其它 hash / 空值 → 空串", () => {
+  expect(keyFromHash("")).toBe("");
+  expect(keyFromHash(undefined)).toBe("");
+  expect(keyFromHash("#recent")).toBe("");
+  expect(keyFromHash("#k=")).toBe("");
 });
 
 // --- describeCheckResult ---

@@ -16,6 +16,16 @@ export function clearKey(storage) {
   try { storage.removeItem("searchx_check_key"); } catch {}
 }
 
+// 纯函数：从 URL hash 提取免密专属链接携带的密钥（形如 "#k=<key>"）。非该形式返回空串。
+// 密钥放 fragment 而非 query：fragment 永远不随 HTTP 请求发出，不进 Pages 访问日志。
+export function keyFromHash(hash) {
+  const m = /^#k=(.+)$/.exec(hash || "");
+  if (!m) return "";
+  let raw = m[1];
+  try { raw = decodeURIComponent(raw); } catch {}
+  return raw.trim();
+}
+
 // 纯函数：把服务端状态码映射成给用户看的中文。
 // 注：401（密钥失效）在 check-page.js 提前专门处理（清密钥、退回密钥闸），不会走到这里。
 export function describeCheckResult(ok) {
