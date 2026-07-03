@@ -76,8 +76,10 @@ test("首页注入提交配置（弹窗表单）；submit.html 跳转回主页",
   // 提交表单已搬进首页弹窗 → 配置注入到 index.html
   const home = readFileSync(`${OUT}/index.html`, "utf8");
   expect(home).toContain('data-worker="https://worker.test.dev"');
+  expect(home).toContain('data-worker-fallback="https://fallback.test.dev"'); // 备用端点：主域被黑洞时前端自动改打
   expect(home).toContain('data-verify="https://worker.test.dev/verify"');
   expect(home).not.toContain("{{WORKER_URL}}");
+  expect(home).not.toContain("{{WORKER_FALLBACK_URL}}");
   expect(home).toContain('id="submit-form"');
   // 授权改造后：不再有 Turnstile、不再让用户填邮箱
   expect(home).not.toContain("ts-widget");

@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { buildPayload, tokenFromQuery, resolveToken, clearStoredToken, TOKEN_STORAGE_KEY, describeVerify, describeResult, escapeHtml, renderSearchResultsHTML, describeExistingReport } from "./submit.js";
+import { buildPayload, tokenFromQuery, resolveToken, clearStoredToken, TOKEN_STORAGE_KEY, describeVerify, describeResult, escapeHtml, renderSearchResultsHTML, describeExistingReport, fetchAny } from "./submit.js";
 
 // 假 storage：Map 撑起 get/set/remove；可选 throwOn 模拟隐私模式下方法抛错。
 function fakeStorage(init = {}, throwOn = new Set()) {
@@ -135,4 +135,53 @@ test("describeExistingReport：title/href 转义防 DOM-XSS", () => {
   expect(h).not.toContain("<img src=x");
   expect(h).toContain("&lt;img src=x");
   expect(h).not.toContain(`href="r/" onmouseover="alert(1)"`); // 引号被转义，无法逃逸属性
+});
+
+// ── fetchAny：主备端点 + 超时 ──────────────────────────────
+
+// 假 fetch：按 URL 决定成功/失败，并记录调用顺序与传入的 signal。
+function fakeFetch(behavior) {
+  const calls = [];
+  const impl = async (url, opts) => {
+    calls.push({ url, signal: opts && opts.signal });
+    const b = behavior[url];
+    if (b instanceof Error) throw b;
+    return b;
+  };
+  impl.calls = calls;
+  return impl;
+}
+
+test("fetchAny：主端点成功 → 用主端点，不碰备用", async () => {
+  const resp = { ok: true };
+  const f = fakeFetch({ "https://a/": resp, "https://b/": new Error("不该被调") });
+  const r = await fetchAny(["https://a/", "https://b/"], {}, { fetchImpl: f });
+  expect(r).toBe(resp);
+  expect(f.calls.map((c) => c.url)).toEqual(["https://a/"]);
+});
+
+test("fetchAny：主端点抛错（超时/黑洞）→ 自动落到备用端点", async () => {
+  const resp = { ok: true };
+  const f = fakeFetch({ "https://a/": new Error("aborted"), "https://b/": resp });
+  const r = await fetchAny(["https://a/", "https://b/"], {}, { fetchImpl: f });
+  expect(r).toBe(resp);
+  expect(f.calls.map((c) => c.url)).toEqual(["https://a/", "https://b/"]);
+});
+
+test("fetchAny：全部端点失败 → 抛最后一个错误（调用方映射成失败文案）", async () => {
+  const f = fakeFetch({ "https://a/": new Error("e1"), "https://b/": new Error("e2") });
+  await expect(fetchAny(["https://a/", "https://b/"], {}, { fetchImpl: f })).rejects.toThrow("e2");
+});
+
+test("fetchAny：空串端点滤掉、重复端点去重（备用未配置时退化为单端点）", async () => {
+  const f = fakeFetch({ "https://a/": new Error("boom") });
+  await expect(fetchAny(["https://a/", "", null, "https://a/"], {}, { fetchImpl: f })).rejects.toThrow("boom");
+  expect(f.calls.length).toBe(1); // 只调一次：空的滤掉、重复的去重
+});
+
+test("fetchAny：每次调用都带 AbortSignal（超时兜底，杜绝无限『提交中』）", async () => {
+  const f = fakeFetch({ "https://a/": { ok: true } });
+  await fetchAny(["https://a/"], {}, { fetchImpl: f });
+  expect(f.calls[0].signal).toBeTruthy();
+  expect(typeof f.calls[0].signal.aborted).toBe("boolean");
 });

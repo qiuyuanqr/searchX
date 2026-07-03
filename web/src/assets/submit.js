@@ -41,6 +41,33 @@ export function clearStoredToken(storage) {
   try { storage && storage.removeItem(TOKEN_STORAGE_KEY); } catch {}
 }
 
+// 到 Worker 的 fetch 一律带超时：自定义域 / workers.dev 都可能在部分网络被黑洞（SNI 阻断），
+// 连接挂起既不成功也不报错，没超时就永远「提交中…」（2026-07-03 巨轮智能提交静默丢失即此因）。
+// AbortSignal.timeout 不存在时手动兜底。与 check-page.js 的 timeoutSignal 同构。
+export function timeoutSignal(ms) {
+  if (typeof AbortSignal !== "undefined" && AbortSignal.timeout) return AbortSignal.timeout(ms);
+  const c = new AbortController();
+  setTimeout(() => c.abort(), ms);
+  return c.signal;
+}
+
+export const WORKER_TIMEOUT_MS = 10000;
+
+// 依次尝试同一 Worker 的多个入口（自定义域 → workers.dev 回退），谁先给出 HTTP 响应就用谁；
+// 空串端点滤掉、重复端点去重。全部失败抛最后一个错误，由调用方映射成失败文案。
+// POST 场景的已知取舍：主端点「超时但其实已送达」时改打备用端点会双发——换来的是
+// 封锁网络下提交不再静默丢失；重复提交由查重与人工审核兜底，代价可接受。
+export async function fetchAny(urls, options, { fetchImpl = fetch, timeoutMs = WORKER_TIMEOUT_MS } = {}) {
+  const list = [...new Set((urls || []).filter(Boolean))];
+  let lastErr = new Error("no_endpoint");
+  for (const url of list) {
+    try {
+      return await fetchImpl(url, { ...options, signal: timeoutSignal(timeoutMs) });
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr;
+}
+
 // 纯函数：把 /verify 响应映射成授权态。authorized=true 时回显打码邮箱。
 export function describeVerify(res) {
   if (res && res.ok) {

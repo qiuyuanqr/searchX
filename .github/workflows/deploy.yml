@@ -41,3 +41,12 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+  # 部署后冒烟：线上首页可达 + 注入的提交端点与仓库配置一致 + Worker 可达。
+  # 拦「部署完就是坏的」整类事故（坏配置/旧构建/Worker 失联）；失败 → workflow 红 → GitHub 发失败邮件。
+  # 多次重试是在等 Pages CDN 缓存刷新（最长约 10 分钟），不是掩盖失败。
+  smoke:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash .github/scripts/site-probe.sh 10 45

@@ -163,6 +163,15 @@ bun run runner
 - **取 `approved` 列表本身失败**（首个 GitHub 请求就 4xx/5xx，如 PAT 失效）：本轮没做任何事就带可见错误退出（退出码 1）；修好凭据后重跑即可，无副作用。
 - **必须在仓库根、`main`、工作区干净时跑**：这个装配入口会预检 `research/`+`.git`+`claude` 是否就位，缺则带中文报错退出。
 
+## 自检报警（探活 + 失败邮件，防「坏了不吭声」）
+
+2026-07-03 巨轮智能提交静默丢失（workers.dev 被墙内 SNI 阻断、无任何一方报警）后加的一层。三个部件：
+
+- **墙内探活**（`src/probe-cli.js`）：`scheduled-run.sh` 每个 tick 先探一遍「站点首页 + Worker 主端点 + 备用端点」（各 10s 超时）。站点挂或主端点挂 → 给作者发报警邮件；仅备用（workers.dev）挂不报警（主链路仍通、墙内间歇阻断是已知常态），只留日志。海外视角另有 `.github/workflows/probe.yml`（每半小时，挂了 GitHub 自动发失败邮件）——两个视角缺一不可：墙内阻断只有本机测得到。
+- **runner 失败报警**：`scheduled-run.sh` 里 runner 退出码非 0 → 发报警邮件。常见失败=研究未产出，会被之后每个 tick 自动重跑（每次都是真实花额度的 claude 全跑）——报警就是让作者及时知道「在烧额度重试」，可人工介入。
+- **限频**（`src/alert.js` + `src/alert-cli.js`）：同类报警（按 key）6 小时内最多一封，防每 5 分钟一 tick 的邮件轰炸；发送成功才落限频标记（`~/Library/Application Support/searchx-runner/alert-<key>.last`），发送失败下个 tick 重试。发信只用 `RUNNER_SMTP_USER/PASS`（+可选 `RUNNER_AUTHOR_EMAIL`），特意不走 `loadRunnerConfig`——其它配置缺了不该连累报警本身。
+- 手动自检一条链路：`bun services/runner/src/alert-cli.js self-test "测试"`（真发一封；6h 内重复调用会被限频拦下，属预期）。
+
 ## 定时无人值守（Mac mini LaunchAgent）
 
 让 Mac mini 每 5 分钟自动跑一次 runner，你只需在手机上给 Issue 贴 `approved`，剩下全自动上线 + 发信。

@@ -1,4 +1,4 @@
-import { buildPayload, tokenFromQuery, resolveToken, clearStoredToken, describeVerify, describeResult, renderSearchResultsHTML, describeExistingReport } from "./submit.js";
+import { buildPayload, tokenFromQuery, resolveToken, clearStoredToken, describeVerify, describeResult, renderSearchResultsHTML, describeExistingReport, fetchAny } from "./submit.js";
 import { findFreshReport } from "./dedup.js";
 import { computeFeedView } from "./feed-filter.js";
 
@@ -180,7 +180,11 @@ function bindSubmitModal(){
     if (verified) return;                       // 已拿到确定结果就不重复验
     if (!TOKEN){ verified = true; applyAuth(describeVerify({ ok: false })); return; }
     try {
-      const r = await fetch(form.dataset.verify + "?k=" + encodeURIComponent(TOKEN));
+      // 主备端点各带超时（fetchAny）：任一端口被网络黑洞时不至于永远「验证中」
+      const fb = form.dataset.workerFallback;
+      const r = await fetchAny(
+        [form.dataset.verify, fb && fb + "/verify"].map((u) => u && u + "?k=" + encodeURIComponent(TOKEN))
+      );
       const data = await r.json().catch(() => ({ ok: false }));
       verified = true;                          // 拿到服务端确定答复才缓存
       if (!data || !data.ok) clearStoredToken(safeStorage()); // 服务端判定无效/已撤销 → 清掉本机失效 token，下次不再误判已授权
@@ -274,7 +278,8 @@ function bindSubmitModal(){
     );
     setStatus("提交中…", "pending");
     try {
-      const r = await fetch(form.dataset.worker, {
+      // 主备端点各带超时（fetchAny）：黑洞网络下 10 秒即报错可重试，不再无限「提交中…」
+      const r = await fetchAny([form.dataset.worker, form.dataset.workerFallback], {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),

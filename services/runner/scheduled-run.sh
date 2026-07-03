@@ -28,7 +28,19 @@ if [ -f "$LOG" ] && [ "$(wc -c < "$LOG")" -gt 5000000 ]; then mv -f "$LOG" "$LOG
 cd "$REPO" 2>/dev/null || { echo "[$(ts)] 进不去仓库目录：$REPO" >> "$LOG"; exit 1; }
 
 echo "[$(ts)] ──────── tick：尝试运行 runner @ $REPO" >> "$LOG"
+
+# 墙内视角探活（站点 + Worker 主备端点，各 10s 超时）：海外的 probe.yml 测不到墙内
+# SNI 阻断，只有这台机器测得到。失败会给作者发限频报警邮件（同类 6 小时最多一封）。
+# 探活自身出错不拦 runner——监控挂了不能连累主链路。
+bun services/runner/src/probe-cli.js >> "$LOG" 2>&1 || true
+
 bun run runner >> "$LOG" 2>&1
 code=$?
 echo "[$(ts)] ──────── 结束 (exit=$code)" >> "$LOG"
+
+# runner 真失败才报警（跳过/空队列都是 exit 0）：失败不能只躺在这份没人看的日志里。
+# 常见失败=研究未产出，会被下个 tick 自动重跑；报警是让作者知道「在烧额度重试」，可及时人工介入。
+if [ "$code" -ne 0 ]; then
+  bun services/runner/src/alert-cli.js runner-failed "定时 runner 退出码 $code，日志：$LOG" >> "$LOG" 2>&1 || true
+fi
 exit "$code"

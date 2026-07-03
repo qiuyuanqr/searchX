@@ -1,0 +1,21 @@
+# 定时探活（海外视角）：每半小时从 GitHub runner 测一遍「首页 + 配置一致 + Worker 可达」。
+# 挂了 → workflow 红 → GitHub 给 workflow 文件最后修改者发失败邮件——作者不用守在电脑前。
+# 边界（说清楚，别指望它包打天下）：GitHub runner 在海外，墙内 SNI 阻断类故障
+# （如 2026-07-03 workers.dev 被断导致提交静默丢失）这里测不到，
+# 墙内视角由 Mac mini 的 services/runner/src/probe-cli.js 每个 runner tick 顺带探测。
+name: Probe site
+on:
+  schedule:
+    - cron: "7,37 * * * *" # 每半小时；避开整点（GitHub 整点定时任务挤、易延迟/丢跑）
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: probe
+  cancel-in-progress: true
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash .github/scripts/site-probe.sh 3 60 # 连续 3 次（隔 60s）都不过才算挂：抗单次网络抖动
