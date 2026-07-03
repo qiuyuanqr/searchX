@@ -1,12 +1,25 @@
 // web/src/assets/check-page.js — 事实核查提交页的 DOM 引导（外置脚本，配合严格 CSP `script-src 'self'`）。
 // 纯逻辑（载荷构造 / 密钥读写 / 状态文案）在 check.js；本文件只做事件绑定与 fetch。
 import {
-  readKey, saveKey, clearKey, describeCheckResult, fitDimensions, validateCheckSubmission,
+  readKey, saveKey, clearKey, describeCheckResult, describeSubmitError, describeRecentError,
+  submitTimeoutMs, fitDimensions, validateCheckSubmission,
   describeTaskStatus, formatTaskTime, shouldKeepPolling,
 } from "./check.js";
 
 const WORKER = document.body.dataset.worker || "";   // {{WORKER_URL}} 注入在 body data-worker
 const $ = (id) => document.getElementById(id);
+
+// 所有到 Worker 的 fetch 一律带超时：workers.dev 在部分网络（如大陆手机网）会被黑洞，
+// 连接挂起既不成功也不报错，没超时就永远"提交中"。AbortSignal.timeout 不存在时手动兜底。
+function timeoutSignal(ms) {
+  if (typeof AbortSignal !== "undefined" && AbortSignal.timeout) return AbortSignal.timeout(ms);
+  const c = new AbortController();
+  setTimeout(() => c.abort(), ms);
+  return c.signal;
+}
+
+const PROBE_TIMEOUT_MS = 10000;   // 密钥探测：失败本就放行，超时只为别让密钥闸卡住
+const RECENT_TIMEOUT_MS = 15000;  // 最近核查列表
 
 const MAX_IMAGES = 9;
 const MAX_EDGE = 2000;     // 长边超此值才缩（保字迹优先）
@@ -125,19 +138,35 @@ function renderRecent(tasks) {
   }
 }
 
+// 加载失败 → 在列表区给一行可见提示（不再静默——静默过一次"手机连不上 workers.dev"，
+// 页面上完全无从判断是哪环出的问题）。密钥清理仍统一走提交路径。
+function renderRecentError(text) {
+  const box = $("recent-list");
+  box.textContent = "";
+  const p = document.createElement("p");
+  p.className = "field-hint";
+  p.textContent = text;
+  box.append(p);
+}
+
 async function loadRecent() {
   if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
   if (!key) return;
   try {
-    const r = await fetch(WORKER + "/check/recent", { headers: { "x-check-key": key } });
-    if (!r.ok) return; // 401/5xx 静默：密钥失效在提交路径统一处理，列表失败可手动刷新
+    const r = await fetch(WORKER + "/check/recent", {
+      headers: { "x-check-key": key },
+      signal: timeoutSignal(RECENT_TIMEOUT_MS),
+    });
+    if (!r.ok) { renderRecentError(describeRecentError(r.status)); return; }
     const { tasks } = await r.json();
     const list = Array.isArray(tasks) ? tasks : [];
     renderRecent(list);
     if (shouldKeepPolling(list) && document.visibilityState === "visible") {
       pollTimer = setTimeout(loadRecent, POLL_MS);
     }
-  } catch {} // 网络错误静默，手动刷新可重试
+  } catch {
+    renderRecentError(describeRecentError(0)); // 超时/不可达：给出"连不上"提示，点「刷新」重试
+  }
 }
 
 // 对齐站点约定（feed.js）：状态色靠 CSS `.form-status[data-kind="success"|"error"|"pending"]`。
@@ -163,6 +192,7 @@ async function enter(presetKey) {
       method: "POST",
       headers: { "content-type": "application/json", "x-check-key": candidate },
       body: JSON.stringify({ text: "" }),
+      signal: timeoutSignal(PROBE_TIMEOUT_MS),
     });
     // 401 = 密钥错；其它状态（包括 400 bad request）视为密钥本身是好的
     if (r.status === 401) {
@@ -225,6 +255,7 @@ $("check-form").addEventListener("submit", async (e) => {
       method: "POST",
       headers: { "x-check-key": key },   // 不手设 content-type，让浏览器带 multipart 边界
       body: fd,
+      signal: timeoutSignal(submitTimeoutMs(selected.length)),
     });
     if (r.status === 401) {
       // 密钥失效（可能 Worker 重置）→ 退回密钥闸
@@ -243,8 +274,9 @@ $("check-form").addEventListener("submit", async (e) => {
       clearImages();
       loadRecent(); // 新任务立即出现在列表并开始轮询
     }
-  } catch {
-    setStatus("网络错误，请检查连接后重试。", "error");
+  } catch (err) {
+    const e = describeSubmitError(err); // 超时单独给"换网络"指引，其余按一般网络错误
+    setStatus(e.text, e.kind);
   } finally {
     btn.disabled = false;
   }

@@ -23,6 +23,32 @@ export function describeCheckResult(ok) {
   return { kind: "error", text: "提交失败，请稍后重试。" };
 }
 
+// 纯函数：提交 fetch 的超时毫秒数。带图片时上传量大（慢网可达数十 MB 分钟级），给更长限时，
+// 避免"网络慢但能通"的提交被误杀；纯文字/链接的请求本应秒回，30 秒足够判死。
+export function submitTimeoutMs(imageCount) {
+  return (imageCount || 0) > 0 ? 120000 : 30000;
+}
+
+// 纯函数：把提交阶段抛出的异常映射成给用户看的中文。
+// 超时（TimeoutError；AbortError 是旧浏览器超时兜底的中断名）单独给文案——这类多半是
+// 当前网络到核查服务不通（如运营商屏蔽），指引换网络比笼统"重试"有用。
+export function describeSubmitError(err) {
+  const name = (err && err.name) || "";
+  if (name === "TimeoutError" || name === "AbortError") {
+    return { kind: "error", text: "提交超时：当前网络似乎连不上核查服务，请换个网络（如切流量/开代理）再试。" };
+  }
+  return { kind: "error", text: "网络错误，请检查连接后重试。" };
+}
+
+// 纯函数：最近核查列表加载失败 → 给用户看的一行提示（渲染进列表区，不再静默）。
+// status 是 HTTP 状态码；0 / undefined 表示网络层失败（超时、不可达）。
+export function describeRecentError(status) {
+  if (status === 401) return "密钥已失效，请点「退出」后重新输入。";
+  if (status === 429) return "请求过于频繁被暂时限流，请稍后再试。";
+  if (status) return `列表加载失败（HTTP ${status}），可点「刷新」重试。`;
+  return "连不上核查服务（网络不通或被屏蔽），可点「刷新」重试。";
+}
+
 // 纯函数：按长边等比缩放尺寸。长边 ≤ maxEdge 原样返回（不放大），否则缩到长边 = maxEdge。
 // 保字迹优先：截图只在确实过大时才缩，给模型读图留余量。退化输入（0）原样返回、不崩。
 export function fitDimensions(w, h, maxEdge) {

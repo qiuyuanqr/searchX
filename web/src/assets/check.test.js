@@ -4,6 +4,9 @@ import {
   saveKey,
   clearKey,
   describeCheckResult,
+  describeSubmitError,
+  describeRecentError,
+  submitTimeoutMs,
   fitDimensions,
   validateCheckSubmission,
   describeTaskStatus,
@@ -40,6 +43,68 @@ test("describeCheckResult：ok=false → error，可重试", () => {
   const r = describeCheckResult(false);
   expect(r.kind).toBe("error");
   expect(r.text).toContain("重试");
+});
+
+// --- submitTimeoutMs（提交超时：带图上传慢，给更长限时）---
+
+test("submitTimeoutMs：无图 → 30 秒", () => {
+  expect(submitTimeoutMs(0)).toBe(30000);
+});
+
+test("submitTimeoutMs：带图 → 120 秒（慢网上传大图不至于被误杀）", () => {
+  expect(submitTimeoutMs(1)).toBe(120000);
+  expect(submitTimeoutMs(9)).toBe(120000);
+});
+
+// --- describeSubmitError（提交异常 → 人话：超时给"换网络"指引，其余按一般网络错误）---
+
+test("describeSubmitError：TimeoutError → error，提示网络不通、换网络重试", () => {
+  const r = describeSubmitError(new DOMException("timed out", "TimeoutError"));
+  expect(r.kind).toBe("error");
+  expect(r.text).toContain("超时");
+  expect(r.text).toContain("换");
+});
+
+test("describeSubmitError：AbortError（旧浏览器超时兜底）→ 同超时文案", () => {
+  const r = describeSubmitError(new DOMException("aborted", "AbortError"));
+  expect(r.kind).toBe("error");
+  expect(r.text).toContain("超时");
+});
+
+test("describeSubmitError：普通网络错误 → error，通用重试文案", () => {
+  const r = describeSubmitError(new TypeError("Failed to fetch"));
+  expect(r.kind).toBe("error");
+  expect(r.text).toContain("网络错误");
+});
+
+test("describeSubmitError：退化输入（undefined）→ 通用文案、不崩", () => {
+  const r = describeSubmitError(undefined);
+  expect(r.kind).toBe("error");
+  expect(r.text).toContain("网络错误");
+});
+
+// --- describeRecentError（最近核查列表加载失败 → 可见提示，不再静默）---
+
+test("describeRecentError：401 → 提示密钥失效", () => {
+  expect(describeRecentError(401)).toContain("密钥");
+});
+
+test("describeRecentError：429 → 提示被限流、稍后再试", () => {
+  expect(describeRecentError(429)).toContain("稍后");
+});
+
+test("describeRecentError：其它 HTTP 状态 → 带状态码、引导点刷新", () => {
+  const t = describeRecentError(500);
+  expect(t).toContain("500");
+  expect(t).toContain("刷新");
+});
+
+test("describeRecentError：网络层失败（状态码 0 / undefined）→ 提示连不上、引导点刷新", () => {
+  for (const s of [0, undefined]) {
+    const t = describeRecentError(s);
+    expect(t).toContain("连不上");
+    expect(t).toContain("刷新");
+  }
 });
 
 // --- fitDimensions（手机端按长边缩放，保字迹优先）---
