@@ -34,6 +34,9 @@ echo "[$(ts)] ──────── tick：尝试运行 runner @ $REPO" >> "$
 # 探活自身出错不拦 runner——监控挂了不能连累主链路。
 bun services/runner/src/probe-cli.js >> "$LOG" 2>&1 || true
 
+# 新链接自检：发现新增/换钥授权 → 自动验证 → 邮件告知作者「可发 / 先别发」。
+bun services/runner/src/invite-watch-cli.js >> "$LOG" 2>&1 || true
+
 bun run runner >> "$LOG" 2>&1
 code=$?
 echo "[$(ts)] ──────── 结束 (exit=$code)" >> "$LOG"

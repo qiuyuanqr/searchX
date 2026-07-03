@@ -22,6 +22,16 @@ export function renderPeopleRows(people, base){
   }).join("");
 }
 
+// 纯函数：把「新增授权后立刻打一次 /verify」的自检结果映射成给管理员看的提示。
+// ok=true 时回显打码邮箱作身份确认；失败/网络错（res 为 null）都提示先别发链接。
+// 邮件留档由 Mac mini 的 invite-watch（runner tick，≤5 分钟）独立复检后发出，两者互补。
+export function describeSelftest(res){
+  if (res && res.ok) {
+    return { kind: "ok", text: `✓ 已添加，链接自检通过（${res.email || ""}）。几分钟内你还会收到一封自检邮件作留档。` };
+  }
+  return { kind: "warn", text: "⚠ 已添加，但链接自检未通过——先别把链接发出去；系统会自动复检并邮件告知结果。" };
+}
+
 export function describeAdminError(status){
   if (status === 401) return "密钥不对，请重输管理密钥。";
   if (status === 429) return "尝试过多已临时锁定，请稍后再试。";

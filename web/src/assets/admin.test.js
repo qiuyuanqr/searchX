@@ -34,3 +34,21 @@ test("describeAdminError：401/429/400 给清楚中文", () => {
 test("escapeHtml 转义 & < > 双引号", () => {
   expect(escapeHtml(`<a href="x">&`)).toBe("&lt;a href=&quot;x&quot;&gt;&amp;");
 });
+
+// ── describeSelftest：新增授权后的即时链接自检文案 ──
+import { describeSelftest } from "./admin.js";
+
+test("describeSelftest：verify 通过 → ✓ 且回显打码邮箱", () => {
+  const r = describeSelftest({ ok: true, email: "9***@qq.com" });
+  expect(r.kind).toBe("ok");
+  expect(r.text).toContain("9***@qq.com");
+  expect(r.text).toContain("自检通过");
+});
+
+test("describeSelftest：verify 不通过 / 网络错（null）→ ⚠ 提示先别发", () => {
+  for (const res of [{ ok: false }, null, undefined]) {
+    const r = describeSelftest(res);
+    expect(r.kind).toBe("warn");
+    expect(r.text).toContain("先别把链接发出去");
+  }
+});

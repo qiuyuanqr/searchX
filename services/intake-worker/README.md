@@ -17,7 +17,7 @@ Cloudflare Worker (本目录)
 GitHub Issues → runner 取 approved 自动跑 /research（pending 等作者手动批）
 ```
 
-**其它路由：** `GET /verify?k=`（提交前确认 token、回显打码邮箱）、`GET|POST /admin/*`（授权名单增/查/删/轮换，凭 `ADMIN_KEY`）、`GET /sub/<n>`（runner 取邮箱，凭 `SUB_READ_SECRET`）。
+**其它路由：** `GET /verify?k=`（提交前确认 token、回显打码邮箱）、`GET|POST /admin/*`（授权名单增/查/删/轮换，凭 `ADMIN_KEY`）、`GET /sub/<n>`（runner 取邮箱，凭 `SUB_READ_SECRET`）、`GET /people`（runner 取授权列表做新链接自检：打码邮箱+token+addedAt，凭 `SUB_READ_SECRET`）。
 
 ## 授权白名单 / 专属链接 / 管理页
 
@@ -45,6 +45,7 @@ GitHub Issues → runner 取 approved 自动跑 /research（pending 等作者手
 | `src/ratelimit.js` | `peek/commitRateLimit(kv,{...})` + `dayKey(date)` KV 每日计数 |
 | `src/github.js` | `createIssue({...},fetchImpl)` 调 GitHub Issues API |
 | `src/sub-read.js` | `handleSubRead` —— `GET /sub/<n>` 取提交者邮箱（`SUB_READ_SECRET`） |
+| `src/people.js` | `handlePeople` —— `GET /people` 授权列表（打码邮箱+token，`SUB_READ_SECRET`；供 runner 新链接自检） |
 | `src/handler.js` | `handleIntake(request,env,deps)` 提交编排（token 鉴权/校验/限频/建 Issue/存邮箱） |
 | `src/index.js` | Cloudflare 入口：路由 `/sub`、`/admin`、`/verify`、提交 |
 | `wrangler.toml` | Worker 配置（KV 绑定、公开 `[vars]`；机密走 secret） |

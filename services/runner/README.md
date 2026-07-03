@@ -171,6 +171,7 @@ bun run runner
 - **runner 失败报警**：`scheduled-run.sh` 里 runner 退出码非 0 → 发报警邮件。常见失败=研究未产出，会被之后每个 tick 自动重跑（每次都是真实花额度的 claude 全跑）——报警就是让作者及时知道「在烧额度重试」，可人工介入。
 - **限频**（`src/alert.js` + `src/alert-cli.js`）：同类报警（按 key）6 小时内最多一封，防每 5 分钟一 tick 的邮件轰炸；发送成功才落限频标记（`~/Library/Application Support/searchx-runner/alert-<key>.last`），发送失败下个 tick 重试。发信只用 `RUNNER_SMTP_USER/PASS`（+可选 `RUNNER_AUTHOR_EMAIL`），特意不走 `loadRunnerConfig`——其它配置缺了不该连累报警本身。
 - 手动自检一条链路：`bun services/runner/src/alert-cli.js self-test "测试"`（真发一封；6h 内重复调用会被限频拦下，属预期）。
+- **新链接自检**（`src/invite-watch-cli.js` + 纯逻辑 `src/invite-selftest.js`）：每个 tick 拉 Worker `GET /people`（共享密钥，返回打码邮箱+token），对比本地「已见」（`~/Library/Application Support/searchx-runner/invites-seen.json`）；发现新增/换钥授权 → 自动验证（主端点 /verify + 站点首页 + 备用域参考）→ 邮件告知作者「✅ 可发（附可转发链接）/ ❌ 先别发」。首次运行只纳管存量不发信；通知失败下个 tick 自动重试；撤销的授权自动掉出。admin 页新增授权时页面还会当场打一次 /verify 显示即时结果（徽章即时、邮件留档，互补）。
 
 ## 定时无人值守（Mac mini LaunchAgent）
 

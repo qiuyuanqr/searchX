@@ -1,7 +1,7 @@
 // web/src/assets/admin-page.js — 授权管理页的 DOM 引导（外置脚本，配合严格 CSP `script-src 'self'`）。
 // 外置而非内联：让管理页能上 `script-src 'self'`（无 'unsafe-inline'），即使页面被注入标记也无法执行新脚本。
 // 纯逻辑（拼链接 / 渲染 / 文案）在 admin.js；本文件只做事件绑定与请求。
-import { renderPeopleRows, describeAdminError } from "./admin.js";
+import { renderPeopleRows, describeAdminError, describeSelftest } from "./admin.js";
 
 const WORKER = document.body.dataset.worker || "";   // {{WORKER_URL}} 注入在 body data-worker
 const base = new URL(".", document.baseURI).href;     // 站点根（admin.html 同级），拼专属链接用
@@ -43,7 +43,19 @@ $("add-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const email = $("add-email").value.trim();
   const r = await api("/admin/add", { method: "POST", body: JSON.stringify({ email }) });
-  if (r.ok) { $("add-email").value = ""; $("add-msg").hidden = true; await load(); }
+  if (r.ok) {
+    const j = await r.json().catch(() => null);
+    $("add-email").value = "";
+    await load();
+    // 生成即自检：立刻用新 token 打一次 /verify（与朋友页面同一路径），当场告诉管理员这条链接能不能发。
+    let v = null;
+    try {
+      const vr = await fetch(WORKER + "/verify?k=" + encodeURIComponent((j && j.token) || ""), { signal: AbortSignal.timeout(10000) });
+      v = await vr.json().catch(() => null);
+    } catch {}
+    $("add-msg").textContent = describeSelftest(v).text;
+    $("add-msg").hidden = false;
+  }
   else { $("add-msg").textContent = describeAdminError(r.status); $("add-msg").hidden = false; }
 });
 
