@@ -19,5 +19,7 @@ export function renderIndex(entries, template) {
     }
     parts.push(renderCard(e));
   }
-  return template.replace("<!-- CARDS -->", parts.join("\n"));
+  // 函数形式替换：字符串形式会解释替换值里的 $ 模式（$'、$& 等），标题/导语里出现这类
+  // 序列（财经文本写美元符时常见）会静默复制模板尾部、损坏首页结构。
+  return template.replace("<!-- CARDS -->", () => parts.join("\n"));
 }

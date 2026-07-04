@@ -53,5 +53,11 @@ export function loadRunnerConfig(env) {
     claudeArgs: (env.RUNNER_CLAUDE_ARGS || "--permission-mode bypassPermissions")
       .split(/\s+/)
       .filter(Boolean),
+    // claude 研究子进程硬超时（分钟，默认 180）：全力档研究耗时长，给足余量。挂死的子进程
+    // 会让单实例锁被活进程永久持有、流水线静默停摆且无报警，必须到点强杀。非法值回落默认。
+    claudeTimeoutMs: (() => {
+      const n = parseInt(env.RUNNER_TIMEOUT_MINUTES, 10);
+      return (Number.isInteger(n) && n >= 1 ? n : 180) * 60_000;
+    })(),
   };
 }

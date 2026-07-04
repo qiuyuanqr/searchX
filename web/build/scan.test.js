@@ -1,4 +1,7 @@
 import { test, expect } from "bun:test";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "fs";
+import { join } from "path";
+import { tmpdir } from "os";
 import { scanResearch, compareByNewest } from "./scan.js";
 
 const ROOT = "web/build/fixtures/research";
@@ -57,4 +60,20 @@ test("条目带解析后的字段", () => {
   expect(beta.title).toBe("Beta 板块");
   expect(beta.sourceCount).toBe(9);
   expect(beta.href).toBe("r/2026-06-02_beta/");
+});
+
+test("frontmatter YAML 损坏的 notes.md：警告 + 跳过该目录，不击穿整站构建", () => {
+  const root = mkdtempSync(join(tmpdir(), "sx-scan-badyaml-"));
+  try {
+    mkdirSync(join(root, "2026-06-01_good"), { recursive: true });
+    writeFileSync(join(root, "2026-06-01_good", "notes.md"), "---\ntype: 概念\n---\n# 好的\n> ok\n");
+    mkdirSync(join(root, "2026-06-02_bad"), { recursive: true });
+    // 未闭合的 flow 序列 → gray-matter 抛 YAMLException
+    writeFileSync(join(root, "2026-06-02_bad", "notes.md"), "---\ntags: [a\n---\n# 坏的\n");
+    const entries = scanResearch(root);
+    expect(entries.length).toBe(1);
+    expect(entries[0].dir).toBe("2026-06-01_good");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

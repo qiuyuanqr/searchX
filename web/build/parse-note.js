@@ -53,7 +53,9 @@ export function parseNote(raw, dir) {
     tldr,
     tags: toList(data.tags),
     boards,
-    sourceCount: data.source_count || 0,
+    // 强转数字：frontmatter 写成字符串会原样直通到首页 HTML（渲染层虽也转义，这里是第一道闸），
+    // 非数字一律归 0（渲染层对 0 不显示"来源"块）。
+    sourceCount: Number(data.source_count) || 0,
     href: `r/${dir}/`,
   };
 }

@@ -99,3 +99,36 @@ test("KV 坏数据：revoke 清掉损坏的 allow 记录、不抛", async () => 
   expect(await revoke(kv, "a@x.com")).toBe(true);
   expect(await kv.get(allowKey("a@x.com"))).toBeNull();
 });
+
+test("revoke 穷尽清理：allow 记录之外的孤儿 invite token 也被一并删除（撤销彻底）", async () => {
+  // 场景：重复 mint / 半写留下孤儿 T1（有效但不被 allow 追踪），allow 只记着 T2
+  const kv = fakeKV({
+    [inviteKey("T1")]: "bob@x.com",   // 孤儿：listPeople 看不见、按记录删够不着
+    [inviteKey("T2")]: "bob@x.com",
+    [allowKey("bob@x.com")]: JSON.stringify({ token: "T2", addedAt: 1 }),
+    [inviteKey("T9")]: "carol@y.com", // 别人的 token 不许误删
+  });
+  expect(await revoke(kv, "bob@x.com")).toBe(true);
+  expect(await kv.get(inviteKey("T1"))).toBe(null);  // 孤儿也被清掉
+  expect(await kv.get(inviteKey("T2"))).toBe(null);
+  expect(await kv.get(allowKey("bob@x.com"))).toBe(null);
+  expect(await kv.get(inviteKey("T9"))).toBe("carol@y.com"); // 无关授权原样保留
+});
+
+test("mintInvite 写序：先 allow（追踪键）后 invite（生效键）——半写只会留下可自愈的追踪记录", async () => {
+  // invite 写入抛错（模拟 KV 抖动）：allow 已写入 → 重试 mint 命中记录、自愈补写 invite 键
+  const kv = fakeKV();
+  const rawPut = kv.put.bind(kv);
+  let failInvite = true;
+  kv.put = async (k, v) => {
+    if (failInvite && k.startsWith("invite:")) throw new Error("KV put 瞬时失败");
+    return rawPut(k, v);
+  };
+  await expect(mintInvite(kv, "bob@x.com", { now: () => 1, gen: () => "TOK1" })).rejects.toThrow("KV put 瞬时失败");
+  expect(await kv.get(inviteKey("TOK1"))).toBe(null);            // 生效键没写成 → token 不可用（不是幽灵授权）
+  expect(await kv.get(allowKey("bob@x.com"))).not.toBe(null);    // 但已被追踪
+  failInvite = false;
+  const again = await mintInvite(kv, "bob@x.com", { now: () => 2, gen: () => "TOK2" });
+  expect(again.token).toBe("TOK1");                              // 重试复用被追踪的 token
+  expect(await kv.get(inviteKey("TOK1"))).toBe("bob@x.com");     // 自愈补写完成，链接恢复可用
+});

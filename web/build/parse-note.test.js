@@ -89,3 +89,11 @@ test("parseNote 优先用 > 引用块，不被后面的「## 一句话」覆盖"
   const e = parseNote(raw, "2026-06-05_x");
   expect(e.tldr).toBe("引用块结论。");
 });
+
+test("source_count 强转数字：字符串带标记归 0（不让恶意 frontmatter 直通首页）、数字字符串正常收", () => {
+  const mk = (v) => parseNote(`---\nsource_count: ${v}\n---\n# T\n> d\n`, "2026-06-01_x");
+  expect(mk('"<b>9</b>"').sourceCount).toBe(0);
+  expect(mk('"12"').sourceCount).toBe(12);
+  expect(mk("15").sourceCount).toBe(15);
+  expect(mk('"abc"').sourceCount).toBe(0);
+});

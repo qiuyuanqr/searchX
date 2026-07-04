@@ -26,8 +26,16 @@ export function scanResearch(root) {
         statSync(join(root, name)).isDirectory() &&
         existsSync(join(root, name, "notes.md"))
     )
-    .map((name) =>
-      parseNote(readFileSync(join(root, name, "notes.md"), "utf8"), name)
-    )
+    .map((name) => {
+      // frontmatter YAML 损坏（未闭合序列、错位引号等）时 gray-matter 直接抛错——警告 + 跳过
+      // 该目录（与 build.js 对缺 report.html 半成品目录的处理对齐），一条坏 note 不击穿整站构建。
+      try {
+        return parseNote(readFileSync(join(root, name, "notes.md"), "utf8"), name);
+      } catch (err) {
+        console.warn(`⚠ 跳过 ${name}：notes.md frontmatter 解析失败（${err.message.split("\n")[0]}）`);
+        return null;
+      }
+    })
+    .filter(Boolean)
     .sort(compareByNewest);
 }

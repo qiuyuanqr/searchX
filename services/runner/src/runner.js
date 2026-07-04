@@ -99,6 +99,10 @@ export async function runOnce(config, deps) {
       }
     }
     pending = stillPending;
+    // 立即落盘：阶段 2 若中途抛错（如取 Issue 列表失败导致 runOnce 中止），已补发成功的
+    // 条目绝不能留在磁盘队列里——否则下一轮会重新探活（秒过）并再给提交者发一封重复的
+    // 「已上线」邮件，GitHub 侧故障持续多久就重复多少封。
+    await savePending(pending);
   }
 
   // —— 2) 处理 approved 未 done 的新队列 ——
@@ -168,6 +172,10 @@ export async function runOnce(config, deps) {
       continue;
     }
 
+    // 先清残留的 park 信号（交互式 /research 被搁置后信号文件可能无人清理、或上一 tick 在
+    // 写信号与读信号之间中断）：保证跑完后读到的信号必然产自本次研究。否则旧信号会张冠李戴
+    // ——本条 Issue 实际成功也被判搁置：贴 done、给作者发错搁置信、提交者收不到上线通知。
+    await clearParkSignal();
     const before = existing.map((e) => e.dir);
     const ok = await runResearch(buildResearchPrompt({ topic, focus }));
     const after = scanDirs();

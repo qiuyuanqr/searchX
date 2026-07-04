@@ -11,6 +11,7 @@ import { fetchPendingChecks, markCheckDone, fetchCheckImage } from "./poll.js";
 import { buildFactcheckPrompt } from "./factcheck-cmd.js";
 import { createAttemptsStore } from "./attempts.js";
 import { runOnce } from "./runner.js";
+import { buildChildEnv } from "../../runner/src/child-env.js";
 import { sendEmail } from "../../runner/src/email.js";
 
 // —— 全局单实例锁（锁文件与 research runner 不同，两者可并存）——
@@ -184,14 +185,13 @@ async function main() {
     buildPrompt: buildFactcheckPrompt,
     runFactcheck: async (prompt) => {
       console.log(`→ claude -p ${JSON.stringify(prompt)}`);
-      // 剥掉 CHECK_RUNNER_* 机密：核查子进程不需要这些凭据，缩小提示注入爆炸半径。
-      const childEnv = { ...process.env };
-      for (const k of Object.keys(childEnv)) if (k.startsWith("CHECK_RUNNER_")) delete childEnv[k];
+      // 剥机密（RUNNER_* 与 CHECK_RUNNER_* 一起剥——共用同一个 .env，只剥一组等于白送另一组）
+      // + 打 git-sync 哨兵防止子会话钩子把脏工作树推上公开仓：见 child-env.js。
       const proc = Bun.spawn(["claude", "-p", prompt, ...config.claudeArgs], {
         stdout: "inherit",
         stderr: "inherit",
         stdin: "ignore",
-        env: childEnv,
+        env: buildChildEnv(process.env),
       });
       // 硬超时：claude 挂死会让单实例锁被活进程一直持有，后续 launchd tick 全部跳过、
       // 整条管道停摆。到点先 TERM、宽限 10 秒再 KILL；超时按失败计（attempts 接住、走退休）。

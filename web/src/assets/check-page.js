@@ -80,7 +80,11 @@ function clearImages() {
 // 仅手动点「退出」、清浏览器缓存、或换设备时才需重输；Worker 若改密钥则提交时 401 自动退回密钥闸。
 // 取舍：明文密钥长期留在本机浏览器（不再是关标签即清）。此页为私人提交页 + 严格 CSP（script-src 'self'），
 // XSS 面极窄，密钥泄露最坏后果仅是他人能投递核查任务、读不到任何数据，权衡下可接受。
-const store = localStorage;
+// 与 feed.js 同款防护：沙箱/隐私模式下访问 localStorage 属性本身就可能抛 SecurityError，
+// 必须 try/catch——否则整个模块加载失败，「进入」按钮等所有交互整页失效且无任何提示。
+// readKey/saveKey/clearKey 已容忍空 storage（内部 try/catch），拿不到就退化为每次重输密钥。
+function safeStorage(){ try { return window.localStorage; } catch { return null; } }
+const store = safeStorage();
 let key = readKey(store);
 
 function showGate() {

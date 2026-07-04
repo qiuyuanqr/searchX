@@ -8,6 +8,7 @@ import { join } from "path";
 import { homedir } from "os";
 import { scanResearch } from "../../../web/build/scan.js";
 import { loadRunnerConfig } from "./config.js";
+import { buildChildEnv } from "./child-env.js";
 import { sendEmail as sendEmailImpl } from "./email.js";
 import { runOnce } from "./runner.js";
 import { pollUntilOk } from "./verify-published.js";
@@ -164,19 +165,26 @@ async function main() {
     scanDirs: () => scanResearch("research"),
     runResearch: async (prompt) => {
       console.log(`→ claude -p ${JSON.stringify(prompt)}`);
-      // 给研究子进程一个「剥掉 RUNNER_* 机密」的环境：PAT / SMTP 密码 / 共享密钥不进这个
-      // 全权限（bypassPermissions）会话，缩小提示注入的爆炸半径（它本不需要这些密钥）。
-      // 同时打哨兵 SEARCHX_IN_RUNNER=1：让两机 git-sync 钩子在 runner 跑研究期间自动跳过，
-      // 避免会话级 pull/push 与 /research Step6 的 push 并发写同一工作树。
-      const childEnv = { ...process.env, SEARCHX_IN_RUNNER: "1" };
-      for (const k of Object.keys(childEnv)) if (k.startsWith("RUNNER_")) delete childEnv[k];
+      // 剥机密 + 打 git-sync 哨兵：见 child-env.js（与 check-runner 共用同一套装配）。
       const proc = Bun.spawn(["claude", "-p", prompt, ...config.claudeArgs], {
         stdout: "inherit",
         stderr: "inherit",
         stdin: "ignore",
-        env: childEnv,
+        env: buildChildEnv(process.env),
       });
+      // 硬超时：claude 挂死会让单实例锁被活进程一直持有，后续 launchd tick 全部 exit 0
+      // 跳过（不触发 scheduled-run 报警），公开流水线静默停摆。到点先 TERM、宽限 10 秒再
+      // KILL；超时按「研究未产出」计入失败退避（连续达阈值自动贴 done 停跑并专信作者）。
+      let timedOut = false;
+      const termTimer = setTimeout(() => { timedOut = true; try { proc.kill(); } catch {} }, config.claudeTimeoutMs);
+      const killTimer = setTimeout(() => { try { proc.kill(9); } catch {} }, config.claudeTimeoutMs + 10_000);
       const code = await proc.exited;
+      clearTimeout(termTimer);
+      clearTimeout(killTimer);
+      if (timedOut) {
+        console.log(`✗ 研究超时（${Math.round(config.claudeTimeoutMs / 60_000)} 分钟），已终止 claude 子进程`);
+        return false;
+      }
       return code === 0;
     },
     // 部署探活：Step6 push 后 GitHub Actions 才 build+deploy（约 1–2 分钟）；偶发 Pages 5xx

@@ -11,7 +11,7 @@ export function escapeHtml(s) {
 export function renderCard(e) {
   const dateDisp = e.date.replace(/-/g, "·"); // 2026-06-03 → 2026·06·03
   const boards = boardsOf(e.boards);
-  const srcMeta = e.sourceCount ? ` · ${e.sourceCount} 来源` : "";
+  const srcMeta = e.sourceCount ? ` · ${escapeHtml(e.sourceCount)} 来源` : "";
   const boardMeta = boards.length ? ` · ${escapeHtml(boards.join(" · "))}` : "";
   const lead = e.tldr ? `<p class="lead">${escapeHtml(e.tldr)}</p>` : "";
   // data-boards 仍写入全部原始 boards：筛选 chip 只匹配 5 大板块名，多余值无害且保留向后兼容。

@@ -154,11 +154,16 @@ function bindSearch(){
     if (countEl) countEl.textContent = `找到 ${n} 条`;
   }
 
+  // 查询序号：debounce 只防抖入口、不取消在途查询。清空或快速改词后，先前慢的旧查询
+  // resolve 回来会覆盖当前状态（空输入框却显示旧结果）——写 DOM 前校验仍是最新一次才生效。
+  let searchSeq = 0;
   const run = debounce(async (q) => {
+    const seq = ++searchSeq;
     if (!q) { showFeed(); empty.hidden = true; return; }
     const engine = await ensure();
     const search = await engine.search(q);
     const items = await Promise.all(search.results.slice(0, 20).map((r) => r.data()));
+    if (seq !== searchSeq) return; // 期间有更新的输入/清空动作 → 旧结果直接丢弃
     if (!items.length) { showResults(0); results.innerHTML = ""; empty.hidden = false; return; }
     empty.hidden = true;
     // 传 reports.json 清单：结果卡带上日期/类型元信息（取不到清单则退化为纯标题+摘录）
@@ -221,12 +226,16 @@ function bindSubmitModal(){
       const r = await fetchAny(
         [form.dataset.verify, fb && fb + "/verify"].map((u) => u && u + "?k=" + encodeURIComponent(TOKEN))
       );
-      const data = await r.json().catch(() => ({ ok: false }));
+      // 只有 2xx + 合法 JSON 才算服务端确定答复（/verify 对无效 token 也回 200 {ok:false}）。
+      // 5xx / 网关 HTML 错误页绝不能当「token 无效」：那会误清本机有效 token（?k= 已从
+      // 地址栏抹掉，一清用户就只能重新找作者要链接），并把未授权缓存到整个会话。
+      if (!r.ok) throw new Error("verify http " + r.status);
+      const data = await r.json();
       verified = true;                          // 拿到服务端确定答复才缓存
       if (!data || !data.ok) clearStoredToken(safeStorage()); // 服务端判定无效/已撤销 → 清掉本机失效 token，下次不再误判已授权
       applyAuth(describeVerify(data));
     } catch {
-      // 瞬时网络故障：不缓存（verified 保持 false），关闭再打开弹窗可重试
+      // 瞬时网络/服务故障：不缓存（verified 保持 false）、不清 token，关闭再打开弹窗可重试
       applyAuth(describeVerify({ ok: false }));
     }
   }

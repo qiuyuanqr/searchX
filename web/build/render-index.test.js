@@ -31,3 +31,16 @@ test("空列表不产分隔行", () => {
   const html = renderIndex([], TPL);
   expect(html).not.toContain("month-sep");
 });
+
+test("卡片内容含 $' / $& 等替换模式序列时模板不被损坏（函数形式替换不解释 $）", () => {
+  const entries = [{
+    dir: "2026-06-01_x", date: "2026-06-01", type: "概念",
+    title: "美元符文本 $' 与 $& 测试", tldr: "导语也带 $` 序列",
+    boards: [], sourceCount: 3, href: "r/2026-06-01_x/",
+  }];
+  const template = "<ul>\n<!-- CARDS -->\n</ul><footer>尾部</footer>";
+  const html = renderIndex(entries, template);
+  expect(html).toContain("$' 与 $&");        // 字面保留
+  expect(html.match(/<footer>/g).length).toBe(1); // 模板尾部没有被 $' 复制
+  expect(html).toContain("$` 序列");
+});

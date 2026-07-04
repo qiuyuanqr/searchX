@@ -62,3 +62,12 @@ test("无一句话结论时不渲染 lead", () => {
   const html = renderCard({ ...ENTRY, tldr: "" });
   expect(html).not.toContain('class="lead"');
 });
+
+test("sourceCount 也走转义：即便上游漏拦，标记也不会进 HTML", () => {
+  const html = renderCard({
+    dir: "2026-06-01_x", date: "2026-06-01", type: "概念", title: "T", tldr: "",
+    boards: [], sourceCount: '<img src=x onerror=alert(1)>', href: "r/2026-06-01_x/",
+  });
+  expect(html).not.toContain("<img");
+  expect(html).toContain("&lt;img");
+});
