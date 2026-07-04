@@ -24,7 +24,7 @@ GitHub Issues → runner 取 approved 自动跑 /research（pending 等作者手
 - **授权 = 持有专属链接**。作者在 `admin.html` 加一个邮箱 → Worker 生成该人专属 token、双向存 KV（`invite:<token>→email`、`allow:<encEmail>→{token,addedAt}`，**永不过期**），返回链接 `<站点>/?k=<token>`。作者私发给本人。
 - **撤销 / 轮换**：删 `allow:`+`invite:` 双键即让链接立即失效；轮换 = 撤旧发新。
 - **邮箱不由用户输入**：提交时邮箱来自 token 映射，杜绝冒充他人 / 往邮箱字段塞注入。
-- **管理页访问控制**：`admin.html` 是纯密钥闸（输对 `ADMIN_KEY` 前不加载任何数据）；真正鉴权在 Worker 服务端逐次 `safeEqual` 校验；错误密钥按 IP 计数、超 `ADMIN_MAX_FAILS_PER_HOUR` 临时 429 锁定；管理凭证与提交 token 完全隔离（提交 token 对 `/admin/*` 无效）。
+- **管理页访问控制**：`admin.html` 是纯密钥验证页（输对 `ADMIN_KEY` 前不加载任何数据）；真正鉴权在 Worker 服务端逐次 `safeEqual` 校验；错误密钥按 IP 计数、超 `ADMIN_MAX_FAILS_PER_HOUR` 临时 429 锁定；管理凭证与提交 token 完全隔离（提交 token 对 `/admin/*` 无效）。
 
 ## 隐私红线（务必理解）
 

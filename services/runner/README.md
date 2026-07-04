@@ -1,6 +1,6 @@
 # searchX Runner（M2b · 一键跑研究 + 发信）
 
-作者审批后回到 Mac，运行**一条命令** `bun run runner`。它会依次：取出队列里已 `approved` 且尚未 `done` 的 Issue，交给本机 Claude Code 跑 `/research`（其中第 6 步会自动把报告发布上线），给 Issue 打上 `done` 标签，读取提交者邮箱，最后发一封简短的结果邮件（抄送作者）。
+Runner **只在 Mac mini 上跑**（见下文「定时无人值守」，每 5 分钟自动 tick 一次）。作者审批后无需手动做任何事；急的话可手动立刻触发一次：`bun run runner:now`（与定时器共用同一把锁，绝不重复）。**MacBook 等其它机器禁止直接 `bun run runner`**——单实例锁是本机文件锁，不跨机器互斥，若恰好撞上 Mac mini 当轮 tick 处理同一 Issue，会两边各 spawn 一次 `/research`，造成双份额度消耗、重复文件夹、`done` 标签竞态、提交者收两封邮件。它会依次：取出队列里已 `approved` 且尚未 `done` 的 Issue，交给本机 Claude Code 跑 `/research`（其中第 6 步会自动把报告发布上线），给 Issue 打上 `done` 标签，读取提交者邮箱，最后发一封简短的结果邮件（抄送作者）。
 
 **唯一消耗 Claude 额度的就是跑一次 `/research` 本身。** 取 Issue、打标签、发邮件、取邮箱都是写死的脚本逻辑，不调用大模型、不消耗 token。
 
@@ -92,13 +92,13 @@ openssl rand -hex 24
 ```bash
 bun run build:worker     # 产出含新路由的 services/intake-worker/dist/worker.js
 ```
-设密钥 + 部署（**二选一**；wrangler 在 Claude Code 环境要清掉 agent 环境变量，否则吞输出）：
+设密钥 + 部署（**二选一**）：
 
 **A · wrangler**
 ```bash
 cd services/intake-worker
-env -u CLAUDECODE -u AI_AGENT -u CLAUDE_CODE_ENTRYPOINT -u CLAUDE_AGENT_SDK_VERSION bun x wrangler secret put SUB_READ_SECRET   # 粘第 2 步的密钥
-env -u CLAUDECODE -u AI_AGENT -u CLAUDE_CODE_ENTRYPOINT -u CLAUDE_AGENT_SDK_VERSION bun x wrangler deploy
+bun x wrangler secret put SUB_READ_SECRET   # 粘第 2 步的密钥
+bun x wrangler deploy
 ```
 **B · dashboard**：Workers & Pages → `searchx-intake` → 编辑器粘贴新的 `dist/worker.js` → Settings → Variables and Secrets：加 Secret `SUB_READ_SECRET`（值=第 2 步）→ Deploy。
 
@@ -157,7 +157,7 @@ bun run runner
 ## 失败 / 重跑语义（幂等）
 
 - **幂等标记 = `done` 标签**：再跑 `bun run runner` 只处理 `approved` 且未 `done` 的 Issue，已完成的跳过——不二次花费、不二次发信。
-- **研究未产出**（claude 退出码≠0 或没出新文件夹）：**不贴 `done`**，计入 `失败`，留待下轮重跑；同时在本机记一次**连续失败计数**（`~/Library/Application Support/searchx-runner/research-failures.json`）。**同一 Issue 连续失败达 `RUNNER_MAX_FAILURES`（默认 3）次即自动止损**：贴 `done` 停止重跑 + Issue 评论说明 + 给作者发「已停跑」专信——没有这道闸，定时 runner 每 5 分钟会全额重跑一次 /research（每次都真实花额度），一整天可烧上百次。研究一旦成功计数即清零（只累计「连续」失败，偶发故障不算账）。**恢复方式**：人工排查修复后移除该 Issue 的 `done` 标签，下一轮自动重新排队（计数已清零，重新有完整重试预算）。若停跑时贴 `done` 失败（如 PAT 瞬断），计数保留，下一轮会**先补做停跑、绝不先重跑研究**；专信也留到止损真正落地那轮才发（防每 5 分钟一封的邮件轰炸，期间由限频报警兜底知会）。
+- **研究未产出**（claude 退出码≠0 或没出新文件夹）：**不贴 `done`**，计入 `失败`，留待下轮重跑；同时在本机记一次**连续失败计数**（`~/Library/Application Support/searchx-runner/research-failures.json`）。**同一 Issue 连续失败达 `RUNNER_MAX_FAILURES`（默认 3）次即自动止损**：贴 `done` 停止重跑 + Issue 评论说明 + 给作者发「已停跑」专信——没有这层止损，定时 runner 每 5 分钟会全额重跑一次 /research（每次都真实花额度），一整天可烧上百次。研究一旦成功计数即清零（只累计「连续」失败，偶发故障不算账）。**恢复方式**：人工排查修复后移除该 Issue 的 `done` 标签，下一轮自动重新排队（计数已清零，重新有完整重试预算）。若停跑时贴 `done` 失败（如 PAT 瞬断），计数保留，下一轮会**先补做停跑、绝不先重跑研究**；专信也留到止损真正落地那轮才发（防每 5 分钟一封的邮件轰炸，期间由限频报警兜底知会）。
 - **发信失败**（取邮箱/SMTP 出错）：报告**已上线且已贴 `done`**，Runner 在 Issue 上留一条 `⚠️ …发信失败…请手动补发` 评论。**注意**：再跑不会重发该条邮件（它已 `done`）——按评论手动补发即可。
 - **可访问性检查失败 / 未确认上线**（Pages 偶发 5xx 等导致 push 后报告页一直非 200）：报告**已上线且已贴 `done`**（贴 `done` 是为防下一轮重跑研究），但 Runner 暂缓给提交者发信（免得发出打不开的 404 链接），并留一条 `⚠️ …暂未确认上线…` 评论。同时把该条记进本机「上线待确认」队列（`~/Library/Application Support/searchx-runner/pending-publish.json`）：**后续每轮 runner 会自动重新检查，一旦确认上线就自动补发提交者邮件，无需人工**。（急的话也可在 Actions → deploy.yml → Run workflow 手动补跑部署。）
 - **贴 `done` 失败**（如 PAT 过期、被限制请求频率）：研究已上线但标签没贴上——Runner 会计入 `失败`、留一条 `⚠️ …贴 done 失败…请手动补贴` 评论、并**继续处理同批后续 Issue**（不再让整轮中止）。请按评论手动补贴 `done`，否则下一轮会对它重跑一次研究（重复消耗额度 + 造重复文件夹）。

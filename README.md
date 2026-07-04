@@ -23,9 +23,10 @@ searchX/
 │   └── dist/               构建产物（gitignore，CI 部署用）
 ├── services/                ← 半自动流水线后端
 │   ├── intake-worker/      Cloudflare Worker：站内提交 → 建 GitHub pending Issue（详见其 README）
-│   └── runner/             常驻机脚本：取 approved Issue → 跑 /research → 上线 → 发信（详见其 README）
+│   ├── runner/             常驻机脚本：取 approved Issue → 跑 /research → 上线 → 发信（详见其 README）
+│   └── check-runner/       常驻机脚本：取核查任务 → 跑 /factcheck → 笔记落本机 Obsidian（详见其 README）
 ├── docs/                    ← 开发文档：设计稿 / 实现计划 / 进度记录（见 docs/README.md）
-├── .github/workflows/       deploy.yml：push 动到 research/ 或 web/ 即自动 build + 部署 Pages
+├── .github/workflows/       deploy.yml（push 动到 research/ 或 web/ 即自动 build + 部署 Pages）、probe.yml（海外视角定时探活）、deploy-retry.yml（部署失败自动补跑）
 ├── CLAUDE.md                项目约定（语言 / 信息源 / 时间 / 隐私红线 / 板块）——Claude Code 自动加载
 └── setup-macmini.sh         常驻机（Mac mini）一次性环境配置脚本
 ```
@@ -96,7 +97,7 @@ runner (常驻机，每 5 分钟自动跑)   取 approved 未 done → 跑 /rese
 
 ```bash
 bun install
-bun test            # 全部单测（web 构建 + 两个服务，离线可测）
+bun test            # 全部单测（web 构建 + 三个服务，离线可测）
 bun run build       # 本地构建站点到 web/dist（= CI 所跑）
 bun run serve       # 构建并本地预览 http://localhost:8080
 bun run runner      # 跑一轮 runner（需配 .env，见 services/runner/README.md）

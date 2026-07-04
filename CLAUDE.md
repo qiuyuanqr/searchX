@@ -14,7 +14,7 @@
 - `.claude/skills/{research,stock,factcheck}/` — 三个 skill（能力本体 + `research/templates/report.html` 报告模板，stock 复用同模板；factcheck 产出 Obsidian 笔记、无模板、不上线）。
 - `research/` — 调研资产库（= `ARCHIVE_ROOT`），每主题一文件夹（三件套）+ `INDEX.md` 总索引；也是站点数据源。
 - `web/` — 信息流站（`src` 源 / `build` 构建逻辑 / `dist` 产物，CI 自动部署）。
-- `services/intake-worker/` · `services/runner/` — 半自动流水线（提交 worker / 自动跑研究 + 发信），各有独立 README。
+- `services/intake-worker/` · `services/runner/` · `services/check-runner/` — 半自动流水线（提交 worker / 自动跑研究 + 发信 / 自动跑核查落 Obsidian），各有独立 README。
 - `docs/` — 开发文档（设计稿 / 计划 / 进度，见 `docs/README.md`）。
 
 ## 全局约定（所有任务适用）
