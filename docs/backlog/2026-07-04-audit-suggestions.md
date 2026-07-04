@@ -19,7 +19,19 @@
 
 ---
 
-## 第二档 · 值得做（半小时到数小时级）
+## 第二档 · 值得做（半小时到数小时级）—— ✅ 已于 2026-07-04 全部完成
+
+[36][26][25][28][19][20][7][17][37][38] 共 10 条 + UI 实测三项均已修，`bun test` 515 测试绿；intake-worker 已 `bun x wrangler deploy` 上线并冒烟测试确认。UI 实测三项复测结论：焦点管理其实已经是对的（feed.js open() 一直有 `f.focus()`，是本轮 preview 工具坐标偶发失准导致误判，非代码缺陷）；触控目标与字号确认是真问题，已修。修法摘要：
+- [36] `runner.js` pending 条目加 `firstSeen`；超 24h 出队 + `composePendingExpiredNotice` 告警作者；复探改用远短的 `verifyPublishedQuick`（20s）而非原 8 分钟 `verifyPublished`。
+- [26] `handler.js` Issue 建成后两个 KV 写各自 try/catch 吞错，仍回 `{ok:true, approved}`（吞错时附 `degraded:true`）。
+- [25] `index.js` fetch 最外层包 try/catch（内部每条路由分发都改 `return await`，否则 async 函数里 `return 会 reject 的 promise` 不进 catch），统一兜成带 CORS 的结构化 JSON 500。
+- [28] `admin.js` 三处 `body.email.trim()` 都加 `.toLowerCase()`。
+- [19] `inject-report-nav.js` 目录按钮补 `aria-haspopup/aria-controls/aria-expanded`，浮层补 `id/role=dialog/aria-modal`；脚本复刻 feed.js 的打开聚焦首链接/关闭还原焦点/Tab 焦点陷阱。
+- [20]/[7] `index.template.html` #q 补 `aria-label`；三处 viewport（首页、`inject-report-nav.js` 注入、`report.html` 模板）统一删 `maximum-scale=1, user-scalable=no`，只留 `width=device-width, initial-scale=1`。
+- [17] `validate-report.js` on* 检测前先剥引号内容（`replace(/"[^"]*"/g,'""')` 等）再匹配；`src-tag` 正则改 `class=["']` 认双/单引号。
+- [37] 两个 `index.js` 的 `acquireLock` 加 `maxAliveAgeMs` 参数（= `claudeTimeoutMs + 30分钟`），持有者判活但超此龄也强制回收；`main()` 改先加载 config 再抢锁（要用 `claudeTimeoutMs` 算上限）。`git-sync.sh` 加锁文件 mtime 年龄检查（6 小时上限），配合 `kill -0`。
+- [38] 两个 `index.js` 存 `currentChild` 句柄，`SIGTERM`/`SIGINT` 处理器改 `killChildAndExit()`：先 `currentChild.kill(9)` 再 `process.exit()`。
+- UI：`feed.css` `.chip` 在 `@media (max-width:520px)` 下 padding 纵向 .26rem→.7rem（31px→45px）；`.search` 基准字号 .92rem→1rem(16px)，删掉此前只在 `pointer:coarse` 生效的覆盖规则（无条件 16px，不依赖媒体查询是否命中）。
 
 ### [36] 「上线待确认」队列无过期机制 —— `services/runner/src/runner.js:86`
 永远不会 200 的条目（如报告被 validate-report 拦死三次重跑全红）每个 5 分钟 tick 白等 8 分钟 pollUntilOk，多条串行叠加拖慢新 Issue，且「后续自动重探」承诺永远兑现不了。

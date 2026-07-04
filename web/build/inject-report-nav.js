@@ -44,20 +44,42 @@ const NAV_SCRIPT = `
   function jump(id){ var t = document.getElementById(id); if (t) t.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }); }
   // 打开/关闭目录浮层时一并锁/解锁整页滚动，防止滑动穿透到下面的报告页。
   function lock(on){ document.documentElement.classList.toggle("sx-toc-open", on); document.body.classList.toggle("sx-toc-open", on); }
+  // 焦点管理复刻首页提交弹窗（feed.js）那套：打开前记住触发元素、聚焦浮层第一个链接、
+  // 关闭时还原焦点、aria-expanded 同步开合状态——同站两处浮层交互保持一致。
+  var sheetLastFocus = null;
   function openSheet(){
+    sheetLastFocus = document.activeElement;
     sheet.classList.add("open"); lock(true);
+    tocBtn.setAttribute("aria-expanded", "true");
     // 长目录（面板只显示得下一半）：打开时把当前章节滚到面板中部，读到后半篇也一眼见高亮
     var on = sheetPanel.querySelector("a.on");
     if (on) sheetPanel.scrollTop = Math.max(0, on.offsetTop - sheetPanel.clientHeight / 2);
+    var first = sheetPanel.querySelector("a");
+    if (first) first.focus();
   }
-  function closeSheet(){ sheet.classList.remove("open"); lock(false); }
+  function closeSheet(){
+    sheet.classList.remove("open"); lock(false);
+    tocBtn.setAttribute("aria-expanded", "false");
+    if (sheetLastFocus && sheetLastFocus.focus) sheetLastFocus.focus();
+  }
+  // 焦点陷阱：浮层打开时 Tab 不跑出面板（否则会落到遮罩下面的报告正文，同 feed.js trapFocus）
+  function trapSheetFocus(e){
+    var items = sheetPanel.querySelectorAll("a");
+    if (!items.length) return;
+    var first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
   document.querySelectorAll(".sx-toc a, .sx-toc-sheet a").forEach(function(a){
     // 先关浮层（解除整页滚动锁）再跳转：锁着滚动时发起平滑滚动在部分浏览器会被吞掉
     a.addEventListener("click", function(e){ e.preventDefault(); closeSheet(); jump(a.dataset.id); });
   });
   tocBtn.addEventListener("click", openSheet);
   sheet.addEventListener("click", function(e){ if (e.target === sheet) closeSheet(); });
-  document.addEventListener("keydown", function(e){ if (e.key === "Escape") closeSheet(); });
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape") { closeSheet(); return; }
+    if (e.key === "Tab" && sheet.classList.contains("open")) trapSheetFocus(e);
+  });
 
   function spy(){
     var y = window.scrollY + 120, cur = secs.length ? secs[0].id : null;
@@ -125,11 +147,11 @@ export function injectReportNav(html, {
   // 「682 亿. 82.10. 15.15.」这类无意义摘录；关键事实正文都有，摘录落在正文段落上更可读。
   html = html.replace(/<table(?=[\s>])(?![^>]*data-pagefind-ignore)/gi, "<table data-pagefind-ignore");
 
-  // 移动端防误放大：把报告副本的 viewport 锁成「禁触摸缩放」。覆盖所有存量报告
-  // （其原始 report.html 可能仍是旧 viewport），无需逐个改归档文件。
-  // 仅约束移动端触摸缩放；电脑浏览器的 Cmd/Ctrl +/- 缩放不受 viewport 影响，照常可用。
-  const lockedViewport =
-    '<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">';
+  // 统一报告副本的 viewport（覆盖所有存量报告——其原始 report.html 可能仍是旧 viewport，
+  // 无需逐个改归档文件）。不锁 maximum-scale/user-scalable：body 已有 touch-action:manipulation
+  // 单独解决双击误放大，禁缩放对低视力用户是纯损失（WCAG 1.4.4 要求可缩放到 200%）且 iOS 本就
+  // 忽略这两个参数，唯一"生效"的是 Android Chrome 遵守它、把低视力用户放大功能锁死。
+  const lockedViewport = '<meta name="viewport" content="width=device-width, initial-scale=1">';
   const vpRe = /<meta\s+name=["']viewport["'][^>]*>/i;
   if (vpRe.test(html)) html = html.replace(vpRe, lockedViewport);
   else if (headM) html = html.replace(/<\/head>/i, lockedViewport + "\n</head>");
@@ -213,8 +235,8 @@ html.sx-toc-open,body.sx-toc-open{overflow:hidden}
 </style>
 <div class="sx-progress" aria-hidden="true"><i></i></div>
 <aside class="sx-toc" aria-label="目录"><nav><div class="h">目录</div></nav></aside>
-<button type="button" class="sx-nav-btn sx-toc-btn" aria-label="目录" title="目录">≡</button>
-<div class="sx-toc-sheet"><div class="panel"><div class="grip"></div></div></div>
+<button type="button" class="sx-nav-btn sx-toc-btn" aria-label="目录" title="目录" aria-haspopup="dialog" aria-controls="sx-toc-sheet" aria-expanded="false">≡</button>
+<div class="sx-toc-sheet" id="sx-toc-sheet" role="dialog" aria-modal="true" aria-label="目录"><div class="panel"><div class="grip"></div></div></div>
 <a class="sx-nav-btn sx-home" href="${homeHref}" aria-label="返回调研档案首页" title="返回档案首页">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 9.8V19h13V9.8"/></svg>
 </a>

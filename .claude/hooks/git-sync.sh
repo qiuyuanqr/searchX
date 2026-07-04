@@ -51,7 +51,11 @@ esac
 RUNNER_LOCK="$HOME/Library/Application Support/searchx-runner/runner.lock"
 if [ -f "$RUNNER_LOCK" ]; then
   LPID="$(tr -dc '0-9' < "$RUNNER_LOCK" 2>/dev/null)"
-  if [ -n "$LPID" ] && kill -0 "$LPID" 2>/dev/null; then
+  # pid 有限会被 OS 回收复用：断电残留锁若正好被复用给别的常驻进程（甚至常驻 root 进程），
+  # kill -0 会一直"判活"，没有年龄兜底就永久静默跳过同步。6 小时远大于一次研究批次最长可能
+  # 占锁的时长（claude 超时默认 3h + push 余量），真在跑的合法长批次锁龄够不到这个上限。
+  LOCK_AGE=$(( $(date +%s) - $(stat -f %m "$RUNNER_LOCK" 2>/dev/null || date +%s) ))
+  if [ -n "$LPID" ] && [ "$LOCK_AGE" -lt 21600 ] && kill -0 "$LPID" 2>/dev/null; then
     warn "runner 正在跑研究（pid=$LPID），本次 git 同步跳过（避免并发冲突，下次收工补）。"
     exit 0
   fi

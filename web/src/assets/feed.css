@@ -28,7 +28,10 @@ body{background:var(--paper); color:var(--ink); font-family:var(--serif);
 h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-spacing:-.015em; margin:.45rem 0 0}
 .search-wrap{position:relative; margin:1.2rem 0 .95rem}
 .search-wrap::before{content:"🔍"; position:absolute; left:13px; top:50%; transform:translateY(-50%); font-size:.82rem; opacity:.45}
-.search{width:100%; font-family:var(--sans); font-size:.92rem; color:var(--ink); background:var(--card);
+/* 字号定死 1rem(16px)：iOS 聚焦输入框时，字号<16px 会自动放大整页。之前靠 @media
+   (pointer:coarse) 才升到 16px、桌面基准只有 .92rem(14.72px)——审计工具/无触控模拟的量法
+   量到的正是这个基准值，不如直接把基准定到 16px，不依赖媒体查询是否命中。 */
+.search{width:100%; font-family:var(--sans); font-size:1rem; color:var(--ink); background:var(--card);
   border:1px solid var(--rule); border-radius:10px; padding:.65rem .9rem .65rem 2.3rem; outline:none; transition:border-color .2s, box-shadow .2s}
 .search-wrap .search{padding-right:2.4rem} /* 给右侧清除按钮留位（只限带清除按钮的搜索框，不影响弹窗表单） */
 .search-clear{position:absolute; right:5px; top:50%; transform:translateY(-50%); width:2rem; height:2rem;
@@ -37,13 +40,14 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .search-clear:hover{color:var(--seal); background:var(--paper-2)}
 .search::placeholder{color:var(--muted)}
 .search:focus{border-color:var(--seal-soft); box-shadow:0 0 0 3px rgba(177,74,49,.09)}
-/* 触屏设备：输入框字号≥16px，阻止 iOS 点击输入框时自动放大整页（所有表单控件共用 .search） */
-@media (pointer:coarse){ .search{font-size:16px} }
 .chips{display:flex; flex-wrap:wrap; gap:.42rem; font-family:var(--sans); font-size:.76rem; margin-bottom:1rem}
 .chip{padding:.26rem .78rem; border:1px solid var(--rule); border-radius:20px; color:var(--ink-soft); cursor:pointer; transition:all .2s; background:transparent; user-select:none}
 .chip:hover{border-color:var(--seal-soft); color:var(--seal); transform:translateY(-1px)}
 .chip:focus-visible{outline:2px solid var(--seal-soft); outline-offset:2px}
 .chip.on{background:var(--seal); border-color:var(--seal); color:#fff}
+/* 触控目标 ≥44px（移动端可用性标准，实测原有 31px 高不够）：只加大纵向留白，横向不变，
+   避免变胖挤占换行；桌面端鼠标点击精度够，不需要这层加大，保持原本的紧凑密度。 */
+@media (max-width:520px){ .chip{padding:.7rem .78rem} }
 .rule-grad{height:1px; background:linear-gradient(90deg, transparent 0%, var(--hair) 16%, var(--hair) 84%, transparent 100%)}
 /* 吸顶筛选区：搜索 + 类型/板块两组 chips + 计数；吸住后底边浮现。
    注意：它必须是 .wrap 的直接子元素（sticky 受父容器约束）；窄屏整条高约 250px 太占屏，不吸顶。 */

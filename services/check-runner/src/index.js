@@ -38,16 +38,23 @@ function makeRelease(path) {
   return () => { if (released) return; released = true; try { rmSync(path, { recursive: true, force: true }); } catch {} };
 }
 
-function acquireLock() {
+// maxAliveAgeMs：pid 有限，会被 OS 回收复用——断电残留锁若正好被复用给别的常驻进程（甚至
+// 常驻 root 进程，pidAlive 把 EPERM 也当活），会让「持有者活着」这条永远成立，锁永久占死、
+// 每 tick 静默跳过、无报警。传入远大于一次合法批次最长可能占锁时长的上限，超龄即强制回收；
+// 真在跑的合法长批次锁龄远够不到这个上限，不会被误杀。
+function acquireLock(maxAliveAgeMs) {
   const path = lockFile();
   mkdirSync(join(path, ".."), { recursive: true });
   if (createLockExclusive(path)) return makeRelease(path);
   let pid = NaN;
   try { pid = parseInt(readFileSync(path, "utf8").trim(), 10); } catch {}
-  if (Number.isInteger(pid) && pidAlive(pid)) return null;
   let ageMs = 0;
   try { ageMs = Date.now() - statSync(path).mtimeMs; } catch {}
-  if (!Number.isInteger(pid) && ageMs < STALE_MS) return null;
+  if (Number.isInteger(pid) && pidAlive(pid)) {
+    if (ageMs < maxAliveAgeMs) return null;
+  } else if (ageMs < STALE_MS) {
+    return null;
+  }
   try { rmSync(path, { recursive: true, force: true }); } catch {}
   return createLockExclusive(path) ? makeRelease(path) : null;
 }
@@ -147,15 +154,6 @@ async function main() {
     process.exit(1);
   }
 
-  const release = acquireLock();
-  if (!release) {
-    console.log("⏭  已有一轮核查 runner 在运行，本次跳过。");
-    process.exit(0);
-  }
-  process.on("exit", release);
-  process.on("SIGINT", () => process.exit(130));
-  process.on("SIGTERM", () => process.exit(143));
-
   let config;
   try {
     config = loadCheckRunnerConfig(process.env);
@@ -163,6 +161,26 @@ async function main() {
     console.error("✗ " + e.message);
     process.exit(1);
   }
+
+  // 超龄上限给足余量（claude 超时 + kill 宽限 + 网络缓冲），远高于任何一次合法核查任务的真实
+  // 耗时，只用来兜断电残留锁被复用 pid 判活的死锁——不会误杀正在跑的长任务。
+  const release = acquireLock(config.claudeTimeoutMs + 30 * 60_000);
+  if (!release) {
+    console.log("⏭  已有一轮核查 runner 在运行，本次跳过。");
+    process.exit(0);
+  }
+  process.on("exit", release);
+
+  // 当前 spawn 的 claude 子进程句柄：SIGTERM/SIGINT 是「裸 kill runner 进程」场景（区别于下面
+  // runFactcheck 内部 termTimer/killTimer 那条超时自杀路径）。没有这层，进程退出只会跑
+  // process.on("exit", release) 删锁，但 Bun.spawn 出的 claude 不随父进程退出。
+  let currentChild = null;
+  function killChildAndExit(code) {
+    if (currentChild) { try { currentChild.kill(9); } catch {} }
+    process.exit(code);
+  }
+  process.on("SIGINT", () => killChildAndExit(130));
+  process.on("SIGTERM", () => killChildAndExit(143));
 
   let transport = null;
   if (config.smtpEnabled) {
@@ -193,12 +211,14 @@ async function main() {
         stdin: "ignore",
         env: buildChildEnv(process.env),
       });
+      currentChild = proc; // 存句柄：裸 kill runner 进程时 SIGTERM/SIGINT 处理器据此一并杀子进程
       // 硬超时：claude 挂死会让单实例锁被活进程一直持有，后续 launchd tick 全部跳过、
       // 整条管道停摆。到点先 TERM、宽限 10 秒再 KILL；超时按失败计（attempts 接住、走退休）。
       let timedOut = false;
       const termTimer = setTimeout(() => { timedOut = true; try { proc.kill(); } catch {} }, config.claudeTimeoutMs);
       const killTimer = setTimeout(() => { try { proc.kill(9); } catch {} }, config.claudeTimeoutMs + 10_000);
       const code = await proc.exited;
+      currentChild = null;
       clearTimeout(termTimer);
       clearTimeout(killTimer);
       if (timedOut) {

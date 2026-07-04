@@ -21,8 +21,9 @@ import { withNetRetry } from "./net-retry.js";
 // 漏网的新审批由下一个定时 tick 兜底。
 // 用 O_EXCL 原子创建锁文件**并立即写入持有者 pid**（占位与标识在同一步内完成），杜绝
 // 「mkdir 占位后、写 pid 前的窗口被第二个 runner 误判为残留锁而强占」的 TOCTOU 竞态。
-// 回收策略保守——只有「读到一个明确已死的 pid」或「pid 不可读且锁已超 1 小时」才回收，
-// 其余（含 pid 刚创建还没读到）一律视为有人持有、本次跳过。
+// 回收策略保守——只有「读到一个明确已死的 pid」「pid 不可读且锁已超 1 小时」或「持有者仍判活
+// 但锁已超远大于一次合法批次最长耗时的年龄上限」才回收，其余（含 pid 刚创建还没读到）一律
+// 视为有人持有、本次跳过。
 const STALE_MS = 3600_000; // 1h：pid 损坏/没写好的锁，超此年龄才敢回收，兜底永久死锁
 function lockFile() {
   return join(homedir(), "Library", "Application Support", "searchx-runner", "runner.lock");
@@ -41,18 +42,25 @@ function makeRelease(path) {
   let released = false;
   return () => { if (released) return; released = true; try { rmSync(path, { recursive: true, force: true }); } catch {} };
 }
-function acquireLock() {
+// maxAliveAgeMs：pid 有限，会被 OS 回收复用——断电残留锁若正好被复用给别的常驻进程（甚至
+// 常驻 root 进程，pidAlive 把 EPERM 也当活），会让「持有者活着」这条永远成立，锁永久占死、
+// 每 tick 静默跳过、无报警。传入远大于一次合法批次最长可能占锁时长的上限，超龄即强制回收；
+// 真在跑的合法长批次锁龄远够不到这个上限，不会被误杀。
+function acquireLock(maxAliveAgeMs) {
   const path = lockFile();
   mkdirSync(join(path, ".."), { recursive: true });
   if (createLockExclusive(path)) return makeRelease(path);
   // 锁已存在：判定持有者死活（拿不准就当有人在跑，保守跳过）
   let pid = NaN;
   try { pid = parseInt(readFileSync(path, "utf8").trim(), 10); } catch {}
-  if (Number.isInteger(pid) && pidAlive(pid)) return null;        // 持有者活着 → 跳过
   let ageMs = 0;
   try { ageMs = Date.now() - statSync(path).mtimeMs; } catch {}
-  if (!Number.isInteger(pid) && ageMs < STALE_MS) return null;     // pid 没写好/损坏但锁很新 → 视为刚起的另一轮，跳过
-  // 确证持有者已死，或损坏锁已超时 → 回收并原子重建（重建失败=被别人抢先 → 跳过）
+  if (Number.isInteger(pid) && pidAlive(pid)) {
+    if (ageMs < maxAliveAgeMs) return null;                        // 持有者活着且未超龄 → 跳过
+  } else if (ageMs < STALE_MS) {
+    return null;                                                    // pid 没写好/损坏但锁很新 → 视为刚起的另一轮，跳过
+  }
+  // 确证持有者已死，或损坏锁已超时，或存活锁已超龄上限 → 回收并原子重建（重建失败=被别人抢先 → 跳过）
   try { rmSync(path, { recursive: true, force: true }); } catch {}
   return createLockExclusive(path) ? makeRelease(path) : null;
 }
@@ -133,16 +141,7 @@ async function main() {
     process.exit(1);
   }
 
-  // 抢锁：抢不到说明已有一轮在跑 → 干净退出，绝不并发、不重复处理、不撞车
-  const release = acquireLock();
-  if (!release) {
-    console.log("⏭  已有一轮 runner 在运行，本次跳过（它会处理完整个 approved 队列；新审批由下个定时 tick 兜底）。");
-    process.exit(0);
-  }
-  process.on("exit", release);
-  process.on("SIGINT", () => process.exit(130));
-  process.on("SIGTERM", () => process.exit(143));
-
+  // 先加载 config：抢锁的超龄回收上限要用到 config.claudeTimeoutMs（见下方 acquireLock）。
   let config;
   try {
     config = loadRunnerConfig(process.env);
@@ -150,6 +149,29 @@ async function main() {
     console.error("✗ " + e.message);
     process.exit(1);
   }
+
+  // 抢锁：抢不到说明已有一轮在跑 → 干净退出，绝不并发、不重复处理、不撞车。
+  // 超龄上限给足余量（claude 超时 + kill 宽限 + push/网络缓冲），远高于任何一次合法批次的真实
+  // 耗时，只用来兜断电残留锁被复用 pid 判活的死锁——不会误杀正在跑的长批次。
+  const release = acquireLock(config.claudeTimeoutMs + 30 * 60_000);
+  if (!release) {
+    console.log("⏭  已有一轮 runner 在运行，本次跳过（它会处理完整个 approved 队列；新审批由下个定时 tick 兜底）。");
+    process.exit(0);
+  }
+  process.on("exit", release);
+
+  // 当前 spawn 的 claude 子进程句柄：SIGTERM/SIGINT 是「裸 kill runner 进程」场景（区别于下面
+  // runResearch 内部 termTimer/killTimer 那条超时自杀路径）。没有这层，进程退出只会跑
+  // process.on("exit", release) 删锁，但 Bun.spawn 出的 claude 不随父进程退出——锁没了、claude
+  // 还在写 research/ 并将 push，下个 tick 新 runner 会对同一 Issue 再 spawn 一次，两边并发写
+  // 同一工作树、重复消耗额度、push 互顶。
+  let currentChild = null;
+  function killChildAndExit(code) {
+    if (currentChild) { try { currentChild.kill(9); } catch {} }
+    process.exit(code);
+  }
+  process.on("SIGINT", () => killChildAndExit(130));
+  process.on("SIGTERM", () => killChildAndExit(143));
 
   const transport = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -172,6 +194,7 @@ async function main() {
         stdin: "ignore",
         env: buildChildEnv(process.env),
       });
+      currentChild = proc; // 存句柄：裸 kill runner 进程时 SIGTERM/SIGINT 处理器据此一并杀子进程
       // 硬超时：claude 挂死会让单实例锁被活进程一直持有，后续 launchd tick 全部 exit 0
       // 跳过（不触发 scheduled-run 报警），公开流水线静默停摆。到点先 TERM、宽限 10 秒再
       // KILL；超时按「研究未产出」计入失败退避（连续达阈值自动贴 done 停跑并专信作者）。
@@ -179,6 +202,7 @@ async function main() {
       const termTimer = setTimeout(() => { timedOut = true; try { proc.kill(); } catch {} }, config.claudeTimeoutMs);
       const killTimer = setTimeout(() => { try { proc.kill(9); } catch {} }, config.claudeTimeoutMs + 10_000);
       const code = await proc.exited;
+      currentChild = null;
       clearTimeout(termTimer);
       clearTimeout(killTimer);
       if (timedOut) {
@@ -192,6 +216,12 @@ async function main() {
     verifyPublished: async (url) => {
       console.log(`→ 探活（等部署上线，最多 8 分钟）：${url}`);
       return pollUntilOk(url, { log: (m) => console.log(m) });
+    },
+    // 「上线待确认」队列的复探：每 5 分钟一 tick 都会重探一次，没必要每次陪跑到 8 分钟——
+    // 迟迟不上线本就会在下一轮再探。给一次远短的时限，省得多条串行叠加拖慢新 Issue 处理。
+    verifyPublishedQuick: async (url) => {
+      console.log(`→ 复探（待确认队列，最多 20 秒）：${url}`);
+      return pollUntilOk(url, { deadlineMs: 20_000, intervalMs: 10_000, perTryMs: 8_000, log: (m) => console.log(m) });
     },
     sendEmail: (msg) => sendEmailImpl(msg, { transport }),
     log: (m) => console.log(m),

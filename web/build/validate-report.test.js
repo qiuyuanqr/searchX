@@ -42,6 +42,26 @@ test("内联事件处理器 on*= 被判为缺陷", () => {
   expect(findReportDefects(`<div onclick="steal()">x</div>`).length).toBeGreaterThan(0);
 });
 
+// audit-2026-07-04 [17]：属性值里带 > 会让 [^>]* 提前截断，onerror= 落在检测范围外、零缺陷。
+test("属性值里带 > 也拦得住内联事件处理器（不再被提前截断漏检）", () => {
+  const d = findReportDefects(`<img alt="a>b" onerror=alert(1)>`);
+  expect(d.length).toBeGreaterThan(0);
+  expect(d.join()).toContain("onerror");
+});
+
+test("单引号属性值里带 > 同样拦得住", () => {
+  const d = findReportDefects(`<img alt='a>b' onerror=alert(1)>`);
+  expect(d.length).toBeGreaterThan(0);
+  expect(d.join()).toContain("onerror");
+});
+
+// audit-2026-07-04 [17]：class 正则只认双引号，单引号写法（class='src-tag src-typo'）会漏检。
+test("单引号写法的非法来源标签配色类也被发现", () => {
+  const d = findReportDefects(`<span class='src-tag src-typo'>x</span>`);
+  expect(d.length).toBe(1);
+  expect(d[0]).toContain("src-typo");
+});
+
 test("javascript: 协议被判为缺陷", () => {
   expect(findReportDefects(`<a href="javascript:alert(1)">x</a>`).length).toBeGreaterThan(0);
 });

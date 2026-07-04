@@ -59,13 +59,25 @@ export async function handleIntake(request, env, deps = {}) {
     );
     if (!created.ok) return json({ ok: false, error: "issue_create_failed" }, 502);
 
-    // Issue 建成功之后才把额度 +1（建失败已在上面 return，不扣额度）。
-    await commitRateLimit(env.INTAKE_KV, { ip, email, dayKeyStr: dk, limits });
+    // Issue 已建成——以下两个 KV 写只是配套动作，各自吞错，绝不能让失败冒泡成 500。
+    // 冒泡成 500 会让提交者以为没提交成功而重试，在 GitHub 上重复建一个 Issue（runner 跑两遍）；
+    // 且首条的邮箱映射（sub:<number>）就此永久丢失，那条 Issue 完成后也永远发不出"已上线"邮件。
+    // 失败语义与真实结果（Issue 已建成）相反，故仍按 ok:true 返回，只在 degraded 里如实告知。
+    let degraded = false;
+    try {
+      // Issue 建成功之后才把额度 +1（建失败已在上面 return，不扣额度）。
+      await commitRateLimit(env.INTAKE_KV, { ip, email, dayKeyStr: dk, limits });
+    } catch {
+      degraded = true;
+    }
+    try {
+      // 真实邮箱私有存 KV（键 sub:<number>），供 runner 取来发信。60 天过期、用完即清。
+      await env.INTAKE_KV.put(`sub:${created.number}`, email, { expirationTtl: 60 * 60 * 24 * 60 });
+    } catch {
+      degraded = true;
+    }
 
-    // 真实邮箱私有存 KV（键 sub:<number>），供 runner 取来发信。60 天过期、用完即清。
-    await env.INTAKE_KV.put(`sub:${created.number}`, email, { expirationTtl: 60 * 60 * 24 * 60 });
-
-    return json({ ok: true, approved });
+    return json(degraded ? { ok: true, approved, degraded: true } : { ok: true, approved });
   } catch {
     return json({ ok: false, error: "internal" }, 500);
   }

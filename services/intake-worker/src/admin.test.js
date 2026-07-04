@@ -35,6 +35,30 @@ test("add → 200 返回链接 token；list 能看到；提交侧能反查邮箱
   expect(list.people).toEqual([{ email: "bob@x.com", token: "TOK", addedAt: 5 }]);
 });
 
+test("add 归一大小写：Bob@X.com 存成 bob@x.com（audit-2026-07-04 [28]）", async () => {
+  const env = ENV();
+  const r = await handleAdmin(req("POST", "/admin/add", { key: "SECRET", body: { email: "Bob@X.com" } }), env, { now: () => 5, gen: () => "TOK" });
+  expect((await r.json())).toMatchObject({ ok: true, email: "bob@x.com" });
+  const list = await (await handleAdmin(req("GET", "/admin/list", { key: "SECRET" }), env)).json();
+  expect(list.people).toEqual([{ email: "bob@x.com", token: "TOK", addedAt: 5 }]);
+});
+
+test("大小写不同的同一邮箱 add 两次 → 归一后是同一条记录，非两条独立 allow", async () => {
+  const env = ENV();
+  await handleAdmin(req("POST", "/admin/add", { key: "SECRET", body: { email: "Bob@X.com" } }), env, { now: () => 5, gen: () => "TOK1" });
+  await handleAdmin(req("POST", "/admin/add", { key: "SECRET", body: { email: "bob@x.com" } }), env, { now: () => 6, gen: () => "TOK2" });
+  const list = await (await handleAdmin(req("GET", "/admin/list", { key: "SECRET" }), env)).json();
+  expect(list.people.length).toBe(1); // 归一后视为同一邮箱，第二次是自愈补写而非新增
+});
+
+test("remove 用不同大小写也能命中归一后的同一条记录", async () => {
+  const env = ENV();
+  await handleAdmin(req("POST", "/admin/add", { key: "SECRET", body: { email: "Bob@X.com" } }), env, { gen: () => "TOK" });
+  const r = await handleAdmin(req("POST", "/admin/remove", { key: "SECRET", body: { email: "BOB@X.COM" } }), env);
+  expect((await r.json()).removed).toBe(true);
+  expect(await emailForToken(env.INTAKE_KV, "TOK")).toBeNull();
+});
+
 test("add 非法邮箱 → 400", async () => {
   const r = await handleAdmin(req("POST", "/admin/add", { key: "SECRET", body: { email: "not-an-email" } }), ENV());
   expect(r.status).toBe(400);

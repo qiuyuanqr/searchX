@@ -52,20 +52,20 @@ export async function handleAdmin(request, env, deps = {}) {
     }
     if (request.method === "POST" && pathname === "/admin/add") {
       const body = await request.json().catch(() => ({}));
-      const email = typeof body.email === "string" ? body.email.trim() : "";
+      const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
       if (!isEmail(email) || email.length > 254) return json({ ok: false, error: "invalid_email" }, 400);
       const r = await mintInvite(kv, email, { now, gen: deps.gen });
       return json({ ok: true, ...r });
     }
     if (request.method === "POST" && pathname === "/admin/remove") {
       const body = await request.json().catch(() => ({}));
-      const email = typeof body.email === "string" ? body.email.trim() : "";
+      const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
       const ok = await revoke(kv, email);
       return json({ ok, removed: ok });
     }
     if (request.method === "POST" && pathname === "/admin/rotate") {
       const body = await request.json().catch(() => ({}));
-      const email = typeof body.email === "string" ? body.email.trim() : "";
+      const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
       const r = await rotate(kv, email, { now, gen: deps.gen });
       return r ? json({ ok: true, ...r }) : json({ ok: false, error: "not_found" }, 404);
     }

@@ -89,6 +89,24 @@ export function composeFailureStopNotice({ topic, issueNumber, count, authorEmai
   return { from: fromEmail, to: authorEmail, subject, text: lines.join("\n") };
 }
 
+// 「上线待确认」超龄出队通知：研究已 push 且贴 done，但部署探活持续超过时限（默认 24h）仍未
+// 确认上线（如报告被 validate-report 拦死、Pages 持续故障），已停止自动重探。
+// 只发作者（无 cc，绝不发提交者——提交者本就没收到任何"已上线"邮件）。
+export function composePendingExpiredNotice({ topic, issueNumber, url, ageHours, authorEmail, fromEmail }) {
+  const subject = `【searchX 上线待确认超龄】${topic}`;
+  const lines = [
+    `调研「${topic}」（Issue #${issueNumber}）已完成研究并推送，但部署探活持续 ${ageHours} 小时仍未确认上线，已停止自动重探。`,
+    "",
+    `报告地址（可能仍未生效）：${url}`,
+    "",
+    "常见原因：报告被 validate-report 拦死、GitHub Pages 持续部署故障、或链接本身有误。",
+    "请人工核对：确认已上线可手动补发提交者邮件；确认未上线需排查部署或重新发布。",
+    "",
+    "—— searchX 自动调研流水线",
+  ];
+  return { from: fromEmail, to: authorEmail, subject, text: lines.join("\n") };
+}
+
 // 注入 transport（nodemailer），便于离线单测。
 export async function sendEmail(message, { transport }) {
   return transport.sendMail(message);

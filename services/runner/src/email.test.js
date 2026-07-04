@@ -1,6 +1,6 @@
 // services/runner/src/email.test.js
 import { test, expect } from "bun:test";
-import { composeEmail, composeExistingEmail, composeAuthorDigest, composeParkNotice, composeFailureStopNotice, sendEmail } from "./email.js";
+import { composeEmail, composeExistingEmail, composeAuthorDigest, composeParkNotice, composeFailureStopNotice, composePendingExpiredNotice, sendEmail } from "./email.js";
 
 test("composeEmail：主题含标题、正文含 TLDR 与链接、抄送作者、from 用 smtpUser", () => {
   const m = composeEmail({
@@ -125,6 +125,24 @@ test("composeFailureStopNotice：只发作者（无 cc）、主题标『已停�
   expect(m.text).toContain("连续 3 次");
   expect(m.text).toContain("done");         // 恢复方式：移除 done 标签重新排队
   expect(m.text).toContain("不再");         // 点明已止损、不再自动重跑
+});
+
+test("composePendingExpiredNotice：只发作者（无 cc）、主题标『超龄』、正文含 Issue 号/链接/超龄小时数", () => {
+  const m = composePendingExpiredNotice({
+    topic: "奥比中光",
+    issueNumber: 12,
+    url: "https://qiuyuanqr.github.io/searchX/r/2026-06-03_x/",
+    ageHours: 30,
+    authorEmail: "me@gmail.com",
+    fromEmail: "me@gmail.com",
+  });
+  expect(m.to).toBe("me@gmail.com");
+  expect(m.cc).toBeUndefined(); // 绝不抄送提交者——提交者本就没收到任何"已上线"邮件
+  expect(m.subject).toContain("超龄");
+  expect(m.subject).toContain("奥比中光");
+  expect(m.text).toContain("#12");
+  expect(m.text).toContain("30 小时");
+  expect(m.text).toContain("https://qiuyuanqr.github.io/searchX/r/2026-06-03_x/");
 });
 
 test("sendEmail 调用注入的 transport.sendMail", async () => {

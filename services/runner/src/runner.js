@@ -9,17 +9,20 @@ import { buildResearchPrompt } from "./research-cmd.js";
 import { diffNewDirs } from "./research-output.js";
 import { findFreshReport } from "./dedup.js";
 import { fetchSubmitterEmail } from "./sub-fetch.js";
-import { composeEmail, composeExistingEmail, composeAuthorDigest, composeParkNotice, composeFailureStopNotice } from "./email.js";
+import { composeEmail, composeExistingEmail, composeAuthorDigest, composeParkNotice, composeFailureStopNotice, composePendingExpiredNotice } from "./email.js";
 
 export async function runOnce(config, deps) {
   const { fetchImpl, scanDirs, runResearch, sendEmail, log, bumpDailyCount,
     today = () => new Date().toISOString().slice(0, 10),
+    now = () => Date.now(),
     verifyPublished = async () => true,
+    verifyPublishedQuick = verifyPublished,
     loadPending = async () => [], savePending = async () => {},
     readParkSignal = async () => null, clearParkSignal = async () => {},
     loadFailures = async () => ({}), saveFailures = async () => {} } = deps;
   const gh = { owner: config.owner, repo: config.repo, token: config.githubToken };
   const maxFailures = config.maxFailures ?? 3;
+  const pendingExpireMs = config.pendingExpireMs ?? 24 * 3600_000;
 
   const summary = { processed: 0, published: 0, emailed: 0, deduped: 0, parked: 0, failed: 0 };
 
@@ -83,7 +86,35 @@ export async function runOnce(config, deps) {
     log(`上线待确认（补发探活）：${pending.length} 条`);
     const stillPending = [];
     for (const p of pending) {
-      if (!(await verifyPublished(p.url))) { stillPending.push(p); continue; }
+      // 旧队列条目（本次改动前落盘、无 firstSeen）：视为从此刻起计时，不追溯误杀。
+      const firstSeen = p.firstSeen ?? now();
+      const ageMs = now() - firstSeen;
+      if (ageMs >= pendingExpireMs) {
+        const ageHours = Math.round(ageMs / 3600_000);
+        summary.failed++;
+        log(`#${p.number} 上线待确认超龄（${ageHours}h），停止自动重探并告警作者：${p.url}`);
+        try {
+          await sendEmail(composePendingExpiredNotice({
+            topic: p.topic, issueNumber: p.number, url: p.url, ageHours,
+            authorEmail: config.authorEmail, fromEmail: config.smtpUser,
+          }));
+        } catch (err) {
+          log(`#${p.number} 超龄告警邮件发送失败：${err.message}`);
+        }
+        try {
+          await commentIssue(
+            { ...gh, number: p.number,
+              body: `⛔ 部署探活超过 ${ageHours} 小时仍未确认上线，已停止自动重探（不再每轮重复探活），已邮件通知作者人工核对：${p.url}` },
+            fetchImpl
+          );
+        } catch (e) {
+          log(`#${p.number} 超龄告警评论失败（不影响已发的通知邮件）：${e.message}`);
+        }
+        continue; // 出队：绝不进 stillPending，杜绝永久占队每轮白等
+      }
+      // 复探用远短于「刚跑完研究」那次的 deadline：这里只是每 5 分钟一 tick 的重探，
+      // 迟迟不上线本就会在下一轮再探，没必要每轮都陪跑到 8 分钟长轮询、拖慢新 Issue 处理。
+      if (!(await verifyPublishedQuick(p.url))) { stillPending.push({ ...p, firstSeen }); continue; }
       try {
         await emailSubmitter(p);
         summary.emailed++;
@@ -95,7 +126,7 @@ export async function runOnce(config, deps) {
         }
       } catch (err) {
         log(`#${p.number} 已确认上线但补发邮件失败：${err.message}，留待下一轮再补`);
-        stillPending.push(p);
+        stillPending.push({ ...p, firstSeen });
       }
     }
     pending = stillPending;
@@ -262,7 +293,7 @@ export async function runOnce(config, deps) {
       summary.failed++;
       log(`#${issue.number} 已完成研究并推送，但未确认上线（疑似 Pages 部署故障）：${url}`);
       // 记入「上线待确认」队列：后续每轮自动重探，确认上线即自动补发邮件，无需人工盯评论。
-      pending.push({ number: issue.number, topic, title: entry.title, tldr: entry.tldr, url });
+      pending.push({ number: issue.number, topic, title: entry.title, tldr: entry.tldr, url, firstSeen: now() });
       try {
         await commentIssue(
           { ...gh, number: issue.number,

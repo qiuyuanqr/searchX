@@ -153,6 +153,34 @@ test("提交者邮箱写 KV 带 60 天过期", async () => {
   expect(subPut.opts?.expirationTtl).toBe(60 * 60 * 24 * 60);
 });
 
+test("Issue 建成后 commitRateLimit 抛错 → 仍回 ok:true+degraded，不误报 500（audit-2026-07-04 [26]）", async () => {
+  const kv = await withToken();
+  const originalPut = kv.put.bind(kv);
+  kv.put = async (k, v, opts) => {
+    if (String(k).startsWith("rl:")) throw new Error("kv put boom");
+    return originalPut(k, v, opts);
+  };
+  const res = await handleIntake(post({ k: "TOK", title: "稳定币" }), ENV(kv), { fetch: routeFetch(), now: NOW });
+  expect(res.status).toBe(200);
+  expect(await res.json()).toEqual({ ok: true, approved: true, degraded: true });
+  // sub 映射仍写成功——两个 KV 写各自独立吞错，一个失败不该拖垮另一个
+  expect(kv.store.get("sub:7")).toBe("alice@gmail.com");
+});
+
+test("Issue 建成后 sub:<number> KV 写失败 → 仍回 ok:true+degraded，不误报 500（audit-2026-07-04 [26]）", async () => {
+  const kv = await withToken();
+  const originalPut = kv.put.bind(kv);
+  kv.put = async (k, v, opts) => {
+    if (String(k).startsWith("sub:")) throw new Error("kv put boom");
+    return originalPut(k, v, opts);
+  };
+  const res = await handleIntake(post({ k: "TOK", title: "稳定币" }), ENV(kv), { fetch: routeFetch(), now: NOW });
+  expect(res.status).toBe(200);
+  expect(await res.json()).toEqual({ ok: true, approved: true, degraded: true });
+  // 额度仍计成功
+  expect(kv.store.get("rl:ip:5.5.5.5:20260603")).toBe("1");
+});
+
 test("下游抛错（fetch reject）→ 结构化 500 且带 CORS 头", async () => {
   const kv = await withToken();
   const fetchImpl = async () => { throw new Error("network down"); };

@@ -53,21 +53,29 @@ test("只注入一次（单个 </body>）", () => {
   expect(out.split("sx-nav-btn sx-home").length - 1).toBe(1);
 });
 
-test("把存量报告的旧 viewport 改写成「禁移动端触摸缩放」（防误放大）", () => {
-  const old = `<html><head><meta name="viewport" content="width=device-width, initial-scale=1"></head><body>x</body></html>`;
+test("把存量报告的旧 viewport 统一改写成标准 viewport（改写而非追加）", () => {
+  const old = `<html><head><meta name="viewport" content="width=device-width, initial-scale=2"></head><body>x</body></html>`;
   const out = injectReportNav(old);
-  expect(out).toContain("maximum-scale=1");
-  expect(out).toContain("user-scalable=no");
-  // 旧的无约束 viewport 不再残留
-  expect(out).not.toContain('content="width=device-width, initial-scale=1"');
+  expect(out).toContain('content="width=device-width, initial-scale=1"');
+  // 旧的非标准 viewport 不再残留
+  expect(out).not.toContain('content="width=device-width, initial-scale=2"');
   // 只剩一个 viewport meta（改写而非追加）
   expect(out.match(/name=["']viewport["']/g).length).toBe(1);
 });
 
-test("报告缺 viewport 时补一个锁定的（落在 <head> 内）", () => {
+// audit-2026-07-04 [20]/[7]：不锁 maximum-scale/user-scalable——双击误放大已由 body 的
+// touch-action:manipulation 单独解决，禁缩放对低视力用户是纯损失（WCAG 1.4.4），且 iOS 本就
+// 忽略这两个参数，唯一"生效"的是让遵守它的 Android Chrome 把放大功能锁死。
+test("不锁 maximum-scale / user-scalable：低视力用户仍可在 Android Chrome 上放大", () => {
   const out = injectReportNav(BASE);
-  expect(out).toContain("user-scalable=no");
-  expect(out.indexOf("user-scalable=no")).toBeLessThan(out.indexOf("</head>"));
+  expect(out).not.toContain("maximum-scale");
+  expect(out).not.toContain("user-scalable");
+});
+
+test("报告缺 viewport 时补一个标准的（落在 <head> 内）", () => {
+  const out = injectReportNav(BASE);
+  expect(out).toContain('content="width=device-width, initial-scale=1"');
+  expect(out.indexOf('name="viewport"')).toBeLessThan(out.indexOf("</head>"));
 });
 
 test("注入 touch-action:manipulation，移动端禁双击放大", () => {
@@ -116,6 +124,33 @@ test("自动目录骨架：电脑侧栏 + 手机浮层 + 目录按钮", () => {
   expect(out).toContain('class="sx-nav-btn sx-toc-btn"');
   expect(out).toContain('class="sx-toc-sheet"');
   expect(out).toContain('aria-label="目录"');
+});
+
+// —— a11y 与焦点管理（audit-2026-07-04 [19]）：复刻首页提交弹窗（feed.js）那套 ——
+test("目录按钮补 aria-haspopup/aria-controls/aria-expanded；浮层补 role=dialog/aria-modal/id", () => {
+  const out = injectReportNav(BASE);
+  expect(out).toContain('aria-haspopup="dialog"');
+  expect(out).toContain('aria-controls="sx-toc-sheet"');
+  expect(out).toContain('class="sx-nav-btn sx-toc-btn"');
+  expect(out).toMatch(/class="sx-nav-btn sx-toc-btn"[^>]*aria-expanded="false"/);
+  expect(out).toContain('id="sx-toc-sheet"');
+  expect(out).toMatch(/class="sx-toc-sheet" id="sx-toc-sheet"[^>]*role="dialog"/);
+  expect(out).toContain('aria-modal="true"');
+});
+
+test("导航脚本：打开浮层记住触发元素并聚焦第一个链接、关闭还原焦点、同步 aria-expanded", () => {
+  const out = injectReportNav(BASE);
+  expect(out).toContain("sheetLastFocus = document.activeElement");
+  expect(out).toContain('tocBtn.setAttribute("aria-expanded", "true")');
+  expect(out).toContain('tocBtn.setAttribute("aria-expanded", "false")');
+  expect(out).toContain("sheetLastFocus.focus()");
+  expect(out).toContain("sheetPanel.querySelector(\"a\")");
+});
+
+test("导航脚本：浮层打开时 Tab 被焦点陷阱拦在面板内，不漏到遮罩下的报告正文", () => {
+  const out = injectReportNav(BASE);
+  expect(out).toContain("function trapSheetFocus(e)");
+  expect(out).toContain('e.key === "Tab" && sheet.classList.contains("open")');
 });
 
 test("目录浮层防滑动穿透：面板/遮罩加 overscroll-behavior:contain，且打开时锁整页滚动", () => {
