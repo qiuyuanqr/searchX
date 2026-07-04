@@ -43,11 +43,14 @@ export function build({
       throw new Error(`report.html 有问题，拒绝发布 ${e.dir}：\n  - ${defects.join("\n  - ")}`);
     }
     writeFileSync(join(destDir, "index.html"), injectReportNav(reportHtml));
+    // data/ 已被 .gitignore（research/*/data/）排除在仓库外：CI 用干净 checkout 构建，
+    // 该目录在那里根本不存在，这行只在本机 `bun run serve` 时（本机磁盘上确有 data/）生效，
+    // 纯本机预览用途，不会把 data/ 带上公开站。
     const dataDir = join(root, e.dir, "data");
     if (existsSync(dataDir)) cpSync(dataDir, join(destDir, "data"), { recursive: true });
   }
 
-  // 首页：注入卡片 + 提交配置（弹窗表单用 WORKER_URL / TURNSTILE_SITE_KEY）
+  // 首页：注入卡片 + 提交配置（弹窗表单用 WORKER_URL / WORKER_FALLBACK_URL）
   const tpl = readFileSync(template, "utf8");
   writeFileSync(join(out, "index.html"), injectConfig(renderIndex(entries, tpl), cfg));
   cpSync(assets, join(out, "assets"), {

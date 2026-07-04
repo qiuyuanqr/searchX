@@ -95,6 +95,7 @@ export async function handleCheckSubmit(request, env, { now }) {
     } catch {
       return corsJson({ ok: false, error: "bad json" }, 400);
     }
+    if (!body || typeof body !== "object") body = {};
     text = String(body.text || "").trim();
     link = String(body.link || "").trim();
   }

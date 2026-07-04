@@ -151,6 +151,20 @@ test("提交：JSON 格式错误 → 400", async () => {
   expect((await res.json()).error).toBe("bad json");
 });
 
+test("提交：请求体是字面量 null → 400 empty，而非抛未捕获异常", async () => {
+  const res = await handleCheckSubmit(
+    new Request("https://w.dev/check", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-check-key": "CK_GOOD" },
+      body: "null",
+    }),
+    ENV(),
+    { now: NOW },
+  );
+  expect(res.status).toBe(400);
+  expect((await res.json()).error).toBe("empty");
+});
+
 // ── CORS（浏览器前端跨域调用 /check）─────────────────────────────
 
 test("OPTIONS /check 预检 → 204 + CORS 头（allow-headers 含 x-check-key）", async () => {

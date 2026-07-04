@@ -7,7 +7,7 @@
 # 墙内视角（SNI 阻断类，如 2026-07-03 巨轮智能提交丢失）本脚本测不到，
 # 由 Mac mini 上的 services/runner/src/probe-cli.js 负责。
 # 用法：site-probe.sh [尝试次数] [间隔秒]
-#   部署后 Pages CDN 缓存最长 10 分钟才刷新，冒烟场景用多次重试等它（deploy.yml 传 10 30）。
+#   部署后 Pages CDN 缓存最长 10 分钟才刷新，冒烟场景用多次重试等它（deploy.yml 传 10 45）。
 set -euo pipefail
 
 ATTEMPTS="${1:-3}"

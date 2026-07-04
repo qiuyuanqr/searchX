@@ -20,9 +20,11 @@
 - [2026-06-23 授权用户自助调研、自动放行设计](superpowers/specs/2026-06-23-授权用户自助调研自动放行-设计.md)
 - [2026-06-25 事实核查 skill 设计](superpowers/specs/2026-06-25-事实核查-skill-设计.md)
 - [2026-06-25 事实核查手机入口设计](superpowers/specs/2026-06-25-事实核查-手机入口-设计.md)
+- [2026-06-27 factcheck 图片上传（手机入口阶段2）设计](superpowers/specs/2026-06-27-factcheck-image-upload-design.md)
 - [2026-06-27 首页与详情页重设计](superpowers/specs/2026-06-27-首页与详情页重设计-设计.md)
 - [2026-07-02 核查任务状态与结论回显设计](superpowers/specs/2026-07-02-核查任务状态与结论回显-设计.md)
 - [2026-07-02 factcheck 接入 akshare 行情核准设计](superpowers/specs/2026-07-02-factcheck接入akshare行情核准-设计.md)
+- [2026-07-03 Runner 失败退避（自动停跑止损）设计](superpowers/specs/2026-07-03-runner-failure-backoff-design.md)
 
 **实现计划（plans）**
 - [2026-06-03 M1 · 信息流站](superpowers/plans/2026-06-03-m1-feed-site.md)

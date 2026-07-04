@@ -80,7 +80,19 @@ pidAlive 把 EPERM 当存活、pid 可读时不看锁龄。断电残留锁 + pid
 
 ---
 
-## 第三档 · 顺手做（文档理平 / 低频边界）
+## 第三档 · 顺手做（文档理平 / 低频边界）—— ✅ 已于 2026-07-04 全部完成
+
+[27]/[43][21]/[44][45][40][8]/[9][5][6][48][50][23] 共 10 条均已修，`bun test` 516 测试绿（新增 1 条 null body 测试）。修法摘要：
+- [27]/[43] intake-worker README 路由清单补 `/check` 系列一段说明；文件表补 `src/check.js`；`index.js` 行补 `/people`、`/check/*`；§6 示例补 `WORKER_FALLBACK_URL`（含用途说明）。
+- [21]/[44] web/README `src/` 清单补 `check.template.html`/`check.js`/`check-page.js`/`admin-page.js`/`feed-filter.js`；构建命令改 `bun x pagefind`；CI 触发路径补 `package.json`/`bun.lock`。
+- [45] docs/README specs 清单补 `factcheck-image-upload-design`、`runner-failure-backoff-design` 两篇。
+- [40] `site-probe.sh` 注释「10 30」改成实际的「10 45」。
+- [8]/[9] `report.html` 注释 `{{TYPE}}`/`{{GLOSSARY}}` 补「股票」；`research/SKILL.md` Step 0 转交段补「Step 4/5/**5.5**/6」，明示独立核验不因转交省略。
+- [5] `research/SKILL.md` Step 0 补「股票类边界判定」：ETF/指数/可转债/未上市标的即使带数字代码也不算单一上市公司股票，不误转交 stock skill。
+- [6] 同处补通则：「无法确认有人在场一律按无人值守处理、不反问」，覆盖 park 判定之外的所有反问分叉。
+- [48] `data/` 目录三方口径理平：README 标注「仅本机、已 gitignore、不上线」；`build.js` 补注释说明 cpSync 只在本机预览生效，CI 干净 checkout 下该目录不存在。
+- [50] fixtures 清掉已作废 `TURNSTILE_SITE_KEY`（连带清 build.js 里过期的注释提及）；两条 fixture notes.md 补 `created` 字段对齐真实 schema。
+- [23] `check.js` 的 JSON 分支解析后补 `if (!body || typeof body !== "object") body = {}`，堵字面量 `null` 请求体的未捕获 TypeError，带回归测试。
 
 ### 文档失真类
 - **[27]/[43]** intake-worker README 路由清单与文件表缺整个 /check 系列、缺 src/check.js、index.js 行漏 /people；§6 示例缺 WORKER_FALLBACK_URL —— `services/intake-worker/README.md:20,50`
