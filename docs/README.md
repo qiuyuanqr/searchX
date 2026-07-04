@@ -7,6 +7,7 @@
 | `superpowers/specs/` | 设计稿（spec）：动手前对齐的方案 | brainstorming skill 默认输出路径 |
 | `superpowers/plans/` | 实现计划（implementation plan）：拆好的执行步骤 | writing-plans skill 默认输出路径 |
 | `progress/` | 进度记录 / 审计：某次大改的过程与结论留痕 | 手写 |
+| `backlog/` | 待办清单：审查/评估产出的、尚未动手的优化项 | 手写 |
 
 > `superpowers/` 这层命名来自 superpowers 插件——它的 brainstorming / writing-plans 默认就把产出写到 `docs/superpowers/{specs,plans}/`。保留原路径，未来 skill 产出会自动存到对应目录、无需搬运。
 
@@ -34,3 +35,6 @@
 **进度记录（progress）**
 - [2026-06-04 自动 runner + 全项目审计修复](progress/2026-06-04-runner-automation-and-audit.md)
 - [2026-06-09 股票查重（不重复调研）+ 提交侧安全加固](progress/2026-06-09-dedup-and-intake-hardening.md)
+
+**待办（backlog）**
+- [2026-07-04 全项目审查 · 优化建议待办](backlog/2026-07-04-audit-suggestions.md) — 31 条建议 + 3 UI 实测，三档分级，未动手
