@@ -11,6 +11,7 @@ import { loadRunnerConfig } from "./config.js";
 import { sendEmail as sendEmailImpl } from "./email.js";
 import { runOnce } from "./runner.js";
 import { pollUntilOk } from "./verify-published.js";
+import { withNetRetry } from "./net-retry.js";
 
 // —— 全局单实例锁 ——
 // 保证「定时器自动跑」与「手机手动触发」永不并发：无论从哪个入口进来（launchd 定时、
@@ -157,7 +158,9 @@ async function main() {
   });
 
   const summary = await runOnce(config, {
-    fetchImpl: fetch,
+    // 瞬时网络抖动（TLS 握手失败等）自动重试 + 单次硬超时，单次失败不打崩整轮、不误报警；
+    // 持续故障重试用尽仍抛错 → exit=1 照常报警。
+    fetchImpl: withNetRetry(fetch, { log: (m) => console.log(m) }),
     scanDirs: () => scanResearch("research"),
     runResearch: async (prompt) => {
       console.log(`→ claude -p ${JSON.stringify(prompt)}`);
