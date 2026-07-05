@@ -3,8 +3,9 @@
 <!--
   searchX intake-worker 自动部署（只在常驻的 Mac mini 上加载；MacBook 是笔记本、不常驻，不装）。
   安装：cp 本文件到 ~/Library/LaunchAgents/ 后 launchctl bootstrap，详见 ../README.md「Mac mini 自动部署」。
-  StartInterval=120 即每 2 分钟一检；deploy-cron.sh 内部检测 intake-worker 有变化才真部署，
-  没变秒退、不刷无意义 version。与 autopull 同频：autopull 拉到新代码、下一检就部署上线。改 300=5 分钟。
+  StartInterval=300 即每 5 分钟一检；deploy-cron.sh 内部检测 intake-worker 有变化才真部署，
+  没变秒退、不刷无意义 version。autopull 每 600s 拉新代码、本任务每 300s 检部署，
+  代码上线延迟 ≤10min。改回 120=2 分钟。（2026-07-06 自动化减负：120→300。）
   RunAtLoad=false：装好不立即跑（避免和安装时的手动验证重复部署）；到点自然触发。
   Mac mini 的 wrangler 已 OAuth 登录（能部署）；MacBook 同步到本文件但不装 plist，就不会跑。
 -->
@@ -22,7 +23,7 @@
   <string>/Users/yangqiuyuan/Coding/searchX</string>
 
   <key>StartInterval</key>
-  <integer>120</integer>
+  <integer>300</integer>
 
   <key>RunAtLoad</key>
   <false/>

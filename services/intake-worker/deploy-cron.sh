@@ -4,7 +4,7 @@
 # 只做一件事：若本机 HEAD 里 services/intake-worker 的源码/配置自上次部署以来变了，
 # 就 wrangler deploy；没变则秒退、不刷无意义 version。
 #
-# 刻意不主动 git pull —— Mac mini 的 autopull（每 120s，见 .claude/hooks/autopull.sh）已负责把
+# 刻意不主动 git pull —— Mac mini 的 autopull（每 600s，见 .claude/hooks/autopull.sh）已负责把
 # 任何来源 push 的新代码拉下来、保 HEAD 最新；本脚本只管「HEAD 的 worker 变了就部署」，各司其职。
 # 只在装了 plist 的 Mac mini 跑；MacBook 同步到本脚本但没装 plist、不会跑（与 check-runner 同构）。
 set -u
