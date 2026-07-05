@@ -99,7 +99,7 @@ bun run check-runner
 
 **组成：**
 - `services/check-runner/scheduled-run.sh` —— launchd 调用的包装（补 PATH、cd 仓库根、落日志）。
-- `services/check-runner/launchd/com.searchx.check-runner.plist` —— LaunchAgent 模板（`StartInterval=60` 即每分钟轮询一次；轮询本身只是一次 HTTP GET，无任务即退出，单实例锁防重叠）。
+- `services/check-runner/launchd/com.searchx.check-runner.plist` —— LaunchAgent 模板（`StartInterval=300` 即每 5 分钟轮询一次；轮询本身只是一次 HTTP GET，无任务即退出，单实例锁防重叠）。
 - 日志：`~/Library/Logs/searchx-check-runner/check-runner.log`。
 
 **安装（仅在常驻不关机的 Mac mini 上做）：**
