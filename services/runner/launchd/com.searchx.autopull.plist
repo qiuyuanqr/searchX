@@ -2,14 +2,15 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
   searchX 定时自动拉（仅在常驻不关机的 Mac mini 上加载）。
-  作用：每 120 秒跑一次 .claude/hooks/autopull.sh → git-sync.sh pull，把另一台/runner/网页
+  作用：每 600 秒（10 分钟）跑一次 .claude/hooks/autopull.sh → git-sync.sh pull，把另一台/runner/网页
         push 的进度自动同步下来，无需在 Mac mini 开 Claude 窗口或手动 pull。
   安装（在 Mac mini 上）：
       cp services/runner/launchd/com.searchx.autopull.plist ~/Library/LaunchAgents/
       launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.searchx.autopull.plist
       launchctl kickstart -k gui/$(id -u)/com.searchx.autopull   # 立刻跑一次验证
   卸载：launchctl bootout gui/$(id -u)/com.searchx.autopull
-  StartInterval=120 即每 2 分钟。改 60=1 分钟、300=5 分钟。
+  StartInterval=600 即每 10 分钟。改 120=2 分钟、300=5 分钟。
+  （2026-07-06 自动化减负：120→600，Mac mini 拉取 720→144 次/天；worker-deploy 每 300s 感知，代码上线延迟 ≤10min。）
   RunAtLoad=true：装载即拉一次（拉取免费且安全，与花额度的 runner 不同）。
 -->
 <plist version="1.0">
@@ -26,7 +27,7 @@
   <string>/Users/yangqiuyuan/Coding/searchX</string>
 
   <key>StartInterval</key>
-  <integer>120</integer>
+  <integer>600</integer>
 
   <key>RunAtLoad</key>
   <true/>
