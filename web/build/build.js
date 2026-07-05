@@ -7,6 +7,7 @@ import { renderIndex } from "./render-index.js";
 import { injectConfig } from "./inject-config.js";
 import { injectReportNav } from "./inject-report-nav.js";
 import { findReportDefects } from "./validate-report.js";
+import { fingerprintAssets } from "./fingerprint.js";
 
 export function build({
   root = "research",
@@ -80,6 +81,10 @@ export function build({
   // 站内不放入口链接；真正的锁在 Worker 端（CHECK_KEY 校验）。
   const checkTpl = readFileSync(checkTemplate, "utf8");
   writeFileSync(join(out, "check.html"), injectConfig(checkTpl, cfg));
+
+  // 所有页面与资源都写完后，给静态资源引用打「内容版本号」（cache-busting）：内容一变版本就变、
+  // 浏览器必然重载新脚本；不变则继续用缓存。根治「固定文件名脚本被浏览器长期卡在旧缓存」。
+  fingerprintAssets({ out });
 
   return entries;
 }
