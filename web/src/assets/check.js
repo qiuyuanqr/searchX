@@ -91,6 +91,20 @@ export function formatTaskTime(iso) {
   return `${get("month")}-${get("day")} ${get("hour")}:${get("minute")}`;
 }
 
+// 纯函数：Date 或 ISO → 北京时间时钟 "HH:mm:ss"，用于手动刷新后的「已更新 <时刻>」提示。
+// 秒级（比列表里的分钟级更细）：这样即便两次刷新在同一分钟内、且列表内容没变，时刻也每次都变，
+// 用户据此确信「刷新真的发生过」。非法 / 空输入返回空串（调用方退化为只显示「已更新」）。
+export function formatClockTime(input) {
+  const d = input instanceof Date ? input : new Date(input || "");
+  if (isNaN(d.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("zh-CN", {
+    timeZone: "Asia/Shanghai",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+  }).formatToParts(d);
+  const get = (type) => (parts.find((p) => p.type === type) || {}).value || "";
+  return `${get("hour")}:${get("minute")}:${get("second")}`;
+}
+
 // 纯函数：列表里还有排队中的任务才继续轮询，全部终态即停。
 export function shouldKeepPolling(tasks) {
   return Array.isArray(tasks) && tasks.some((t) => t && t.status === "pending");

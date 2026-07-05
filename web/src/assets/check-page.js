@@ -3,7 +3,7 @@
 import {
   readKey, saveKey, clearKey, keyFromHash, describeCheckResult, describeSubmitError, describeRecentError,
   submitTimeoutMs, fitDimensions, validateCheckSubmission,
-  describeTaskStatus, formatTaskTime, shouldKeepPolling,
+  describeTaskStatus, formatTaskTime, formatClockTime, shouldKeepPolling,
 } from "./check.js";
 
 const WORKER = document.body.dataset.worker || "";   // {{WORKER_URL}} 注入在 body data-worker
@@ -153,9 +153,31 @@ function renderRecentError(text) {
   box.append(p);
 }
 
-async function loadRecent() {
+// 刷新按钮的即时反馈：点下去立刻禁用 + 文案转「刷新中…」，让「点过了」在 0 延迟内可见
+//（对齐提交按钮 disabled + 「提交中…」的同款范式）。只在手动点击时用，后台轮询不动它免得闪。
+function setRefreshing(on) {
+  const btn = $("recent-refresh");
+  btn.disabled = on;
+  btn.textContent = on ? "刷新中…" : "刷新";
+}
+
+// 手动刷新成功后盖「已更新 <时刻>」回执：列表内容即便一字未变，秒级时刻每次都变，
+// 就是「刷新确实发生过」的可见证据。拿不到合法时刻时退化为只显示「已更新」。
+function showSyncedNote(date) {
+  const el = $("recent-synced");
+  if (!el) return;
+  const t = formatClockTime(date);
+  el.textContent = t ? `已更新 ${t}` : "已更新";
+  el.hidden = false;
+}
+
+// opts.manual=true 表示用户主动点「刷新」→ 给按钮 loading 态 + 成功后盖「已更新」回执；
+// 后台轮询 / 切回前台 / 提交后自动刷新都不传，保持静默（提交本身已有「提交中…」等反馈）。
+async function loadRecent(opts = {}) {
+  const manual = !!(opts && opts.manual);
   if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
   if (!key) return;
+  if (manual) setRefreshing(true);
   try {
     const r = await fetch(WORKER + "/check/recent", {
       headers: { "x-check-key": key },
@@ -165,11 +187,14 @@ async function loadRecent() {
     const { tasks } = await r.json();
     const list = Array.isArray(tasks) ? tasks : [];
     renderRecent(list);
+    if (manual) showSyncedNote(new Date());   // 只有真拉到列表才盖时间戳（失败分支已 return，走 finally 恢复按钮）
     if (shouldKeepPolling(list) && document.visibilityState === "visible") {
       pollTimer = setTimeout(loadRecent, POLL_MS);
     }
   } catch {
     renderRecentError(describeRecentError(0)); // 超时/不可达：给出"连不上"提示，点「刷新」重试
+  } finally {
+    if (manual) setRefreshing(false);   // 无论成败都恢复按钮可点，避免卡在「刷新中…」
   }
 }
 
@@ -291,7 +316,7 @@ $("logout").addEventListener("click", () => {
   location.reload();
 });
 
-$("recent-refresh").addEventListener("click", () => loadRecent());
+$("recent-refresh").addEventListener("click", () => loadRecent({ manual: true }));
 // 切回前台且表单已解锁 → 刷新一次（顺带按需重启轮询）
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && !$("form-area").hidden) loadRecent();

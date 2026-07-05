@@ -12,6 +12,7 @@ import {
   validateCheckSubmission,
   describeTaskStatus,
   formatTaskTime,
+  formatClockTime,
   shouldKeepPolling,
 } from "./check.js";
 
@@ -219,6 +220,28 @@ test("formatTaskTime：非法输入返回空串（不崩）", () => {
   expect(formatTaskTime("not a date")).toBe("");
   expect(formatTaskTime("")).toBe("");
   expect(formatTaskTime(undefined)).toBe("");
+});
+
+// --- formatClockTime（Date/ISO → 北京时间 HH:mm:ss，用于「已更新」提示）---
+
+test("formatClockTime：UTC 时刻 → 北京时间 HH:mm:ss", () => {
+  // 2026-07-02T01:30:05Z = 北京时间 09:30:05
+  expect(formatClockTime(new Date("2026-07-02T01:30:05.000Z"))).toBe("09:30:05");
+});
+
+test("formatClockTime：接受 ISO 字符串输入", () => {
+  expect(formatClockTime("2026-07-02T01:30:05.000Z")).toBe("09:30:05");
+});
+
+test("formatClockTime：补零到两位（个位时分秒）", () => {
+  // 2026-07-01T20:03:07Z = 北京时间 04:03:07
+  expect(formatClockTime("2026-07-01T20:03:07.000Z")).toBe("04:03:07");
+});
+
+test("formatClockTime：非法 / 空输入返回空串（不崩）", () => {
+  expect(formatClockTime("not a date")).toBe("");
+  expect(formatClockTime("")).toBe("");
+  expect(formatClockTime(undefined)).toBe("");
 });
 
 // --- shouldKeepPolling（有排队中任务才继续轮询）---
