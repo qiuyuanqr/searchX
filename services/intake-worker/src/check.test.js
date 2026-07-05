@@ -835,3 +835,147 @@ test("限频：成功提交不计数（checkfail 键不出现）", async () => {
   expect(res.status).toBe(201);
   expect(env.INTAKE_KV.store.has("checkfail:0.0.0.0")).toBe(false);
 });
+
+// ── list 额度根治：check:idx 索引替代全表 KV.list ─────────────────
+// 背景：/check/recent、/check/pending 曾对 check: 前缀做全表 KV.list；免费计划 list
+// 每日额度（约 1000 次）被 runner 每分钟轮询打爆后，两端点一律抛错 → 兜底 500。
+// 改用 check:idx 轻量索引（read 额度约 100 倍）根治。以下测试钉死：正常态不依赖
+// list、list 挂了也不 500、索引随 submit/done 增改维护、无索引时惰性重建兜底。
+
+// list 抛错的 KV（模拟免费计划 list 每日额度耗尽：Cloudflare code 10048）；
+// get/put/delete 照常工作，只有 list 抛——用来验证正常读写路径不再依赖 list。
+function listFailKV(seed = {}) {
+  const kv = fakeKV(seed);
+  kv.list = async () => { throw new Error("KV list quota exceeded [code: 10048]"); };
+  return kv;
+}
+
+test("根治·submit：提交后写入 check:idx（含该任务轻量条目、标 complete、不含全文重字段）", async () => {
+  const env = ENV();
+  const { id } = await (await postCheck(env, { "x-check-key": "CK_GOOD" }, { text: "待核查内容" })).json();
+  const idx = JSON.parse(env.INTAKE_KV.store.get("check:idx"));
+  expect(idx.complete).toBe(true);
+  const e = idx.items.find((x) => x.id === id);
+  expect(e).toBeTruthy();
+  expect(e.status).toBe("pending");
+  expect(e.snippet).toBe("待核查内容");
+  expect(e.text).toBeUndefined();   // 索引只存轻量摘要，不落全文
+});
+
+test("根治·submit 去重：先写全文再入索引，重建枚举到它也不重复", async () => {
+  const env = ENV();
+  const { id } = await (await postCheck(env, { "x-check-key": "CK_GOOD" }, { text: "唯一任务" })).json();
+  const idx = JSON.parse(env.INTAKE_KV.store.get("check:idx"));
+  expect(idx.items.filter((x) => x.id === id)).toHaveLength(1);
+});
+
+test("根治·recent：有完整索引时不依赖 list（list 抛错仍 200 返回视图、降序）", async () => {
+  const kv = listFailKV({
+    "check:idx": JSON.stringify({ complete: true, items: [
+      { id: "a", createdAt: "2026-07-02T09:00:00.000Z", status: "pending", snippet: "甲" },
+      { id: "b", createdAt: "2026-07-01T08:00:00.000Z", status: "done", snippet: "乙", summary: "属实（高）" },
+    ] }),
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  const res = await getRecent(env, { "x-check-key": "CK_GOOD" });
+  expect(res.status).toBe(200);
+  const body = await res.json();
+  expect(body.tasks.map((t) => t.id)).toEqual(["a", "b"]);
+  expect(body.tasks[0]).toEqual({ id: "a", createdAt: "2026-07-02T09:00:00.000Z", status: "pending", textSnippet: "甲" });
+  expect(body.tasks[1].summary).toBe("属实（高）");
+});
+
+test("根治·recent：无索引且 list 抛错（额度耗尽）→ 降级空列表、绝不 500", async () => {
+  const env = ENV({ INTAKE_KV: listFailKV() });
+  const res = await getRecent(env, { "x-check-key": "CK_GOOD" });
+  expect(res.status).toBe(200);
+  expect((await res.json()).tasks).toEqual([]);
+});
+
+test("根治·pending：靠索引筛 pending 再取全文（list 抛错仍工作，契约含完整任务）", async () => {
+  const kv = listFailKV({
+    "check:idx": JSON.stringify({ complete: true, items: [
+      { id: "p1", createdAt: NOW(), status: "pending", snippet: "待办" },
+      { id: "d1", createdAt: NOW(), status: "done", snippet: "已完成" },
+    ] }),
+    "check:p1": JSON.stringify({ text: "待办全文", link: "", status: "pending", createdAt: NOW(), images: [] }),
+    "check:d1": JSON.stringify({ text: "已完成全文", link: "", status: "done", createdAt: NOW() }),
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  const res = await getPending(env, { "x-check-runner-secret": "RS_GOOD" });
+  expect(res.status).toBe(200);
+  const body = await res.json();
+  expect(body.tasks).toHaveLength(1);
+  expect(body.tasks[0].id).toBe("p1");
+  expect(body.tasks[0].text).toBe("待办全文");
+});
+
+test("根治·pending：索引说 pending 但全文已 done → 以全文为准，不误返回", async () => {
+  const kv = listFailKV({
+    "check:idx": JSON.stringify({ complete: true, items: [
+      { id: "x", createdAt: NOW(), status: "pending", snippet: "滞后条目" },
+    ] }),
+    "check:x": JSON.stringify({ text: "其实已完成", link: "", status: "done", createdAt: NOW() }),
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  const body = await (await getPending(env, { "x-check-runner-secret": "RS_GOOD" })).json();
+  expect(body.tasks).toEqual([]);
+});
+
+test("根治·done：标完成同步更新索引条目 status/summary", async () => {
+  const kv = fakeKV({
+    "check:idx": JSON.stringify({ complete: true, items: [
+      { id: "t", createdAt: NOW(), status: "pending", snippet: "任务" },
+    ] }),
+    "check:t": JSON.stringify({ text: "任务", link: "", status: "pending", createdAt: NOW() }),
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  await handleCheckDone(new Request("https://w.dev/check/t/done", {
+    method: "POST",
+    headers: { "x-check-runner-secret": "RS_GOOD", "content-type": "application/json" },
+    body: JSON.stringify({ outcome: "done", summary: "属实（高）：确认" }),
+  }), env, "t");
+  const idx = JSON.parse(kv.store.get("check:idx"));
+  const e = idx.items.find((x) => x.id === "t");
+  expect(e.status).toBe("done");
+  expect(e.summary).toBe("属实（高）：确认");
+});
+
+test("根治·done：索引缺该条 → self-heal 追加（不丢失）", async () => {
+  const kv = fakeKV({
+    "check:idx": JSON.stringify({ complete: true, items: [] }),
+    "check:t": JSON.stringify({ text: "任务", link: "", status: "pending", createdAt: NOW() }),
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  await postDone(env, "t", { "x-check-runner-secret": "RS_GOOD" });
+  const idx = JSON.parse(kv.store.get("check:idx"));
+  const e = idx.items.find((x) => x.id === "t");
+  expect(e).toBeTruthy();
+  expect(e.status).toBe("done");
+});
+
+test("根治·惰性重建：无索引但有存量全文 + list 可用 → 首次调用重建 complete 索引", async () => {
+  const kv = fakeKV({
+    "check:legacy": JSON.stringify({ text: "存量任务", link: "", status: "pending", createdAt: NOW() }),
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  const body = await (await getRecent(env, { "x-check-key": "CK_GOOD" })).json();
+  expect(body.tasks).toHaveLength(1);
+  expect(body.tasks[0].id).toBe("legacy");
+  const idx = JSON.parse(kv.store.get("check:idx"));
+  expect(idx.complete).toBe(true);
+  expect(idx.items[0].id).toBe("legacy");
+});
+
+test("根治·惰性重建：跳过 check:idx 自身、跳过损坏条目", async () => {
+  const kv = fakeKV({
+    "check:bad": "{ 不是 JSON",
+    "check:ok": JSON.stringify({ text: "好的", link: "", status: "pending", createdAt: NOW() }),
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  const body = await (await getRecent(env, { "x-check-key": "CK_GOOD" })).json();
+  expect(body.tasks).toHaveLength(1);
+  expect(body.tasks[0].id).toBe("ok");
+  const idx = JSON.parse(kv.store.get("check:idx"));
+  expect(idx.items.map((x) => x.id)).toEqual(["ok"]);   // 不含 idx 自身、不含 bad
+});

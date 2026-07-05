@@ -5,6 +5,7 @@
 import { safeEqual } from "./safe-equal.js";
 
 const TTL = 7 * 24 * 3600;                 // 任务与图片字节统一 7 天过期
+const IDX_KEY = "check:idx";               // 轻量索引 key（替代全表 KV.list，见文件下方索引段）
 const IMG_MAX_COUNT = 9;                    // 单次最多 9 张
 const IMG_MAX_BYTES = 6 * 1024 * 1024;     // 单图上限 6 MiB
 const IMG_MIME_ALLOW = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -49,6 +50,64 @@ function parseTask(raw) {
   } catch {
     return null;
   }
+}
+
+// ── check:idx 轻量索引：让 /check/recent、/check/pending 靠 read 工作，不再全表 KV.list ──
+// list 是免费计划每日额度最紧的操作（约 1000/天），曾被 runner 每分钟轮询 /check/pending
+// 打爆，额度一空两端点全抛错→兜底 500。索引把 list 降到"仅索引缺失/不完整时重建一次"，
+// 正常态只 read（额度约 100 倍）。索引存 { complete, items:[{id,createdAt,status,snippet,summary?}] }。
+
+// 轻量条目：recent 直接渲染、pending 靠它筛 id。绝不含 text/link/images 全文重字段。
+function toIndexEntry(id, t) {
+  const e = { id, createdAt: t.createdAt || "", status: t.status || "pending", snippet: taskSnippet(t) };
+  if (t.summary) e.summary = t.summary;
+  return e;
+}
+
+// upsert：已存在则就地更新（去重 + 状态同步），否则追加。
+function upsertIndexEntry(items, id, t) {
+  const e = items.find((x) => x && x.id === id);
+  if (e) Object.assign(e, toIndexEntry(id, t));
+  else items.push(toIndexEntry(id, t));
+}
+
+// 从全表 list 重建索引——唯一还用 list 的地方，仅索引缺失/不完整时走一次；成功即落
+// { complete:true }，此后正常态不再 list。可能抛（list 额度耗尽）——调用方负责兜底。
+async function rebuildIndex(env) {
+  const listed = await env.INTAKE_KV.list({ prefix: "check:" });
+  const items = [];
+  for (const k of listed.keys) {
+    if (k.name === IDX_KEY) continue;                 // 别把索引自己当任务
+    const raw = await env.INTAKE_KV.get(k.name);
+    if (!raw) continue;
+    const t = parseTask(raw);
+    if (!t) continue;                                 // 跳过损坏条目
+    items.push(toIndexEntry(k.name.slice("check:".length), t));
+  }
+  await env.INTAKE_KV.put(IDX_KEY, JSON.stringify({ complete: true, items }), { expirationTtl: TTL });
+  return { items, complete: true };
+}
+
+// 读索引：complete 则直接用（1 read，不 list）；缺失/不完整则尝试重建；重建失败（如 list
+// 额度耗尽）降级——返回已有不完整条目或空，绝不抛错拖成 500。返回 { items, complete }。
+async function loadIndexEx(env) {
+  let obj = null;
+  try {
+    const raw = await env.INTAKE_KV.get(IDX_KEY);
+    if (raw) { const p = JSON.parse(raw); if (p && Array.isArray(p.items)) obj = p; }
+  } catch { obj = null; }
+  if (obj && obj.complete) return { items: obj.items, complete: true };
+  try {
+    return await rebuildIndex(env);
+  } catch {
+    return { items: obj && Array.isArray(obj.items) ? obj.items : [], complete: false };
+  }
+}
+
+// 写回索引（沿用当前完整性标志）。调用方以 best-effort 方式 catch——索引维护失败绝不该
+// 让 submit/done 本身失败（全文已落库，索引可由后续惰性重建补上）。
+async function saveIndex(env, items, complete) {
+  await env.INTAKE_KV.put(IDX_KEY, JSON.stringify({ complete, items }), { expirationTtl: TTL });
 }
 
 // POST /check —— 作者凭 CHECK_KEY 提交一条核查任务。
@@ -122,6 +181,12 @@ export async function handleCheckSubmit(request, env, { now }) {
   }
   const task = { text, link, status: "pending", createdAt: now(), images };
   await env.INTAKE_KV.put(`check:${id}`, JSON.stringify(task), { expirationTtl: TTL });
+  // 维护 check:idx 索引（best-effort，失败不影响提交成功——全文已落库，索引可由后续惰性重建补上）。
+  try {
+    const { items, complete } = await loadIndexEx(env);
+    upsertIndexEntry(items, id, task);
+    await saveIndex(env, items, complete);
+  } catch {}
   return corsJson({ ok: true, id }, 201);
 }
 
@@ -148,22 +213,20 @@ export async function handleCheckRecent(request, env) {
     return corsJson({ ok: false, error: "unauthorized" }, 401);
   }
 
-  const list = await env.INTAKE_KV.list({ prefix: "check:" });
-  const tasks = [];
-  for (const k of list.keys) {
-    const raw = await env.INTAKE_KV.get(k.name);
-    if (!raw) continue;
-    const t = parseTask(raw);
-    if (!t) continue; // 跳过损坏条目
-    const view = {
-      id: k.name.slice("check:".length),
-      createdAt: t.createdAt || "",
-      status: t.status || "pending",
-      textSnippet: taskSnippet(t),
-    };
-    if (t.summary) view.summary = t.summary;
-    tasks.push(view);
-  }
+  // 从索引直接映射轻量视图——不再逐条 get 全文、更不 list（根治 list 额度耗尽 → 500）。
+  const { items } = await loadIndexEx(env);
+  const tasks = items
+    .filter((e) => e && e.id)
+    .map((e) => {
+      const view = {
+        id: e.id,
+        createdAt: e.createdAt || "",
+        status: e.status || "pending",
+        textSnippet: e.snippet || "",
+      };
+      if (e.summary) view.summary = e.summary;
+      return view;
+    });
   tasks.sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0));
   return corsJson({ ok: true, tasks });
 }
@@ -184,14 +247,17 @@ function taskSnippet(t) {
 export async function handleCheckPending(request, env) {
   if (!runnerAuthed(request, env)) return json({ ok: false, error: "unauthorized" }, 401);
 
-  const list = await env.INTAKE_KV.list({ prefix: "check:" });
+  // 靠索引筛出 pending 的 id 再逐条取全文——不再全表 list（根治 list 额度耗尽 → 500）。
+  // 以全文 status 为准：索引可能滞后（done 的索引同步是 best-effort），避免误把已完成任务发回 runner。
+  const { items } = await loadIndexEx(env);
   const tasks = [];
-  for (const k of list.keys) {
-    const raw = await env.INTAKE_KV.get(k.name);
+  for (const e of items) {
+    if (!e || e.status !== "pending") continue;
+    const raw = await env.INTAKE_KV.get(`check:${e.id}`);
     if (!raw) continue;
     const t = parseTask(raw);
     if (!t) continue; // 跳过损坏条目，不拖垮整列表
-    if (t.status === "pending") tasks.push({ id: k.name.slice("check:".length), ...t });
+    if (t.status === "pending") tasks.push({ id: e.id, ...t });
   }
   return json({ ok: true, tasks });
 }
@@ -230,6 +296,13 @@ export async function handleCheckDone(request, env, id) {
   t.status = outcome === "failed" ? "failed" : "done";
   if (summary) t.summary = summary;
   await env.INTAKE_KV.put(`check:${id}`, JSON.stringify(t), { expirationTtl: TTL });
+  // 同步 check:idx 索引条目 status/summary（best-effort，失败不影响 done——全文已更新，
+  // 索引可由后续惰性重建/自愈补上）。索引缺该条时 upsert 会追加（self-heal）。
+  try {
+    const { items, complete } = await loadIndexEx(env);
+    upsertIndexEntry(items, id, t);
+    await saveIndex(env, items, complete);
+  } catch {}
   // 隐私加固：任务跑完即清图片字节（云端只停留到处理完）。best-effort——
   // 删失败不该影响 done 的 200（任务已标完成，图片随 7 天 TTL 兜底过期）。
   const imgs = Array.isArray(t.images) ? t.images : [];
