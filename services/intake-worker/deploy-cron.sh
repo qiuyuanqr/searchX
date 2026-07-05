@@ -1,12 +1,12 @@
 #!/bin/zsh
-# searchX intake-worker —— 每小时兜底自动部署（仅在 wrangler 已登录的 MacBook 上加载）。
+# searchX intake-worker —— 自动部署（仅在常驻的 Mac mini 上加载；MacBook 是笔记本、不常驻，不装）。
 #
 # 只做一件事：若本机 HEAD 里 services/intake-worker 的源码/配置自上次部署以来变了，
 # 就 wrangler deploy；没变则秒退、不刷无意义 version。
 #
-# 刻意不主动 git pull —— 让 HEAD 保持最新是双机同步机制（two-machine-autosync）的职责，
-# 各司其职、互不打架。worker 改动几乎都在 MacBook 上做+commit，本机 HEAD 天然最新。
-# 只在装了 plist 的机器跑；Mac mini 同步到本脚本但没装 plist，不会跑（避免双机重复部署）。
+# 刻意不主动 git pull —— Mac mini 的 autopull（每 120s，见 .claude/hooks/autopull.sh）已负责把
+# 任何来源 push 的新代码拉下来、保 HEAD 最新；本脚本只管「HEAD 的 worker 变了就部署」，各司其职。
+# 只在装了 plist 的 Mac mini 跑；MacBook 同步到本脚本但没装 plist、不会跑（与 check-runner 同构）。
 set -u
 
 # 仓库根 = 本脚本所在的 services/intake-worker/ 往上两级

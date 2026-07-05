@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
-  searchX intake-worker 每小时兜底自动部署（只在 wrangler 已登录的 MacBook 上加载）。
-  安装：cp 本文件到 ~/Library/LaunchAgents/ 后 launchctl bootstrap，详见 ../README.md「自动部署」。
-  StartInterval=3600 即每小时一跑；deploy-cron.sh 内部检测 intake-worker 有变化才真部署，
-  没变秒退、不刷无意义 version。改 1800=半小时、7200=两小时。
+  searchX intake-worker 自动部署（只在常驻的 Mac mini 上加载；MacBook 是笔记本、不常驻，不装）。
+  安装：cp 本文件到 ~/Library/LaunchAgents/ 后 launchctl bootstrap，详见 ../README.md「Mac mini 自动部署」。
+  StartInterval=120 即每 2 分钟一检；deploy-cron.sh 内部检测 intake-worker 有变化才真部署，
+  没变秒退、不刷无意义 version。与 autopull 同频：autopull 拉到新代码、下一检就部署上线。改 300=5 分钟。
   RunAtLoad=false：装好不立即跑（避免和安装时的手动验证重复部署）；到点自然触发。
-  只在 MacBook 装（它的 wrangler 已登录）；Mac mini 同步到脚本但没装 plist，就不会跑。
+  Mac mini 的 wrangler 已 OAuth 登录（能部署）；MacBook 同步到本文件但不装 plist，就不会跑。
 -->
 <plist version="1.0">
 <dict>
@@ -22,7 +22,7 @@
   <string>/Users/yangqiuyuan/Coding/searchX</string>
 
   <key>StartInterval</key>
-  <integer>3600</integer>
+  <integer>120</integer>
 
   <key>RunAtLoad</key>
   <false/>
