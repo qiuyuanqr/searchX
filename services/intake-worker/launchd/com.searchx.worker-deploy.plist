@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  searchX intake-worker 每小时兜底自动部署（只在 wrangler 已登录的 MacBook 上加载）。
+  安装：cp 本文件到 ~/Library/LaunchAgents/ 后 launchctl bootstrap，详见 ../README.md「自动部署」。
+  StartInterval=3600 即每小时一跑；deploy-cron.sh 内部检测 intake-worker 有变化才真部署，
+  没变秒退、不刷无意义 version。改 1800=半小时、7200=两小时。
+  RunAtLoad=false：装好不立即跑（避免和安装时的手动验证重复部署）；到点自然触发。
+  只在 MacBook 装（它的 wrangler 已登录）；Mac mini 同步到脚本但没装 plist，就不会跑。
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.searchx.worker-deploy</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/yangqiuyuan/Coding/searchX/services/intake-worker/deploy-cron.sh</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/yangqiuyuan/Coding/searchX</string>
+
+  <key>StartInterval</key>
+  <integer>3600</integer>
+
+  <key>RunAtLoad</key>
+  <false/>
+
+  <key>ProcessType</key>
+  <string>Background</string>
+
+  <key>StandardOutPath</key>
+  <string>/Users/yangqiuyuan/Library/Logs/searchx-worker-deploy/launchd.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/yangqiuyuan/Library/Logs/searchx-worker-deploy/launchd.err.log</string>
+</dict>
+</plist>
