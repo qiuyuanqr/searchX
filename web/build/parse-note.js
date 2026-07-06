@@ -12,22 +12,52 @@ export function cleanInline(s) {
     .trim();
 }
 
-// 导语（卡片 lead）抽取：优先 markdown `>` 引用块；没有则回退到「## 一句话」/「## TL;DR」
-// 标题下的首段（股票等报告用标题段落而非引用块写结论，否则卡片导语会空）。
+// 「## 一句话XXX」/「## TL;DR」类标题下的首个引用块或首段（列表不算首段）。
+// 标题必须以"一句话"/"TL;DR"开头才算数——像"## 公司一句话定位"这种"一句话"
+// 只是标题中部修饰词的，不是真正的 TL;DR 段落，不应误命中。
+function quoteOrParaAfter(lines, startIdx) {
+  let i = startIdx;
+  while (i < lines.length && /^\s*$/.test(lines[i])) i++;
+  if (i >= lines.length || /^#{1,6}\s/.test(lines[i])) return "";
+  if (/^>\s?/.test(lines[i])) {
+    const block = [];
+    while (i < lines.length && /^>\s?/.test(lines[i])) {
+      block.push(lines[i].replace(/^>\s?/, ""));
+      i++;
+    }
+    return cleanInline(block.join(" "));
+  }
+  if (/^\s*([-*+]|\d+\.)\s/.test(lines[i])) return "";
+  const para = [];
+  for (; i < lines.length; i++) {
+    if (/^\s*$/.test(lines[i])) break;
+    if (/^#{1,6}\s/.test(lines[i])) break;
+    if (/^\s*([-*+]|\d+\.)\s/.test(lines[i])) break;
+    para.push(lines[i]);
+  }
+  return cleanInline(para.join(" "));
+}
+
+// 导语（卡片 lead）抽取，优先级：
+// ① 「## 一句话XXX」/「## TL;DR」标题下的首个引用块或首段——报告作者已明确标注这是结论段落；
+// ② 第一个 `##` 标题之前出现的引用块（导语位置——H1 下紧跟的开场引用，多数报告的写法）；
+// ③ 全文第一个引用块（向后兼容兜底，防止走到这里仍拿不到内容）。
+// 优先级①在②之前，是因为①是作者显式标注的结论位置；把②放在①之前会让"标题下才是真结论、
+// 标题前只是免责声明/基准数据"的笔记（如 TBEA）永远拿不到正确导语。
 function extractTldr(content) {
-  const bq = content.match(/^>\s?(.+(?:\n>.*)*)/m);
-  if (bq) return cleanInline(bq[1].replace(/\n>\s?/g, " "));
   const lines = content.split("\n");
   for (let i = 0; i < lines.length; i++) {
-    if (!/^#{1,6}\s+.*(?:一句话|TL;?DR)/i.test(lines[i])) continue;
-    const para = [];
-    for (let j = i + 1; j < lines.length; j++) {
-      if (/^\s*$/.test(lines[j])) { if (para.length) break; else continue; }
-      if (/^#{1,6}\s/.test(lines[j])) break;   // 撞到下一个标题就停
-      para.push(lines[j]);
-    }
-    if (para.length) return cleanInline(para.join(" "));
+    if (!/^#{1,6}\s+(?:一句话|TL;?DR)/i.test(lines[i])) continue;
+    const t = quoteOrParaAfter(lines, i + 1);
+    if (t) return t;
   }
+  let firstHeadingIdx = lines.findIndex((l) => /^#{1,6}\s/.test(l));
+  if (firstHeadingIdx === -1) firstHeadingIdx = lines.length;
+  const lead = lines.slice(0, firstHeadingIdx).join("\n");
+  const leadBq = lead.match(/^>\s?(.+(?:\n>.*)*)/m);
+  if (leadBq) return cleanInline(leadBq[1].replace(/\n>\s?/g, " "));
+  const bq = content.match(/^>\s?(.+(?:\n>.*)*)/m);
+  if (bq) return cleanInline(bq[1].replace(/\n>\s?/g, " "));
   return "";
 }
 
