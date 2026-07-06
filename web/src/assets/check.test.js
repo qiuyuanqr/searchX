@@ -14,6 +14,10 @@ import {
   formatTaskTime,
   formatClockTime,
   shouldKeepPolling,
+  parseFrontmatter,
+  verdictTone,
+  resultChips,
+  describeResultError,
 } from "./check.js";
 
 // --- readKey / saveKey / clearKey ---
@@ -257,4 +261,47 @@ test("shouldKeepPolling：全终态 → false", () => {
 test("shouldKeepPolling：空列表 / 非数组 → false", () => {
   expect(shouldKeepPolling([])).toBe(false);
   expect(shouldKeepPolling(null)).toBe(false);
+});
+
+// --- 结果详情：frontmatter 解析 / 裁定条 / 错误文案 ---
+
+test("parseFrontmatter：解出 frontmatter 键值与正文", () => {
+  const md = "---\nverdict: 误导\nconfidence: 高\n---\n## 真相直述\n内容";
+  const { frontmatter, body } = parseFrontmatter(md);
+  expect(frontmatter.verdict).toBe("误导");
+  expect(frontmatter.confidence).toBe("高");
+  expect(body).toBe("## 真相直述\n内容");
+});
+test("parseFrontmatter：无 frontmatter → 原文即 body", () => {
+  const { frontmatter, body } = parseFrontmatter("## 直接正文");
+  expect(frontmatter).toEqual({});
+  expect(body).toBe("## 直接正文");
+});
+test("parseFrontmatter：去掉值两侧引号", () => {
+  const { frontmatter } = parseFrontmatter('---\nverdict: "属实"\n---\n正文');
+  expect(frontmatter.verdict).toBe("属实");
+});
+test("verdictTone：六档映射到色调", () => {
+  expect(verdictTone("属实")).toBe("true");
+  expect(verdictTone("大体属实")).toBe("true");
+  expect(verdictTone("半真")).toBe("mixed");
+  expect(verdictTone("误导")).toBe("mixed");
+  expect(verdictTone("不实")).toBe("false");
+  expect(verdictTone("无法证实")).toBe("unknown");
+  expect(verdictTone("")).toBe("unknown");
+});
+test("resultChips：裁定带把握度着色，可信度 / 来源数 / 输入类型中性", () => {
+  const chips = resultChips({ verdict: "不实", confidence: "高", source_credibility: "中", source_count: "5", input_type: "图片" });
+  expect(chips[0]).toEqual({ label: "裁定：不实（高）", tone: "false" });
+  expect(chips.some((c) => c.label === "来源可信度：中" && c.tone === "neutral")).toBe(true);
+  expect(chips.some((c) => c.label === "5 个来源")).toBe(true);
+  expect(chips.some((c) => c.label === "图片")).toBe(true);
+});
+test("resultChips：缺字段则不产出对应 chip", () => {
+  expect(resultChips({})).toEqual([]);
+});
+test("describeResultError：404 提示去 Obsidian、401 提示重输、0 提示连不上", () => {
+  expect(describeResultError(404)).toContain("Obsidian");
+  expect(describeResultError(401)).toContain("失效");
+  expect(describeResultError(0)).toContain("连不上");
 });

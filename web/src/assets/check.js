@@ -121,3 +121,54 @@ export function validateCheckSubmission({ text, link, imageCount } = {}) {
   if (n > 9) return { ok: false, reason: "最多 9 张图片。" };
   return { ok: true, reason: "" };
 }
+
+// 纯函数：解析笔记开头的 YAML frontmatter（--- 包裹），返回 { frontmatter, body }。
+// 只解标量键值（verdict/confidence/... 都是标量）；数组类（tags/related）跳过不用。
+// 无 frontmatter 时 frontmatter={}、body 为原文。
+export function parseFrontmatter(md) {
+  const s = String(md == null ? "" : md).replace(/\r\n?/g, "\n");
+  const m = /^---\n([\s\S]*?)\n---\n?/.exec(s);
+  if (!m) return { frontmatter: {}, body: s };
+  const frontmatter = {};
+  for (const line of m[1].split("\n")) {
+    const mm = /^([A-Za-z_][A-Za-z0-9_]*):\s*(.*)$/.exec(line);
+    if (!mm) continue;
+    let v = mm[2].trim();
+    if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1);
+    frontmatter[mm[1]] = v;
+  }
+  return { frontmatter, body: s.slice(m[0].length) };
+}
+
+// 纯函数：六档裁定 → 裁定条着色键（true 属实系 / mixed 半真误导 / false 不实 / unknown 无法证实）。
+export function verdictTone(verdict) {
+  const v = String(verdict || "").trim();
+  if (v === "属实" || v === "大体属实") return "true";
+  if (v === "半真" || v === "误导") return "mixed";
+  if (v === "不实") return "false";
+  return "unknown";
+}
+
+// 纯函数：从 frontmatter 组装顶部裁定条 chip 列表。裁定按 verdictTone 着色，其余中性。
+// 缺字段就不产出对应 chip（老笔记 / 字段不全也不报错）。
+export function resultChips(fm) {
+  const f = fm || {};
+  const chips = [];
+  if (f.verdict) {
+    const conf = f.confidence ? `（${f.confidence}）` : "";
+    chips.push({ label: `裁定：${f.verdict}${conf}`, tone: verdictTone(f.verdict) });
+  }
+  if (f.source_credibility) chips.push({ label: `来源可信度：${f.source_credibility}`, tone: "neutral" });
+  if (f.input_type) chips.push({ label: String(f.input_type), tone: "neutral" });
+  if (f.source_count) chips.push({ label: `${f.source_count} 个来源`, tone: "neutral" });
+  return chips;
+}
+
+// 纯函数：详情结果加载失败 → 给用户看的一行提示（对齐 describeRecentError 的语气）。
+export function describeResultError(status) {
+  if (status === 401) return "密钥已失效，请点「退出」后重新输入。";
+  if (status === 429) return "请求过于频繁被暂时限流，请稍后再试。";
+  if (status === 404) return "结果暂不可用（可能仍在处理、回传失败或已超 7 天），可去 Obsidian 查看。";
+  if (status) return `结果加载失败（HTTP ${status}），可返回列表重试。`;
+  return "连不上核查服务（网络不通或被屏蔽），可返回列表重试。";
+}
