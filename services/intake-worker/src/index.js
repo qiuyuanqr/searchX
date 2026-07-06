@@ -4,7 +4,7 @@ import { handleSubRead } from "./sub-read.js";
 import { handlePeople } from "./people.js";
 import { handleAdmin } from "./admin.js";
 import { handleVerify } from "./verify.js";
-import { handleCheckSubmit, handleCheckPending, handleCheckDone, handleCheckImage, handleCheckRecent } from "./check.js";
+import { handleCheckSubmit, handleCheckPending, handleCheckDone, handleCheckImage, handleCheckRecent, handleCheckResult } from "./check.js";
 
 // 兜底 500：各 handler 自身已尽量兜错，但鉴权前的 KV 读（如 admin.js 的失败限流计数、
 // verify.js/check.js 的 emailForToken / authFailuresExceeded）都在各自的 try 之外——KV 抖动
@@ -67,6 +67,16 @@ export default {
       if (imgMatch) {
         if (request.method === "GET")
           return await handleCheckImage(request, env, imgMatch[1], Number(imgMatch[2]));
+        return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers: { "content-type": "application/json" } });
+      }
+      // 作者取某条核查的完整结果（CHECK_KEY）；OPTIONS 预检由 handleCheckResult 自己处理
+      const resultMatch = pathname.match(/^\/check\/([^/]+)\/result$/);
+      if (resultMatch) {
+        // "pending"/"recent" 是保留路径段，不可当任务 id 用
+        if (resultMatch[1] === "pending" || resultMatch[1] === "recent")
+          return new Response(JSON.stringify({ ok: false, error: "not found" }), { status: 404, headers: { "content-type": "application/json" } });
+        if (request.method === "GET" || request.method === "OPTIONS")
+          return await handleCheckResult(request, env, resultMatch[1]);
         return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers: { "content-type": "application/json" } });
       }
       if (pathname.startsWith("/check/"))

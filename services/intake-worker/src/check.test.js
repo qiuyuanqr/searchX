@@ -1,6 +1,6 @@
 // services/intake-worker/src/check.test.js
 import { test, expect } from "bun:test";
-import { handleCheckSubmit, handleCheckPending, handleCheckDone, handleCheckImage, handleCheckRecent } from "./check.js";
+import { handleCheckSubmit, handleCheckPending, handleCheckDone, handleCheckImage, handleCheckRecent, handleCheckResult } from "./check.js";
 import worker from "./index.js";
 
 function fakeKV(seed = {}) {
@@ -978,4 +978,86 @@ test("根治·惰性重建：跳过 check:idx 自身、跳过损坏条目", asyn
   expect(body.tasks[0].id).toBe("ok");
   const idx = JSON.parse(kv.store.get("check:idx"));
   expect(idx.items.map((x) => x.id)).toEqual(["ok"]);   // 不含 idx 自身、不含 bad
+});
+
+// ── 完整结果：done 存 checkresult / GET /result 读取 ─────────────
+
+function doneReq(body) {
+  return new Request("https://w.dev/check/x/done", {
+    method: "POST",
+    headers: { "x-check-runner-secret": "RS_GOOD", "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+function resultReq(env, headers = {}, method = "GET") {
+  return handleCheckResult(
+    new Request("https://w.dev/check/ID1/result", { method, headers }),
+    env, "ID1",
+  );
+}
+
+test("done 带 result：存进 checkresult:<id>，不写进 task / idx", async () => {
+  const env = ENV({ INTAKE_KV: fakeKV({ "check:ID1": JSON.stringify({ text: "t", status: "pending", images: [] }) }) });
+  const r = await handleCheckDone(doneReq({ outcome: "done", summary: "属实（高）：真", result: "---\nverdict: 属实\n---\n## 真相直述\n真。" }), env, "ID1");
+  expect(r.status).toBe(200);
+  expect(env.INTAKE_KV.store.get("checkresult:ID1")).toContain("真相直述");
+  // task 不含 result 全文；idx 条目也不含
+  expect(env.INTAKE_KV.store.get("check:ID1")).not.toContain("真相直述");
+  const idx = JSON.parse(env.INTAKE_KV.store.get("check:idx") || '{"items":[]}');
+  expect(JSON.stringify(idx)).not.toContain("真相直述");
+});
+
+test("done 的 result 超 200KB：跳过存储（不截断）", async () => {
+  const env = ENV({ INTAKE_KV: fakeKV({ "check:ID1": JSON.stringify({ text: "t", status: "pending", images: [] }) }) });
+  const big = "x".repeat(200 * 1024 + 1);
+  await handleCheckDone(doneReq({ outcome: "done", result: big }), env, "ID1");
+  expect(env.INTAKE_KV.store.has("checkresult:ID1")).toBe(false);
+});
+
+test("done 不带 result：不产生 checkresult 键", async () => {
+  const env = ENV({ INTAKE_KV: fakeKV({ "check:ID1": JSON.stringify({ text: "t", status: "pending", images: [] }) }) });
+  await handleCheckDone(doneReq({ outcome: "done", summary: "s" }), env, "ID1");
+  expect(env.INTAKE_KV.store.has("checkresult:ID1")).toBe(false);
+});
+
+test("GET /result 无密钥 → 401", async () => {
+  const env = ENV();
+  const r = await resultReq(env);
+  expect(r.status).toBe(401);
+});
+
+test("GET /result 密钥错 → 401 且记失败计数", async () => {
+  const env = ENV();
+  const r = await resultReq(env, { "x-check-key": "WRONG" });
+  expect(r.status).toBe(401);
+  expect(env.INTAKE_KV.store.get("checkfail:0.0.0.0")).toBe("1");
+});
+
+test("GET /result 密钥对且存在 → 200 回整篇", async () => {
+  const env = ENV({ INTAKE_KV: fakeKV({ "checkresult:ID1": "---\nverdict: 误导\n---\n## 真相直述\n内容" }) });
+  const r = await resultReq(env, { "x-check-key": "CK_GOOD" });
+  expect(r.status).toBe(200);
+  const body = await r.json();
+  expect(body.ok).toBe(true);
+  expect(body.result).toContain("真相直述");
+});
+
+test("GET /result 密钥对但不存在 → 404", async () => {
+  const env = ENV();
+  const r = await resultReq(env, { "x-check-key": "CK_GOOD" });
+  expect(r.status).toBe(404);
+});
+
+test("OPTIONS /result → 204 带 CORS", async () => {
+  const env = ENV();
+  const r = await resultReq(env, {}, "OPTIONS");
+  expect(r.status).toBe(204);
+  expect(r.headers.get("access-control-allow-headers")).toContain("x-check-key");
+});
+
+test("GET /check/<id>/result 经 worker 路由分发正确", async () => {
+  const env = ENV({ INTAKE_KV: fakeKV({ "checkresult:ID1": "hi" }) });
+  const r = await worker.fetch(new Request("https://w.dev/check/ID1/result", { headers: { "x-check-key": "CK_GOOD" } }), env);
+  expect(r.status).toBe(200);
+  expect((await r.json()).result).toBe("hi");
 });

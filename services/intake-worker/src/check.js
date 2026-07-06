@@ -9,6 +9,8 @@ const IDX_KEY = "check:idx";               // 轻量索引 key（替代全表 KV
 const IMG_MAX_COUNT = 9;                    // 单次最多 9 张
 const IMG_MAX_BYTES = 6 * 1024 * 1024;     // 单图上限 6 MiB
 const IMG_MIME_ALLOW = new Set(["image/jpeg", "image/png", "image/webp"]);
+const RESULT_MAX_BYTES = 200 * 1024;       // 完整结果 markdown 封顶 200 KiB
+const byteLen = (s) => new TextEncoder().encode(s).length;
 
 // runner 端点（pending / done）是服务端 runner 调用、不经浏览器，无需 CORS，用裸 json。
 const json = (obj, status = 200) =>
@@ -285,17 +287,24 @@ export async function handleCheckDone(request, env, id) {
   const t = parseTask(raw);
   if (!t) return json({ ok: false, error: "not found" }, 404); // 值损坏，任务已不可用，按 404 处理
 
-  let outcome = "", summary = "";
+  let outcome = "", summary = "", result = "";
   try {
     const body = await request.json();
     if (body && typeof body === "object") {
       outcome = String(body.outcome || "");
       summary = String(body.summary || "").trim().slice(0, 200);
+      result = typeof body.result === "string" ? body.result : "";
     }
   } catch {}
   t.status = outcome === "failed" ? "failed" : "done";
   if (summary) t.summary = summary;
   await env.INTAKE_KV.put(`check:${id}`, JSON.stringify(t), { expirationTtl: TTL });
+  // 完整结果 markdown 单独存 checkresult:<id>（7 天 TTL），供作者手机页详情视图懒加载渲染。
+  // 不写进 task / idx（列表照旧只读轻量索引、保持快）。超限跳过、不截断（避免坏 markdown，
+  // 详情走兜底文案）；存失败 best-effort catch——绝不拖垮 done（任务已标完成、图片仍会清）。
+  if (result && byteLen(result) <= RESULT_MAX_BYTES) {
+    try { await env.INTAKE_KV.put(`checkresult:${id}`, result, { expirationTtl: TTL }); } catch {}
+  }
   // 同步 check:idx 索引条目 status/summary（best-effort，失败不影响 done——全文已更新，
   // 索引可由后续惰性重建/自愈补上）。索引缺该条时 upsert 会追加（self-heal）。
   try {
@@ -310,4 +319,31 @@ export async function handleCheckDone(request, env, id) {
     try { await env.INTAKE_KV.delete(`checkimg:${id}:${n}`); } catch {}
   }
   return json({ ok: true });
+}
+
+// GET /check/<id>/result —— 作者凭 CHECK_KEY 取某条核查的完整结果 markdown（详情视图懒加载）。
+// 浏览器跨域调用，带 CORS + OPTIONS 预检 + 复用密钥错限频。无结果（旧任务 / 回传失败 / 超期）→ 404。
+export async function handleCheckResult(request, env, id) {
+  const cors = {
+    "access-control-allow-origin": env.ALLOWED_ORIGIN,
+    "access-control-allow-methods": "GET, OPTIONS",
+    "access-control-allow-headers": "content-type, x-check-key",
+    vary: "origin",
+  };
+  const corsJson = (obj, status = 200) =>
+    new Response(JSON.stringify(obj), { status, headers: { "content-type": "application/json", ...cors } });
+
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+
+  const ip = request.headers.get("cf-connecting-ip") || "0.0.0.0";
+  if (await authFailuresExceeded(env, ip)) return corsJson({ ok: false, error: "rate_limited" }, 429);
+  const key = request.headers.get("x-check-key") || "";
+  if (!env.CHECK_KEY || !safeEqual(key, env.CHECK_KEY)) {
+    await recordAuthFailure(env, ip);
+    return corsJson({ ok: false, error: "unauthorized" }, 401);
+  }
+
+  const result = await env.INTAKE_KV.get(`checkresult:${id}`);
+  if (result == null) return corsJson({ ok: false, error: "not found" }, 404);
+  return corsJson({ ok: true, result });
 }
