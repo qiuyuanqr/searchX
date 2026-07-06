@@ -4,6 +4,10 @@
 // 设计取舍：匹配偏"宁可漏拦也少误拦"——漏拦最多多跑一次研究（不会死循环，研究会产出文件夹）；
 // 误拦会把别的票的报告硬塞给提交者，更糟。故名称匹配以"精确"为主、包含为辅且双方都需 ≥3 字。
 
+// 查重时效窗口（天）默认值——全项目唯一权威：runner 的 config.js、浏览器端 feed.js
+// 都从这里 import，不各自硬编码，避免"改一处另两处不动"（见 docs/ARCHITECTURE.md 技术债 2）。
+export const DEFAULT_DEDUP_WINDOW_DAYS = 30;
+
 // 这些 tag 是类型/通用词，不能当公司名用来匹配。
 const GENERIC_TAGS = new Set([
   "research", "股票", "概念", "人物", "方法论", "板块", "事件", "深度", "调研",
@@ -79,7 +83,7 @@ function matchEntry(topic, entry) {
 
 // 在 entries 里找「同标的且在 windowDays 天内」的最新报告。
 // 命中返回 { entry, ageDays, matchedBy }；命中但已过窗口 / 无命中 → null（允许重做）。
-export function findFreshReport({ topic, entries, today, windowDays = 30, types = ["股票"] }) {
+export function findFreshReport({ topic, entries, today, windowDays = DEFAULT_DEDUP_WINDOW_DAYS, types = ["股票"] }) {
   const want = new Set(types);
   let best = null;
   for (const entry of entries || []) {

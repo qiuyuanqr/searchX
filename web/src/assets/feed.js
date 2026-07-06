@@ -1,5 +1,5 @@
 import { buildPayload, tokenFromQuery, resolveToken, clearStoredToken, describeVerify, describeResult, renderSearchResultsHTML, describeExistingReport, fetchAny } from "./submit.js";
-import { findFreshReport } from "./dedup.js";
+import { findFreshReport, DEFAULT_DEDUP_WINDOW_DAYS } from "./dedup.js";
 import { computeFeedView } from "./feed-filter.js";
 
 // 取 localStorage，沙箱/隐私模式下属性访问本身可能抛错 → 兜成 null（resolveToken 再静默降级）。
@@ -15,8 +15,6 @@ if (tokenFromQuery(location.search) && window.history && history.replaceState) {
 
 const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// 提交即查重：与 runner 同一时效窗口（天）。已有同标的且窗口内报告 → 提示已有、拦下提交。
-const DEDUP_WINDOW_DAYS = 30;
 let reportsCache = null;
 async function loadReports(){
   if (reportsCache) return reportsCache;
@@ -255,7 +253,7 @@ function bindSubmitModal(){
     const t = titleInput.value.trim();
     if (!t) { clearDup(); return; }
     const match = findFreshReport({
-      topic: t, entries: await loadReports(), today: todayBeijing(), windowDays: DEDUP_WINDOW_DAYS,
+      topic: t, entries: await loadReports(), today: todayBeijing(), windowDays: DEFAULT_DEDUP_WINDOW_DAYS,
     });
     if (!match) { clearDup(); return; }
     dupNotice.innerHTML = describeExistingReport(match); // 内部已转义，防 DOM-XSS

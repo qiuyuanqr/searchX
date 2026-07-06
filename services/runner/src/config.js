@@ -2,6 +2,8 @@
 // 从 process.env 读 Runner 配置；缺必填即抛清晰错误（列出所有缺的键）。
 // 机密只在本机环境变量 / 未入库的 .env，绝不入库。
 
+import { DEFAULT_DEDUP_WINDOW_DAYS } from "./dedup.js";
+
 const REQUIRED = [
   "RUNNER_GITHUB_TOKEN", // 作者 fine-grained PAT：仅 searchX、Issues 读写
   "RUNNER_WORKER_URL",   // 形如 https://searchx-intake.qiuyuanqr.workers.dev
@@ -13,9 +15,9 @@ const REQUIRED = [
 const t = (s) => String(s).trim();                 // 去首尾空白（防粘贴带空格导致静默 401）
 const trimUrl = (u) => t(u).replace(/\/+$/, "");    // 去首尾空白 + 尾部斜杠
 
-// 查重时效窗口（天）：默认 30；空 / 非法 / 负数都回退默认。股票报告是约 13 周时点快照，
-// 30 天内的报告视为"现成可用、不重复调研"，更早的允许重做（行情/基本面多已变动）。
-const DEFAULT_DEDUP_WINDOW_DAYS = 30;
+// 查重时效窗口（天）：默认值见 dedup.js 的 DEFAULT_DEDUP_WINDOW_DAYS（唯一权威）；
+// 空 / 非法 / 负数都回退默认。股票报告是约 13 周时点快照，窗口内的报告视为
+// "现成可用、不重复调研"，更早的允许重做（行情/基本面多已变动）。
 function parseDedupWindow(raw) {
   if (raw === undefined || String(raw).trim() === "") return DEFAULT_DEDUP_WINDOW_DAYS;
   const n = Math.floor(Number(raw));
