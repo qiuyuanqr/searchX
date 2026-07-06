@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { scanResearch, compareByNewest } from "./scan.js";
@@ -60,6 +60,20 @@ test("条目带解析后的字段", () => {
   expect(beta.title).toBe("Beta 板块");
   expect(beta.sourceCount).toBe(9);
   expect(beta.href).toBe("r/2026-06-02_beta/");
+});
+
+test("悬空符号链接：statSync 抛错，警告 + 跳过该条，其余照常", () => {
+  const root = mkdtempSync(join(tmpdir(), "sx-scan-brokenlink-"));
+  try {
+    mkdirSync(join(root, "2026-06-01_good"), { recursive: true });
+    writeFileSync(join(root, "2026-06-01_good", "notes.md"), "---\ntype: 概念\n---\n# 好的\n> ok\n");
+    symlinkSync("/nonexistent-target-sx-test", join(root, "2026-01-01_broken"));
+    const entries = scanResearch(root);
+    expect(entries.length).toBe(1);
+    expect(entries[0].dir).toBe("2026-06-01_good");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test("frontmatter YAML 损坏的 notes.md：警告 + 跳过该目录，不击穿整站构建", () => {
