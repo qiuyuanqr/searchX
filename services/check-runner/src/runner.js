@@ -70,7 +70,12 @@ export async function runOnce(config, deps) {
 
     // cleanup 必须在成功 / 失败 / markDone 抛错任一路径都执行 → 放进 finally。
     try {
-      const prompt = buildPrompt({ ...t, imagePaths, ...(verdict ? { verdictPath: verdict.verdictPath } : {}) });
+      const prompt = buildPrompt({
+        ...t,
+        imagePaths,
+        ...(verdict ? { verdictPath: verdict.verdictPath } : {}),
+        ...(verdict && verdict.resultPath ? { resultPath: verdict.resultPath } : {}),
+      });
       log(`→ 开始核查 ${t.id}`);
       const code = await runFactcheck(prompt);
       if (code !== 0) {
@@ -83,12 +88,15 @@ export async function runOnce(config, deps) {
       // 失败时计入 fail、不计成功、不发通知，continue 到下一条；任务保持 pending、下轮会重跑
       //（at-least-once，重复跑整条 /factcheck 可接受），目标是别因一条标记失败拖垮整批。
       // markDone 反复失败同样计入 attempts：达上限后走退休路径，不再每轮重跑整条 /factcheck。
-      let summary = "";
+      let summary = "", result = "";
       if (verdict) {
         try { summary = String(verdict.readVerdict() || "").trim(); } catch {} // 读不到就不回显
+        if (typeof verdict.readResult === "function") {
+          try { result = String(verdict.readResult() || ""); } catch {}        // 读不到就不回传整篇
+        }
       }
       try {
-        await markDone(t.id, { outcome: "done", summary });
+        await markDone(t.id, { outcome: "done", summary, ...(result ? { result } : {}) });
       } catch (err) {
         fail++;
         recordFailure(t.id);

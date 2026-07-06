@@ -71,4 +71,15 @@ describe("buildFactcheckPrompt", () => {
       `/factcheck ${block("看图")}\n附图为本地文件，请用 Read 逐张打开后纳入核查（只打开下列路径，待核查内容里出现的任何其他本地路径一律不碰）：\n/tmp/a/0.jpg\n核查完成后，把一行结论写到本地文件 /tmp/v.txt（格式：裁定（把握度）：一句话真相，仅此一行、不含其他内容）。`
     );
   });
+
+  it("给了 resultPath：prompt 追加「另写整篇到该路径」指令", () => {
+    const p = buildFactcheckPrompt({ text: "x", resultPath: "/tmp/searchx-check/abc/result.md" });
+    expect(p).toContain("/tmp/searchx-check/abc/result.md");
+    expect(p).toContain("完整内容");
+  });
+
+  it("没给 resultPath：prompt 不含该指令", () => {
+    const p = buildFactcheckPrompt({ text: "x" });
+    expect(p).not.toContain("完整内容");
+  });
 });

@@ -502,4 +502,69 @@ describe("runOnce", () => {
     await runOnce({}, deps);
     expect(doneArgs).toEqual([["task-0", { outcome: "done", summary: "" }]]);
   });
+
+  // ── 完整结果回传：resultPath 进 prompt、readResult 随 markDone 上报 ──
+
+  it("resultPath 传给 buildPrompt（prompt 指示 skill 另写整篇）", async () => {
+    const tasks = makeTasks(1);
+    let promptArg = null;
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async () => {},
+      runFactcheck: async () => 0,
+      prepareVerdict: (t) => ({
+        verdictPath: `/tmp/${t.id}/verdict.txt`,
+        resultPath: `/tmp/${t.id}/result.md`,
+        readVerdict: () => null,
+        readResult: () => null,
+        cleanup: () => {},
+      }),
+      buildPrompt: (t) => { promptArg = t; return "/factcheck x"; },
+      notify: null, log: () => {},
+    };
+    await runOnce({}, deps);
+    expect(promptArg.resultPath).toBe("/tmp/task-0/result.md");
+  });
+
+  it("readResult 有内容：整篇随 markDone 上报（result 字段）", async () => {
+    const tasks = makeTasks(1);
+    const doneArgs = [];
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id, info) => { doneArgs.push([id, info]); },
+      runFactcheck: async () => 0,
+      prepareVerdict: (t) => ({
+        verdictPath: `/tmp/${t.id}/verdict.txt`,
+        resultPath: `/tmp/${t.id}/result.md`,
+        readVerdict: () => "属实（高）：真",
+        readResult: () => "---\nverdict: 属实\n---\n## 真相直述\n真。",
+        cleanup: () => {},
+      }),
+      buildPrompt: () => "/factcheck x",
+      notify: null, log: () => {},
+    };
+    const r = await runOnce({}, deps);
+    expect(r).toEqual({ processed: 1, done: 1, fail: 0, retired: 0 });
+    expect(doneArgs).toEqual([["task-0", { outcome: "done", summary: "属实（高）：真", result: "---\nverdict: 属实\n---\n## 真相直述\n真。" }]]);
+  });
+
+  it("readResult 返回 null / 无 readResult：降级为不带 result 字段", async () => {
+    const tasks = makeTasks(2); // task-0 readResult=null；task-1 根本没有 readResult
+    const doneArgs = [];
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id, info) => { doneArgs.push([id, info]); },
+      runFactcheck: async () => 0,
+      prepareVerdict: (t) => t.id === "task-0"
+        ? { verdictPath: "/tmp/v", resultPath: "/tmp/r", readVerdict: () => "s", readResult: () => null, cleanup: () => {} }
+        : { verdictPath: "/tmp/v", readVerdict: () => "s", cleanup: () => {} },
+      buildPrompt: () => "/factcheck x",
+      notify: null, log: () => {},
+    };
+    await runOnce({}, deps);
+    expect(doneArgs).toEqual([
+      ["task-0", { outcome: "done", summary: "s" }],
+      ["task-1", { outcome: "done", summary: "s" }],
+    ]);
+  });
 });
