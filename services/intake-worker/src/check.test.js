@@ -431,6 +431,34 @@ test("multipart：图片 + 文本 → 201，图存 checkimg:<id>:<n>，任务 im
   expect(env.INTAKE_KV.meta.get(`checkimg:${id}:0`)).toEqual({ mime: "image/jpeg" });
 });
 
+// 图片写入中途失败：第二张 put 抛错时，第一张已写入的 checkimg 键要回滚删除、
+// 任务键 check:<id> 绝不写入（此时尚未走到那一步）、响应 502 + image_store_failed。
+test("multipart：第二张图片 put 失败 → 回滚已写入的第一张、502、不留孤儿任务键", async () => {
+  const env = ENV();
+  let putCount = 0;
+  const realPut = env.INTAKE_KV.put.bind(env.INTAKE_KV);
+  env.INTAKE_KV.put = async (k, v, opts) => {
+    if (k.startsWith("checkimg:")) {
+      putCount++;
+      if (putCount === 2) throw new Error("KV put failed");
+    }
+    return realPut(k, v, opts);
+  };
+  const res = await postCheckMultipart(env, {
+    text: "两张图，第二张会失败",
+    images: [jpg(4), jpg(8)],
+  });
+  expect(res.status).toBe(502);
+  expect((await res.json()).error).toBe("image_store_failed");
+  expect(res.headers.get("access-control-allow-origin")).toBe("https://qiuyuanqr.github.io");
+  // 第一张已写入的键必须被清理，绝不留孤儿
+  const leftoverImgKeys = [...env.INTAKE_KV.store.keys()].filter((k) => k.startsWith("checkimg:"));
+  expect(leftoverImgKeys).toEqual([]);
+  // 任务键与索引都不该出现——图片校验/落库失败先于 check:<id> 写入
+  const leftoverTaskKeys = [...env.INTAKE_KV.store.keys()].filter((k) => k.startsWith("check:"));
+  expect(leftoverTaskKeys).toEqual([]);
+});
+
 test("multipart：仅图片（无文本无链接）→ 201（图片可单独提交）", async () => {
   const env = ENV();
   const res = await postCheckMultipart(env, { images: [jpg()] });

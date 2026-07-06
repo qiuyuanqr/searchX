@@ -173,13 +173,23 @@ export async function handleCheckSubmit(request, env, { now }) {
 
   const id = crypto.randomUUID();
   const images = [];
-  for (let n = 0; n < imageFiles.length; n++) {
-    const f = imageFiles[n];
-    await env.INTAKE_KV.put(`checkimg:${id}:${n}`, await f.arrayBuffer(), {
-      expirationTtl: TTL,
-      metadata: { mime: f.type },
-    });
-    images.push({ mime: f.type, size: f.size });
+  // 图片写入包 try/catch：第 N 张失败时前 N-1 张已入 KV，若放任冒泡到兜底 500 会留孤儿键
+  // （靠 7 天 TTL 兜底但与"先整体校验再落库"的意图不符）。失败时 best-effort 逐个清理已写入的
+  // 键，此时任务键 check:<id> 尚未写入（下方顺序不变），无需回滚。
+  try {
+    for (let n = 0; n < imageFiles.length; n++) {
+      const f = imageFiles[n];
+      await env.INTAKE_KV.put(`checkimg:${id}:${n}`, await f.arrayBuffer(), {
+        expirationTtl: TTL,
+        metadata: { mime: f.type },
+      });
+      images.push({ mime: f.type, size: f.size });
+    }
+  } catch {
+    for (let n = 0; n < images.length; n++) {
+      try { await env.INTAKE_KV.delete(`checkimg:${id}:${n}`); } catch {}
+    }
+    return corsJson({ ok: false, error: "image_store_failed" }, 502);
   }
   const task = { text, link, status: "pending", createdAt: now(), images };
   await env.INTAKE_KV.put(`check:${id}`, JSON.stringify(task), { expirationTtl: TTL });
