@@ -2,6 +2,8 @@
 
 存 searchX **自身**的开发过程文档（与 `research/` 的调研产出无关）。
 
+> **动手改代码前先读 [ARCHITECTURE.md](ARCHITECTURE.md)**——全仓库架构决策与维护手册（系统全景 / 设计决策 / 高危区 / 技术债 / 隐蔽陷阱 / 耦合点 / 维护守则）。
+
 | 子目录 | 放什么 | 来源 |
 |---|---|---|
 | `superpowers/specs/` | 设计稿（spec）：动手前对齐的方案 | brainstorming skill 默认输出路径 |
