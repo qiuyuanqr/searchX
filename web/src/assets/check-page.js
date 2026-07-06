@@ -4,7 +4,9 @@ import {
   readKey, saveKey, clearKey, keyFromHash, describeCheckResult, describeSubmitError, describeRecentError,
   submitTimeoutMs, fitDimensions, validateCheckSubmission,
   describeTaskStatus, formatTaskTime, formatClockTime, shouldKeepPolling,
+  parseFrontmatter, resultChips, describeResultError,
 } from "./check.js";
+import { renderMarkdown } from "./md.js";
 
 const WORKER = document.body.dataset.worker || "";   // {{WORKER_URL}} 注入在 body data-worker
 const $ = (id) => document.getElementById(id);
@@ -20,6 +22,7 @@ function timeoutSignal(ms) {
 
 const PROBE_TIMEOUT_MS = 10000;   // 密钥探测：失败本就放行，超时只为别让密钥闸卡住
 const RECENT_TIMEOUT_MS = 15000;  // 最近核查列表
+const RESULT_TIMEOUT_MS = 15000;  // 完整结果懒加载
 
 const MAX_IMAGES = 9;
 const MAX_EDGE = 2000;     // 长边超此值才缩（保字迹优先）
@@ -96,6 +99,7 @@ function showGate() {
 function showForm() {
   $("gate").hidden = true;
   $("form-area").hidden = false;
+  showList();
   loadRecent();
 }
 
@@ -138,8 +142,66 @@ function renderRecent(tasks) {
       sum.textContent = t.summary;
       item.append(sum);
     }
+    // done 的条目可点开看完整结果（懒加载）；pending/failed 不可点（failed 的原因已在 summary 显示）
+    if (t.status === "done") {
+      item.classList.add("clickable");
+      item.setAttribute("role", "button");
+      item.tabIndex = 0;
+      item.addEventListener("click", () => openResult(t.id));
+      item.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openResult(t.id); }
+      });
+    }
     box.append(item);
   }
+}
+
+// 列表视图 / 详情视图二选一（同页切换，不刷新、不重输密钥）
+function showList() { $("result-view").hidden = true; $("list-view").hidden = false; }
+function showResultView() { $("list-view").hidden = true; $("result-view").hidden = false; window.scrollTo(0, 0); }
+
+// 点开某条 done：进详情视图 → 懒拉完整结果 → 渲染。失败给可见兜底文案，不白屏。
+async function openResult(id) {
+  $("result-chips").textContent = "";
+  $("result-time").textContent = "";
+  $("result-body").textContent = "加载中…";
+  showResultView();
+  let r;
+  try {
+    r = await fetch(`${WORKER}/check/${id}/result`, {
+      headers: { "x-check-key": key },
+      signal: timeoutSignal(RESULT_TIMEOUT_MS),
+    });
+  } catch {
+    $("result-body").textContent = describeResultError(0);
+    return;
+  }
+  if (r.status === 401) { // 密钥失效：统一走清密钥、退回密钥闸
+    clearKey(store); key = ""; showList(); showGate();
+    $("gate-msg").textContent = "密钥已失效，请重新输入。"; $("gate-msg").hidden = false;
+    return;
+  }
+  if (!r.ok) { $("result-body").textContent = describeResultError(r.status); return; }
+  let data = {};
+  try { data = await r.json(); } catch {}
+  renderResult(typeof (data && data.result) === "string" ? data.result : "");
+}
+
+// 渲染完整结果：frontmatter → 顶部裁定条；正文 → md.js 渲染。
+// innerHTML 安全：renderMarkdown 已全程转义、链接仅放行 http(s)，且本页 CSP script-src 'self' 再兜一层。
+function renderResult(md) {
+  const { frontmatter, body } = parseFrontmatter(md);
+  const chipsBox = $("result-chips");
+  chipsBox.textContent = "";
+  for (const c of resultChips(frontmatter)) {
+    const el = document.createElement("span");
+    el.className = "vchip";
+    el.dataset.tone = c.tone;
+    el.textContent = c.label;
+    chipsBox.append(el);
+  }
+  $("result-time").textContent = frontmatter.date ? `核查日期：${frontmatter.date}` : "";
+  $("result-body").innerHTML = renderMarkdown(body);
 }
 
 // 加载失败 → 在列表区给一行可见提示（不再静默——静默过一次"手机连不上 workers.dev"，
@@ -317,6 +379,7 @@ $("logout").addEventListener("click", () => {
 });
 
 $("recent-refresh").addEventListener("click", () => loadRecent({ manual: true }));
+$("result-back").addEventListener("click", showList);
 // 切回前台且表单已解锁 → 刷新一次（顺带按需重启轮询）
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && !$("form-area").hidden) loadRecent();
