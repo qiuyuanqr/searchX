@@ -592,6 +592,30 @@ test("查重命中但报告已过时效窗口 → 照常跑研究（不当成重
   expect(sent.subject).toContain("调研完成"); // 走正常完成回信，而非「已有报告」
 });
 
+test("查重命中但贴 done 失败 → 不发信（防持续贴不上时每轮重发轰炸提交者）、评论提示下轮重试、failed 计数", async () => {
+  const base = makeStockFetch([{ number: 9, title: "芯原股份", body: "", labels: [{ name: "approved" }] }]);
+  const fetchImpl = async (url, opts) => {
+    if (/\/issues\/9\/labels$/.test(String(url))) { base.calls.push({ url: String(url), opts: opts || {} }); return { ok: false, status: 500 }; }
+    return base(url, opts);
+  };
+  fetchImpl.calls = base.calls;
+  let ran = 0, sent = 0;
+  const summary = await runOnce(CONFIG, {
+    fetchImpl, scanDirs: () => [STOCK_ENTRY],
+    runResearch: async () => { ran++; return true; },
+    sendEmail: async () => { sent++; }, log: () => {},
+    today: () => "2026-06-10",
+  });
+  expect(ran).toBe(0);
+  expect(summary.deduped).toBe(1);
+  expect(summary.failed).toBe(1);
+  expect(summary.emailed).toBe(0);
+  expect(sent).toBe(0); // 关键：贴 done 失败就不发信，避免持续失败时每轮重发一封
+  expect(fetchImpl.calls.some((c) =>
+    /\/issues\/9\/comments$/.test(c.url) && JSON.parse(c.opts.body).body.includes("下一轮重试")
+  )).toBe(true);
+});
+
 test("查重命中但回信失败 → 仍贴 done、评论提示手动告知、emailed 不计数", async () => {
   const fetchImpl = makeStockFetch([{ number: 9, title: "芯原股份", body: "", labels: [{ name: "approved" }] }]);
   // 取提交者邮箱 404 → fetchSubmitterEmail 抛错 → 回信失败

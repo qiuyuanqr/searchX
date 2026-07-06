@@ -166,6 +166,24 @@ export async function runOnce(config, deps) {
       summary.deduped++;
       const url = `${config.siteBase}/${dup.entry.href}`;
       log(`#${issue.number} 已有报告（${dup.ageDays} 天内 · 命中${dup.matchedBy === "code" ? "代码" : "名称"}），不重复调研：${url}`);
+      // 先贴 done（幂等标记）：与正常完成路径同一顺序——若持续贴不上而 SMTP 正常，
+      // 先发信会导致每 5 分钟一 tick 都重新命中查重、再发一封「已有报告」信，轰炸提交者邮箱。
+      try {
+        await addLabel({ ...gh, number: issue.number, label: "done" }, fetchImpl);
+      } catch (err) {
+        summary.failed++;
+        log(`#${issue.number} 查重命中但贴 done 失败：${err.message}，未发信，下轮重试`);
+        try {
+          await commentIssue(
+            { ...gh, number: issue.number,
+              body: `ℹ️ 已有同标的报告（生成于 ${dup.ageDays} 天内）：${url}。但贴 \`done\` 标签失败（${err.message}），未发信，下一轮重试。` },
+            fetchImpl
+          );
+        } catch (e) {
+          log(`#${issue.number} 查重命中贴 done 失败后的评论也失败：${e.message}`);
+        }
+        continue;
+      }
       let emailedOk = false;
       try {
         const email = await fetchSubmitterEmail(
@@ -181,12 +199,6 @@ export async function runOnce(config, deps) {
         log(`#${issue.number} 已回信告知已有报告`);
       } catch (err) {
         log(`#${issue.number} 已有报告但回信失败：${err.message}`);
-      }
-      // 贴 done（兜底）：杜绝下轮重复选中再判一次（幂等）。
-      try {
-        await addLabel({ ...gh, number: issue.number, label: "done" }, fetchImpl);
-      } catch (err) {
-        log(`#${issue.number} 查重命中后贴 done 失败：${err.message}`);
       }
       // 留痕评论（尽力而为，失败不影响已发的信）。
       try {
