@@ -107,10 +107,26 @@ case "$MODE" in
         warn "请确认后处理（如需忽略加入 .gitignore），再手动提交。"
         exit 0
       fi
-      HOST="$(hostname -s 2>/dev/null || echo unknown)"
-      STAMP="$(date '+%Y-%m-%d %H:%M')"
-      if git commit --quiet -m "chore(sync): 自动同步 · ${HOST} · ${STAMP}"; then
-        ok "已自动提交未保存改动"
+      # 闸3：暂存区含被搁置（park）的报告文件夹 → 整体剔除，绝不随自动提交推上公开仓。
+      # research SKILL Step 5.5 规定 park 的报告"绝不 push"；交互式 park 只把文件夹带
+      # .parked 标记留在本地、不写 .parked.json（那是给 runner 的信号），若不在此拦下，
+      # 收工时这里的 git add -A 会把它连同完整报告一起自动提交推送、被 deploy.yml 发布上线。
+      PARKED_DIRS="$(git diff --cached --name-only 2>/dev/null | grep -E '^research/[^/]+/\.parked$' | sed -E 's#^(research/[^/]+)/\.parked$#\1#' | sort -u)"
+      if [ -n "$PARKED_DIRS" ]; then
+        N="$(printf '%s\n' "$PARKED_DIRS" | grep -c .)"
+        warn "⚠️ ${N} 个被搁置（park）的报告文件夹已从自动提交排除：$(printf '%s' "$PARKED_DIRS" | tr '\n' ' ')"
+        while IFS= read -r d; do
+          [ -n "$d" ] && git reset -q -- "$d" >/dev/null 2>&1
+        done <<< "$PARKED_DIRS"
+      fi
+      if [ -n "$(git diff --cached --name-only 2>/dev/null)" ]; then
+        HOST="$(hostname -s 2>/dev/null || echo unknown)"
+        STAMP="$(date '+%Y-%m-%d %H:%M')"
+        if git commit --quiet -m "chore(sync): 自动同步 · ${HOST} · ${STAMP}"; then
+          ok "已自动提交未保存改动"
+        fi
+      else
+        ok "剔除搁置报告后暂存区为空，本次无待提交"
       fi
     fi
     # 2) 远程若已前进，先 rebase 再推（避免 non-fast-forward）

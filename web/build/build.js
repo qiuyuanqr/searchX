@@ -28,6 +28,10 @@ export function build({
   // scan 的收录门禁只看 notes.md，但下面要读 report.html。缺 report.html 的半成品文件夹
   // （如 runner 中断留下的）不该让整次构建崩溃——跳过它（连同它的首页卡片），其余照常产出。
   const entries = scanResearch(root).filter((e) => {
+    if (existsSync(join(root, e.dir, ".parked"))) {
+      console.warn(`⚠️ 跳过 ${e.dir}：带 .parked 标记（上线前独立核验未过，已搁置）`);
+      return false;
+    }
     if (existsSync(join(root, e.dir, "report.html"))) return true;
     console.warn(`⚠️ 跳过 ${e.dir}：缺 report.html（半成品文件夹，本次不收录）`);
     return false;
