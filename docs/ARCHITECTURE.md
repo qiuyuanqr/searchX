@@ -154,7 +154,7 @@
 ## 3. 高危区清单（动了会炸，按炸的严重程度排序）
 
 1. **`.claude/skills/research/SKILL.md` 的 Step 5.5 / Step 6 / 隐私红线段** —— 这是「什么能上公开站」的唯一裁决逻辑，prompt 就是生产代码。删弱 Step 5.5 = 有硬错的报告直接公开；动 Step 6 的「精准 git add、绝不 -A」= 可能把本地私有文件推上公开仓。改一个字都要过一遍「无人值守跑到这里会怎样」。
-2. **`.claude/hooks/git-sync.sh`** —— 每次会话收工自动 `git add -A` + commit + push 到**公开仓库**。它的两道终检闸（冲突标记、机密文件名模式）是防泄漏的最后防线；`SEARCHX_IN_RUNNER` 互斥是防它与 runner 并发写工作树的唯一保险。改错的后果是「静默把不该公开的东西推上 GitHub」，且几乎无告警。
+2. **`.claude/hooks/git-sync.sh`** —— 每次会话收工自动 `git add -A` + commit + push 到**公开仓库**。它的三道终检闸（冲突标记、机密文件名模式、park 报告剔除）是防泄漏的最后防线；`SEARCHX_IN_RUNNER` 互斥是防它与 runner 并发写工作树的唯一保险。改错的后果是「静默把不该公开的东西推上 GitHub」，且几乎无告警。
 3. **`services/runner/src/runner.js` 的 done/park/失败退避顺序** —— park 判定必须在「无新文件夹」失败判定**之前**（注释写明原因）；成功路径必须**先贴 done 再探活发信**。顺序对调的后果是重复烧全额 /research（每次都是真金白银的额度）或漏发/错发通知。
 4. **`web/build/validate-report.js` + `web/build/inject-report-nav.js` 的 CSP 段** —— 报告 HTML 由全权限 headless 模型生成后原样上公开站主域，这两处是防存储型 XSS 的双防线。放宽任何一条正则、或改动注入脚本却忘了 CSP hash 跟着变（hash 是按脚本内容算的，改脚本 hash 自动重算——但如果有人绕过 `buildCsp` 手工拼 CSP 就会炸），报告页要么脚本失效要么防线漏风。
 5. **`services/runner/src/child-env.js`** —— 全项目防注入的物理层。两组前缀必须一起剥（两个 runner 共用根 `.env`，只剥一组等于把另一组白送）；`SEARCHX_IN_RUNNER=1` 哨兵被 git-sync.sh 和 research SKILL 同时依赖。
@@ -170,8 +170,8 @@
 
 | # | 债 | 位置 | 说明与建议 |
 |---|---|---|---|
-| 1 | INDEX.md 的「一句话结论」已膨胀成数千字长文 | `research/INDEX.md`，源头是近期股票报告的写法 | SKILL 说「一句话」，实际每行是整篇摘要，人已经没法扫读，diff 巨大。收益：可读性+仓库体积；成本：低（在 research/stock SKILL 里把该列钉死字数上限，存量不动）。 |
-| 2 | 查重窗口「30 天」三处独立定义 | `services/runner/src/config.js`（`RUNNER_DEDUP_WINDOW_DAYS` 可配）、`web/src/assets/feed.js` 的 `DEDUP_WINDOW_DAYS = 30` 硬编码、`.claude/skills/stock/SKILL.md` §0.1 写死 30 天 | 改环境变量不会带动前端提示和 skill 行为。收益：一致性；成本：低-中（前端可从 reports.json 侧无从得知配置，至少加注释互指）。 |
+| 1 | INDEX.md 的「一句话结论」已膨胀成数千字长文 | `research/INDEX.md`，源头是近期股票报告的写法 | SKILL 说「一句话」，实际每行是整篇摘要，人已经没法扫读，diff 巨大。收益：可读性+仓库体积；成本：低（在 research/stock SKILL 里把该列钉死字数上限，存量不动）。**✅ 2026-07-07 已修（9d9993f）**：SKILL 已钉 ≤80 字硬上限。 |
+| 2 | 查重窗口「30 天」三处独立定义 | `services/runner/src/config.js`（`RUNNER_DEDUP_WINDOW_DAYS` 可配）、`web/src/assets/feed.js` 的 `DEDUP_WINDOW_DAYS = 30` 硬编码、`.claude/skills/stock/SKILL.md` §0.1 写死 30 天 | 改环境变量不会带动前端提示和 skill 行为。收益：一致性；成本：低-中。**✅ 2026-07-07 已修（d9670c8）**：默认值收拢到 `dedup.js` 的 `DEFAULT_DEDUP_WINDOW_DAYS` 单一权威，config/feed/stock SKILL 跟随。 |
 | 3 | 装配层（两个 `index.js`）无测试 | `services/runner/src/index.js`、`services/check-runner/src/index.js` | ⛔ 按 D6 的约定这是有意的；历史 bug（锁、信号）都靠审计修掉了。保持现状，改动时人工过一遍锁/信号/超时三件事即可。 |
 | 4 | 锁不是 flock，靠 pid+锁龄启发式 | 两个 `index.js` 的 `acquireLock`、`git-sync.sh` 的锁龄检查 | ⛔ 2026-07-04 审计[37]已加超龄强制回收兜底，剩余风险（极端 pid 复用窗口）发生率与代价都低。backlog 里也评估过 flock 方案，不值得动。 |
 | 5 | `daily-<日期>.count` 文件逐日累积 | `~/Library/Application Support/searchx-runner/` | ⛔ 一年 365 个几字节小文件，无害。 |
@@ -179,7 +179,7 @@
 | 7 | `docs/README.md` 的文档清单靠手工维护 | `docs/README.md` | 已漏过两篇（07-04 审计[45]）。⛔ 可接受：漏了不影响运行，审计会兜底。 |
 | 8 | `.superpowers/` 残渣 | 仓库根（gitignore） | ⛔ 无运行职责，删不删无所谓。 |
 | 9 | pagefind 全量重建 + `bun x` 每次 CI 现拉 | `package.json` build 脚本 | ⛔ 现规模秒级。 |
-| 10 | backlog 文件本身已全部完成但仍叫「待办」 | `docs/backlog/2026-07-04-audit-suggestions.md` | 三档均标注「✅ 已完成」，文件名与首段却仍是待办口吻。收益低成本低：加个「已全部完成」总标注或移入 progress/。 |
+| 10 | backlog 文件本身已全部完成但仍叫「待办」 | `docs/backlog/2026-07-04-audit-suggestions.md` | 三档均标注「✅ 已完成」，文件名与首段却仍是待办口吻。**✅ 2026-07-07 已修（965588a）**：已加存档总标注、docs/README 口吻同步。 |
 
 ---
 
@@ -192,7 +192,7 @@
 - **`created` 字段驱动同日排序**：缺失或格式坏 → 按 0 处理排到同日最末（`web/build/scan.js` 的 `compareByNewest` 专门处理了 NaN）。日期取自**目录名**而非 frontmatter `date`（`parse-note.js`）——目录名写错日期，frontmatter 救不了。
 - **stock 转交的三个坑**：① 模板固定取 research 目录下那份（stock SKILL 明写「不要用当前 skill 目录变量」）；② Step 5.5 不因转交而省略（曾漏写被审计补上）；③ ETF/指数/可转债/未上市标的**不算**股票，不转交（research SKILL Step 0 边界段——这是修过的真实误判）。
 - **「无法确认有人在场一律按无人值守处理、不反问」**（research SKILL Step 5.5 第 5 步引言）是全 skill 通则。给 skill 加任何新「问用户」分支前先读这条——无人值守下反问 = 研究白跑一轮全额额度。
-- **park 的信号文件只在 runner 链路有意义**：交互式 park 绝不写 `.parked.json`（残留会让 runner 把之后无关 Issue 误判为搁置）。但交互式 park 有个真实漏洞，见第 9 节 bug 1。
+- **park 的信号文件只在 runner 链路有意义**：交互式 park 绝不写 `.parked.json`（残留会让 runner 把之后无关 Issue 误判为搁置）。2026-07-07 起 park 另要求两种运行方式都写**标记文件** `research/<dir>/.parked`——git-sync.sh 推送闸凭它剔除、build.js 凭它跳过（第 9 节 bug 1 的修复）。标记文件与信号文件是两回事，别合并。
 - **factcheck 的裁定只有六档**，与六档不贴切的差别写进证据列，绝不自造标签（SKILL Step 5）——手机端 `web/src/assets/check.js` 的 `resultChips` 按固定字样解析 frontmatter，自造标签会渲染失败。
 
 ### 5.2 多 agent 交接（Step 5.5 独立核验）
@@ -275,6 +275,7 @@
 | `services/runner/src/child-env.js`、`email.js` | — | research runner 与 check-runner 共用（check-runner 直接 `import ../../runner/src/…`) | 改「剥哪些前缀」影响两条链路的机密面 |
 | `SEARCHX_IN_RUNNER=1` 哨兵 | `child-env.js` 打 | `git-sync.sh`（跳过 hooks 同步）、research SKILL（无人值守判定） | 改名要三处同步，漏一处 = runner 子会话开始乱推工作树或开始反问 |
 | `research/.parked.json` | research SKILL（仅无人值守 park 时） | runner `readParkSignal`（读完即删）；`.gitignore` 排除 | 字段（topic/reason/unresolved/folder）两边钉死 |
+| `research/<dir>/.parked` 标记（2026-07-07 起） | research SKILL park 时（两种运行方式都写） | `git-sync.sh` 推送闸剔除该目录、`web/build/build.js` 构建跳过该目录 | 三处凭同一文件名约定工作，改名要三处同步；**不得**加进 .gitignore（推送闸会失明） |
 | `<tmpdir>/searchx-check/<id>/`（附图、verdict.txt、result.md） | check-runner 准备 | factcheck SKILL 白名单读写 | 路径或文件名单方面改动 → 回显静默断 |
 | 结论行格式 `裁定（把握度）：一句话真相` | factcheck SKILL 写 | check-runner 读第一行 → Worker `summary` → `check.js`（前端）解析渲染 chips | 改格式要同步 SKILL + 前端解析 |
 | 整篇 result markdown（六节固定标题 + frontmatter） | factcheck SKILL | Worker `checkresult:<id>` → `check-page.js` 用 `parseFrontmatter` + `md.js` 渲染 | 新语法/新字段要同步 md.js / check.js |
@@ -282,7 +283,7 @@
 | 密钥对（值必须两端一致） | Cloudflare secret ↔ 根 `.env` | `SUB_READ_SECRET`↔`RUNNER_SUB_SECRET`；`CHECK_RUNNER_SECRET`↔同名；`CHECK_KEY`↔手机页输入 | 轮换任何一把要两端同时换；不一致的症状是**静默 401** |
 | 根 `.env`（双 runner 共用） | 作者手工 | 两个 runner 的 config.js；`child-env.js` 按前缀整组剥 | 新机密必须用 `RUNNER_` 或 `CHECK_RUNNER_` 前缀，否则不会被剥、会漏给 claude 子进程 |
 | GitHub 标签 `pending/approved/rejected/done` | worker createIssue、作者手机、runner addLabel | runner listApprovedIssues 过滤 | 标签是提前手工建的；换仓库要先建标签 |
-| 30 天查重窗口 | `RUNNER_DEDUP_WINDOW_DAYS`（runner）、`feed.js` 常量、stock SKILL §0.1 文字 | — | 三处独立，改一处另两处不动（见技术债 2） |
+| 30 天查重窗口 | `dedup.js` 的 `DEFAULT_DEDUP_WINDOW_DAYS`（唯一权威，2026-07-07 起） | `config.js` 默认值、`feed.js` import、stock SKILL §0.1 文字 | 改默认值只动 dedup.js；runner 运行时仍可用 `RUNNER_DEDUP_WINDOW_DAYS` 覆盖（覆盖时前端提示仍按默认值） |
 | 锁与状态文件目录 `~/Library/Application Support/searchx-{runner,check-runner}/` | 两个 runner | `git-sync.sh` 读 `searchx-runner/runner.lock` 做互斥 | 移动锁文件路径要带上 git-sync.sh |
 | launchd 四个任务 | `com.searchx.runner`(300s) / `com.searchx.check-runner`(300s) / `com.searchx.autopull`(600s) / `com.searchx.worker-deploy`(300s) | 只装在 Mac mini；MacBook 同步到脚本但没装 plist 不会跑 | 改间隔要 bootout+bootstrap 重装 plist |
 
@@ -315,11 +316,13 @@
 
 ---
 
-## 9. 盘点中发现的实际 bug（只列不修）
+## 9. 盘点中发现的实际 bug（2026-07-07 已全部修复并复审通过）
 
-1. **交互式 park 的报告会被收工钩子自动推上公开站**。research SKILL Step 5.5 规定 park 时「绝不 push」，交互式 park 只把主题文件夹留在本地；但会话结束时 `SessionEnd` 钩子（`.claude/hooks/git-sync.sh` push 分支，`git add -A`）会把该文件夹（含完整 notes.md + report.html）自动提交推送，`deploy.yml` 一跑，这篇**已确认含硬错**的报告就公开上线（构建只查 report.html 的机械缺陷，不知道它被 park 过）。runner 链路同理：park 的文件夹留在 Mac mini 工作树里，之后任何一次在该机的交互式会话收工也会把它推上去。INDEX 行虽已回滚，但站点收录不看 INDEX。触发条件：任何一次 park 之后没有人工清理该文件夹。
-2. **runner 查重命中路径「先发信后贴 done」，贴 done 持续失败会每 5 分钟重发一封邮件**。`services/runner/src/runner.js` 查重分支先给提交者发「已有报告」信（约 170 行）再贴 done（约 187 行）；若 addLabel 持续失败（如 PAT 过期）而 SMTP 正常，该 Issue 每个 tick 都会重新命中查重并再发一封。正常成功路径是「先贴 done 再发信」，两处顺序不一致。触发概率低（需要 GitHub 写入坏、邮件却好），但轰炸的是朋友的邮箱。
-3. **`web/build/scan.js` 的 `statSync` 无兜底**（约 26 行）：`research/` 下若出现一个名字匹配日期格式的坏符号链接或不可读条目，`statSync` 抛错会击穿整站构建。同函数对 frontmatter 损坏专门做了「跳过单条」处理，唯独 stat 这步没有。
-4. **卡片导语抽取认「全文第一个引用块」而非 TL;DR**（`web/build/parse-note.js` 的 `extractTldr`）：notes.md 若在结论之前出现任何 `>` 引用（如免责声明、引言），它会顶掉真正的一句话结论成为首页卡片导语。现有笔记都把结论块放最前所以未爆发（推测：属写作惯例掩盖的隐性 bug）。
-5. **`handleCheckSubmit` 图片先落库、任务后落库，中途失败留孤儿**（`services/intake-worker/src/check.js` 约 176–185 行）：第 N 张图 put 失败时前 N-1 张已入 KV，整个请求落到 index.js 的兜底 500，任务本身没建；用户重试会再写一批新 id 的图片键。7 天 TTL 会兜底清理，浪费可控，但与同文件「先整体校验再落库」的注释意图不完全一致。
-6. **文档失真（小）**：`docs/backlog/2026-07-04-audit-suggestions.md` 三档已全部标注完成，但文件仍归在 backlog、首段仍写「未动手」；`docs/README.md` 的 backlog 一行也仍说「未动手」。只坑读文档的人，不影响运行。
+> 修复由另一会话按 [docs/backlog/2026-07-07-architecture-audit-fixes.md](backlog/2026-07-07-architecture-audit-fixes.md) 执行（该文件有逐条修法、测试与验证记录），本节状态为复审确认后更新（581 测试绿、构建 35 entries 不变、线上已验证）。
+
+1. **交互式 park 的报告会被收工钩子自动推上公开站**。research SKILL Step 5.5 规定 park 时「绝不 push」，交互式 park 只把主题文件夹留在本地；但会话结束时 `SessionEnd` 钩子（`.claude/hooks/git-sync.sh` push 分支，`git add -A`）会把该文件夹（含完整 notes.md + report.html）自动提交推送，`deploy.yml` 一跑，这篇**已确认含硬错**的报告就公开上线（构建只查 report.html 的机械缺陷，不知道它被 park 过）。runner 链路同理：park 的文件夹留在 Mac mini 工作树里，之后任何一次在该机的交互式会话收工也会把它推上去。INDEX 行虽已回滚，但站点收录不看 INDEX。触发条件：任何一次 park 之后没有人工清理该文件夹。**✅ 已修（4a5f4fe，复审通过）**：三层——SKILL 规定 park 时两种运行方式都写 `research/<dir>/.parked` 标记、git-sync.sh 推送闸把带标记的目录从自动提交剔除、build.js 构建时跳过带标记目录。
+2. **runner 查重命中路径「先发信后贴 done」，贴 done 持续失败会每 5 分钟重发一封邮件**。`services/runner/src/runner.js` 查重分支先给提交者发「已有报告」信（约 170 行）再贴 done（约 187 行）；若 addLabel 持续失败（如 PAT 过期）而 SMTP 正常，该 Issue 每个 tick 都会重新命中查重并再发一封。正常成功路径是「先贴 done 再发信」，两处顺序不一致。触发概率低（需要 GitHub 写入坏、邮件却好），但轰炸的是朋友的邮箱。**✅ 已修（9d036a0，复审通过）**：查重命中改为先贴 done 再发信，贴不上则不发信、评论提示下轮重试。
+3. **`web/build/scan.js` 的 `statSync` 无兜底**（约 26 行）：`research/` 下若出现一个名字匹配日期格式的坏符号链接或不可读条目，`statSync` 抛错会击穿整站构建。同函数对 frontmatter 损坏专门做了「跳过单条」处理，唯独 stat 这步没有。**✅ 已修（701ce70，复审通过）**：stat 包进 `isDir()`，坏条目警告 + 跳过。
+4. **卡片导语抽取认「全文第一个引用块」而非 TL;DR**（`web/build/parse-note.js` 的 `extractTldr`）：notes.md 若在结论之前出现任何 `>` 引用（如免责声明、引言），它会顶掉真正的一句话结论成为首页卡片导语。现有笔记都把结论块放最前所以未爆发（推测：属写作惯例掩盖的隐性 bug）。**✅ 已修（cd45453，复审通过），并补正本条的原判断**：「未爆发」不成立——复审实测 35 篇中 7 篇的线上卡片导语早已被免责声明/基准价数据顶掉（TBEA、燃气轮机、新易盛、铜冠铜箔、Serenity 方法论、虚拟币、液冷风冷），本次修复顺带纠正了这 7 张卡片；`greatoo-002031` 的 notes.md 标题已改名「## 公司背景」消歧，防新逻辑在该篇退步。
+5. **`handleCheckSubmit` 图片先落库、任务后落库，中途失败留孤儿**（`services/intake-worker/src/check.js` 约 176–185 行）：第 N 张图 put 失败时前 N-1 张已入 KV，整个请求落到 index.js 的兜底 500，任务本身没建；用户重试会再写一批新 id 的图片键。7 天 TTL 会兜底清理，浪费可控，但与同文件「先整体校验再落库」的注释意图不完全一致。**✅ 已修（9196786，复审通过）**：失败时回滚已写图片键并返回带 CORS 的 502；Worker 已于 2026-07-07 00:57 由 Mac mini 自动部署（版本对应该 commit），正常提交链路留一次手机冒烟即可。
+6. **文档失真（小）**：`docs/backlog/2026-07-04-audit-suggestions.md` 三档已全部标注完成，但文件仍归在 backlog、首段仍写「未动手」；`docs/README.md` 的 backlog 一行也仍说「未动手」。只坑读文档的人，不影响运行。**✅ 已修（965588a，复审通过）**。
