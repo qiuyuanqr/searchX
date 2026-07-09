@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>金刚石在 AI 行业的应用 · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation;
+  }
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  small.src-note{font-size:.82em; color:var(--muted)}
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 概念</div>
+    <h1>金刚石在 AI 行业的应用</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-07-09（北京时间）</span>
+      <span><b>类型</b> 概念</span>
+      <span><b>来源</b> 26 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    AI 芯片跑起来非常烫，像一间挤满人、又没开窗的小屋子——热气排不出去，人就会中暑；芯片过热也会自动降速、甚至烧坏。金刚石就是钻石的材料本体，它有个特殊本事：导热极快，同样大小的一块，把热量"搬走"的能力大约是铜的五倍，所以有人想拿它给 AI 芯片当"散热板"。这件事目前真正靠谱的用法就是<strong>散热</strong>；至于"用钻石造芯片""钻石量子计算机加速 AI"，要么还躺在实验室里，要么更多是宣传话术。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    金刚石在 AI 里真正落地的只有"散热"一条线：凭约为铜五倍的导热率，做成热扩散片与 GaN-on-diamond 衬底，已在雷达、卫星、激光等高功率窄场景商用，但尚未进入主流 AI GPU 封装，而"金刚石造芯片"仍停在实验室、"金刚石量子机加速 AI"仍停在宣传。2026 年 A 股相关炒作所定价的预期，明显跑在真实订单与产能之前。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li><strong>三条路线成熟度天差地别</strong>：<strong>散热</strong>（已商用、最落地）＞ <strong>功率/逻辑半导体</strong>（实验室原型、n 型掺杂等硬骨头未解）＞ <strong>量子计算 NV 色心</strong>（早期、与 AI 的关系多为宣传）。把三者混为一谈，是绝大多数夸大说法的根源。</li>
+      <li><strong>散热是唯一"真金白银"的落地</strong>：单晶金刚石导热率约 2200 W/(m·K)、约为铜的五倍；Element Six、住友电工、Coherent 等已有量产热扩散片；GaN-on-diamond（氮化镓贴到金刚石上散热）在雷达、卫星等高功率射频场景已商用，雷神实测其功率密度较主流方案提升约 3 倍。</li>
+      <li><strong>但金刚石"只搬热、不消热"</strong>：系统散热常被界面热阻、热界面材料、热膨胀失配卡住——"导热率高"不等于"整机散热好"；主流 AI GPU（英伟达 H100 / B200 等）的物料清单目前都还没有金刚石。</li>
+      <li><strong>"金刚石造芯片"很远</strong>：被称"终极半导体"靠的是理论品质因数（Baliga 值理论约为硅两万倍量级），但 n 型掺杂几十年未解、电子级单晶晶圆仍停在约 2 英寸及以下（硅已 12 英寸）、一片 75 毫米单晶报价超 6 万美元，近期不具备量产条件。</li>
+      <li><strong>量子这条线要分清</strong>：金刚石 NV 色心的<strong>量子传感</strong>已商用；<strong>量子计算</strong>（Quantum Brilliance 室温进机架约 5–6 个量子比特、SaxonQ 4 比特可移动）尚在很早期，所谓"加速 AI"目前只有 2 比特级别的玩具演示，无实用意义。</li>
+      <li><strong>2026 年 A 股"金刚石散热"是明确的题材炒作</strong>：证券时报点名"暂无一家实现规模化量产"，龙头滚动市盈率一度达 150–180 倍；而国际机构按当前实际出货测算，同类的金刚石散热片全球市场也仅约 3.5 亿美元（约合人民币二十几亿元），与国内自媒体喊到的数千亿元预期严重错配。</li>
+    </ul>
+  </div>
+
+  <main>
+
+    <h2>先把三件不同的事分开</h2>
+    <p>"金刚石在 AI 行业的应用"听上去是一件事，其实是<strong>三件成熟度完全不同的事</strong>被同一个词捆在了一起。分不清它们，就会把实验室里的想象、资本市场的故事，错当成已经落地的产品。先用一句话各自摆清楚：</p>
+    <ul>
+      <li><strong>路线一 · 给 AI 芯片散热</strong>——金刚石当"散热板"，把芯片的热量快速导走。<em>这是唯一已经商用、且和 AI 直接相关的一条线。</em></li>
+      <li><strong>路线二 · 金刚石半导体</strong>——用金刚石本身去造功率器件甚至逻辑芯片。<em>被誉为"终极半导体"，但至今全部停在实验室，无量产产品。</em></li>
+      <li><strong>路线三 · 金刚石量子计算（NV 色心）</strong>——利用金刚石里一种特殊原子缺陷做量子比特。<em>是另一条独立技术线，与"AI"的关系目前主要停留在宣传。</em></li>
+    </ul>
+    <p>下面逐条展开。判断标准始终一致：<strong>已经在卖的产品</strong>、<strong>实验室里的原型</strong>、<strong>纯粹的预测或宣传</strong>，是三种完全不同强度的事实，全文会一直帮你分清。</p>
+
+    <h2>为什么偏偏是金刚石？——先从它的两个"极限本领"说起</h2>
+    <p>金刚石之所以被半导体圈盯上，是因为它在两个维度上都是已知材料里的"天花板"。</p>
+
+    <h3>本领一：导热快到离谱</h3>
+    <p>先讲人话：<strong>导热率</strong>衡量一块材料"搬运热量"的快慢。打个比方——如果把散发热量想成一群人要从着火的屋子往外跑，导热率高的材料就像一条又宽又直的走廊，人流"唰"地就疏散出去；导热率低的材料则像堵满杂物的窄门，越挤越糟。金刚石就是那条最宽的走廊。</p>
+    <p>具体数字：<strong>单晶金刚石</strong>（整块是一个完美晶体）室温导热率约 <a href="https://www.tandfonline.com/doi/full/10.1080/26941112.2021.1980356">2200 W/(m·K)，文献亦见高至 2400</a>；<strong>多晶金刚石</strong>（由许多小晶粒拼成，工业上更好做大）随晶粒质量在 <a href="https://eureka.patsnap.com/materials/diamond-film-thermal-materials">800 到 2200+ 之间</a>。作为对照，铜约 400、硅约 150、常用的碳化硅约 400–500。<small class="src-note">（单晶为理论/顶级牌号值，实际多晶产品多在 1300–2200，引用时需对齐具体牌号）</small>也就是说，同样厚薄的一块金刚石，搬热的本事约是铜的 5 倍、是芯片主材硅的十几倍。</p>
+
+    <h3>本领二：理论上是"终极半导体"</h3>
+    <p>半导体材料好不好，工程上常用两个"品质因数"（把多项物理性质揉成一个打分）：<strong>Baliga 值</strong>看它扛高压、低损耗的功率开关能力，<strong>Johnson 值</strong>看它做高频射频的本事。金刚石在这两项上都近乎第一：它的禁带宽度约 5.5 电子伏特（越宽越耐高压、耐高温）、击穿场强极高、电子和空穴都跑得快。综述给出的 <a href="https://arxiv.org/html/2508.05823v1">Baliga 值理论上约为硅的两万倍量级</a>——正因如此，它被冠以"终极半导体"之名。</p>
+    <div class="callout">但请记住一条贯穿全文的分寸：这些"两万倍"是<strong>材料的理论极限值</strong>，不是任何一颗已造出的器件的实测表现。理论天花板高，和"能不能造出来、造得便不便宜"是两码事——路线二卡住的正是后者。</div>
+
+    <h2>路线一：给 AI 芯片散热（最落地的一条）</h2>
+    <p>先说为什么这件事"现在"变得重要。AI 算力的代价是<strong>惊人的发热</strong>：英伟达一个 GB200 NVL72 整机架的功耗就<a href="https://introl.com/blog/gb200-nvl72-deployment-72-gpu-liquid-cooled">高达约 120 千瓦</a>，其新一代 Blackwell Ultra（GB300）单颗 GPU 已达约 1.4 千瓦，机架级功耗正朝每机架约 1 兆瓦演进。冷却本身能吃掉数据中心<a href="https://www.coherent.com/news/press-releases/diamond-based-composite-silicon-carbide">相当大一块电</a>，而据业界估算，约一半的电子器件失效都与"热"有关。芯片越热越需要好的"搬热材料"，金刚石的机会就是这么被 AI 浪潮推出来的。</p>
+    <p>散热这条线又分两种具体形态，都已经有真实产品。</p>
+
+    <h3>形态 A：金刚石热扩散片（heat spreader）</h3>
+    <p>人话解释：<strong>热扩散片</strong>就是垫在芯片和散热器之间的一块"高速导热垫板"，负责先把芯片某一点集中的热量迅速摊开、再交给后面的风冷或水冷带走。金刚石导热快，正适合干这个。</p>
+    <div class="case">
+      <p><strong>Element Six（戴比尔斯旗下）DIAFILM 系列</strong>——已量产、可采购的金刚石热扩散片，覆盖 700 到 2200+ W/(m·K) 六个牌号：顶级热管理级 <a href="https://www.semiconductor-today.com/news_items/2019/jun/element-six-030619.shtml">TM220 导热率 &gt;2200</a>；2025 年 1 月又在 Photonics West 上发布<a href="https://www.semiconductor-today.com/news_items/2025/jan/elementsix-220125.shtml">铜-金刚石复合材料（约 800 W/(m·K)）</a>，明确瞄准 AI / 高性能计算 / GPU / ASIC，其首席技术官称要为下一代 AI 器件提供"可规模化、可负担"的方案。</p>
+    </div>
+    <div class="case">
+      <p><strong>住友电工的铜-金刚石热沉</strong>——把金刚石颗粒嵌进铜里，做成既导热又与硅芯片热胀冷缩匹配的热沉，<a href="https://sumitomoelectric.com/sites/default/files/2024-04/download_documents/E98-31.pdf">长期用于大功率半导体激光器</a>，是已量产的成熟应用。<strong>Coherent（原 II-VI）</strong>则在 2025 年 6 月推出<a href="https://www.coherent.com/news/press-releases/diamond-based-composite-silicon-carbide">金刚石-碳化硅复合陶瓷</a>：各向同性导热率 &gt;800、约为铜的 2 倍，且电绝缘、能直接对接液冷，直接把定位打向"AI 数据中心与高性能计算的下一代热管理"。</p>
+    </div>
+
+    <h3>形态 B：GaN-on-diamond（把氮化镓贴到金刚石上）</h3>
+    <p>人话解释：<strong>氮化镓（GaN）</strong>是做高频、大功率芯片的明星材料，缺点是自己产生的热量憋在晶体管的"沟道"里散不掉。<strong>GaN-on-diamond</strong> 就是把氮化镓那层薄膜从原来的衬底上剥下来、"贴"到金刚石上，让金刚石在最靠近热点的地方就把热导走——好比给一台狂热的发动机紧贴着装了块超导热的散热底板。<strong>注意：这里金刚石只当散热衬底，不是有源半导体本身。</strong></p>
+    <p>这是整个"金刚石 + 电子"里<strong>唯一真正商用</strong>的形态，而且商用的战场不在 AI，而在国防与航天射频：</p>
+    <div class="case">
+      <p><strong>雷神（Raytheon）× Element Six</strong>：在美国国防高级研究计划局（DARPA）资助下，雷神用 Element Six 的 GaN-on-diamond 晶圆，<a href="https://www.prnewswire.com/news-releases/element-sixs-gan-on-diamond-wafers-proven-by-raytheon-to-provide-three-times-improvement-in-power-density-versus-gan-on-sic-for-rf-devices-259204111.html">实测射频器件功率密度较主流的 GaN-on-SiC 提升约 3 倍</a>。DARPA 这一计划的目标就是管理晶体管结区高达 4 万 W/cm² 的热流。</p>
+      <p><strong>Akash Systems</strong>：把金刚石上氮化镓的功率放大器做成产品卖，主打<a href="https://www.semiconductor-today.com/news_items/2019/jan/akash_090119.shtml">卫星通信</a>（2019 年获美国 FCC 批准）；韩国 <strong>RFHIC</strong> 则做到 4 英寸 GaN-on-diamond 自动化流片，面向 5G / 雷达 / 卫星。</p>
+    </div>
+    <p>把 A、B 两种形态和 AI 摆到一起看：金刚石散热的技术是<strong>真的、成熟的</strong>，但目前落地的规模场景是激光器、卫星、雷达这类"高功率、高价值、小批量"的窄市场；用进 AI GPU 的主流封装，眼下还只是厂商在推、行业在议、少量在验证，<strong>尚无主流芯片厂公开确认采用</strong>的证据。</p>
+
+    <h2>路线二：金刚石半导体——"终极半导体"为何迟迟造不出来</h2>
+    <p>如果说散热是把金刚石当"配角材料"，那这条线是想让它当"主角"——直接用金刚石造功率器件、乃至逻辑芯片。方向诱人（回看上文那"两万倍"的理论品质因数），但四道工程难关，把它牢牢摁在实验室里：</p>
+    <ul>
+      <li><strong>n 型掺杂几乎做不出来（最核心障碍）</strong>。造芯片要一半"多电子"（n 型）、一半"多空穴"（p 型）材料配对。金刚石键太强，<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11278176/">找不到合适的浅施主</a>做出室温好用的 n 型：磷做施主激活能高达约 0.57 电子伏特，室温下几乎"叫不动"电子。几十年攻关成效有限。</li>
+      <li><strong>晶圆太小</strong>。电子级单晶金刚石衬底至今仍极小——<a href="https://spectrum.ieee.org/diamond-thermal-conductivity">有研究者记述当时能买到的商用衬底只有约 3 毫米，厂商正努力把它扩到 50–100 毫米（约 2–4 英寸）</a>；而硅早已是 12 英寸（300 毫米）量产。芯片产业"越大越便宜"，这道尺寸鸿沟就是成本鸿沟。</li>
+      <li><strong>太贵</strong>。一片 75 毫米单晶金刚石晶圆报价<a href="https://www.samaterials.com/cvd-diamond-wafer.html">超过 6 万美元</a><small class="src-note">（厂商挂牌报价，单一来源）</small>，是同尺寸硅片的成百上千倍——而金刚石上还没有成熟的器件工艺。</li>
+      <li><strong>缺陷多、加工难</strong>。金刚石极硬极稳定，抛光、掺杂、键合都难，量产级衬底的缺陷密度仍远高于要求。</li>
+    </ul>
+    <p>实验室里确有亮眼的单点纪录——伊利诺伊大学做出<a href="https://www.allaboutcircuits.com/news/diamond-based-schottky-barrier-diodes-show-highest-breakdown-voltage/">击穿电压 4612 V 的金刚石肖特基二极管</a>、日本佐贺大学宣称造出"世界首个金刚石功率电路"、日本 NIMS 做出首个 n 沟道金刚石 MOSFET——但全是原型；佐贺大学团队自己都说<a href="https://jstories.media/article/unveiling-the-future-of-electronics-saga-university-develops-worlds-first-diamond-semiconductor-power-circuit">"3–4 年出样品、再约 10 年才实用化"</a>。</p>
+    <p>更关键的一句现实：<strong>AI 数据中心此刻确实极缺高效功率器件，但当下的答案是碳化硅和氮化镓，不是金刚石。</strong>英飞凌等厂商的 AI 供电白皮书<a href="https://www.infineon.cn/assets/row/public/documents/24/59/whitepaper-scaling-ai-data-center-power-delivery-with-si-sic-and-gan.pdf">明确用的是 SiC/GaN</a>；金刚石有源器件对数据中心而言是"远期选项"，不是"可采购方案"。</p>
+
+    <h2>路线三：金刚石量子计算（NV 色心）——独立的一条线，别和 AI 硬绑</h2>
+    <p>人话解释：在金刚石晶格里，如果一个碳原子被氮原子替换、旁边正好又缺了一个碳，就形成一个叫 <strong>NV 色心（氮-空位中心）</strong>的原子级"小缺陷"。它的神奇之处是——这个缺陷的电子"自旋"状态，可以用激光初始化、微波操控、看荧光读出，<strong>而且整套动作在室温下就能完成</strong>。别的量子比特（超导、离子阱）大多要冷到接近绝对零度，金刚石这条线的最大卖点就是"室温可用"。</p>
+    <p>由此诞生了两类真实产品：</p>
+    <div class="case">
+      <p><strong>Quantum Brilliance（澳/德）</strong>：把室温金刚石量子处理器做成能塞进标准 19 英寸机架的形态，已多次真实交付——2025 年 9 月在美国橡树岭国家实验室部署<a href="https://quantumcomputingreport.com/quantum-brilliance-and-ornl-pioneer-quantum-classical-hybrid-computing-with-on-site-qpu-cluster/">三台设备、共约 6 个量子比特</a>接入超算。<strong>SaxonQ（德）</strong>则做可移动、墙插供电的量子机，2023 年向德国宇航中心<a href="https://qci.dlr.de/en/project-sunqc-saxonq-delivers-nv-center-quantum-computer-to-the-ulm-innovation-center/">交付了一台 4 比特整机</a>。上游的量子级金刚石材料，主要由 Element Six（<a href="https://www.e6.com/en/about/news/dnv-b14-launch">DNV 系列</a>）供应。</p>
+    </div>
+    <p>"室温、进机架、可移动"是金刚石独有的工程亮点，真实且难得。但涉及"加速 AI"必须极其克制地说清楚：</p>
+    <ul>
+      <li><strong>迄今没有任何金刚石量子机在跑实用 AI 负载。</strong>公开的最高成就，是 Quantum Brilliance 在一台 2 比特机上做<a href="https://arxiv.org/abs/2312.11673">玩具级的二维数据点分类</a>（底层只用 1 个比特、还是在理想模拟器上训练好再拿真机推理）；SaxonQ 演示的是"区分笑脸/非笑脸"。这些是原理验证，不构成对经典 AI 的任何加速。</li>
+      <li>放到全行业看，量子计算仍处"含噪中等规模（NISQ）"阶段，<strong>在真实数据上尚无任何量子机器学习优势被证明</strong>——这不限于金刚石。目前更成立的关系反而是"AI 帮量子"：用机器学习去校准、纠错量子硬件。</li>
+      <li>相比之下，NV 色心的<strong>量子传感</strong>（超灵敏磁场/温度测量，用于脑磁图、生物检测）才是这条线上更成熟、已成商业市场的部分——但它与 AI 的关系只是"提供一种更灵敏的数据源"，谈不上量子加速 AI。</li>
+    </ul>
+    <div class="callout">一句话定位：金刚石量子计算是"金刚石独特物性催生的前沿硬件"，值得记录；但把"金刚石量子机加速 AI"当成已兑现的卖点来写，是把愿景当成了现实。</div>
+
+    <h2>关键玩家地图</h2>
+    <p>把三条线上的主要角色摆在一张表里（阶段判断以本报告检索日为准）：</p>
+    <table>
+      <thead><tr><th>玩家</th><th>方向</th><th>在做什么</th><th>阶段</th></tr></thead>
+      <tbody>
+        <tr><td>Element Six（戴比尔斯）</td><td>散热/材料</td><td>DIAFILM 金刚石热扩散片全系、铜-金刚石复合、GaN-on-diamond 晶圆、量子级金刚石</td><td>散热片已量产；晶圆研发/验证</td></tr>
+        <tr><td>住友电工 / Coherent</td><td>散热</td><td>铜-金刚石热沉（激光器）；金刚石-碳化硅复合（AI 数据中心定位）</td><td>已量产 / 2025 新品在推</td></tr>
+        <tr><td>Akash / RFHIC</td><td>GaN-on-diamond</td><td>金刚石上氮化镓功率放大器，卫星通信、雷达、5G</td><td>已商用（射频窄场景）</td></tr>
+        <tr><td>Diamfab（法）/ 佐贺大 / NIMS / 西安交大</td><td>金刚石半导体</td><td>功率器件原型、晶圆衬底、n 型掺杂攻关</td><td>实验室原型 / 衬底中试</td></tr>
+        <tr><td>Diamond Foundry（美/欧）</td><td>单晶晶圆</td><td>首片 100 毫米单晶金刚石晶圆，扩建产能</td><td>研发迈向量产</td></tr>
+        <tr><td>Quantum Brilliance / SaxonQ</td><td>量子计算</td><td>室温 NV 色心量子机（进机架 / 可移动）</td><td>已交付，比特数极少（早期）</td></tr>
+        <tr><td>四方达 / 力量钻石 / 黄河旋风 / 中兵红箭 等（中国）</td><td>散热为主</td><td>由工业金刚石/培育钻石转做金刚石散热片、半导体级衬底</td><td>送样 / 小批量；产能建设中</td></tr>
+      </tbody>
+    </table>
+    <p>中国厂商的转型是有正式披露支撑的真实产业动作：<strong>四方达（300179）</strong>的金刚石散热片导热率 &gt;2000 W/(m·K)，已<a href="https://www.stcn.com/article/detail/3930431.html">通过海外客户测试、进入小批量供货</a>（全行业进度最靠前），并在新疆沙雅建设年产 2.5 万片的 CVD 金刚石散热基地；<strong>力量钻石（301071）</strong>把原培育钻石扩产的<a href="https://www.eet-china.com/mp/a480986.html">约 10 亿元募资改投金刚石功能材料</a>。但这背后有一层产业逻辑不能略过——培育钻石珠宝端近两年价格暴跌近九成，现成产能与资金正急于寻找"散热/半导体"这样的高价值新出口。转型是真的，动机也是真的。</p>
+
+    <h2>热到底怎么解决？——金刚石是一环，不是万能钥匙</h2>
+    <p>这一节专门破一个最常见的误解："金刚石导热率是铜的 5 倍，所以散热效果就是铜的 5 倍。" 事实远没这么简单。</p>
+    <p><strong>热量从芯片到空气，要走一整条链</strong>：芯片发热点 → 热界面材料 → 热扩散片 → 散热器 → 最终被风/水带走。这条链的总效果，取决于最堵的那一环——而堵点往往不是金刚石本身的导热率，而是<strong>界面</strong>。打个比方：走廊再宽，如果两段走廊接缝处只留了一道小门（界面热阻），人流照样卡死。</p>
+    <ul>
+      <li><strong>热界面材料（TIM）会吃掉优势</strong>：常用的聚合物导热胶导热率只有 <a href="https://www.sciencedirect.com/science/article/abs/pii/S1005030224000434">3–10 W/(m·K)</a>，配上它，界面热阻能比高温钎焊差 2–3 个数量级——金刚石的高导热率基本被浪费。</li>
+      <li><strong>热膨胀失配会让它裂开</strong>：金刚石和硅、氮化镓热胀冷缩的幅度不同，反复冷热会在界面积累应力，导致<a href="https://www.tandfonline.com/doi/full/10.1080/26941112.2021.1980356">翘曲、开裂、分层</a>。</li>
+      <li><strong>金刚石只搬热、不消热</strong>：它把热点摊开后，热量最终还得靠液冷或风冷带走。<a href="https://www.nature.com/articles/s44172-024-00338-6">系统散热几乎总被固体界面处的热阻卡住</a>，而非体材料导热率。</li>
+    </ul>
+    <p>而且金刚石并非没有对手。<a href="https://www.tomshardware.com/pc-components/cooling/the-data-center-cooling-state-of-play-2025">液冷</a>才是当下 AI 数据中心散热的现实主力（水的体积热容约是空气的 350 倍）；论"搬热"本身，石墨烯面内导热率甚至高于金刚石（只是它导电、难直接用于电子散热），立方氮化硼则兼具高导热与电绝缘、界面更友好。金刚石真正"不可替代"的场景相当具体：既要<strong>最高的各向同性导热、又要电绝缘</strong>的极高功率密度器件（如 GaN 射频功放，实测可让沟道温度降约 70℃）——这是小众高价值市场，不是 AI GPU 的大宗市场。</p>
+
+    <h2>一场资本市场的"石头热"</h2>
+    <p>2026 年上半年，"金刚石散热"在 A 股演成了一轮典型的题材炒作，值得单独点破，因为它最容易让人把"股价"误当成"落地进度"。</p>
+    <p>事实层面：2026 年 6 月，培育钻石/金刚石散热板块连续拉升，四方达、力量钻石、黄河旋风等多股大涨，<a href="https://www.bloomberg.com/news/articles/2026-06-02/china-s-lab-grown-diamonds-emerge-as-unlikely-winner-in-ai-boom">龙头滚动市盈率一度到 150–180 倍</a>；"某公司将用金刚石散热"的"小作文"频现、股价应声而动。催化剂多是"名人效应"——传英伟达下代 GPU 用金刚石复合散热、黄仁勋公开称赞等。<strong>但这些多为中文媒体的二手转述</strong>：英伟达官方公开确认的是下一代平台走全液冷路线，"金刚石散热为标配"则未见其逐字确认。<small class="src-note">（英伟达采用金刚石一说属媒体解读，未独立核实）</small></p>
+    <p>现实层面，同一批一手财经媒体已在降温。证券时报 2026 年 6 月 12 日直接点名：<a href="https://www.stcn.com/article/detail/3957398.html">"目前整个行业都处于样品送检阶段，包括头部企业在内，暂无一家实现金刚石散热产品规模化量产"</a>，并提示"如果将来业绩不能兑现，股价有可能下跌"。</p>
+    <p>而最有力的"量级对照"是这个——市场规模的三种口径彼此差着数量级：</p>
+    <ul>
+      <li><strong>券商中性口径</strong>：中泰证券测算全球高端 AI 芯片用金刚石散热片市场<a href="https://finance.sina.com.cn/jjxw/2026-06-23/doc-iniekeez8807995.shtml">2026 年约 87 亿元、2030 年约 592 亿元</a>（年复合增速 &gt;50%）。</li>
+      <li><strong>自媒体激进口径</strong>：部分第三方研报把同口径喊到 2026 年约 870 亿、2030 年约 5920 亿元——整整高出约 10 倍。<small class="src-note">（自媒体测算，口径激进，未独立核实）</small></li>
+      <li><strong>国际机构口径</strong>：按当前实际出货细分测算，<a href="https://dataintelo.com/report/global-diamond-heat-spreaders-market">金刚石散热片全球市场约 3.5 亿美元</a>（约合人民币二十几亿元）；其中真正已商用的 GaN-on-diamond 射频衬底更小——<a href="https://reports.valuates.com/market-reports/QYRE-Auto-9L9159/global-gan-on-diamond-semiconductor-substrates">到 2032 年仅约 2400 万美元</a>。</li>
+    </ul>
+    <p>把同一口径摆平了看更清楚：国际机构测的"同类"散热片全球盘子（约二十几亿元）与中泰的中性预期（87 亿元）尚在同一量级，可一旦对上自媒体那句"2030 年五千多亿元"，就差出了几十倍。方向不假——多晶金刚石散热片确有工程价值、确有小批量出货；<strong>被夸大的是时间尺度与市场体量</strong>。</p>
+
+    <h2>下次看什么（监控信号）</h2>
+    <p>这是个快速演进的题材，与其记住某个静态结论，不如盯住几个会"证真或证伪"的具体节点：</p>
+    <ul>
+      <li><strong>主流芯片厂是否公开确认采用</strong>：英伟达/AMD 的下一代 GPU（如 Rubin）封装物料清单里，是否第一次正式出现金刚石散热件——这是"从窄场景走向 AI 大宗"的最硬信号。</li>
+      <li><strong>中国龙头的"小批量 → 规模量产"跨越</strong>：四方达沙雅项目、黄河旋风 8 英寸热沉线的实际出货与营收占比，以及是否有具名的一线客户订单（而非"送样对接"）。看季报，不看小作文。</li>
+      <li><strong>单晶晶圆尺寸与成本曲线</strong>：电子级单晶金刚石能否突破 4 英寸、单片成本能否明显下探——这决定"金刚石半导体"这条线的时间表。</li>
+      <li><strong>n 型掺杂的实质突破</strong>：是否出现室温可用、可重复的 n 型金刚石器件报道（而非单点实验室纪录）。这是"终极半导体"能否走出实验室的总开关。</li>
+      <li><strong>Coherent 金刚石-碳化硅、Element Six 铜-金刚石的客户落地</strong>：这两款 2025 年前后专为 AI/HPC 推出的产品，能否拿到数据中心的量产设计导入。</li>
+      <li><strong>金刚石量子机的比特数与真实负载</strong>：Quantum Brilliance / SaxonQ 的量子比特数能否上量级，以及是否出现"非玩具级"的量子机器学习结果——决定量子这条线与 AI 的关系能否从宣传变成现实。</li>
+    </ul>
+
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li><strong>题材炒作与业绩兑现脱节</strong>：2026 年 A 股相关板块估值（龙头市盈率一度 150–180 倍）远超当前订单与产能；证券时报点名"无一家规模化量产"。若预期落空，股价回撤风险大。</li>
+      <li><strong>"散热片"与"半导体晶圆"被混为一谈</strong>：多数夸大叙事把"金刚石造芯片"（远期、卡在 2 英寸和 n 型掺杂）的想象，套在"多晶金刚石散热片"（近期、被动部件、窄场景）的真实进展上。二者成熟度差 5–10 年以上。</li>
+      <li><strong>系统散热瓶颈在界面，不在体材料</strong>：界面热阻、热界面材料、热膨胀失配常抵消金刚石的高导热率；"5 倍导热率≠5 倍散热效果"。金刚石只搬热，仍需液冷/风冷带走。</li>
+      <li><strong>成本与尺寸硬约束</strong>：一片 75 毫米单晶金刚石晶圆超 6 万美元、电子级单晶卡在约 2 英寸，短期难以支撑大规模用于 AI 芯片。</li>
+      <li><strong>"英伟达采用金刚石为标配"未经官方证实</strong>：属中文媒体对英伟达液冷方案的解读/整合，英伟达未逐字确认，不应作为既成事实。</li>
+      <li><strong>量子计算"加速 AI"是宣传而非现实</strong>：金刚石量子机公开成就仅为 2 比特级玩具分类；真实数据上尚无量子机器学习优势被证明（全行业如此）。</li>
+      <li><strong>部分中国厂商的产能/客户数字缺一手佐证</strong>："8 英寸热沉量产""进入英伟达产业链"等多为媒体或自媒体口径、未获公司一手公告证实，本报告未将其作为既成事实；且黄河旋风等个别厂商一季度仍亏损。</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl>
+    <dt>导热率</dt><dd>衡量材料"搬运热量"快慢的指标，单位 W/(m·K)。金刚石约 2200、铜约 400、硅约 150。数值越高，越能把芯片的热量快速带走。</dd>
+    <dt>热扩散片（heat spreader）</dt><dd>垫在芯片和散热器之间的一块高速导热垫板，先把某点集中的热量摊开，再交给风冷/水冷带走。</dd>
+    <dt>单晶 / 多晶金刚石</dt><dd>单晶＝整块是一个完美晶体，导热最高但难做大、极贵；多晶＝许多小晶粒拼成，工业上好做大，导热略低。散热片多用多晶，做器件要单晶。</dd>
+    <dt>CVD 金刚石</dt><dd>化学气相沉积法长出来的人造金刚石，一层层"种"出来，可控地做成薄膜或晶圆，是功能性金刚石的主流工艺。</dd>
+    <dt>GaN-on-diamond</dt><dd>把氮化镓（GaN，做高频大功率芯片的明星材料）薄膜贴到金刚石衬底上，让金刚石在最靠近热点处散热。金刚石在此只是散热衬底，不是有源器件。</dd>
+    <dt>超宽禁带半导体</dt><dd>禁带宽度特别大的半导体（金刚石约 5.5 电子伏特），越宽越耐高压、耐高温。碳化硅、氮化镓是"宽禁带"，金刚石是"超宽禁带"的极端代表。</dd>
+    <dt>n 型 / p 型掺杂</dt><dd>造芯片需要"多电子（n 型）"和"多空穴（p 型）"两种材料配对。金刚石的 n 型掺杂几十年难做好，是它当不了半导体主角的最大障碍。</dd>
+    <dt>品质因数（Baliga / Johnson FOM）</dt><dd>把多项物理性质揉成一个分数，用来快速比较半导体材料——Baliga 值看功率开关能力、Johnson 值看高频射频能力。金刚石理论值近乎最高，但只是理论。</dd>
+    <dt>NV 色心（氮-空位中心）</dt><dd>金刚石晶格里一个氮原子替换碳、旁边又缺一个碳形成的原子级缺陷。它的电子自旋能在室温下被操控和读出，可做量子比特或超灵敏传感器。</dd>
+    <dt>热界面材料（TIM）</dt><dd>填在芯片与散热件缝隙里的导热胶/垫，赶走空气以降低接触热阻。它导热率低时，会把金刚石的高导热优势"卡"掉。</dd>
+    <dt>界面热阻（TBR）</dt><dd>两种材料交界处对热量流动的阻碍。系统散热的堵点常在这里，而非材料本身。</dd>
+    <dt>热膨胀系数（CTE）失配</dt><dd>两种材料受热膨胀的幅度不同，反复冷热会在界面积累应力，导致翘曲、开裂、分层。</dd>
+  </dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.e6.com/en/products/thermal-management">Element Six — Thermal Management（DIAFILM 金刚石热扩散片产品线）</a> <em>常青</em> — 覆盖 HPC/AI 处理器、数据中心 GPU/ASIC 的 CVD 金刚石/铜-金刚石散热方案。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.semiconductor-today.com/news_items/2019/jun/element-six-030619.shtml">Element Six 推出 DIAFILM TM220（导热率 &gt;2200 W/(m·K)）</a> <em>2019-06-03</em> — 顶级热管理级金刚石热扩散片参数与应用。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.semiconductor-today.com/news_items/2025/jan/elementsix-220125.shtml">Element Six 发布铜-金刚石复合材料（约 800 W/(m·K)）</a> <em>2025-01-22</em> — 面向 AI/HPC/GPU/ASIC，CTO 称"可规模化、可负担"。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.coherent.com/news/press-releases/diamond-based-composite-silicon-carbide">Coherent 推出金刚石-碳化硅复合材料</a> <em>2025-06-12</em> — 各向同性 &gt;800 W/(m·K)、约铜 2 倍、电绝缘、兼容直接液冷，定位 AI 数据中心热管理。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.prnewswire.com/news-releases/element-sixs-gan-on-diamond-wafers-proven-by-raytheon-to-provide-three-times-improvement-in-power-density-versus-gan-on-sic-for-rf-devices-259204111.html">Element Six GaN-on-diamond 经雷神验证功率密度提升 3 倍</a> <em>2014-05</em> — 射频器件较 GaN-on-SiC 提升约 3 倍。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.semiconductor-today.com/news_items/2019/jan/akash_090119.shtml">Akash Systems GaN-on-diamond 功率放大器获 FCC 批准</a> <em>2019-01</em> — 金刚石上氮化镓器件用于卫星通信，已商用。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://sumitomoelectric.com/sites/default/files/2024-04/download_documents/E98-31.pdf">住友电工 铜-金刚石热沉用于大功率半导体激光器（技术论文）</a> <em>2024</em> — 已量产的金刚石散热应用。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.e6.com/en/about/news/dnv-b14-launch">Element Six 发布量子级金刚石 DNV-B14</a> <em>2021-09-21</em> — NV 色心密度较前代提升逾 10 倍，定位量子传感。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://qci.dlr.de/en/project-sunqc-saxonq-delivers-nv-center-quantum-computer-to-the-ulm-innovation-center/">SaxonQ 向德国宇航中心交付 4 比特室温金刚石量子计算机</a> <em>2023-09-04</em> — NV 色心量子机真实交付里程碑。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.infineon.cn/assets/row/public/documents/24/59/whitepaper-scaling-ai-data-center-power-delivery-with-si-sic-and-gan.pdf">英飞凌 — AI 数据中心供电用 Si/SiC/GaN 白皮书</a> <em>2025</em> — 当下 AI 供电方案是碳化硅/氮化镓，非金刚石。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://news.xjtu.edu.cn/info/1424/205582.htm">西安交大王宏兴团队实现 2 英寸异质外延单晶金刚石衬底批量化</a> <em>2024-01</em> — 中国单晶金刚石衬底进展。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11278176/">A Review of Diamond Materials and Applications in Power Semiconductor Devices</a> <em>约 2024</em> — 金刚石功率器件综述：材料参数、n 型掺杂/晶圆障碍、器件纪录。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://arxiv.org/html/2508.05823v1">Emerging ultra-wide band gap semiconductors for future high-frequency electronics</a> <em>2025-08</em> — 金刚石 Baliga 值理论约为硅两万倍量级等品质因数对比。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.tandfonline.com/doi/full/10.1080/26941112.2021.1980356">Diamond as the heat spreader for GaN-based electronic devices（综述）</a> <em>2021-10</em> — 单晶/多晶导热率、界面热阻、应力翘曲开裂等。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.nature.com/articles/s44172-024-00338-6">Nature Communications Engineering — 热阻链与界面热阻主导</a> <em>2024</em> — 系统散热被固体界面热阻卡住、热点热流远超平均。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://arxiv.org/abs/2312.11673">First quantum machine learning applications on an on-site room-temperature quantum computer</a> <em>2023-12</em> — 金刚石 2 比特机做玩具级二维分类（原理验证，无 AI 加速意义）。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.sciencedirect.com/science/article/abs/pii/S1005030224000434">Low-temperature bonding of Si and polycrystalline diamond（键合与界面热阻）</a> <em>2024</em> — TIM/键合方式对界面热阻的量级影响。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://spectrum.ieee.org/diamond-thermal-conductivity">IEEE Spectrum — Diamond Thermal Conductivity: A New Era in Chip Cooling</a> <em>2024</em> — 商用单晶衬底约 2 英寸/3mm、DARPA 验证、GaN 沟道降约 70℃。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.stcn.com/article/detail/3957398.html">证券时报 — 金刚石散热："概念炒作"还是"量产前夜"</a> <em>2026-06-12</em> — 行业无一规模化量产、风险提示原文。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.stcn.com/article/detail/3930431.html">证券时报 — 四方达金刚石散热片已通过海外客户测试、进入小批量供货</a> <em>2026-05-27</em> — &gt;2000 W/(m·K)、沙雅年产 2.5 万片 CVD 金刚石散热基地。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/jjxw/2026-06-23/doc-iniekeez8807995.shtml">新浪财经 — 中泰证券测算金刚石散热片市场 87 亿(2026)→592 亿(2030)</a> <em>2026-06-23</em> — 券商中性预期锚。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.bloomberg.com/news/articles/2026-06-02/china-s-lab-grown-diamonds-emerge-as-unlikely-winner-in-ai-boom">Bloomberg — 中国培育钻石成 AI 热潮意外赢家</a> <em>2026-06-02</em> — 板块跑赢、龙头市盈率 150–180 倍、资金轮动。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://quantumcomputingreport.com/quantum-brilliance-and-ornl-pioneer-quantum-classical-hybrid-computing-with-on-site-qpu-cluster/">Quantum Computing Report — Quantum Brilliance 在橡树岭部署室温 QPU 集群</a> <em>2025-09-02</em> — 三台设备共约 6 比特接入超算。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://reports.valuates.com/market-reports/QYRE-Auto-9L9159/global-gan-on-diamond-semiconductor-substrates">GaN-on-diamond 衬底市场预测（约 2400 万美元 / 2032）</a> <em>2025</em> — 真正已商用的射频衬底细分极小。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://dataintelo.com/report/global-diamond-heat-spreaders-market">Dataintelo — 金刚石散热片全球市场研究报告（约 3.5 亿→5.6 亿美元 / 2025→2030）</a> <em>2025</em> — 同品类国际口径，与国内自媒体千亿叙事量级不匹配。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.eet-china.com/mp/a480986.html">EET-China — 力量钻石/黄河旋风/中兵红箭金刚石散热布局</a> <em>2025–2026</em> — 中国厂商转功能材料的进展梳理。</li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://www.diamondsemicon.com/blog/why-diamond-is-emerging-as-the-ultimate-heat-spreader-for-ai-and-gpu-chips">diamondsemicon 厂商博客 — Diamond as the Ultimate Heat Spreader for AI/GPU</a> <em>未标注日期</em> — "GPU 降 10–20℃/风扇转速减半"等厂商宣传数字（未独立核实，仅作叙事示例）。</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-07-09 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
