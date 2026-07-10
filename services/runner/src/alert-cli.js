@@ -10,7 +10,7 @@ import { join } from "path";
 import { homedir } from "os";
 import { shouldAlert, composeAlert } from "./alert.js";
 
-function stateDir() {
+export function stateDir() {
   return join(homedir(), "Library", "Application Support", "searchx-runner");
 }
 function markerFile(key) {

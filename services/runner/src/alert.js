@@ -26,16 +26,54 @@ export function composeAlert({ key, detail, authorEmail, fromEmail, when }) {
   return { from: fromEmail, to: authorEmail, subject, text: lines.join("\n") };
 }
 
+// 探活报警的连续失败确认阈值：同一目标连续断满这么多个 tick（每 tick 5 分钟，约 20 分钟）
+// 才算真故障。为什么不单次即报：墙内到 Cloudflare / GitHub 的链路存在分钟级瞬时抖动
+// （2026-07-06~09 实测：一周十余次「断 1~3 个 tick 即自愈」，每次都发了邮件但无一可行动）；
+// 真故障（如 2026-07-03 workers.dev 全天 SNI 阻断）远超此阈值，20 分钟报警延迟无实际损失。
+export const PROBE_CONFIRM_TICKS = 4;
+
+// 纯函数：推进「连续失败 tick 数」。通 → 清零；断 → +1。历史缺失/损坏一律从零起算。
+// 跨 tick 的落盘读写由 probe-cli.js 负责（每个 tick 是独立进程，状态必须落盘才能延续）。
+export function nextStreaks(prev, { siteOk, primaryOk }) {
+  const base = (v) => (Number.isInteger(v) && v > 0 ? v : 0);
+  const p = prev && typeof prev === "object" ? prev : {};
+  return {
+    site: siteOk ? 0 : base(p.site) + 1,
+    primary: primaryOk ? 0 : base(p.primary) + 1,
+  };
+}
+
 // 纯函数：把一轮墙内探活结果归纳成「要不要报警 + 文案」。
-// 规则：站点挂 / Worker 主端点挂 → 报警（主备全挂时额外注明链路已完全断）；
+// 规则：站点 / Worker 主端点连续断满 PROBE_CONFIRM_TICKS 个 tick → 报警（主备全挂时额外
+// 注明链路已完全断）；未达阈值 → 不报警只留痕（瞬时抖动，见上）。
 // 仅备用端点（workers.dev）挂 → 不报警：主链路仍通，且 workers.dev 在墙内间歇被 SNI 阻断
 // 是已知常态（2026-07-03 实测），报了也不可行动，只在日志留痕。
-export function evaluateProbe({ siteOk, primaryOk, fallbackOk, site, primary, fallback }) {
-  const broken = [];
-  if (!siteOk) broken.push(`站点首页不可达：${site}`);
-  if (!primaryOk) broken.push(`Worker 主端点不可达：${primary}`);
-  if (!primaryOk && !fallbackOk) broken.push(`Worker 备用端点也不可达：${fallback}（提交链路已完全断）`);
-  if (broken.length) return { alert: true, detail: broken.join("\n") };
+// streaks 缺失（旧调用方 / 状态文件读失败）→ 视为已达阈值：报警路径宁多报不静默。
+export function evaluateProbe(
+  { siteOk, primaryOk, fallbackOk, site, primary, fallback, streaks },
+  confirmTicks = PROBE_CONFIRM_TICKS
+) {
+  const siteStreak = streaks?.site ?? confirmTicks;
+  const primaryStreak = streaks?.primary ?? confirmTicks;
+  const broken = [];   // 达连续阈值，要报警
+  const watching = []; // 断了但未达阈值，只留痕
+  if (!siteOk) {
+    (siteStreak >= confirmTicks ? broken : watching).push(
+      siteStreak >= confirmTicks
+        ? `站点首页不可达：${site}（已连续 ${siteStreak} 次探活失败）`
+        : `站点首页不可达（连续第 ${siteStreak} 次，连续 ${confirmTicks} 次才报警）：${site}`
+    );
+  }
+  if (!primaryOk) {
+    const fullBreak = !fallbackOk ? `；备用端点也不可达：${fallback}（提交链路已完全断）` : "";
+    (primaryStreak >= confirmTicks ? broken : watching).push(
+      primaryStreak >= confirmTicks
+        ? `Worker 主端点不可达：${primary}（已连续 ${primaryStreak} 次探活失败）${fullBreak}`
+        : `Worker 主端点不可达（连续第 ${primaryStreak} 次，连续 ${confirmTicks} 次才报警）：${primary}${fullBreak}`
+    );
+  }
+  if (broken.length) return { alert: true, detail: broken.concat(watching).join("\n") };
+  if (watching.length) return { alert: false, detail: watching.join("\n") };
   if (!fallbackOk) return { alert: false, detail: `仅备用端点不可达（主链路正常，不报警只留痕）：${fallback}` };
   return { alert: false, detail: "全部可达" };
 }

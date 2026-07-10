@@ -24,7 +24,7 @@ export async function runOnce(config, deps) {
   const maxFailures = config.maxFailures ?? 3;
   const pendingExpireMs = config.pendingExpireMs ?? 24 * 3600_000;
 
-  const summary = { processed: 0, published: 0, emailed: 0, deduped: 0, parked: 0, failed: 0 };
+  const summary = { processed: 0, published: 0, emailed: 0, deduped: 0, parked: 0, failed: 0, pendingPublish: 0 };
 
   // 连续失败计数（issue 号 → 次数，跨 tick 存本地文件）。「研究未产出→留待重跑」的 Issue
   // 若持续失败，launchd 每 5 分钟一 tick 会全额重跑一次 /research（每次都真实花额度），
@@ -301,9 +301,12 @@ export async function runOnce(config, deps) {
 
     // 部署探活：Step6 push 后 GitHub Actions 才 build+deploy，Pages 偶发 5xx 会打掉部署
     // → 报告子页 404。未确认上线就不发"已上线"邮件（免得给提交者发 404 链接）。
+    // 计 pendingPublish 而非 failed：研究本身已成功，部署慢/等 deploy-retry.yml 自动补跑是
+    // 常态（补跑常超出这里的探活窗口），pending 队列会每轮自动重探补发、超龄才专信告警——
+    // 此处计 failed 会让 runner exit 1，误发「管线故障」报警（2026-07-09 黄河旋风即误报）。
     if (!(await verifyPublished(url))) {
-      summary.failed++;
-      log(`#${issue.number} 已完成研究并推送，但未确认上线（疑似 Pages 部署故障）：${url}`);
+      summary.pendingPublish++;
+      log(`#${issue.number} 已完成研究并推送，但未确认上线（部署慢或待自动补跑，已入待确认队列）：${url}`);
       // 记入「上线待确认」队列：后续每轮自动重探，确认上线即自动补发邮件，无需人工盯评论。
       pending.push({ number: issue.number, topic, title: entry.title, tldr: entry.tldr, url, firstSeen: now() });
       try {
@@ -370,6 +373,6 @@ export async function runOnce(config, deps) {
   for (const k of Object.keys(failures)) if (!inQueue.has(k)) delete failures[k];
   await saveFailures(failures);
 
-  log(`完成：处理 ${summary.processed}、上线 ${summary.published}、发信 ${summary.emailed}、查重跳过 ${summary.deduped}、搁置 ${summary.parked}、失败 ${summary.failed}`);
+  log(`完成：处理 ${summary.processed}、上线 ${summary.published}、发信 ${summary.emailed}、查重跳过 ${summary.deduped}、搁置 ${summary.parked}、上线待确认 ${summary.pendingPublish}、失败 ${summary.failed}`);
   return summary;
 }

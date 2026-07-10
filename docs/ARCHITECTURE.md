@@ -26,7 +26,7 @@
 | CI 部署 | `.github/workflows/deploy.yml` | push 动到 `research/**`、`web/**`、`package.json`、`bun.lock` | `bun test` → `bun run build` → Pages 部署 → 冒烟探测 |
 | 部署自动补跑 | `.github/workflows/deploy-retry.yml` | Deploy site 失败时 | 自动 rerun --failed ≤2 次；有更新的成功部署时放弃（防旧产物回滚） |
 | 海外探活 | `.github/workflows/probe.yml` + `.github/scripts/site-probe.sh` | 每半小时 cron | 首页可达 + 注入配置一致 + Worker 可达；挂了 GitHub 发失败邮件 |
-| 墙内探活 | `services/runner/src/probe-cli.js` | 每个 runner tick（`scheduled-run.sh`） | 站点+Worker 主备端点；只有本机测得到墙内 SNI 阻断；报警限频 6h/封 |
+| 墙内探活 | `services/runner/src/probe-cli.js` | 每个 runner tick（`scheduled-run.sh`） | 站点+Worker 主备端点；只有本机测得到墙内 SNI 阻断；连续断满 4 tick 才报警（瞬时抖动只留痕），限频 6h/封 |
 | 双机 git 同步 | `.claude/hooks/git-sync.sh` + `.claude/settings.json` | SessionStart pull / SessionEnd push + push 后 SSH 即时通知对端 | 自动提交推送（带冲突回滚、机密文件闸、runner 互斥、仅本人仓库才动作） |
 | 双机定时拉 | `.claude/hooks/autopull.sh` + `services/runner/launchd/com.searchx.autopull.plist` | Mac mini launchd 每 600s | 包装 git-sync.sh pull，让常驻机不开 Claude 也保持最新 |
 | 记忆同步 | `.claude/hooks/memory-sync.sh` | SessionStart/End | `.claude-memory/`（未入库）经 rsync 双向增量同步，绝不 --delete |

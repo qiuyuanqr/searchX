@@ -159,7 +159,7 @@ bun run runner
 - **幂等标记 = `done` 标签**：再跑 `bun run runner` 只处理 `approved` 且未 `done` 的 Issue，已完成的跳过——不二次花费、不二次发信。
 - **研究未产出**（claude 退出码≠0 或没出新文件夹）：**不贴 `done`**，计入 `失败`，留待下轮重跑；同时在本机记一次**连续失败计数**（`~/Library/Application Support/searchx-runner/research-failures.json`）。**同一 Issue 连续失败达 `RUNNER_MAX_FAILURES`（默认 3）次即自动止损**：贴 `done` 停止重跑 + Issue 评论说明 + 给作者发「已停跑」专信——没有这层止损，定时 runner 每 5 分钟会全额重跑一次 /research（每次都真实花额度），一整天可烧上百次。研究一旦成功计数即清零（只累计「连续」失败，偶发故障不算账）。**恢复方式**：人工排查修复后移除该 Issue 的 `done` 标签，下一轮自动重新排队（计数已清零，重新有完整重试预算）。若停跑时贴 `done` 失败（如 PAT 瞬断），计数保留，下一轮会**先补做停跑、绝不先重跑研究**；专信也留到止损真正落地那轮才发（防每 5 分钟一封的邮件轰炸，期间由限频报警兜底知会）。
 - **发信失败**（取邮箱/SMTP 出错）：报告**已上线且已贴 `done`**，Runner 在 Issue 上留一条 `⚠️ …发信失败…请手动补发` 评论。**注意**：再跑不会重发该条邮件（它已 `done`）——按评论手动补发即可。
-- **可访问性检查失败 / 未确认上线**（Pages 偶发 5xx 等导致 push 后报告页一直非 200）：报告**已上线且已贴 `done`**（贴 `done` 是为防下一轮重跑研究），但 Runner 暂缓给提交者发信（免得发出打不开的 404 链接），并留一条 `⚠️ …暂未确认上线…` 评论。同时把该条记进本机「上线待确认」队列（`~/Library/Application Support/searchx-runner/pending-publish.json`）：**后续每轮 runner 会自动重新检查，一旦确认上线就自动补发提交者邮件，无需人工**。（急的话也可在 Actions → deploy.yml → Run workflow 手动补跑部署。）
+- **可访问性检查失败 / 未确认上线**（Pages 偶发 5xx 等导致 push 后报告页一直非 200）：报告**已上线且已贴 `done`**（贴 `done` 是为防下一轮重跑研究），但 Runner 暂缓给提交者发信（免得发出打不开的 404 链接），并留一条 `⚠️ …暂未确认上线…` 评论。同时把该条记进本机「上线待确认」队列（`~/Library/Application Support/searchx-runner/pending-publish.json`）：**后续每轮 runner 会自动重新检查，一旦确认上线就自动补发提交者邮件，无需人工**。（急的话也可在 Actions → deploy.yml → Run workflow 手动补跑部署。）计入 `上线待确认` 而**不计 `失败`、退出码仍为 0**：研究本身已成功，部署慢或等 deploy-retry 自动补跑是常态，此时发「runner 失败」报警是误报（2026-07-09 实测）；队列超龄（见下）才计失败并专信告警。
 - **贴 `done` 失败**（如 PAT 过期、被限制请求频率）：研究已上线但标签没贴上——Runner 会计入 `失败`、留一条 `⚠️ …贴 done 失败…请手动补贴` 评论、并**继续处理同批后续 Issue**（不再让整轮中止）。请按评论手动补贴 `done`，否则下一轮会对它重跑一次研究（重复消耗额度 + 造重复文件夹）。
 - **取 `approved` 列表本身失败**（首个 GitHub 请求就 4xx/5xx，如 PAT 失效）：本轮没做任何事就带可见错误退出（退出码 1）；修好凭据后重跑即可，无副作用。
 - **必须在仓库根、`main`、工作区干净时跑**：这个装配入口会预检 `research/`+`.git`+`claude` 是否就位，缺则带中文报错退出。
@@ -168,7 +168,7 @@ bun run runner
 
 2026-07-03 巨轮智能提交静默丢失（workers.dev 被墙内 SNI 阻断、无任何一方报警）后加的一层。三个部件：
 
-- **墙内探活**（`src/probe-cli.js`）：`scheduled-run.sh` 每个 tick 先探一遍「站点首页 + Worker 主端点 + 备用端点」（各 10s 超时）。站点挂或主端点挂 → 给作者发报警邮件；仅备用（workers.dev）挂不报警（主链路仍通、墙内间歇阻断是已知常态），只留日志。海外视角另有 `.github/workflows/probe.yml`（每半小时，挂了 GitHub 自动发失败邮件）——两个视角缺一不可：墙内阻断只有本机测得到。
+- **墙内探活**（`src/probe-cli.js`）：`scheduled-run.sh` 每个 tick 先探一遍「站点首页 + Worker 主端点 + 备用端点」（各 10s 超时）。站点挂或主端点挂且**连续满 4 个 tick（约 20 分钟，计数落盘 `probe-streaks.json`）** → 给作者发报警邮件——墙内到 Cloudflare/GitHub 的分钟级瞬时抖动是常态（2026-07-06~09 实测一周十余次、断 1~3 tick 即自愈），单次失败只留日志不报警；仅备用（workers.dev）挂不报警（主链路仍通、墙内间歇阻断是已知常态），只留日志。海外视角另有 `.github/workflows/probe.yml`（每半小时，挂了 GitHub 自动发失败邮件）——两个视角缺一不可：墙内阻断只有本机测得到。
 - **runner 失败报警**：`scheduled-run.sh` 里 runner 退出码非 0 → 发报警邮件。常见失败=研究未产出，会被之后的 tick 自动重跑（每次都是真实花额度的 claude 全跑）；同一 Issue 连续失败 3 次由 runner 自动贴 `done` 停跑止损并发「已停跑」专信（见「失败 / 重跑语义」）。报警让作者及时知道「在重试」，专信让作者知道「已止损、待人工排查」。
 - **限频**（`src/alert.js` + `src/alert-cli.js`）：同类报警（按 key）6 小时内最多一封，防每 5 分钟一 tick 的邮件轰炸；发送成功才落限频标记（`~/Library/Application Support/searchx-runner/alert-<key>.last`），发送失败下个 tick 重试。发信只用 `RUNNER_SMTP_USER/PASS`（+可选 `RUNNER_AUTHOR_EMAIL`），特意不走 `loadRunnerConfig`——其它配置缺了不该连累报警本身。
 - 手动自检一条链路：`bun services/runner/src/alert-cli.js self-test "测试"`（真发一封；6h 内重复调用会被限频拦下，属预期）。
