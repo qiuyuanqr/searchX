@@ -40,16 +40,26 @@ function quoteOrParaAfter(lines, startIdx) {
 
 // 导语（卡片 lead）抽取，优先级：
 // ① 「## 一句话XXX」/「## TL;DR」标题下的首个引用块或首段——报告作者已明确标注这是结论段落；
+// ①' 「## 一屏结论」/「## 核心结论」/「## 结论先行」类标题下的首个引用块或首段——同为作者标注的
+//    结论位置，但措辞更泛，只能排在①之后（同一篇笔记两类标题都有时，一句话结论更接近卡片导语的体裁）。
+//    没有这一档时，用这些标题的 10 篇存量笔记全部跌落到②③，抓到的是「本笔记是精简版」「信息截止」
+//    这类免责声明（2026-07-14 实测：套话 7 篇 + 空白 3 篇）。允许「A 核心结论」这种带节号前缀的写法。
 // ② 第一个 `##` 标题之前出现的引用块（导语位置——H1 下紧跟的开场引用，多数报告的写法）；
 // ③ 全文第一个引用块（向后兼容兜底，防止走到这里仍拿不到内容）。
 // 优先级①在②之前，是因为①是作者显式标注的结论位置；把②放在①之前会让"标题下才是真结论、
 // 标题前只是免责声明/基准数据"的笔记（如 TBEA）永远拿不到正确导语。
 function extractTldr(content) {
   const lines = content.split("\n");
-  for (let i = 0; i < lines.length; i++) {
-    if (!/^#{1,6}\s+(?:一句话|TL;?DR)/i.test(lines[i])) continue;
-    const t = quoteOrParaAfter(lines, i + 1);
-    if (t) return t;
+  const headingPasses = [
+    /^#{1,6}\s+(?:一句话|TL;?DR)/i,
+    /^#{1,6}\s+(?:[A-Za-z0-9]{1,3}[.、·\s]\s*)?(?:一屏结论|核心结论|结论先行)/,
+  ];
+  for (const pat of headingPasses) {
+    for (let i = 0; i < lines.length; i++) {
+      if (!pat.test(lines[i])) continue;
+      const t = quoteOrParaAfter(lines, i + 1);
+      if (t) return t;
+    }
   }
   let firstHeadingIdx = lines.findIndex((l) => /^#{1,6}\s/.test(l));
   if (firstHeadingIdx === -1) firstHeadingIdx = lines.length;
