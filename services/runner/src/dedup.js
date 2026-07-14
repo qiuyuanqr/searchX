@@ -8,11 +8,6 @@
 // 都从这里 import，不各自硬编码，避免"改一处另两处不动"（见 docs/ARCHITECTURE.md 技术债 2）。
 export const DEFAULT_DEDUP_WINDOW_DAYS = 30;
 
-// 这些 tag 是类型/通用词，不能当公司名用来匹配。
-const GENERIC_TAGS = new Set([
-  "research", "股票", "概念", "人物", "方法论", "板块", "事件", "深度", "调研",
-]);
-
 // 日历天差：toYMD - fromYMD（按日期，时区无关）。日期坏 → 返回 Infinity（视为极旧，不拦：宁可重做不误拦）。
 export function daysBetween(fromYMD, toYMD) {
   const a = Date.parse(String(fromYMD) + "T00:00:00Z");
@@ -47,16 +42,11 @@ function entryCodes(entry) {
   return codes;
 }
 
-// 一个 entry 的候选名集合（tags 里非通用、非纯数字项 + 标题括号前主名）。
+// 一个 entry 的候选名集合：只取标题括号前主名。tags 不参与——里面混着概念/行业标签
+// （如"MLCC""介质粉"），当名字用会让任何提到该概念的题目误命中这只股票
+// （2026-07-14 线上事故：所有含 MLCC 的题目都被拦成"国瓷材料已调研过"）。tags 仅供 entryCodes 抽代码。
 function entryNames(entry) {
   const names = new Set();
-  for (const t of entry.tags || []) {
-    const raw = String(t).trim();
-    if (!raw || GENERIC_TAGS.has(raw.toLowerCase())) continue;
-    if (/^\d+$/.test(raw)) continue; // 纯数字归 codes
-    const n = normName(raw);
-    if (n.length >= 2) names.add(n);
-  }
   const head = normName(String(entry.title || "").split(/[（(]/)[0]);
   if (head.length >= 2) names.add(head);
   return names;

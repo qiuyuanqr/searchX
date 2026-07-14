@@ -98,3 +98,33 @@ test("名称变体：双方≥3字且一方包含另一方也算命中", () => {
 test("报告日期在今天之后（异常）→ 不拦", () => {
   expect(findFreshReport({ topic: "芯原股份", entries: ENTRIES, today: "2026-06-01", windowDays: 30 })).toBeNull();
 });
+
+// 2026-07-14 线上误拦：国瓷材料报告带概念 tag "MLCC"，任何含 "MLCC" 的题目都被当成同一标的。
+// 概念/行业 tag 不是标的名——名称匹配只认标题主名，tags 只用于抽代码。
+const guoci = {
+  dir: "2026-07-13_guoci-materials-300285",
+  date: "2026-07-13",
+  type: "股票",
+  title: "国瓷材料（300285.SZ）— 未来约 13 周走势判断",
+  tldr: "MLCC 介质粉龙头",
+  slug: "guoci-materials-300285",
+  tags: ["research", "国瓷材料", 300285, "MLCC", "介质粉", "固态电解质"],
+  href: "r/2026-07-13_guoci-materials-300285/",
+};
+
+test("题目含概念 tag（MLCC）但非同一标的 → 不误拦", () => {
+  expect(findFreshReport({ topic: "股票里面提到的MLCC是什么板块，干嘛的", entries: [guoci], today: "2026-07-14", windowDays: 30 })).toBeNull();
+  expect(findFreshReport({ topic: "MLCC", entries: [guoci], today: "2026-07-14", windowDays: 30 })).toBeNull();
+});
+
+test("概念 tag 不当名字，但公司名/代码照常命中", () => {
+  expect(findFreshReport({ topic: "国瓷材料", entries: [guoci], today: "2026-07-14", windowDays: 30 })).toBeTruthy();
+  expect(findFreshReport({ topic: "国瓷材料的MLCC业务", entries: [guoci], today: "2026-07-14", windowDays: 30 })).toBeTruthy();
+  expect(findFreshReport({ topic: "300285", entries: [guoci], today: "2026-07-14", windowDays: 30 })).toBeTruthy();
+});
+
+test("公司名只在 tags 不在标题时不再匹配（取舍：宁可漏拦）；纯数字 tag 仍抽为代码", () => {
+  // tags 里的数字 tag（300285）仍参与代码匹配，即使标题没写代码
+  const noCodeTitle = { ...guoci, title: "国瓷材料" };
+  expect(findFreshReport({ topic: "300285.SZ", entries: [noCodeTitle], today: "2026-07-14", windowDays: 30 })).toBeTruthy();
+});
