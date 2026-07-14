@@ -9,6 +9,8 @@ on:
       - 'package.json'
       - 'bun.lock'
       - '.github/workflows/deploy.yml'
+      # build 会把这份查重源复制进 web/dist/assets/，改它必须重新部署站点（2026-07-14 修查重误拦时发现漏了）
+      - 'services/runner/src/dedup.js'
   workflow_dispatch:  # 手动触发 / 补跑部署：Actions 页「Run workflow」或 `gh workflow run deploy.yml`。GitHub Pages 偶发 5xx 打掉部署的场景已由 deploy-retry.yml 自动补跑（最多 2 次），这里只留给自动补跑也救不回来时人工兜底
 permissions:
   contents: read
