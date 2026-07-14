@@ -58,10 +58,9 @@ function bindStuck(){
   onScroll();
 }
 
-// 两组独立筛选（类型 / 板块），AND 组合；联动月分隔可见性与计数。
+// 类型筛选；联动月分隔可见性与计数。
 function bindChips(){
   const typeChips = document.getElementById("chips-type");
-  const boardChips = document.getElementById("chips-board");
   const feed = document.getElementById("feed");
   const empty = document.getElementById("empty");
   const countEl = document.getElementById("count");
@@ -69,13 +68,12 @@ function bindChips(){
   const items = nodes.map((n) =>
     n.classList.contains("month-sep")
       ? { kind: "sep" }
-      : { kind: "card", type: n.dataset.type || "", boards: (n.dataset.boards || "").split(",").filter(Boolean) }
+      : { kind: "card", type: n.dataset.type || "" }
   );
   let activeType = "all";
-  let activeBoard = null;
 
   function apply(){
-    const { visible, count } = computeFeedView(items, { type: activeType, board: activeBoard });
+    const { visible, count } = computeFeedView(items, { type: activeType });
     nodes.forEach((n, i) => n.classList.toggle("hide", !visible[i]));
     // feedText 存起来：搜索态会把计数改成「找到 N 条」，清空搜索时由 bindSearch 用它还原
     if (countEl) { countEl.dataset.feedText = `共 ${count} 篇`; countEl.textContent = countEl.dataset.feedText; }
@@ -95,13 +93,6 @@ function bindChips(){
     apply();
   }
 
-  function toggleBoard(chip){
-    const name = chip.dataset.filter.slice(6); // board:算力 → 算力
-    if (activeBoard === name) { activeBoard = null; setPressed(boardChips, null); } // 再点取消
-    else { activeBoard = name; setPressed(boardChips, chip); }
-    apply();
-  }
-
   // 点击与键盘（Enter / 空格）同一入口：chips 是 span[role=button]，键盘可达
   const bindChipGroup = (group, fn) => {
     group.addEventListener("click", (e) => { const c = e.target.closest(".chip"); if (c) fn(c); });
@@ -112,7 +103,6 @@ function bindChips(){
     });
   };
   bindChipGroup(typeChips, activateType);
-  bindChipGroup(boardChips, toggleBoard);
 
   apply(); // 初始计数
 }
@@ -126,12 +116,11 @@ function bindSearch(){
   const feed = document.getElementById("feed");
   const results = document.getElementById("results");
   const typeChips = document.getElementById("chips-type");
-  const boardChips = document.getElementById("chips-board");
   const countEl = document.getElementById("count");
   const empty = document.getElementById("empty");
   let pf;
-  // 搜索态只藏两组筛选 chips；计数保留、改显示「找到 N 条」
-  const setChrome = (show) => [typeChips, boardChips].forEach((el) => { if (el) el.hidden = !show; });
+  // 搜索态只藏筛选 chips；计数保留、改显示「找到 N 条」
+  const setChrome = (show) => { if (typeChips) typeChips.hidden = !show; };
 
   async function ensure(){
     // 相对“页面”而非“本模块”解析：feed.js 在 /assets/ 下，须按 document.baseURI 定位站点根的 pagefind。
