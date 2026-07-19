@@ -43,6 +43,29 @@ export function nextStreaks(prev, { siteOk, primaryOk }) {
   };
 }
 
+// —— runner 主体「拉 approved 队列」的网络防抖 ——
+// 与探活同理：Mac mini（墙内）到 api.github.com 的链路存在分钟级瞬时抖动（2026-07-15、07-17
+// 实测：断几分钟即自愈）。拉队列失败若每 tick 都 exit 1 报警就是又一轮误报轰炸——连续断满
+// QUEUE_FETCH_CONFIRM_TICKS 个 tick 才判真故障报警，与 PROBE_CONFIRM_TICKS 同量级（约 20 分钟）。
+export const QUEUE_FETCH_CONFIRM_TICKS = 4;
+
+// 纯函数：拉队列的错误是否属「外部瞬时故障」（该防抖，而非立即报警）。
+// - fetch 自身抛错（连接/TLS/超时）：无 HTTP 响应、无 status → 瞬时（如 07-15 的 TimeoutError）。
+// - 拿到响应但 5xx（GitHub 服务端错，如 07-17 返回的错误页 HTML）→ 瞬时。
+// - 4xx（401 PAT 失效 / 403 限流 / 404 仓库错配）：配置问题，防抖会掩盖 6 小时 → 立即报警。
+export function isTransientQueueError(err) {
+  const status = err?.status;
+  if (!Number.isFinite(status)) return true;
+  return status >= 500;
+}
+
+// 纯函数：推进拉队列的「连续失败 tick 数」。失败 +1、成功清零；历史缺失/损坏一律从零起算。
+// 跨 tick 的落盘读写由 index.js 负责（每个 tick 是独立进程，状态必须落盘才能延续）。
+export function nextQueueStreak(prev, failed) {
+  const base = Number.isInteger(prev) && prev > 0 ? prev : 0;
+  return failed ? base + 1 : 0;
+}
+
 // 纯函数：把一轮墙内探活结果归纳成「要不要报警 + 文案」。
 // 规则：站点 / Worker 主端点连续断满 PROBE_CONFIRM_TICKS 个 tick → 报警（主备全挂时额外
 // 注明链路已完全断）；未达阈值 → 不报警只留痕（瞬时抖动，见上）。

@@ -51,6 +51,13 @@ test("listApprovedIssues：非 2xx 抛错", async () => {
   ).rejects.toThrow(/403/);
 });
 
+test("listApprovedIssues：非 2xx 抛的错带 .status（供上层区分 5xx 瞬时故障 vs 4xx 配置问题）", async () => {
+  const fetchImpl = async () => ({ ok: false, status: 503, text: async () => "<html>GitHub error</html>" });
+  const err = await listApprovedIssues({ owner: "o", repo: "r", token: "T" }, fetchImpl).catch((e) => e);
+  expect(err).toBeInstanceOf(Error);
+  expect(err.status).toBe(503);
+});
+
 test("addLabel POST 到 /labels 带 labels 体", async () => {
   let seen;
   const fetchImpl = async (url, opts) => { seen = { url: String(url), opts }; return { ok: true, json: async () => [] }; };

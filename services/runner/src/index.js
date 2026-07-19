@@ -13,6 +13,7 @@ import { sendEmail as sendEmailImpl } from "./email.js";
 import { runOnce } from "./runner.js";
 import { pollUntilOk } from "./verify-published.js";
 import { withNetRetry } from "./net-retry.js";
+import { nextQueueStreak, QUEUE_FETCH_CONFIRM_TICKS } from "./alert.js";
 
 // —— 全局单实例锁 ——
 // 保证「定时器自动跑」与「手机手动触发」永不并发：无论从哪个入口进来（launchd 定时、
@@ -98,6 +99,21 @@ function saveFailures(map) {
   const dir = join(homedir(), "Library", "Application Support", "searchx-runner");
   mkdirSync(dir, { recursive: true });
   writeFileSync(failuresFile(), JSON.stringify(map, null, 2));
+}
+
+// 「拉 approved 队列连续失败 tick 数」持久状态（跨 tick，每 tick 是独立进程）：外部瞬时故障
+// （GitHub 抽风 / 墙内到 api.github.com 分钟级瞬断）的报警防抖用——推进逻辑见 alert.js
+// nextQueueStreak，阈值见 QUEUE_FETCH_CONFIRM_TICKS。读失败一律当 0（宁可晚一 tick 报，不静默漏）。
+function queueStreakFile() {
+  return join(homedir(), "Library", "Application Support", "searchx-runner", "queue-fetch-streak");
+}
+function loadQueueStreak() {
+  try { return parseInt(readFileSync(queueStreakFile(), "utf8").trim(), 10) || 0; } catch { return 0; }
+}
+function saveQueueStreak(n) {
+  const dir = join(homedir(), "Library", "Application Support", "searchx-runner");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(queueStreakFile(), String(n));
 }
 
 // 当日完成计数：按「北京时间」分日存一个计数文件，每完成一篇 +1，返回 { date, count }。
@@ -236,6 +252,22 @@ async function main() {
     saveFailures,
   });
 
+  // 拉 approved 队列因外部瞬时故障失败：跨 tick 防抖（同探活）——连续断满 QUEUE_FETCH_CONFIRM_TICKS
+  // 个 tick 才判真故障 exit 1 报警（经 scheduled-run→alert-cli，同 key 6 小时限频）；未达阈值 exit 0
+  // 静默跳过、下个 tick 自动重试。分钟级墙内网络抖动就此不再误发 runner-failed（2026-07-15/17 教训）。
+  // 报警后不清零：靠 exit 1→alert-cli 的 6 小时限频兜住重复，与探活「断则持续累加、通才清零」同构。
+  if (summary.queueUnreachable) {
+    const streak = nextQueueStreak(loadQueueStreak(), true);
+    saveQueueStreak(streak);
+    if (streak >= QUEUE_FETCH_CONFIRM_TICKS) {
+      console.error(`✗ 拉 approved 队列连续 ${streak} 个 tick 不可达，判为持续故障 → exit 1 报警`);
+      process.exit(1);
+    }
+    console.log(`⏭ 拉 approved 队列网络不可达（连续第 ${streak}/${QUEUE_FETCH_CONFIRM_TICKS} 次，瞬时抖动，本轮静默跳过；达 ${QUEUE_FETCH_CONFIRM_TICKS} 次才报警）`);
+    process.exit(0);
+  }
+  // 正常拉到队列 → 连续失败计数清零（连续语义：偶发抖动不累计，只有真·持续故障才达阈值）
+  saveQueueStreak(0);
   process.exit(summary.failed > 0 ? 1 : 0);
 }
 

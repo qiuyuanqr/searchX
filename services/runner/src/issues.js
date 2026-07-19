@@ -22,7 +22,12 @@ export async function listApprovedIssues({ owner, repo, token }, fetchImpl = fet
   for (let page = 1; ; page++) {
     const url = `${API}/repos/${owner}/${repo}/issues?state=open&labels=approved&per_page=${perPage}&page=${page}`;
     const res = await fetchImpl(url, { headers: ghHeaders(token) });
-    if (!res.ok) throw new Error(`list issues failed: ${res.status} ${await errText(res)}`.trim());
+    if (!res.ok) {
+      // 带上 status：上层（runner.js）据此区分 5xx 外部瞬时故障（防抖）vs 4xx 配置问题（立即报警）。
+      const e = new Error(`list issues failed: ${res.status} ${await errText(res)}`.trim());
+      e.status = res.status;
+      throw e;
+    }
     const arr = await res.json();
     all.push(...arr);
     if (arr.length < perPage) break; // 拿到的不足一整页 → 已是最后一页

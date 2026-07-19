@@ -4,6 +4,7 @@
 // 全部副作用经 deps 注入，离线可测。
 
 import { listApprovedIssues, addLabel, commentIssue } from "./issues.js";
+import { isTransientQueueError } from "./alert.js";
 import { parseIssueRequest } from "./parse-issue.js";
 import { buildResearchPrompt } from "./research-cmd.js";
 import { diffNewDirs } from "./research-output.js";
@@ -137,7 +138,23 @@ export async function runOnce(config, deps) {
   }
 
   // —— 2) 处理 approved 未 done 的新队列 ——
-  const issues = await listApprovedIssues(gh, fetchImpl);
+  // 拉队列是本轮唯一「没有内部兜底就会打崩整轮」的裸露外部依赖：GitHub 抽风 / 墙内到 api.github.com
+  // 的分钟级瞬断（2026-07-15、07-17 实测）会让 fetch 抛错或返回 5xx，重试用尽后冒泡成未捕获异常
+  // → exit 1 → 每 tick 都误发 runner-failed 报警。这类外部瞬时故障标记 queueUnreachable 交给
+  // index.js 做跨 tick 防抖（连续断满才报，见 alert.js QUEUE_FETCH_CONFIRM_TICKS）；4xx（PAT 失效等
+  // 配置问题）不属瞬时，照旧抛出立即报警、不被防抖掩盖。此前补发阶段的 pending 已在上面落盘，
+  // 这里提前 return 不会丢状态、也不会重复发信。
+  let issues;
+  try {
+    issues = await listApprovedIssues(gh, fetchImpl);
+  } catch (err) {
+    if (isTransientQueueError(err)) {
+      summary.queueUnreachable = true;
+      log(`拉 approved 队列失败（外部瞬时故障：${err.message || err}）——本轮不处理，交由防抖判定是否报警`);
+      return summary;
+    }
+    throw err;
+  }
   log(`待处理（approved 未 done）：${issues.length} 条`);
 
   for (const issue of issues) {
