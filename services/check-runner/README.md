@@ -32,7 +32,7 @@ Cloudflare KV（check:* 键）
 |---|---|
 | `src/config.js` | `loadCheckRunnerConfig(env)` 读配置、校验必填（两个必填 + 可选 SMTP） |
 | `src/poll.js` | `fetchPendingChecks` / `markCheckDone`（注入 fetch，离线可测） |
-| `src/factcheck-cmd.js` | `buildFactcheckPrompt({text,link,imagePaths,verdictPath})` 拼 /factcheck 命令（纯函数） |
+| `src/factcheck-cmd.js` | `buildFactcheckPrompt({text,link,imagePaths,verdictPath,resultPath,titlePath})` 拼 /factcheck 命令（纯函数） |
 | `src/attempts.js` | 任务级失败计数（毒任务封顶用），持久化经注入 load/save，离线可测 |
 | `src/runner.js` | `runOnce(config,deps)` 编排，全部副作用经 deps 注入 |
 | `src/index.js` | 装配入口：抢锁、装配真实依赖（spawn claude / nodemailer / fetch / 计数文件）后跑 `runOnce` |
@@ -79,12 +79,15 @@ CHECK_RUNNER_SMTP_PASS=<Gmail 应用专用密码>
 bun run check-runner
 ```
 
-## 结论回显（手机核查页显示一行结论）
+## 结论回显 / 内容标题（手机核查页显示）
 
-- runner 为每条任务准备结论文件 `<tmpdir>/searchx-check/<id>/verdict.txt`，并在 prompt 里让 `/factcheck` 核查完写入**一行结论**（`裁定（把握度）：一句话真相`）。
-- 跑完后 runner 读该文件，随 `POST /check/<id>/done` 的 body `{ outcome, summary }` 上报；手机 check.html 的「最近核查」区凭 `CHECK_KEY` 拉 `GET /check/recent` 显示状态与这行结论。
-- **读不到结论文件就降级为无结论、照常 markDone**——回显是增强，不是硬依赖。退休任务上报 `outcome: "failed"` + 一行原因 summary（页面显示"已失败"和"连续失败 N 次，已停止重试，请重新提交一次"）。
-- **注入边界**：prompt 里用户提交的 text / link 包在 `≡≡≡待核查内容 开始/结束≡≡≡` 分隔线之内（内容里伪造的分隔线记号会被压掉）；附图路径与结论文件路径这两条 runner 真实指令放在分隔线之外，且 skill 侧只认系统临时目录 `searchx-check/<id>/` 下的路径。
+- runner 为每条任务准备三个信号文件（同在 `<tmpdir>/searchx-check/<id>/` 下），并在 prompt 里让 `/factcheck` 核查完分别写入：
+  - `verdict.txt` — **一行结论**（`裁定（把握度）：一句话真相`），列表那条下方的结论行。
+  - `result.md` — **整篇核查笔记**（含 frontmatter，与 Obsidian 一致），供详情视图渲染。
+  - `title.txt` — **一行 12–20 字中性内容标题**，当手机列表那条的标题，替代提交时自动生成的"N 张图 / 链接域名 / 长文本前 40 字"（纯图 / 长链接标题不再无信息或过长）。
+- 跑完后 runner 读这些文件，随 `POST /check/<id>/done` 的 body `{ outcome, summary, result?, title? }` 上报；手机 check.html 的「最近核查」区凭 `CHECK_KEY` 拉 `GET /check/recent` 显示状态、标题与结论（详情另凭 `GET /check/<id>/result` 懒加载整篇）。
+- **读不到某个信号文件就降级为不带该字段、照常 markDone**——结论 / 标题 / 详情都是增强，不是硬依赖；标题缺失时列表 fallback 回提交时的旧摘要。退休任务上报 `outcome: "failed"` + 一行原因 summary（页面显示"已失败"和"连续失败 N 次，已停止重试，请重新提交一次"）。
+- **注入边界**：prompt 里用户提交的 text / link 包在 `≡≡≡待核查内容 开始/结束≡≡≡` 分隔线之内（内容里伪造的分隔线记号会被压掉）；附图路径与结论 / 结果 / 标题文件路径这些 runner 真实指令放在分隔线之外，且 skill 侧只认系统临时目录 `searchx-check/<id>/` 下的路径。
 - 结论只在作者自己的私密通道流转（KV 7 天过期、凭密钥），通知邮件照旧不含内容明文。
 
 ## 失败 / 重跑语义

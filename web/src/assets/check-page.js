@@ -4,7 +4,7 @@ import {
   readKey, saveKey, clearKey, keyFromHash, describeCheckResult, describeSubmitError, describeRecentError,
   submitTimeoutMs, fitDimensions, validateCheckSubmission,
   describeTaskStatus, formatTaskTime, formatClockTime, shouldKeepPolling,
-  parseFrontmatter, resultChips, describeResultError,
+  parseFrontmatter, resultChips, describeResultError, taskTitle,
 } from "./check.js";
 import { renderMarkdown } from "./md.js";
 
@@ -134,7 +134,7 @@ function renderRecent(tasks) {
     head.append(time, chip);
     const snip = document.createElement("p");
     snip.className = "task-snippet";
-    snip.textContent = t.textSnippet || "（无摘要）";
+    snip.textContent = taskTitle(t);   // 完成后回传的内容标题优先，pending/旧任务 fallback 旧摘要
     item.append(head, snip);
     if (t.summary) {
       const sum = document.createElement("p");

@@ -89,17 +89,20 @@ async function prepareCheckImages(task, { workerUrl, secret }) {
   }
 }
 
-// 结论 + 完整结果两个信号文件：/factcheck 按 prompt 指令分别写「一行结论」与「整篇 markdown」，
-// runner 读后随 markDone 上报（结论回显手机列表 chip、整篇供详情视图渲染）。与图片临时文件同目录，
-// 任一 cleanup 都会连目录一并清掉。读不到各自降级（结论→空、整篇→null），绝不影响核查主流程。
+// 结论 + 完整结果 + 内容标题三个信号文件：/factcheck 按 prompt 指令分别写「一行结论」「整篇
+// markdown」「一行简短标题」，runner 读后随 markDone 上报（结论回显手机列表 chip、整篇供详情视图
+// 渲染、标题当手机列表那行标题）。与图片临时文件同目录，任一 cleanup 都会连目录一并清掉。读不到
+// 各自降级（结论→空、整篇→null、标题→null），绝不影响核查主流程。
 function prepareCheckVerdict(task) {
   const dir = join(tmpdir(), "searchx-check", task.id);
   mkdirSync(dir, { recursive: true });
   const verdictPath = join(dir, "verdict.txt");
   const resultPath = join(dir, "result.md");
+  const titlePath = join(dir, "title.txt");
   return {
     verdictPath,
     resultPath,
+    titlePath,
     // 只取第一行（防模型多写），读不到返回 null（runOnce 降级为无结论）
     readVerdict: () => {
       try { return readFileSync(verdictPath, "utf8").split("\n")[0].trim(); } catch { return null; }
@@ -107,6 +110,10 @@ function prepareCheckVerdict(task) {
     // 整篇原样读，读不到返回 null（runOnce 降级为不回传 result，详情走兜底）
     readResult: () => {
       try { return readFileSync(resultPath, "utf8"); } catch { return null; }
+    },
+    // 只取第一行（防模型多写），读不到返回 null（runOnce 降级为不带标题，前端 fallback 旧摘要）
+    readTitle: () => {
+      try { return readFileSync(titlePath, "utf8").split("\n")[0].trim(); } catch { return null; }
     },
     cleanup: () => { try { rmSync(dir, { recursive: true, force: true }); } catch {} },
   };

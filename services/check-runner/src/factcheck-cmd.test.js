@@ -82,4 +82,21 @@ describe("buildFactcheckPrompt", () => {
     const p = buildFactcheckPrompt({ text: "x" });
     expect(p).not.toContain("完整内容");
   });
+
+  it("给了 titlePath：prompt 追加「起一个简短中性标题写到该路径」指令", () => {
+    const p = buildFactcheckPrompt({ text: "x", titlePath: "/tmp/searchx-check/abc/title.txt" });
+    expect(p).toContain("/tmp/searchx-check/abc/title.txt");
+    expect(p).toContain("简短中性标题");
+  });
+
+  it("没给 titlePath：prompt 不含该指令", () => {
+    const p = buildFactcheckPrompt({ text: "x" });
+    expect(p).not.toContain("简短中性标题");
+  });
+
+  it("仅图片（无 text/link）+ titlePath：标题指令仍在（纯图也要有标题）", () => {
+    const p = buildFactcheckPrompt({ imagePaths: ["/tmp/a/0.jpg"], titlePath: "/tmp/t.txt" });
+    expect(p).toContain("简短中性标题");
+    expect(p).toContain("/tmp/t.txt");
+  });
 });

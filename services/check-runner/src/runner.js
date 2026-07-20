@@ -75,6 +75,7 @@ export async function runOnce(config, deps) {
         imagePaths,
         ...(verdict ? { verdictPath: verdict.verdictPath } : {}),
         ...(verdict && verdict.resultPath ? { resultPath: verdict.resultPath } : {}),
+        ...(verdict && verdict.titlePath ? { titlePath: verdict.titlePath } : {}),
       });
       log(`→ 开始核查 ${t.id}`);
       const code = await runFactcheck(prompt);
@@ -88,15 +89,18 @@ export async function runOnce(config, deps) {
       // 失败时计入 fail、不计成功、不发通知，continue 到下一条；任务保持 pending、下轮会重跑
       //（at-least-once，重复跑整条 /factcheck 可接受），目标是别因一条标记失败拖垮整批。
       // markDone 反复失败同样计入 attempts：达上限后走退休路径，不再每轮重跑整条 /factcheck。
-      let summary = "", result = "";
+      let summary = "", result = "", title = "";
       if (verdict) {
         try { summary = String(verdict.readVerdict() || "").trim(); } catch {} // 读不到就不回显
         if (typeof verdict.readResult === "function") {
           try { result = String(verdict.readResult() || ""); } catch {}        // 读不到就不回传整篇
         }
+        if (typeof verdict.readTitle === "function") {
+          try { title = String(verdict.readTitle() || "").trim(); } catch {}   // 读不到就不带标题（前端 fallback 旧摘要）
+        }
       }
       try {
-        await markDone(t.id, { outcome: "done", summary, ...(result ? { result } : {}) });
+        await markDone(t.id, { outcome: "done", summary, ...(result ? { result } : {}), ...(title ? { title } : {}) });
       } catch (err) {
         fail++;
         recordFailure(t.id);

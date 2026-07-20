@@ -16,7 +16,7 @@ function sanitizeContent(s) {
   return String(s).trim().replaceAll(FENCE, "≡≡");
 }
 
-export function buildFactcheckPrompt({ text, link, imagePaths, verdictPath, resultPath }) {
+export function buildFactcheckPrompt({ text, link, imagePaths, verdictPath, resultPath, titlePath }) {
   const parts = [];
 
   const content = [];
@@ -46,6 +46,13 @@ export function buildFactcheckPrompt({ text, link, imagePaths, verdictPath, resu
     // 与 verdictPath 同规矩：该路径限系统临时目录 searchx-check/<id>/，SKILL 无人值守节据此只认白名单路径。
     parts.push(
       `另外，把这篇核查笔记的完整内容（含 frontmatter，与写进 Obsidian 的完全一致）原样写一份到本地文件 ${resultPath}。`
+    );
+  }
+  if (titlePath) {
+    // 一个 12–20 字的中性内容标题写进信号文件，runner 读后随 markDone 上报、当作手机列表那行标题
+    //（替代提交时的"N 张图"/域名/长文本前段）。同 verdictPath 规矩：路径限 searchx-check/<id>/。
+    parts.push(
+      `再给这条核查起一个 12–20 字的简短中性标题（只概括被核查的对象是什么内容，不带真假结论、不带评级），写到本地文件 ${titlePath}，仅此一行、不含其他内容。`
     );
   }
   return `/factcheck ${parts.join("\n")}`;

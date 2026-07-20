@@ -11,6 +11,7 @@ import {
   fitDimensions,
   validateCheckSubmission,
   describeTaskStatus,
+  taskTitle,
   formatTaskTime,
   formatClockTime,
   shouldKeepPolling,
@@ -187,6 +188,25 @@ test("validateCheckSubmission：link 超 1000 → not ok", () => {
 
 test("validateCheckSubmission：图片超 9 张 → not ok", () => {
   expect(validateCheckSubmission({ text: "", link: "", imageCount: 10 }).ok).toBe(false);
+});
+
+// --- taskTitle（最近核查列表那行标题：完成后内容标题优先，否则退回旧摘要）---
+
+test("taskTitle：有 title → 用 title（替代 N 张图 / 长文本前段）", () => {
+  expect(taskTitle({ title: "某公司五倍海力士说法", textSnippet: "1 张图" })).toBe("某公司五倍海力士说法");
+});
+
+test("taskTitle：无 title（pending / 旧任务）→ 退回 textSnippet", () => {
+  expect(taskTitle({ textSnippet: "mp.weixin.qq.com" })).toBe("mp.weixin.qq.com");
+});
+
+test("taskTitle：title 为空白串 → 退回 textSnippet", () => {
+  expect(taskTitle({ title: "   ", textSnippet: "2 张图" })).toBe("2 张图");
+});
+
+test("taskTitle：title 与 snippet 都无 → 占位文案；入参为空也不崩", () => {
+  expect(taskTitle({})).toBe("（无摘要）");
+  expect(taskTitle(null)).toBe("（无摘要）");
 });
 
 // --- describeTaskStatus（最近核查列表的状态章）---

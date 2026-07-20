@@ -10,6 +10,7 @@ const IMG_MAX_COUNT = 9;                    // 单次最多 9 张
 const IMG_MAX_BYTES = 6 * 1024 * 1024;     // 单图上限 6 MiB
 const IMG_MIME_ALLOW = new Set(["image/jpeg", "image/png", "image/webp"]);
 const RESULT_MAX_BYTES = 200 * 1024;       // 完整结果 markdown 封顶 200 KiB
+const TITLE_MAX = 40;                       // 内容标题封顶 40 字（SKILL 要 12–20，此为防超写兜底）
 const byteLen = (s) => new TextEncoder().encode(s).length;
 
 // runner 端点（pending / done）是服务端 runner 调用、不经浏览器，无需 CORS，用裸 json。
@@ -63,6 +64,7 @@ function parseTask(raw) {
 function toIndexEntry(id, t) {
   const e = { id, createdAt: t.createdAt || "", status: t.status || "pending", snippet: taskSnippet(t) };
   if (t.summary) e.summary = t.summary;
+  if (t.title) e.title = t.title;   // 核查完成回传的内容标题；未完成/旧任务无此字段，前端 fallback snippet
   return e;
 }
 
@@ -237,6 +239,7 @@ export async function handleCheckRecent(request, env) {
         textSnippet: e.snippet || "",
       };
       if (e.summary) view.summary = e.summary;
+      if (e.title) view.title = e.title;   // 有内容标题就带上，前端优先用它当那行标题
       return view;
     });
   tasks.sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0));
@@ -297,17 +300,19 @@ export async function handleCheckDone(request, env, id) {
   const t = parseTask(raw);
   if (!t) return json({ ok: false, error: "not found" }, 404); // 值损坏，任务已不可用，按 404 处理
 
-  let outcome = "", summary = "", result = "";
+  let outcome = "", summary = "", result = "", title = "";
   try {
     const body = await request.json();
     if (body && typeof body === "object") {
       outcome = String(body.outcome || "");
       summary = String(body.summary || "").trim().slice(0, 200);
       result = typeof body.result === "string" ? body.result : "";
+      title = String(body.title || "").trim().slice(0, TITLE_MAX);
     }
   } catch {}
   t.status = outcome === "failed" ? "failed" : "done";
   if (summary) t.summary = summary;
+  if (title) t.title = title;   // 手机列表那行标题；空则不存（保留旧任务/pending 的 snippet fallback）
   await env.INTAKE_KV.put(`check:${id}`, JSON.stringify(t), { expirationTtl: TTL });
   // 完整结果 markdown 单独存 checkresult:<id>（7 天 TTL），供作者手机页详情视图懒加载渲染。
   // 不写进 task / idx（列表照旧只读轻量索引、保持快）。超限跳过、不截断（避免坏 markdown，

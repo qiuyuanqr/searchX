@@ -91,6 +91,23 @@ describe("markCheckDone", () => {
     await markCheckDone({ workerUrl: BASE, secret: SECRET, id: "t1" }, fakeFetch);
     expect(body).toEqual({ outcome: "done" });
   });
+
+  it("带 title：body 含 title 字段", async () => {
+    let body = null;
+    const fakeFetch = async (url, opts) => { body = JSON.parse(opts.body); return { ok: true }; };
+    await markCheckDone(
+      { workerUrl: BASE, secret: SECRET, id: "t1", outcome: "done", summary: "属实（高）：真", title: "某公司业绩传闻" },
+      fakeFetch,
+    );
+    expect(body).toEqual({ outcome: "done", summary: "属实（高）：真", title: "某公司业绩传闻" });
+  });
+
+  it("title 为空：body 不带 title 字段（向后兼容）", async () => {
+    let body = null;
+    const fakeFetch = async (url, opts) => { body = JSON.parse(opts.body); return { ok: true }; };
+    await markCheckDone({ workerUrl: BASE, secret: SECRET, id: "t1", summary: "s" }, fakeFetch);
+    expect(body).toEqual({ outcome: "done", summary: "s" });
+  });
 });
 
 describe("fetchCheckImage", () => {

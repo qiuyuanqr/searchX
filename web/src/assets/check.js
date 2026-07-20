@@ -71,6 +71,18 @@ export function fitDimensions(w, h, maxEdge) {
   return { width: Math.round(W * scale), height: Math.round(H * scale) };
 }
 
+// 纯函数：最近核查列表那行标题——核查完成后回传的内容标题（title）优先；没有则退回提交时
+// 生成的摘要（textSnippet：文本前段 / 链接域名 / N 张图）；再没有才退到占位文案。
+// pending / 旧任务没有 title 属正常，此时走 snippet（对齐「过程中先用旧摘要顶着」的设计）。
+export function taskTitle(t) {
+  const x = t || {};
+  const title = (x.title == null ? "" : String(x.title)).trim();
+  if (title) return title;
+  const snip = (x.textSnippet == null ? "" : String(x.textSnippet)).trim();
+  if (snip) return snip;
+  return "（无摘要）";
+}
+
 // 纯函数：最近核查列表的状态章文案与配色（kind 对齐 .form-status 的三色约定）。
 export function describeTaskStatus(status) {
   if (status === "pending") return { label: "排队中", kind: "pending" };

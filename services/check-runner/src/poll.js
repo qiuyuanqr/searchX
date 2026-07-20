@@ -12,11 +12,13 @@ export async function fetchPendingChecks({ workerUrl, secret }, fetchImpl = fetc
 }
 
 // outcome: "done"（默认）| "failed"（退休任务）；summary 为一行结论（可空，空则不带）。
+// title 为手机列表那行的简短内容标题（可空，空则不带）。
 // 旧版 Worker 不读 body、直接忽略，所以带 body 向后兼容。
-export async function markCheckDone({ workerUrl, secret, id, outcome = "done", summary = "", result = "" }, fetchImpl = fetch) {
+export async function markCheckDone({ workerUrl, secret, id, outcome = "done", summary = "", result = "", title = "" }, fetchImpl = fetch) {
   const body = { outcome };
   if (summary) body.summary = summary;
   if (result) body.result = result;
+  if (title) body.title = title;
   const r = await fetchImpl(`${workerUrl}/check/${id}/done`, {
     method: "POST",
     headers: { "x-check-runner-secret": secret, "content-type": "application/json" },

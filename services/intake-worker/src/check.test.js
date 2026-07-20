@@ -713,6 +713,35 @@ test("done：非法 outcome 按 done 处理；summary 超 200 字截断", async 
   expect(stored.summary).toBe("长".repeat(200));
 });
 
+test("done：body 带 title → 存入 t.title 且同步进索引条目", async () => {
+  const kv = fakeKV({
+    "check:idx": JSON.stringify({ complete: true, items: [
+      { id: "t1", createdAt: NOW(), status: "pending", snippet: "1 张图" },
+    ] }),
+    "check:t1": pendingTask({ text: "", images: [{ mime: "image/jpeg", size: 3 }] }),
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  const res = await postDoneBody(env, "t1", { outcome: "done", summary: "不实（高）：假", title: "Claude 向中国开放截图" });
+  expect(res.status).toBe(200);
+  expect(JSON.parse(kv.store.get("check:t1")).title).toBe("Claude 向中国开放截图");
+  const idx = JSON.parse(kv.store.get("check:idx"));
+  expect(idx.items.find((x) => x.id === "t1").title).toBe("Claude 向中国开放截图");
+});
+
+test("done：title 超 40 字截断（防模型超写）", async () => {
+  const kv = fakeKV({ "check:t1": pendingTask() });
+  const env = ENV({ INTAKE_KV: kv });
+  await postDoneBody(env, "t1", { outcome: "done", title: "标".repeat(60) });
+  expect(JSON.parse(kv.store.get("check:t1")).title).toBe("标".repeat(40));
+});
+
+test("done：无 title → 不存 title 字段（旧任务 / pending 走 snippet fallback）", async () => {
+  const kv = fakeKV({ "check:t1": pendingTask() });
+  const env = ENV({ INTAKE_KV: kv });
+  await postDoneBody(env, "t1", { outcome: "done", summary: "s" });
+  expect(JSON.parse(kv.store.get("check:t1")).title).toBeUndefined();
+});
+
 // ── GET /check/recent（作者凭 CHECK_KEY 查最近任务）────────────
 
 function getRecent(env, headers = {}) {
@@ -793,6 +822,22 @@ test("recent：不回传 text 全文 / link 全文 / images 字节等重字段",
   const body = await (await getRecent(env, { "x-check-key": "CK_GOOD" })).json();
   const keys = Object.keys(body.tasks[0]).sort();
   expect(keys).toEqual(["createdAt", "id", "status", "textSnippet"]);
+});
+
+test("recent：索引条目有 title → view 带 title；pending 无 title → 不带（前端 fallback snippet）", async () => {
+  const kv = fakeKV({
+    "check:idx": JSON.stringify({ complete: true, items: [
+      { id: "d", createdAt: "2026-07-02T09:00:00.000Z", status: "done", snippet: "1 张图", title: "某截图核查", summary: "不实（高）：假" },
+      { id: "p", createdAt: "2026-07-01T08:00:00.000Z", status: "pending", snippet: "排队文本" },
+    ] }),
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  const body = await (await getRecent(env, { "x-check-key": "CK_GOOD" })).json();
+  const d = body.tasks.find((t) => t.id === "d");
+  const p = body.tasks.find((t) => t.id === "p");
+  expect(d.title).toBe("某截图核查");     // done 有 title，前端优先用它
+  expect(d.textSnippet).toBe("1 张图");    // snippet 仍在（title 缺失时的兜底）
+  expect(p.title).toBeUndefined();         // pending 无 title → 前端 fallback textSnippet
 });
 
 test("recent：损坏条目跳过、不拖垮列表；无任务返回空数组", async () => {

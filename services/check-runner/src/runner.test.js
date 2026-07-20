@@ -567,4 +567,77 @@ describe("runOnce", () => {
       ["task-1", { outcome: "done", summary: "s" }],
     ]);
   });
+
+  // ── 内容标题回传：titlePath 进 prompt、readTitle 随 markDone 上报（title 字段）──
+
+  it("titlePath 传给 buildPrompt（prompt 指示 skill 起个标题）", async () => {
+    const tasks = makeTasks(1);
+    let promptArg = null;
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async () => {},
+      runFactcheck: async () => 0,
+      prepareVerdict: (t) => ({
+        verdictPath: `/tmp/${t.id}/verdict.txt`,
+        titlePath: `/tmp/${t.id}/title.txt`,
+        readVerdict: () => null,
+        readTitle: () => null,
+        cleanup: () => {},
+      }),
+      buildPrompt: (t) => { promptArg = t; return "/factcheck x"; },
+      notify: null, log: () => {},
+    };
+    await runOnce({}, deps);
+    expect(promptArg.titlePath).toBe("/tmp/task-0/title.txt");
+  });
+
+  it("readTitle 有内容：标题随 markDone 上报（title 字段）", async () => {
+    const tasks = makeTasks(1);
+    const doneArgs = [];
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id, info) => { doneArgs.push([id, info]); },
+      runFactcheck: async () => 0,
+      prepareVerdict: (t) => ({
+        verdictPath: `/tmp/${t.id}/verdict.txt`,
+        titlePath: `/tmp/${t.id}/title.txt`,
+        readVerdict: () => "属实（高）：真",
+        readTitle: () => "某公司五倍海力士说法",
+        cleanup: () => {},
+      }),
+      buildPrompt: () => "/factcheck x",
+      notify: null, log: () => {},
+    };
+    const r = await runOnce({}, deps);
+    expect(r).toEqual({ processed: 1, done: 1, fail: 0, retired: 0 });
+    expect(doneArgs).toEqual([["task-0", { outcome: "done", summary: "属实（高）：真", title: "某公司五倍海力士说法" }]]);
+  });
+
+  it("readTitle 返回 null / 抛错 / 无 readTitle：降级为不带 title 字段", async () => {
+    const tasks = makeTasks(3); // task-0 null、task-1 抛错、task-2 无 readTitle
+    const doneArgs = [];
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id, info) => { doneArgs.push([id, info]); },
+      runFactcheck: async () => 0,
+      prepareVerdict: (t) => {
+        if (t.id === "task-2") return { verdictPath: "/tmp/v", readVerdict: () => "s", cleanup: () => {} };
+        return {
+          verdictPath: "/tmp/v",
+          titlePath: "/tmp/title.txt",
+          readVerdict: () => "s",
+          readTitle: () => { if (t.id === "task-1") throw new Error("读标题失败"); return null; },
+          cleanup: () => {},
+        };
+      },
+      buildPrompt: () => "/factcheck x",
+      notify: null, log: () => {},
+    };
+    await runOnce({}, deps);
+    expect(doneArgs).toEqual([
+      ["task-0", { outcome: "done", summary: "s" }],
+      ["task-1", { outcome: "done", summary: "s" }],
+      ["task-2", { outcome: "done", summary: "s" }],
+    ]);
+  });
 });
