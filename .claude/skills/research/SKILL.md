@@ -125,7 +125,7 @@ X/Twitter 自 2023 起关闭免费 API 且强反爬，**无法稳定、完整拉
 <ARCHIVE_ROOT>/<YYYY-MM-DD>_<topic-slug>/
 ├── report.html      # 阅读型成品，用本 skill 的模板填充
 ├── sources.md       # 全部来源清单（存档备查）
-├── notes.md         # 给 Obsidian 的精简 markdown（Step 5 复制）
+├── notes.md         # 精简 markdown：站点数据源（Step 5a）+ Obsidian 全文笔记的 frontmatter/双链来源（Step 5b）
 └── data/            # 截图、结构化数据、原始抓取（如有，否则留空）
 ```
 
@@ -154,12 +154,11 @@ X/Twitter 自 2023 起关闭免费 API 且强反爬，**无法稳定、完整拉
 
 ---
 
-## Step 5 — 在 Obsidian 落一份（带双链）
+## Step 5 — 写 notes.md（归档+网站源）+ 落 Obsidian 全文笔记（中文名、带双链）
 
-把 `notes.md` 写到 Obsidian vault 的 Research 子目录（路径见 CLAUDE.md 的 `OBSIDIAN_VAULT`）：
-`<OBSIDIAN_VAULT>/Research/<topic-slug>.md`
+本步两件事：**5a** 写 `notes.md`（进主题文件夹，供站点构建，也是 Obsidian 笔记的 frontmatter 与双链来源）；**5b** 用仓库内转换器把 `report.html` 的**完整正文**落到 Obsidian，文件名用中文。
 
-> **库路径护栏（必守）**：`OBSIDIAN_VAULT` 见 CLAUDE.md / CLAUDE.local.md。**若找不到该变量、或 `OBSIDIAN_VAULT` 根目录不存在 → 停下来问用户要正确路径，绝不自行猜测落点、绝不改写 `CLAUDE.local.md`（它是用户私有配置，不归 skill 动）、绝不写进仓库目录。** 仅 `Research/` 子目录不存在时直接 `mkdir -p` 创建，不必反问。（同 factcheck SKILL §保存一节的护栏；stock 复用本 Step 5，受同一约束。）
+### 5a · notes.md（写进 `<ARCHIVE_ROOT>/<主题文件夹>/notes.md`）
 
 文件头 frontmatter：
 ```yaml
@@ -176,6 +175,18 @@ archive: "<ARCHIVE_ROOT 下本主题文件夹的相对路径>"
 > `related` 里的板块名要**原样准确**写（光模块 / 机器人 / 算力 / AI应用 / 航天）——用于 Obsidian 双链与关联判断（首页板块筛选与卡片板块标签已于 2026-07-14 前下线，`related` 不再驱动站点展示）。`related` 里非板块的跨主题双链照常放。
 
 正文：报告的**精简版**（核心结论 + 关键案例 + 风险/局限），不是全文照搬。**结论段承载位置钉死**（首页卡片导语从这里抽取）：H1 之下第一个小节用 `## 一句话结论` 标题、内容为一段完整段落（不是列表）；或者把结论写成 H1 下最前面的 `>` 引用块。别在结论前放免责声明/基准数据类引用块——抽取器会把它误当导语。精简不等于压成电报体：标题只命名章节，统计与结论写进正文；句子仍是完整短句，别压成"A → B → ↓"式箭头链。正文里用 `[[]]` 双链关联到五大板块笔记及其他相关概念笔记——链接到还不存在的笔记也没关系，Obsidian 会自动建一个占位条目，这样每次调研都能和已有笔记关联起来。
+
+### 5b · 落 Obsidian 全文笔记（中文文件名、带双链）
+
+Obsidian 笔记**不再是 notes.md 精简版**，而是 `report.html` 的**完整正文**转成 Markdown（frontmatter 与 `[[]]` 双链沿用 5a 的 notes.md，正文里的其它 `[[]]` 归到「关联笔记」一节，保住图谱）。**在 5a 的 notes.md 写完、且 Step 4 的 report.html 已就位后**，用仓库内转换器一条命令产出：
+
+```
+bun run scripts/report-to-obsidian.js research/<YYYY-MM-DD>_<topic-slug> --vault "<OBSIDIAN_VAULT>" --name "<中文对象名>"
+```
+
+- `<OBSIDIAN_VAULT>` 取 CLAUDE.md / CLAUDE.local.md 的值；`<中文对象名>` 用**与本次 INDEX「对象」列同一个中文名**（如 `海光信息 688041.SH`、`CPO 共封装光学`）。转换器把它消毒成合法文件名，写到 `<OBSIDIAN_VAULT>/Research/<中文名>.md`（幂等，重跑覆盖同一文件）。
+- **库路径护栏（必守）**：转换器在 `OBSIDIAN_VAULT` 根目录不存在时**直接非零退出、不落任何文件**——**无人值守下容忍这一步失败、照常进 Step 6**（站点与归档都不依赖 Obsidian；runner 那台机器本就挂不到外置库）；交互式可提醒用户库未挂载。**绝不自行猜落点、绝不改写 `CLAUDE.local.md`（用户私有、不归 skill 动）、绝不写进仓库目录。** `Research/` 子目录不存在转换器会自建。
+- 若 Step 5.5 之后对 `report.html` 有定点修订，**重跑本条命令**刷新 Obsidian 笔记即可（幂等）。存量笔记已由 `scripts/backfill-obsidian.js` 一次性回填过，日常无需再动。
 
 ---
 
@@ -197,7 +208,7 @@ archive: "<ARCHIVE_ROOT 下本主题文件夹的相对路径>"
 
 **3. 修订循环（封顶 2 轮，必收敛）**
 1. 拿到硬错清单，**先逐条复核"这个错是真的吗"**——核验员也会读错来源、把对的当错的，这种**直接驳回、不改**（防误伤把对的报告卡死，也帮收敛）。
-2. 对**确认为真**的硬错：**只定点修那几处**（改数字 / 换源 / 删站不住的引述 / 订正张冠李戴），**不重写全文**（重写又贵又可能引新错、不收敛）；**被改的数字/结论若同时出现在 `notes.md`（Step 5 已写入 Obsidian 的精简版）或 `INDEX.md` 的本条索引行，一并同步修改**，防止同一事实在报告、notes、索引三处自相矛盾。软问题就地处理。
+2. 对**确认为真**的硬错：**只定点修那几处**（改数字 / 换源 / 删站不住的引述 / 订正张冠李戴），**不重写全文**（重写又贵又可能引新错、不收敛）；**被改的数字/结论若同时出现在 `notes.md`（Step 5a·网站源）或 `INDEX.md` 的本条索引行，一并同步修改，并重跑 Step 5b 转换器刷新 Obsidian 全文笔记**，防止同一事实在报告、notes、索引、Obsidian 笔记各处自相矛盾。软问题就地处理。
 3. 修订后**只对改过的几处再核一遍**（改对没？引新矛盾没？）。
 4. **最多 2 轮**；第 2 轮后仍有"确认为真且消解不掉"的硬错 → 走第 4 步兜底。
 

@@ -7,7 +7,7 @@
 > 两个变量的**本机绝对路径**定义在未入库的 `CLAUDE.local.md`（Claude Code 自动加载、不进公开仓库）。下面只说明用途。
 
 - `ARCHIVE_ROOT` — 调研资产根（仓库内 `research/`）。每次调研在此下建独立主题文件夹（`<YYYY-MM-DD>_<topic-slug>/`），存全部资产。
-- `OBSIDIAN_VAULT` — 本机 Obsidian 库根。调研精简笔记存 `Research/` 子目录，事实核查笔记存 `Factcheck/` 子目录，均带 frontmatter 与 `[[]]` 双链。
+- `OBSIDIAN_VAULT` — 本机 Obsidian 库根。调研**全文笔记（中文文件名）**存 `Research/` 子目录（由 `scripts/report-to-obsidian.js` 从 `report.html` 转出），事实核查笔记存 `Factcheck/` 子目录，均带 frontmatter 与 `[[]]` 双链。
 
 ## 仓库结构速览
 

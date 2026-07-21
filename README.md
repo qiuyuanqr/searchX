@@ -62,11 +62,11 @@ searchX/
 research/<日期>_<主题>/
 ├── report.html   # 浏览器打开，离线自包含、阅读型成品
 ├── sources.md    # 全部来源（带链接，按可信度排序）
-├── notes.md      # 给 Obsidian 的精简版（带 frontmatter + [[双链]]）
+├── notes.md      # 精简版：站点数据源；也是 Obsidian 全文笔记的 frontmatter + [[双链]] 来源
 └── data/         # 截图 / 结构化数据（如有）——仅本机留存，已 gitignore（`research/*/data/`），不进仓库、不上线
 ```
 
-同时在 Obsidian `<OBSIDIAN_VAULT>/Research/<主题>.md` 保存一份带 `[[双链]]` 的笔记，并自动 `git push` 触发 Pages 部署、发布到公开站（`git push` 只推送已入库文件，`data/` 因 gitignore 不含在内）。
+同时把报告全文转成 Markdown、在 Obsidian `<OBSIDIAN_VAULT>/Research/<中文名>.md` 保存一份带 `[[双链]]` 的**完整**笔记（转换器 `scripts/report-to-obsidian.js`，中文文件名取自 INDEX「对象」列），并自动 `git push` 触发 Pages 部署、发布到公开站（`git push` 只推送已入库文件，`data/` 因 gitignore 不含在内；Obsidian 库在仓库外、不入 git）。
 
 > `/factcheck` 的产出不同：只在本机 Obsidian `<OBSIDIAN_VAULT>/Factcheck/` 存一份核查笔记（真假裁定 + 原委 + 可信度），**不进仓库、不上线**——它是仅供自己看的私人核查档。
 
