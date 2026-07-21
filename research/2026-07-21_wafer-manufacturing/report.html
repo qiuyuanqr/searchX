@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>晶圆制造是干嘛的 · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation;
+  }
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  small.src-note{font-size:.82em; color:var(--muted)}
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 概念</div>
+    <h1>晶圆制造是干嘛的</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-07-21（北京时间）</span>
+      <span><b>类型</b> 概念</span>
+      <span><b>来源</b> 25 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    你手机、电脑里那颗指甲盖大小的芯片，是从一块像光盘一样的圆形硅片上「印」出来的。晶圆制造，就是把这块光溜溜的硅片，像洗照片、盖高楼那样一层一层地加工，在上面刻出几十亿个比头发丝还细千百倍的「开关」，最后切成一颗颗芯片。这活儿难到什么程度？全世界能把最尖端那一档做好的，基本只剩一两家公司。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    晶圆制造是把一片高纯度硅圆片，经过上千道工序、在纳米尺度上逐层「盖」出数十亿个晶体管、最终变成芯片的过程——它是整个半导体产业最烧钱、门槛最高、也最被地缘政治盯上的一环。全球最先进制程（7 纳米及以下）高度集中在台积电一家，这既是 AI 算力的地基，也是当下「卡脖子」博弈的核心。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li><strong>名字有两层意思，别混了。</strong>狭义的「晶圆制造」指造出那块<em>空白硅片</em>（从沙子提纯→长成晶体→切片→抛光）；行业里更常说的「晶圆制造 / 晶圆厂（Fab）」指在硅片上<em>盖出芯片</em>的「前道工艺」。本报告两层都讲，重点在后者。</li>
+      <li><strong>核心是「重复叠层」。</strong>光刻→刻蚀→沉积→掺杂这四类动作反复循环几百上千遍，先造晶体管（前段 FEOL）、再铺金属连线（后段 BEOL）；一整套 <a href="https://semiengineering.com/battling-fab-cycle-times/">600–1000 多道工序、耗时约 12 周甚至更久</a>，而且大半时间其实是在排队等设备。</li>
+      <li><strong>极其烧钱。</strong>一座先进晶圆厂造价从几十亿到 <a href="https://en.wikipedia.org/wiki/Semiconductor_fabrication_plant">200 亿美元以上</a>，其中<a href="https://www.bcg.com/publications/2023/navigating-the-semiconductor-manufacturing-costs">设备占七到八成</a>；单单一台 EUV（极紫外）光刻机就要 <a href="https://www.cnbc.com/2022/03/23/inside-asml-the-company-advanced-chipmakers-use-for-euv-lithography.html">2 亿美元起跳</a>。</li>
+      <li><strong>高度垄断。</strong>2025 年台积电占全球<a href="https://www.taipeitimes.com/News/biz/archives/2026/03/14/2003853777">代工市场约七成</a>；7 纳米及以下最先进产能约九成集中在台积电（多家分析估算）；能造 EUV 光刻机的全球<a href="https://www.asml.com/en/products/euv-lithography-systems">只有荷兰 ASML 一家</a>。</li>
+      <li><strong>「3 纳米/5 纳米」如今是营销代号。</strong>它<a href="https://spectrum.ieee.org/a-better-way-to-measure-progress-in-semiconductors">早已不等于晶体管的真实物理尺寸</a>；只需记住：数字越小＝晶体管越密、越省电越快，但也越贵越难造。</li>
+      <li><strong>这是 AI 算力的地基，也是中美博弈焦点。</strong>中芯国际用较老的 DUV（深紫外）设备靠「多重曝光」硬造出 <a href="https://www.csis.org/analysis/contextualizing-national-security-concerns-over-chinas-domestically-produced-high-end-chip">7 纳米级芯片</a>（华为麒麟），但被挡在 EUV 门外，成本与产量都受限。</li>
+    </ul>
+  </div>
+
+  <main>
+
+    <h2>一、先厘清：「晶圆制造」到底在造什么</h2>
+    <p>很多人一听「晶圆制造」就头大，其实卡点在于这个词<strong>指两件不同的事</strong>，先分清就豁然开朗了。</p>
+    <p><strong>晶圆</strong>（wafer，读作「维弗」，也叫硅片），就是一块又薄又圆、抛得像镜子一样亮的硅片，直径通常 20 或 30 厘米，看上去很像一张银色的光盘。它是造芯片的「地基」——所有芯片都是在它表面盖出来的。</p>
+    <ul>
+      <li><strong>第一层意思（狭义）</strong>：造出这块<em>空白</em>的硅片本身。从沙子提纯出高纯度硅，长成一根圆柱状的大晶体，再切成一片片、磨平抛光。这行叫「硅片 / 衬底制造」，玩家是信越、SUMCO、沪硅产业这些材料厂。</li>
+      <li><strong>第二层意思（行业里更常说的）</strong>：拿到空白硅片后，在它表面<em>盖出</em>密密麻麻的电路和晶体管，把它变成真正能算数的芯片。这一步叫「晶圆前道制造」，干这活的工厂就叫「晶圆厂」或「晶圆代工厂（Fab）」，代表是台积电、中芯国际。</li>
+    </ul>
+    <div class="callout">打个比方：第一层是「烧制并磨平一块空白瓷砖」，第二层是「在这块瓷砖上用极精细的工艺画出一整座城市的电网」。日常说「晶圆制造是干嘛的」，问的多半是第二层——它才是芯片诞生的主战场。下面两层都讲，第三节起是重头戏。</div>
+
+    <h2>二、第一层：先把那块硅片做出来（从沙子到镜面圆片）</h2>
+    <p>芯片的原料，说出来你可能不信——<strong>就是沙子</strong>。沙子的主要成分是二氧化硅，硅便是从这里提炼的。但从沙子到能造芯片的硅片，中间要过好几关（本节流程综合自公开科普资料，<a href="https://www.universitywafer.com/how-silicon-wafers-are-made.html">如 UniversityWafer 的硅片制造说明</a>）：</p>
+    <ul>
+      <li><strong>提纯</strong>：把沙子在高温电炉里炼成硅，再一步步提纯到 <strong>99.9999999%</strong>（业内俗称「9 个 9」，即一亿个原子里最多混进一个杂质）。芯片对纯度的苛刻，是普通工业材料想都不敢想的。</li>
+      <li><strong>长晶</strong>：把提纯的硅熔成约 1400℃ 以上的硅水，用一颗「种子晶体」蘸一下，边转边极慢地往上拉，硅就顺着种子的排列方式凝固、长成一根完整的单晶大圆柱（叫「硅锭」），直径可达 30 厘米、重达几百公斤。这套办法叫<strong>直拉法</strong>（Czochralski，简称 CZ 法）。<small class="src-note">（形象点说，很像从糖浆里慢慢拉出一根均匀的糖棒，只不过温度上千度、精度到原子级）</small></li>
+      <li><strong>切片、磨平、抛光</strong>：用金刚石线锯把这根圆柱像切香肠一样切成一片片薄片（30 厘米的片子厚度约 0.775 毫米），再经研磨、化学腐蚀、抛光，最后正面被抛成一面<strong>镜子</strong>——平整到起伏不超过几个原子的高度，这样后面才画得出纳米级的电路。</li>
+    </ul>
+    <h3>为什么硅片越做越大：从 20 厘米到 30 厘米</h3>
+    <p>硅片的尺寸是有讲究的。现在主流是直径 <strong>300 毫米（12 英寸）</strong>，成熟、特色工艺仍大量用 <strong>200 毫米（8 英寸）</strong>。为什么要费劲做大？因为芯片是一颗颗「印」在圆片上的，<strong>圆片越大，一次能印的芯片越多，摊到每颗上的成本就越低</strong>。</p>
+    <div class="case">
+      <p>据 <a href="https://www.wevolver.com/article/200-mm-wafer-vs-300-mm-wafer-a-technical-comparison-for-engineers">Wevolver 的对比</a>：300 毫米硅片的面积约 70,650 平方毫米，是 200 毫米（约 31,400 平方毫米）的 <strong>2.25 倍</strong>。以 15×15 毫米的芯片为例，一片 200 毫米硅片约能切出 139 颗，而 300 毫米能切出 314 颗以上——多一倍还不止。这也是为什么先进节点几乎清一色用 300 毫米：单颗成本能低约 <strong>1.7 倍</strong>。<small class="src-note">（更大的 450 毫米曾被讨论多年，但因改造成本太高，业界至今未普及）</small></p>
+    </div>
+
+    <h2>三、第二层（重头戏）：在硅片上「盖楼」——晶圆厂的前道工艺</h2>
+    <p>拿到空白硅片后，真正的魔法开始了。一句话概括：<strong>像洗照片 + 盖高楼，把电路一层一层「叠」上去</strong>。芯片不是平面的，而是几十层结构垂直摞起来的立体建筑，只不过每一层都薄到纳米级。</p>
+    <p>整个过程靠反复循环<strong>四类基本动作</strong>（据 <a href="https://en.wikipedia.org/wiki/Semiconductor_device_fabrication">半导体器件制造的公开定义</a>）：</p>
+    <ul>
+      <li><strong>光刻（Lithography）</strong>——在硅片上涂一层「见光会变性」的感光胶（叫光刻胶），再拿一张画好电路图案的「底片」（叫掩模版）挡在上面，用光一照，图案就「印」到了硅片上。<em>这一步就像洗照片：底片＋曝光＝把图案转移过来。</em>它决定了电路能画多细，是全流程最关键、最烧钱的一步。</li>
+      <li><strong>刻蚀（Etch）</strong>——把光刻后<em>没被保护</em>的部分「啃」掉，刻出沟槽和结构。就像用强酸或等离子体，按照刚印上的图案雕刻。</li>
+      <li><strong>沉积（Deposition）</strong>——往硅片上「铺」一层新材料（金属、绝缘层等），相当于给这座「楼」加盖新的一层楼板或墙面。</li>
+      <li><strong>掺杂（Doping / 离子注入）</strong>——往硅里「打」进一点点别的元素（如磷、硼），改变它导电的脾气，让某些区域变成能受控开关的晶体管。就像给一杯清水滴几滴颜料，整杯性质就变了。</li>
+    </ul>
+    <p>这四类动作<strong>反复循环几百上千遍</strong>，每一遍叠出一层。<a href="https://semiengineering.com/battling-fab-cycle-times/">先进逻辑芯片要走 600 到 1000 多道工序</a>，做完一整片硅片平均约 <strong>12 周</strong>，先进工艺甚至要 14–24 周；而且有意思的是，其中<strong>大半时间硅片是在排队等设备，而不是真在被加工</strong>。</p>
+
+    <h3>先造晶体管、再铺电线：前段 FEOL 与后段 BEOL</h3>
+    <p>这上千道工序，大致分成前后两大段（据 <a href="https://anysilicon.com/semipedia/front-end-of-line-feol/">AnySilicon 的定义</a>）：</p>
+    <ul>
+      <li><strong>前段（FEOL，Front-End-of-Line）</strong>：先在硅片<em>底层</em>造出一个个晶体管——也就是芯片里最基本的「开关」，一颗先进芯片有几十上百亿个。</li>
+      <li><strong>后段（BEOL，Back-End-of-Line）</strong>：晶体管造好后，再在上面铺一层层<strong>金属连线</strong>（铜线），把这几十亿个开关按设计连成一个能运算的电路网络。先进芯片有十几层这样的「布线楼层」。</li>
+    </ul>
+    <div class="callout">类比：FEOL 是「先在地基上盖好一栋栋独立的小房间（晶体管）」，BEOL 是「再用一整套上下十几层的电缆和管道，把所有房间接成一座能协同工作的智慧城市」。注意：这里的「前段/后段」都还在晶圆厂里、都算「前道」；和第五节要讲的「后道封装」是两码事，别弄混。</div>
+
+    <h3>为什么必须在洁净室里做</h3>
+    <p>电路细到纳米级，一粒你看不见的灰尘落上去，就可能毁掉好几颗芯片。所以晶圆厂的核心车间是<strong>洁净室</strong>——空气过滤到每立方米几乎没有微粒，工人穿的「太空服」不是保护人，而是<em>保护硅片不被人身上的皮屑、毛发污染</em>。最先进的产线洁净度要求达到极端等级，这也是建厂贵的原因之一。</p>
+
+    <h2>四、「3 纳米」「5 纳米」到底是什么意思</h2>
+    <p>你一定听过「台积电 3 纳米」「苹果用上 3nm 芯片」。这个「几纳米」叫<strong>制程节点</strong>。很多人误以为它是晶体管的实际大小——<strong>其实早就不是了</strong>。</p>
+    <p><a href="https://spectrum.ieee.org/a-better-way-to-measure-progress-in-semiconductors">IEEE Spectrum 明确指出</a>：如今 7nm、5nm、3nm 这些数字<strong>只是营销代号</strong>，芯片上大多数关键结构的实际尺寸都比这个数字大得多，这种「名不副实」已经持续了约二十年。你只需记住一句人话：<strong>数字越小，代表这一代工艺能把晶体管做得越密、越省电、跑得越快</strong>——但也越难造、越贵。</p>
+    <div class="case">
+      <p>用「晶体管密度」看更实在（据 <a href="https://en.wikipedia.org/wiki/3_nm_process">3nm 工艺资料</a>及行业数据）：7 纳米每平方毫米约装 1 亿个晶体管，5 纳米约 1.7 亿个，3 纳米按标称峰值密度接近 3 亿个<small class="src-note">（各家、各口径的密度数字有差异，此处取标称峰值）</small>。同样指甲盖大的面积，装的「开关」越来越多，芯片自然越来越强——这就是为什么手机、AI 芯片每一代都在追更小的节点。</p>
+    </div>
+    <h3>越往下越难，靠一台「神仙机器」：EUV 光刻机</h3>
+    <p>要把电路画到 7 纳米以下这么细，普通的光已经「太粗」了，必须用波长只有 <strong>13.5 纳米的极紫外光</strong>（简称 EUV）。产生这种光有多离谱？<a href="https://www.cnbc.com/2022/03/23/inside-asml-the-company-advanced-chipmakers-use-for-euv-lithography.html">CNBC 探访 ASML 时描述</a>：机器每秒向 5 万颗锡液滴发射高能激光、把它们打成等离子体来发光，再靠世界上最平的镜子反射聚焦。一台 EUV 光刻机重达约 <strong>180 吨</strong>（相当于一辆校车）、有几十万个零件、售价 <strong>2 亿美元起</strong>（最新的 High-NA 高数值孔径机型超 3.8 亿美元）。</p>
+    <p>最关键的是：<strong>全世界只有荷兰的 ASML 一家能造 EUV 光刻机</strong>（<a href="https://www.asml.com/en/products/euv-lithography-systems">见其官方产品页</a>）。这一点，直接决定了后面第八节要讲的「卡脖子」格局。</p>
+
+    <h2>五、造完之后：切割、封装、测试（后道）</h2>
+    <p>晶圆厂把整片硅片做好，只是完成了一半。此时硅片上是几百上千颗排列整齐、还连在一起的芯片，得再经过<strong>后道</strong>处理才能用（据 <a href="https://www.wevolver.com/article/osat-semiconductor-services-the-backbone-of-outsourced-chip-assembly-testing">Wevolver 的封测综述</a>）：</p>
+    <ul>
+      <li><strong>切割</strong>：把整片硅片切成一颗颗独立的芯片（叫「裸片 / die」）。</li>
+      <li><strong>封装</strong>：给脆弱的裸片穿上「外壳」并接出引脚，方便焊到电路板上、也保护它不被磕碰和受潮。</li>
+      <li><strong>测试</strong>：逐颗通电检查，把坏的挑出来，好的才出货。</li>
+    </ul>
+    <p>这一段很多由专门的「封测厂（OSAT，专做后道封装测试的代工厂）」来做，行业里以 <a href="https://www.wevolver.com/article/osat-semiconductor-services-the-backbone-of-outsourced-chip-assembly-testing">日月光（ASE）、安靠（Amkor）、江苏长电（JCET）为首的头部几家合计约占五成半到六成</a>。</p>
+    <div class="case">
+      <p><strong>先进封装成了 AI 芯片的新瓶颈。</strong>过去封装只是「装个壳」，如今它变成了核心竞争力。以台积电的 <strong>CoWoS</strong>（一种把多颗裸片和高带宽内存像拼积木一样并排封在一起的先进封装）为例——英伟达的 AI 加速卡就靠它。CoWoS 产能一度成为全球 AI 芯片供应的<strong>关键瓶颈</strong><small class="src-note">（业界广泛报道，非本条来源就地支撑）</small>：不是芯片本身造不出，而是「拼装」这一步产能跟不上。这也是为什么如今算力紧张，卡在封装环节的时候往往不比卡在晶圆厂少。</p>
+    </div>
+
+    <h2>六、为什么这么贵、这么难</h2>
+    <p>晶圆制造被称为「人类工业皇冠上的明珠」，不是夸张。难点集中在三件事：</p>
+    <h3>1）钱：一座厂几十亿到两百亿美元</h3>
+    <p>据 <a href="https://en.wikipedia.org/wiki/Semiconductor_fabrication_plant">公开资料</a>与 <a href="https://www.bcg.com/publications/2023/navigating-the-semiconductor-manufacturing-costs">BCG 的成本分析</a>：建一座 28/45 纳米级的 300 毫米晶圆厂要 <strong>50–70 亿美元</strong>，最先进的 5/3 纳米厂能超过 <strong>200 亿美元</strong>，台积电为 2 纳米投的钱更高。其中<strong>设备占七到八成</strong>——因为里面塞满了 EUV 光刻机（一台数亿美元）这类天价机器。这种资本门槛，本身就把绝大多数国家和公司挡在门外。</p>
+    <h3>2）良率：造得出，不等于造得划算</h3>
+    <p>能做出芯片是一回事，<strong>一片硅片上有多少颗是好的</strong>（这个比例叫<strong>良率</strong>）是另一回事。工序上千道，任何一道出点岔子就可能报废整颗芯片。<a href="https://anysilicon.com/semipedia/defect-density-dd/">良率由「缺陷密度」和「芯片面积」决定</a>：缺陷越多、芯片越大，好片率就<em>指数级</em>往下掉。新工艺刚投产时良率可能只有几成，靠日积月累的调试才慢慢爬高——<strong>良率每提升几个百分点，利润就能翻着涨</strong>，这也是各家最核心的机密。</p>
+    <div class="callout">正因如此，同样一颗设计，交给良率高的厂造就赚钱、交给良率低的厂就亏钱。台积电真正的护城河，与其说是「能造 3 纳米」，不如说是「能把 3 纳米的良率快速做高、稳定量产」——这才是别人几年都追不上的地方。</div>
+    <h3>3）知识：几十年经验砸不出来</h3>
+    <p>上千道工序的配方、参数、纠错经验，是几十年、上万工程师踩坑攒出来的隐性知识，买设备买不来。所以哪怕砸下同样的钱，后来者也很难在短期内追平——这也是为什么后面会看到，行业高度集中在极少数几家手里。</p>
+
+    <h2>七、谁在造：三种玩法与关键玩家</h2>
+    <p>芯片从「设计」到「制造」，行业分成三种商业模式，先搞懂这三个词，格局就清楚了：</p>
+    <ul>
+      <li><strong>IDM（垂直整合）</strong>：自己设计＋自己制造，一条龙全包。代表：英特尔、三星、美光。</li>
+      <li><strong>Fabless（无厂设计）</strong>：只设计芯片，不建厂，把制造外包出去。代表：英伟达、AMD、高通、苹果、华为海思。</li>
+      <li><strong>Foundry（晶圆代工）</strong>：自己不设计芯片，专门替上面那些 Fabless 公司「代工制造」。代表：台积电、中芯国际。</li>
+    </ul>
+    <p>台积电 1987 年首创的<strong>「纯代工」模式</strong>（<a href="https://anysilicon.com/semipedia/pure-play-foundry/">只替客户造、绝不做自有品牌产品去和客户竞争</a>）是整个现代芯片业的关键一环——正因为有它专心把制造做到极致，英伟达、苹果这些公司才能不建厂、只专注设计。</p>
+    <h3>代工江湖：一家独大</h3>
+    <p>据 <a href="https://www.taipeitimes.com/News/biz/archives/2026/03/14/2003853777">Taipei Times 引述的统计</a>与 <a href="https://www.design-reuse.com/news/202529294-global-foundry-revenue-surged-to-41-7-billion-in-q2-2025-with-tsmc-capturing-a-record-70-percent-market-share/">2025 年第二季数据</a>：</p>
+    <ul>
+      <li><strong>台积电（TSMC，台湾）</strong>：2024 年约占全球代工市场 64%，2025 年升至约 <strong>70%</strong>，一家独大且差距还在拉大。最先进制程几乎它一家在推。</li>
+      <li><strong>三星（Samsung，韩国）</strong>：约 7%，是唯一还在追先进制程的第二家，但份额在下滑。</li>
+      <li><strong>中芯国际（SMIC，中国大陆）</strong>：约 5%，中国大陆龙头，成熟工艺为主。</li>
+      <li><strong>联电（UMC）、格芯（GlobalFoundries）</strong>：各约 4%，专注成熟/特色工艺，不追最先进节点。</li>
+    </ul>
+    <p>此外还有两类「隐形玩家」：造硅片衬底的<strong>材料厂</strong>（日本信越、SUMCO 两家合计占 300 毫米硅片一半以上<small class="src-note">（据 <a href="https://www.marketgrowthreports.com/market-reports/300mm-silicon-wafers-market-103422">市场研究口径</a>：信越约 28%、SUMCO 约 23%，前五家合计约九成）</small>），以及造光刻机的<strong>设备厂</strong>（EUV 唯 ASML 一家）。</p>
+
+    <h2>八、为什么现在特别重要：地缘与「卡脖子」</h2>
+    <p>晶圆制造之所以频繁上新闻，是因为它不再只是产业问题，而成了<strong>国家安全和大国博弈</strong>的焦点。三个「命门」叠在一起：</p>
+    <ul>
+      <li><strong>产地极度集中在台湾。</strong>据 <a href="https://www.cfr.org/blog/will-chinas-reliance-taiwanese-chips-prevent-war">CFR</a> 与 <a href="https://www.visionofhumanity.org/the-worlds-dependency-on-taiwans-semiconductor-industry-is-increasing/">相关分析</a>，7 纳米及以下的最先进产能九成以上集中在台积电<small class="src-note">（多家行业分析估算，口径略有差异）</small>。全世界的手机、AI、汽车、导弹都依赖这一小块地方，万一有战事或天灾，全球供应链会连锁瘫痪——这就是所谓「硅盾」：护着台湾，也悬在全世界头顶。</li>
+      <li><strong>设备被一家掐着。</strong>造最先进芯片必须用 EUV 光刻机，而它<strong>全球唯 ASML 一家</strong>能造。谁能买、谁不能买 EUV，成了美国对华出口管制最锋利的一把「阀门」。</li>
+      <li><strong>中国被挡在 EUV 门外，但在硬追。</strong>由于出口管制，中国大陆买不到 EUV。<a href="https://www.csis.org/analysis/contextualizing-national-security-concerns-over-chinas-domestically-produced-high-end-chip">CSIS 的分析</a>与 <a href="https://www.techinsights.com/blog/chinas-smic-plays-7-nm-card">TechInsights 的拆解</a>证实：中芯国际用较老的 DUV（深紫外）光刻机，靠「多重曝光」（同一层反复曝光好几次来变相提高精度）硬是做出了 <strong>7 纳米级</strong>芯片，用在华为麒麟处理器上。这证明「没有 EUV 也能做 7 纳米」，但代价是<strong>工序更多、成本更高、良率与产量受限</strong>，再往更先进走会越来越吃力。</li>
+    </ul>
+    <div class="callout">一句话看懂这盘棋：先进芯片＝AI 时代的「石油」，而炼这桶油的核心装置（EUV 光刻机）和炼油厂（台积电先进产线）都攥在少数几方手里。这就是为什么「晶圆制造」四个字，如今能牵动股市、外交甚至军事。</div>
+
+    <h2>九、和「算力 / 光模块」这些板块的关系</h2>
+    <p>晶圆制造是几乎所有电子科技的共同地基，但和本站常关注的板块里，关系最直接的是两个：</p>
+    <ul>
+      <li><strong>算力（关系最强）</strong>：AI 大模型靠的英伟达 GPU、各家自研 AI 芯片，全部依赖台积电的最先进制程来造，再靠 CoWoS 先进封装和高带宽内存拼在一起。可以说<strong>没有晶圆制造的进步，就没有这一轮 AI 算力爆发</strong>——当下算力紧张，卡的往往正是先进产能和封装产能。</li>
+      <li><strong>光模块（有实在关联）</strong>：数据中心里传数据的光模块，其核心的「硅光子」芯片同样是在晶圆厂里、用类似工艺造出来的；CPO（共封装光学）这类新方向，本质就是把光器件和计算芯片封装到一起，和先进封装是同一条技术脉络。</li>
+    </ul>
+    <p>至于机器人、AI 应用、航天，它们都用芯片、因此都间接依赖晶圆制造，但那是「万物皆用芯片」层面的普遍关系，不算特有关联，这里不硬凑。</p>
+
+    <h2>十、下次看什么（监控信号）</h2>
+    <p>晶圆制造是个快速演进、且高度政治化的领域，想持续跟踪，盯这几个具体信号最有效：</p>
+    <ul>
+      <li><strong>台积电 2 纳米（N2）量产爬坡</strong>：N2 已于 <a href="https://www.techpowerup.com/341954/tsmc-to-begin-n2-volume-production-before-year-end">2025 年第四季进入量产</a>，看 2026 年月产能与良率能否顺利爬坡放大<small class="src-note">（业界估计 2026 年月产能目标向约 9–10 万片乃至更高扩产，初期规模较小）</small>——这是下一代 AI 与手机芯片的性能天花板。</li>
+      <li><strong>High-NA EUV（下一代高数值孔径光刻机）的采用节奏</strong>：ASML 的这款超 3.8 亿美元新机器，会不会、何时被用进量产，决定 2 纳米以下（A16/A14）能走多快。</li>
+      <li><strong>台积电美国亚利桑那厂进度</strong>：<a href="https://www.techspot.com/news/109900-tsmc-pushes-2-nanometer-manufacturing-ahead-schedule-while.html">扩建在提速</a>，看先进制程（3nm/2nm）几时真正在美国本土量产——这关系到「去台湾集中化」能推进到什么程度。</li>
+      <li><strong>中芯国际先进制程进展</strong>：看它在没有 EUV 的情况下，7 纳米级的产能、良率、成本能优化到哪一步，以及会不会向更先进节点突破——这是国产替代的核心看点。</li>
+      <li><strong>CoWoS 等先进封装产能</strong>：AI 芯片供应的现实瓶颈往往在封装。盯台积电及各封测厂 CoWoS 扩产是否跟得上 AI 需求。</li>
+      <li><strong>出口管制新动向</strong>：美国及盟友对华在光刻机（含 DUV）、先进设备、EDA（芯片设计软件）工具上的管制每收紧或松动一次，都会直接改写上面这盘棋。</li>
+    </ul>
+
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li><strong>「制程节点」名实不符易误导。</strong>「3 纳米」不是真实物理尺寸，各家（台积电/三星/英特尔）同名节点的实际密度也不一样，横向比较时容易被数字带偏，应看晶体管密度等硬指标。</li>
+      <li><strong>市场份额与产能数字存在口径差异。</strong>台积电约七成份额、7nm 以下九成以上产能集中度等，来自不同调研机构，统计口径（营收/产能/时点）不完全一致，本报告数字取常见区间，个别为估算。</li>
+      <li><strong>地缘风险是最大不确定性。</strong>产能高度集中台湾，任何军事、外交或天灾冲击都可能引发全球供应链连锁反应；出口管制随政治博弈频繁变动，行业格局可能在短期内被政策改写。</li>
+      <li><strong>硅片衬底份额、良率算例等为弱来源或说明性数据。</strong>如信越/SUMCO 份额来自市场研究报告、良率对成本的算例为示意性数字，非某厂真实披露，仅供理解量级，不宜当作精确事实引用。</li>
+      <li><strong>技术仍在快速演进。</strong>GAA 晶体管、背面供电、玻璃基板、硅光集成等新方向可能改变上述格局，本报告为生成时点的快照。</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl>
+    <dt>晶圆（Wafer / 硅片）</dt><dd>又薄又圆、抛得像镜子的硅片，直径 20 或 30 厘米，是造芯片的「地基」，所有芯片都印在它上面。</dd>
+    <dt>晶体管（Transistor）</dt><dd>芯片里最基本的「电子开关」，靠开合表示 0 和 1。一颗先进芯片有几十上百亿个。</dd>
+    <dt>前道 / 后道</dt><dd>前道＝在晶圆厂里把电路盖到硅片上；后道＝把做好的硅片切开、封装、测试成能用的芯片。</dd>
+    <dt>FEOL / BEOL（前段/后段）</dt><dd>前道内部再分两段：前段（FEOL）造晶体管，后段（BEOL）铺金属连线把晶体管连起来。都还在晶圆厂里。</dd>
+    <dt>光刻（Lithography）</dt><dd>像「洗照片」：用光透过画好图案的掩模版，把电路图案「印」到涂了感光胶的硅片上。决定电路能画多细。</dd>
+    <dt>刻蚀 / 沉积 / 掺杂</dt><dd>刻蚀＝按图案「啃」掉多余部分；沉积＝铺一层新材料（加盖楼层）；掺杂＝往硅里打进微量杂质、改变导电性。</dd>
+    <dt>制程节点（如 3nm/5nm）</dt><dd>标称的工艺代际，如今是营销代号、不等于真实尺寸。数字越小＝晶体管越密、越省电快，也越贵越难。</dd>
+    <dt>EUV / DUV 光刻机</dt><dd>把电路印到硅片上的核心机器。EUV 用 13.5 纳米极紫外光、造最先进芯片、全球唯 ASML 能造；DUV 是较老一代、精度较低但仍能靠多重曝光做到 7nm。</dd>
+    <dt>良率（Yield）</dt><dd>一片硅片上做出来的芯片有多少是好的。工序上千道，良率高低直接决定赚钱还是亏钱，是各家核心机密。</dd>
+    <dt>直拉法（CZ 法）</dt><dd>造空白硅片的关键一步：把硅熔成上千度的液体，用种子晶体边转边慢慢往上拉，长成一根单晶大圆柱。</dd>
+    <dt>洁净室（Cleanroom）</dt><dd>晶圆厂的核心车间，空气过滤到几乎无微粒。工人穿的「太空服」是为了保护硅片不被人污染，不是保护人。</dd>
+    <dt>代工 / Fabless / IDM</dt><dd>三种玩法：代工（Foundry）只替别人造（台积电）；Fabless 只设计不建厂（英伟达）；IDM 自己设计又自己造（英特尔）。</dd>
+    <dt>先进封装 / CoWoS</dt><dd>后道里的高端技术，把多颗裸片和内存像拼积木一样封在一起。台积电的 CoWoS 是当下 AI 芯片供应的关键瓶颈。</dd>
+  </dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.asml.com/en/products/euv-lithography-systems">ASML 官方 · EUV 光刻系统产品页</a> <em>2026-07-21 拉取</em> — 全球唯一 EUV 光刻机厂商对自家设备（含 High-NA）的官方介绍。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cnbc.com/2022/03/23/inside-asml-the-company-advanced-chipmakers-use-for-euv-lithography.html">CNBC · Inside ASML（EUV 探访）</a> <em>2022-03-23</em> — EUV 机约 200 吨、每台约 2 亿美元、ASML 垄断，13.5nm 极紫外光原理。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.design-reuse.com/news/202529294-global-foundry-revenue-surged-to-41-7-billion-in-q2-2025-with-tsmc-capturing-a-record-70-percent-market-share/">design-reuse · 2025Q2 全球代工营收与台积电 70% 份额</a> <em>2025</em> — 台积电创纪录约 70% 份额。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.taipeitimes.com/News/biz/archives/2026/03/14/2003853777">Taipei Times · TSMC nets nearly 70% of 2025 foundry market</a> <em>2026-03-14</em> — 2025 全年台积电份额约 70%，三星约 7%。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.techpowerup.com/341954/tsmc-to-begin-n2-volume-production-before-year-end">TechPowerUp · TSMC N2 量产</a> <em>2025</em> — 2 纳米于 2025Q4 量产、月产能约 9–10 万片。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.techspot.com/news/109900-tsmc-pushes-2-nanometer-manufacturing-ahead-schedule-while.html">TechSpot · TSMC 2nm 提前、亚利桑那扩建提速</a> <em>2025</em> — 美国厂建设提速。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://semiengineering.com/battling-fab-cycle-times/">Semiconductor Engineering · Battling Fab Cycle Times</a> <em>—</em> — 先进工艺 600–1000+ 道工序、制造周期约 12 周（大半在排队）。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.wevolver.com/article/osat-semiconductor-services-the-backbone-of-outsourced-chip-assembly-testing">Wevolver · OSAT 后道封测综述</a> <em>—</em> — 切割/封装/测试、ASE/Amkor/JCET 三强 >60%、CoWoS 瓶颈。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.wevolver.com/article/200-mm-wafer-vs-300-mm-wafer-a-technical-comparison-for-engineers">Wevolver · 200mm vs 300mm 硅片对比</a> <em>—</em> — 300mm 面积约 200mm 的 2.25 倍、单颗成本更低。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.zhitongcaijing.com/contentnew/appcontentdetail.html?content_id=237621">智通财经 · 中芯国际先进制程</a> <em>2025</em> — 中芯提供 0.35μm–14nm 代工，2019Q3 量产 14nm FinFET。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://en.wikipedia.org/wiki/Semiconductor_device_fabrication">Wikipedia · Semiconductor device fabrication</a> <em>—</em> — 晶圆前道总览：沉积/刻蚀/光刻/掺杂四类工序、FEOL/BEOL。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://en.wikipedia.org/wiki/Semiconductor_fabrication_plant">Wikipedia · Semiconductor fabrication plant</a> <em>—</em> — 先进 fab 造价数十亿至 200 亿美元以上，设备占大头。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://en.wikipedia.org/wiki/3_nm_process">Wikipedia · 3 nm process</a> <em>—</em> — 3nm 定义、晶体管密度、量产厂商。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://spectrum.ieee.org/a-better-way-to-measure-progress-in-semiconductors">IEEE Spectrum · 更好地衡量半导体进展</a> <em>—</em> — 权威说明：7/5/3nm 是营销代号、不等于真实物理尺寸。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://anysilicon.com/semipedia/pure-play-foundry/">AnySilicon · Pure-Play Foundry</a> <em>—</em> — 纯代工厂只替别人造芯片、不做自有产品；台积电首创。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://anysilicon.com/semipedia/front-end-of-line-feol/">AnySilicon · Front End of Line (FEOL)</a> <em>—</em> — FEOL 造晶体管、BEOL 做金属互连。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://anysilicon.com/semipedia/defect-density-dd/">AnySilicon · Defect Density (DD)</a> <em>—</em> — 良率由缺陷密度与芯片面积决定，指数级敏感。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.bcg.com/publications/2023/navigating-the-semiconductor-manufacturing-costs">BCG · Navigating the Costly Economics of Chip Making</a> <em>2023</em> — 设备（含 EUV）占 fab 总投资 70–80%。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.csis.org/analysis/contextualizing-national-security-concerns-over-chinas-domestically-produced-high-end-chip">CSIS · 中国高端芯片的国家安全评估</a> <em>—</em> — 中芯用 DUV 多重曝光造 7nm 级（麒麟）、出口管制成效。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.techinsights.com/blog/chinas-smic-plays-7-nm-card">TechInsights · China's SMIC Plays 7 nm Card</a> <em>—</em> — 拆解证实中芯 7nm 级用于华为麒麟。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.cfr.org/blog/will-chinas-reliance-taiwanese-chips-prevent-war">CFR · 台湾芯片依赖与「硅盾」</a> <em>—</em> — 先进芯片制造高度集中台湾的地缘含义。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.visionofhumanity.org/the-worlds-dependency-on-taiwans-semiconductor-industry-is-increasing/">Vision of Humanity · 全球对台湾半导体依赖上升</a> <em>—</em> — 产能集中度与风险。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.marketgrowthreports.com/market-reports/300mm-silicon-wafers-market-103422">Market Growth Reports · 300mm 硅片市场</a> <em>—</em> — 信越约 28%、SUMCO 约 23%，前五约八成（市场研究口径）。</li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://www.universitywafer.com/how-silicon-wafers-are-made.html">UniversityWafer · 硅片是怎么造出来的（CZ vs FZ）</a> <em>—</em> — 从沙子到镜面硅片的科普流程。</li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://www.chetanpatil.in/the-economic-implications-of-semiconductor-yield-from-a-product-perspective/">Chetan Arvind Patil · 半导体良率的经济含义</a> <em>—</em> — 良率对单颗成本影响的说明性算例（非某厂真实数据）。</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-07-21 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
