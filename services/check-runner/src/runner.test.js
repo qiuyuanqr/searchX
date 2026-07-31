@@ -532,22 +532,33 @@ describe("runOnce", () => {
     expect(cache["task-0"]).toBeUndefined(); // 补回传成功后清缓存
   });
 
-  it("prepareVerdict 本身抛错：降级为不带结论文件，任务照常核查", async () => {
+  it("prepareVerdict 抛错：按失败留待重跑（不跑 claude、不标完成、不发假通知）", async () => {
+    // 老实现在这里降级成 verdict=null 继续跑，结果「退出码 0 但没产出」那道闸被
+    // `if (verdict)` 整个罩住失效 → markDone(done) + 一封查不到东西的「已完成」通知。
     const tasks = makeTasks(1);
-    let promptArg = null, doneArgs = [];
+    const doneArgs = [];
+    let ran = 0, notified = 0;
+    const counts = {};
     const deps = {
       fetchPending: async () => tasks,
       markDone: async (id, info) => { doneArgs.push([id, info]); },
-      runFactcheck: async () => 0,
-      prepareVerdict: () => { throw new Error("mkdir 失败"); },
-      buildPrompt: (t) => { promptArg = t; return "/factcheck x"; },
-      notify: null,
+      runFactcheck: async () => { ran++; return 0; },
+      prepareVerdict: () => { throw new Error("EACCES: permission denied, mkdir"); },
+      buildPrompt: () => "/factcheck x",
+      attempts: {
+        get: (id) => counts[id] || 0,
+        increment: (id) => { counts[id] = (counts[id] || 0) + 1; },
+        clear: (id) => { delete counts[id]; },
+      },
+      notify: async () => { notified++; },
       log: () => {},
     };
     const result = await runOnce({}, deps);
-    expect(result).toEqual({ processed: 1, done: 1, fail: 0, retired: 0 });
-    expect(promptArg.verdictPath).toBeUndefined();
-    expect(doneArgs).toEqual([["task-0", { outcome: "done", summary: "" }]]);
+    expect(result).toEqual({ processed: 1, done: 0, fail: 1, retired: 0 });
+    expect(ran).toBe(0);            // 连 claude 都不跑，不白烧额度
+    expect(doneArgs).toEqual([]);   // 任务保持 pending，下轮重跑
+    expect(notified).toBe(0);       // 不发假的「已完成」通知
+    expect(counts["task-0"]).toBe(1);
   });
 
   it("runFactcheck 失败：verdict cleanup 仍被调（finally）", async () => {

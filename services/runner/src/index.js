@@ -26,7 +26,8 @@ import { nextQueueStreak, QUEUE_FETCH_CONFIRM_TICKS } from "./alert.js";
 // 回收策略保守——只有「读到一个明确已死的 pid」「pid 不可读且锁已超 1 小时」或「持有者仍判活
 // 但锁已超远大于一次合法批次最长耗时的年龄上限」才回收，其余（含 pid 刚创建还没读到）一律
 // 视为有人持有、本次跳过。
-const STALE_MS = 3600_000; // 1h：pid 损坏/没写好的锁，超此年龄才敢回收，兜底永久死锁
+const STALE_MS = 3600_000;        // 1h：pid 损坏/没写好的锁，超此年龄才敢回收，兜底永久死锁
+const HARD_CAP_MS = 8 * 3600_000; // 8h：单实例锁的绝对持有上限（与心跳无关，见 acquireLock 说明）
 function lockFile() {
   return join(homedir(), "Library", "Application Support", "searchx-runner", "runner.lock");
 }
@@ -37,7 +38,9 @@ function pidAlive(pid) {
 function createLockExclusive(path) {
   let fd;
   try { fd = openSync(path, "wx"); } catch (e) { if (e.code === "EEXIST") return false; throw e; }
-  try { writeSync(fd, String(process.pid)); } finally { closeSync(fd); }
+  // 第一行 pid，第二行建锁时刻：心跳会不断刷新 mtime，只有这个 startedAt 能表达「这把锁到底
+  // 持有了多久」——没有它，进程「活着但卡死」时锁会被心跳无限续命、永远回收不了。
+  try { writeSync(fd, `${process.pid}\n${Date.now()}`); } finally { closeSync(fd); }
   return true;
 }
 // 释放前核对锁里的 pid 还是不是自己：本进程若已被别人（超龄判定）抢过锁，锁文件里写的是抢锁者
@@ -48,7 +51,7 @@ function makeRelease(path) {
     if (released) return;
     released = true;
     try {
-      const owner = parseInt(readFileSync(path, "utf8").trim(), 10);
+      const owner = parseInt(String(readFileSync(path, "utf8").split("\n")[0]).trim(), 10);
       if (owner !== process.pid) return; // 锁已易主，不是我的，别动
     } catch { return; }
     try { rmSync(path, { recursive: true, force: true }); } catch {}
@@ -64,7 +67,7 @@ function makeRelease(path) {
 function startLockHeartbeat(path, intervalMs = 60_000) {
   const timer = setInterval(() => {
     try {
-      const owner = parseInt(readFileSync(path, "utf8").trim(), 10);
+      const owner = parseInt(String(readFileSync(path, "utf8").split("\n")[0]).trim(), 10);
       if (owner === process.pid) utimesSync(path, new Date(), new Date());
     } catch {}
   }, intervalMs);
@@ -80,12 +83,21 @@ function acquireLock(maxAliveAgeMs) {
   mkdirSync(join(path, ".."), { recursive: true });
   if (createLockExclusive(path)) return makeRelease(path);
   // 锁已存在：判定持有者死活（拿不准就当有人在跑，保守跳过）
-  let pid = NaN;
-  try { pid = parseInt(readFileSync(path, "utf8").trim(), 10); } catch {}
+  let pid = NaN, startedAt = NaN;
+  try {
+    const [a, b] = readFileSync(path, "utf8").split("\n");
+    pid = parseInt(String(a).trim(), 10);
+    startedAt = parseInt(String(b || "").trim(), 10);
+  } catch {}
   let ageMs = 0;
   try { ageMs = Date.now() - statSync(path).mtimeMs; } catch {}
+  // 绝对封顶：与心跳无关，按「建锁到现在」算。心跳会不断刷新 mtime，一个「活着但卡死」的
+  // 进程（如对半开连接做无超时 fetch）会让 ageMs 永远小于上限、锁永不回收，每个 tick 静默
+  // exit 0 跳过，管线永久停摆且零报警。这条硬上限保证再怎么卡也终会被接管。
+  const heldMs = Number.isInteger(startedAt) ? Date.now() - startedAt : 0;
+  const overHardCap = Number.isInteger(startedAt) && heldMs >= HARD_CAP_MS;
   if (Number.isInteger(pid) && pidAlive(pid)) {
-    if (ageMs < maxAliveAgeMs) return null;                        // 持有者活着且未超龄 → 跳过
+    if (ageMs < maxAliveAgeMs && !overHardCap) return null;                        // 持有者活着且未超龄 → 跳过
   } else if (Number.isInteger(pid)) {
     // pid 读得出来、且确证已死 → 就是崩溃/断电留下的残锁，没有等 1 小时的理由。
     // 只留一个分钟级短窗口，防和「另一个 runner 刚 openSync 建锁、pid 还没落盘」的窗口撞车。
@@ -115,7 +127,15 @@ function listResearchDirs(root) {
     for (const f of ["notes.md", "report.html"]) {
       try { mtimeMs = Math.max(mtimeMs, statSync(join(root, name, f)).mtimeMs); } catch {}
     }
-    out.push({ dir: name, mtimeMs });
+    // hasNotes / parked 让 runner 能区分「scanResearch 为什么没收录这个目录」：
+    // 缺 notes.md（半成品，重跑能好）、frontmatter 语法错（重跑修不好，要人工订正）、
+    // 被 park（另有分支处理）。不区分就会把三者一律报成「YAML 语法错」并永久停跑。
+    out.push({
+      dir: name,
+      mtimeMs,
+      hasNotes: existsSync(join(root, name, "notes.md")),
+      parked: existsSync(join(root, name, ".parked")),
+    });
   }
   return out;
 }
@@ -168,6 +188,27 @@ function saveQueueStreak(n) {
   const dir = join(homedir(), "Library", "Application Support", "searchx-runner");
   mkdirSync(dir, { recursive: true });
   writeFileAtomic(queueStreakFile(), String(n));
+}
+
+// 「因锁被占而连续跳过」的 tick 数：跳过是 exit 0，不会触发 scheduled-run.sh 的连败报警，
+// 于是「持有者活着但卡死」这种永久停摆会完全静默。累计到阈值就以非零码退出，把它变成可见故障。
+// 阈值按 launchd 每 5 分钟一 tick 计：36 次 ≈ 3 小时连续被占，远超正常的偶发撞车。
+const SKIP_ALERT_TICKS = 36;
+function skipStreakFile() {
+  return join(homedir(), "Library", "Application Support", "searchx-runner", "lock-skip-streak");
+}
+function loadSkipStreak() {
+  try { return parseInt(readFileSync(skipStreakFile(), "utf8").trim(), 10) || 0; } catch { return 0; }
+}
+function saveSkipStreak(n) {
+  try {
+    mkdirSync(join(homedir(), "Library", "Application Support", "searchx-runner"), { recursive: true });
+    writeFileAtomic(skipStreakFile(), String(n));
+  } catch {}
+}
+export function nextSkipStreak(prev) {
+  const n = Number.isInteger(prev) && prev >= 0 ? prev : 0;
+  return n + 1;
 }
 
 // 当日完成计数：按「北京时间」分日存一个计数文件，每完成一篇 +1，返回 { date, count }。
@@ -225,9 +266,19 @@ async function main() {
   // 耗时，只用来兜断电残留锁被复用 pid 判活的死锁——不会误杀正在跑的长批次。
   const release = acquireLock(config.claudeTimeoutMs + 30 * 60_000);
   if (!release) {
-    console.log("⏭  已有一轮 runner 在运行，本次跳过（它会处理完整个 approved 队列；新审批由下个定时 tick 兜底）。");
+    // 「跳过」本身也要被监控。正常情况下跳过很少见（手动触发撞上定时 tick），而一个卡死却
+    // 活着的持有者会让每个 tick 都跳过——若跳过一律 exit 0，scheduled-run.sh 的连败报警
+    // 永远达不到阈值，管线永久停摆且零信号。连续跳过够多次即以非零码退出触发报警。
+    const n = nextSkipStreak(loadSkipStreak());
+    saveSkipStreak(n);
+    if (n >= SKIP_ALERT_TICKS) {
+      console.error(`✗ 连续 ${n} 个 tick 都因「已有一轮在运行」而跳过（约 ${Math.round((n * 5) / 60)} 小时），疑似锁被卡死的进程占住 → exit 1 报警`);
+      process.exit(1);
+    }
+    console.log(`⏭  已有一轮 runner 在运行，本次跳过（连续第 ${n}/${SKIP_ALERT_TICKS} 次；它会处理完整个 approved 队列，新审批由下个定时 tick 兜底）。`);
     process.exit(0);
   }
+  saveSkipStreak(0); // 拿到锁 = 没被占住，清零
   const stopHeartbeat = startLockHeartbeat(lockFile());
   process.on("exit", () => { stopHeartbeat(); release(); });
 
@@ -329,6 +380,10 @@ async function main() {
   }
   // 正常拉到队列 → 连续失败计数清零（连续语义：偶发抖动不累计，只有真·持续故障才达阈值）
   saveQueueStreak(0);
+  if (summary.stateUnwritable) {
+    console.error("✗ 本机状态文件写入失败（磁盘满/权限？）——止损闸与待补发队列已不可靠 → exit 1 报警");
+    process.exit(1);
+  }
   process.exit(summary.failed > 0 ? 1 : 0);
 }
 

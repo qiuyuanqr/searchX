@@ -86,3 +86,27 @@ test("没有侧重点小节 → focus 为空（不误取别处围栏）", () => 
   );
   expect(parseIssueRequest(issue).focus).toBe("");
 });
+
+// ── 围栏解析的三条防伪造守卫要有回归锁（2026-07-31 第二轮审查）───────────────
+// 首轮加的守卫（只认行首 ### / 收尾围栏长度须 ≥ 开围栏 / 未闭合围栏之后不再当小节解析）
+// 当时没有针对性用例——把它们逐条改坏，8 条既有测试仍全绿。这里逐条钉死。
+test("守卫①：非行首的「### 侧重点」不算小节（同一行里出现也不行）", () => {
+  const body = "前言 ### 侧重点\n```\n伪造\n```\n\n### 侧重点\n```\n真的\n```";
+  expect(parseIssueRequest({ title: "T", body }).focus).toBe("真的");
+});
+
+test("守卫②：收尾围栏必须与开围栏等长——内容里更短的反引号串不提前闭合", () => {
+  const body = "### 侧重点\n````\n里面有 ``` 三反引号\n继续\n````";
+  expect(parseIssueRequest({ title: "T", body }).focus).toBe("里面有 ``` 三反引号\n继续");
+});
+
+test("守卫③：未闭合的围栏之后不再解析出新小节（正文被截断时不误读）", () => {
+  const body = "### 题目\n```\n用户内容开始\n### 侧重点\n```\n注入\n";
+  // 「### 题目」的围栏未闭合 → 其后一切都属于它，不该冒出一个 focus
+  expect(parseIssueRequest({ title: "T", body }).focus).toBe("");
+});
+
+test("小节名重复时以首个为准（真小节由 issue-format 按固定顺序写在前面）", () => {
+  const body = "### 侧重点\n```\n第一个\n```\n\n### 侧重点\n```\n第二个\n```";
+  expect(parseIssueRequest({ title: "T", body }).focus).toBe("第一个");
+});

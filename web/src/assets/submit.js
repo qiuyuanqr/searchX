@@ -114,7 +114,13 @@ export function renderExcerpt(excerpt) {
   if (excerpt == null) return "";
   return escapeHtml(String(excerpt))
     .replace(/&lt;mark&gt;/g, "<mark>")
-    .replace(/&lt;\/mark&gt;/g, "</mark>");
+    .replace(/&lt;\/mark&gt;/g, "</mark>")
+    // Pagefind 给的 excerpt 不是裸文本：正文里的 < > 它已经转义过（&lt; / &gt;），只有 & 是裸的。
+    // 整段再 escapeHtml 一遍会把这些实体二次转义成 &amp;lt;，页面上直接显示字面「&lt; 46%」。
+    // 股票报告里「毛利率 &lt; 46%」「前五客户 &gt;80%」这类写法很常见，把它们还原回来。
+    // 只还原 lt/gt：Pagefind 转义的就只有 < 和 >（& 它原样留着），把 &amp; 也还原会把正文里
+    // 字面写的「&amp;」错误地渲染成「&」。
+    .replace(/&amp;(lt|gt);/g, "&$1;");
 }
 
 export function renderSearchResultsHTML(items, entries) {

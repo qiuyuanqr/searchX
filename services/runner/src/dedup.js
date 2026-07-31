@@ -24,13 +24,23 @@ export function extractCodes(s) {
 }
 
 // 规整公司名：去括号注释（含里面的代码）、去裸 6 位代码、去标点空白、英文转小写。
+// 报告标题的写法不统一（「特变电工 600089.SH」「阳光电源 300274.SZ 深度调研」），
+// 若只去掉 6 位代码，市场后缀与体裁词会粘进"名字"里变成「特变电工sh」「阳光电源sz深度调研」，
+// 于是任何带后缀词的题目都匹配不上、查重一律漏拦（实测 34 篇股票报告里 6 篇的名字被这样污染）。
+// 处理顺序很重要：先连着代码一起去掉紧跟其后的市场后缀，再去掉裸代码，最后剥结尾的体裁词。
+const TRAILING_NOISE_RE = /(深度)?(调研|研究|分析)(报告)?$|报告$/;
+
 function normName(s) {
-  return String(s)
+  let t = String(s)
     .replace(/[（(][^）)]*[）)]/g, "")
+    .replace(/\d{6}\s*[.·]?\s*(SH|SZ|HK|BJ|SS)\b/gi, "")  // 600089.SH 连后缀一起去掉
     .replace(/\d{6}/g, "")
     .replace(/[.\s·、，,]/g, "")
     .toLowerCase()
     .trim();
+  // 结尾的体裁词剥掉（只剥结尾，不动名字中间，避免误伤真实公司名）
+  t = t.replace(TRAILING_NOISE_RE, "").trim();
+  return t;
 }
 
 // 一个 entry 的候选代码集合（tags 数字 + slug 末段数字 + 标题里的 6 位数）。
@@ -76,7 +86,7 @@ function matchEntry(topic, entry) {
 export function findFreshReport({ topic, entries, today, windowDays = DEFAULT_DEDUP_WINDOW_DAYS, types = ["股票"] }) {
   // 多标的题目（"A 和 B 哪个更好""对比 X/Y/Z"）不查重：单票的旧报告答不了对比题，
   // 拦下来只会给提交者回一篇答非所问的报告并把 Issue 贴 done，这条调研就此再不会跑。
-  if (countTargets(topic) >= 2) return null;
+  if (isMultiTargetTopic(topic)) return null;
 
   const want = new Set(types);
   let best = null;
@@ -96,16 +106,22 @@ export function findFreshReport({ topic, entries, today, windowDays = DEFAULT_DE
   return best;
 }
 
-// 题目里出现了几个互不相同的标的：6 位代码算一个，逗号/顿号/"和""与""对比""vs"等分隔出的
-// ≥2 字名段也各算一个。只用于识别"这是不是一道多标的题"，不追求精确。
-function countTargets(topic) {
+// 这道题是不是「多标的对比」。判定必须收紧：查重是省额度的主力，误判成多标的就直接放行，
+// 一次全力档研究白烧一遍，还会再造一个同标的文件夹上站。
+// 只认两种确凿信号：
+//   (a) 题目里有 ≥2 个互不相同的 6 位股票代码；
+//   (b) 有明确的比较词，且比较词两侧能切出 ≥2 个不同的名段。
+// 单纯的顿号/逗号/斜杠分隔一律不算——「胜宏科技（300476.SZ / 02476.HK）」是提交者把站上
+// 报告标题原样粘过来的常见形态，「胜宏科技，最近怎么样」更是自由文本的常态。
+const COMPARE_RE = /(?:\bvs\.?\b|对比|相比|比较|哪个更好|哪个好|哪只好|谁更|孰优)/i;
+const SPLIT_RE = /[、,，/／|｜]|\s+和\s+|和(?=[\u4e00-\u9fa5]{2,})|与(?=[\u4e00-\u9fa5]{2,})|\bvs\.?\b|对比|相比|比较|哪个更好|哪个好|哪只好|谁更|孰优/i;
+
+function isMultiTargetTopic(topic) {
   const s = String(topic || "");
-  const codes = extractCodes(s);
-  if (codes.size >= 2) return codes.size;
-  const segs = s
-    .split(/[、,，/／|｜]|\s+和\s+|和(?=[一-龥]{2,})|与(?=[一-龥]{2,})|\bvs\.?\b|对比|相比/i)
-    .map((x) => normName(x))
-    .filter((x) => x.length >= 2);
-  const uniq = new Set(segs);
-  return Math.max(codes.size, uniq.size);
+  if (extractCodes(s).size >= 2) return true;
+  if (!COMPARE_RE.test(s)) return false;
+  const segs = new Set(
+    s.split(new RegExp(SPLIT_RE.source, "gi")).map((x) => normName(x)).filter((x) => x.length >= 2)
+  );
+  return segs.size >= 2;
 }

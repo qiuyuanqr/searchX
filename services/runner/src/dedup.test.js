@@ -170,3 +170,38 @@ test("同标的存在未来日期的坏条目：仍能命中窗口内的有效�
   expect(hit.entry.href).toBe("r/ok/");
   expect(hit.ageDays).toBe(5);
 });
+
+// ── 多标的判定必须收紧（2026-07-31 第二轮审查）─────────────────────
+// 首轮为「多标的对比题不该被单票旧报告拦下」加的判定过宽：顿号/逗号/斜杠一分就算多标的，
+// 于是「把站上报告标题原样粘过来」和「加了个逗号的口语提问」都绕过查重，白烧一次全力档研究。
+test("单标的题目的各种常见写法都仍被查重拦下", () => {
+  const entries = [
+    { type: "股票", title: "胜宏科技（300476.SZ / 02476.HK）", slug: "s-300476", date: "2026-07-20", href: "r/a/" },
+    { type: "股票", title: "特变电工 600089.SH", slug: "t-600089", date: "2026-07-20", href: "r/b/" },
+  ];
+  for (const topic of [
+    "胜宏科技（300476.SZ / 02476.HK）",  // 从站上原样粘贴报告标题（A+H 双代码）
+    "胜宏科技，最近怎么样",              // 自由文本里的逗号
+    "特变电工 600089.SH",                // 带市场后缀
+    "特变电工 深度调研",                 // 带体裁词
+    "特变电工与新能源赛道",              // 「与 + 非标的名词」
+  ]) {
+    expect(findFreshReport({ topic, entries, today: "2026-07-25" })).toBeTruthy();
+  }
+});
+
+test("真正的多标的对比题仍然放行（别把收紧做过头）", () => {
+  const entries = [
+    { type: "股票", title: "胜宏科技（300476.SZ）", slug: "s-300476", date: "2026-07-20", href: "r/a/" },
+    { type: "股票", title: "沪电股份（002463.SZ）", slug: "h-002463", date: "2026-07-20", href: "r/c/" },
+  ];
+  for (const topic of ["胜宏科技和沪电股份哪个更好", "胜宏科技/沪电股份 对比", "对比 300476 与 002463", "胜宏科技 vs 沪电股份"]) {
+    expect(findFreshReport({ topic, entries, today: "2026-07-25" })).toBeNull();
+  }
+});
+
+test("公司名不被市场后缀/体裁词污染（「特变电工sh」类漏拦）", () => {
+  const entries = [{ type: "股票", title: "阳光电源 300274.SZ 深度调研", slug: "s-300274", date: "2026-07-20", href: "r/d/" }];
+  expect(findFreshReport({ topic: "阳光电源", entries, today: "2026-07-25" })).toBeTruthy();
+  expect(findFreshReport({ topic: "阳光电源怎么看", entries, today: "2026-07-25" })).toBeTruthy();
+});

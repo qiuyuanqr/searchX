@@ -337,10 +337,21 @@ function bindSubmitModal(){
       const out = describeResult(data);
       // warn = 提交成功但服务端降级（没记下邮箱，结果可能发不出）：同样收起表单、进"已提交"态，
       // 但把降级原因如实显示出来，不让提交者干等一封永远不会到的邮件。
+      // 关键：文案必须落在 done 面板里。#form-status 是表单的子元素，随 form.hidden 一起消失，
+      // 写进去等于没写（首轮修复就栽在这里，纯函数测试全绿、UI 上完全看不到）。
       if (out.kind === "success" || out.kind === "warn") {
+        const doneWarn = document.getElementById("done-warn");
+        const doneText = document.getElementById("done-text");
+        if (out.kind === "warn") {
+          if (doneWarn) { doneWarn.textContent = out.text; doneWarn.hidden = false; }
+          // 同时撤掉 done 面板里写死的「结果会发到你的邮箱」，否则两句话自相矛盾
+          if (doneText) doneText.hidden = true;
+        } else {
+          if (doneWarn) { doneWarn.textContent = ""; doneWarn.hidden = true; }
+          if (doneText) doneText.hidden = false;
+        }
         form.hidden = true; done.hidden = false;
         if (card) card.scrollTop = 0;
-        if (out.kind === "warn") setStatus(out.text, "warn");
       } else {
         setStatus(out.text, out.kind);
       }

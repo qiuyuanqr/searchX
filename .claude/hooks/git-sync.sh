@@ -79,6 +79,12 @@ else
   if [ -n "$SPID" ] && [ "$SAGE" -lt 1800 ] && kill -0 "$SPID" 2>/dev/null; then
     exit 0
   fi
+  # pid 还没写进去（另一个进程刚 mkdir 成功、正要写 pid 的那一瞬）：锁很新就一律让路，
+  # 否则会把刚拿到锁的那个进程挤掉，两边同时动工作树——正是这把锁要防的事。
+  # 与 autopull.sh 的同款守卫保持一致。
+  if [ -z "$SPID" ] && [ "$SAGE" -le 600 ]; then
+    exit 0
+  fi
   rm -rf "$SYNC_LOCK" 2>/dev/null
   mkdir "$SYNC_LOCK" 2>/dev/null || exit 0
   echo $$ > "$SYNC_LOCK/pid" 2>/dev/null

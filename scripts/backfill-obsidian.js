@@ -101,6 +101,24 @@ async function main() {
   for (const p of plan) nameCount[p.name] = (nameCount[p.name] || 0) + 1;
   for (const p of plan) if (nameCount[p.name] > 1) p.name = `${p.name} · ${p.slug}`;
 
+  // 计划改名会留下孤儿：库里已有的笔记若是用旧命名规则（或由单篇 CLI 写成的无日期后缀名），
+  // 改名后旧文件仍在，同一篇报告在库里出现两份、旧那份内容还是陈旧的。显式报出来让人先决定。
+  const willOrphan = [];
+  {
+    const planned = new Set(plan.map((p) => `${p.name}.md`));
+    const existingNow = existsSync(researchDir) ? (await readdir(researchDir)).filter((f) => f.endsWith(".md")) : [];
+    for (const f of existingNow) {
+      if (planned.has(f)) continue;
+      const base = f.replace(/\.md$/, "");
+      if (plan.some((p) => p.name.replace(/ · \d{4}-\d{2}-\d{2}$/, "") === base)) willOrphan.push(f);
+    }
+  }
+  if (willOrphan.length) {
+    console.log(`\n⚠️ 以下 ${willOrphan.length} 篇会因改名被甩成孤儿（库里将同时存在新旧两份，旧的内容陈旧）：`);
+    for (const f of willOrphan) console.log(`  · ${f}`);
+    console.log(`  → 若只是想刷新内容，请改用「按 archive 字段原地回写同名文件」的方式，不改名、不产生重复。`);
+  }
+
   // 需要删除的旧英文名笔记 = 现有 Research/*.md 里 basename 恰好等于某个已知 slug 的
   const knownSlugs = new Set(plan.map((p) => p.slug));
   let existing = [];

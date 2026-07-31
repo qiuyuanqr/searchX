@@ -83,13 +83,20 @@ export async function runOnce(config, deps) {
     }
 
     // 结论信号文件（回显到手机核查页用）：prepareVerdict 给出路径与读取函数。
-    // 任何一步失败都降级为"不带结论"，绝不影响核查主流程（结论回显是增强，不是硬依赖）。
+    // 准备失败（磁盘满/权限/非法任务 id）时**不能当成「降级继续」**：
+    // verdict 为 null 会让下面那道「退出码 0 但三个信号文件都没写＝未产出」的闸整个失效，
+    // 于是一次准备失败就变成 markDone(done) + 假的「结果已存进 Obsidian」通知 + 任务永久出队。
+    // 按失败留待重跑才对——重跑很便宜，发一封查不到东西的完成信才贵。
     let verdict = null;
     if (prepareVerdict) {
       try {
         verdict = prepareVerdict(t);
       } catch (err) {
-        log(`结论文件准备失败 ${t.id}（${err.message}），本条不回显结论`);
+        fail++;
+        recordFailure(t.id);
+        log(`结论文件准备失败 ${t.id}（${err.message}），本条按失败留待重跑（不跑 claude、不标完成）`);
+        try { cleanup(); } catch {}
+        continue;
       }
     }
 

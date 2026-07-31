@@ -18,6 +18,7 @@ import { sendEmail } from "../../runner/src/email.js";
 // —— 全局单实例锁（锁文件与 research runner 不同，两者可并存）——
 // 逻辑与 research runner 完全对称，只是锁文件路径和目录不同。
 const STALE_MS = 3600_000;
+const HARD_CAP_MS = 4 * 3600_000; // 4h：单实例锁的绝对持有上限（与心跳无关，见 acquireLock 说明）
 
 function lockFile() {
   return join(homedir(), "Library", "Application Support", "searchx-check-runner", "check-runner.lock");
@@ -30,7 +31,9 @@ function pidAlive(pid) {
 function createLockExclusive(path) {
   let fd;
   try { fd = openSync(path, "wx"); } catch (e) { if (e.code === "EEXIST") return false; throw e; }
-  try { writeSync(fd, String(process.pid)); } finally { closeSync(fd); }
+  // 第一行 pid，第二行建锁时刻：心跳会不断刷新 mtime，只有这个 startedAt 能表达「这把锁到底
+  // 持有了多久」——没有它，进程「活着但卡死」时锁会被心跳无限续命、永远回收不了。
+  try { writeSync(fd, `${process.pid}\n${Date.now()}`); } finally { closeSync(fd); }
   return true;
 }
 
@@ -42,7 +45,7 @@ function makeRelease(path) {
     if (released) return;
     released = true;
     try {
-      const owner = parseInt(readFileSync(path, "utf8").trim(), 10);
+      const owner = parseInt(String(readFileSync(path, "utf8").split("\n")[0]).trim(), 10);
       if (owner !== process.pid) return; // 锁已易主，不是我的，别动
     } catch { return; }
     try { rmSync(path, { recursive: true, force: true }); } catch {}
@@ -56,7 +59,7 @@ function makeRelease(path) {
 function startLockHeartbeat(path, intervalMs = 60_000) {
   const timer = setInterval(() => {
     try {
-      const owner = parseInt(readFileSync(path, "utf8").trim(), 10);
+      const owner = parseInt(String(readFileSync(path, "utf8").split("\n")[0]).trim(), 10);
       if (owner === process.pid) utimesSync(path, new Date(), new Date());
     } catch {}
   }, intervalMs);
@@ -72,12 +75,21 @@ function acquireLock(maxAliveAgeMs) {
   const path = lockFile();
   mkdirSync(join(path, ".."), { recursive: true });
   if (createLockExclusive(path)) return makeRelease(path);
-  let pid = NaN;
-  try { pid = parseInt(readFileSync(path, "utf8").trim(), 10); } catch {}
+  let pid = NaN, startedAt = NaN;
+  try {
+    const [a, b] = readFileSync(path, "utf8").split("\n");
+    pid = parseInt(String(a).trim(), 10);
+    startedAt = parseInt(String(b || "").trim(), 10);
+  } catch {}
   let ageMs = 0;
   try { ageMs = Date.now() - statSync(path).mtimeMs; } catch {}
+  // 绝对封顶：与心跳无关，按「建锁到现在」算。心跳会不断刷新 mtime，一个「活着但卡死」的
+  // 进程（如对半开连接做无超时 fetch）会让 ageMs 永远小于上限、锁永不回收，每个 tick 静默
+  // exit 0 跳过，管线永久停摆且零报警。这条硬上限保证再怎么卡也终会被接管。
+  const heldMs = Number.isInteger(startedAt) ? Date.now() - startedAt : 0;
+  const overHardCap = Number.isInteger(startedAt) && heldMs >= HARD_CAP_MS;
   if (Number.isInteger(pid) && pidAlive(pid)) {
-    if (ageMs < maxAliveAgeMs) return null;
+    if (ageMs < maxAliveAgeMs && !overHardCap) return null;
   } else if (Number.isInteger(pid)) {
     // pid 读得出来且确证已死 = 崩溃/断电残锁，没理由再等一小时（否则管线静默停摆一小时）。
     // 留一分钟短窗防和「另一实例刚建锁、pid 还没落盘」撞车。
@@ -201,6 +213,23 @@ function composeCheckFailedNotice({ authorEmail, fromEmail, taskId, maxAttempts 
   };
 }
 
+// 「因锁被占而连续跳过」的 tick 数：跳过是 exit 0、不触发 scheduled-run.sh 的连败报警，
+// 于是「持有者卡死」这种永久停摆会完全静默。累计到阈值就以非零码退出，把它变成可见故障。
+// launchd 每 5 分钟一 tick，24 次 ≈ 2 小时连续被占。
+const SKIP_ALERT_TICKS = 24;
+function skipStreakFile() {
+  return join(homedir(), "Library", "Application Support", "searchx-check-runner", "lock-skip-streak");
+}
+function loadSkipStreak() {
+  try { return parseInt(readFileSync(skipStreakFile(), "utf8").trim(), 10) || 0; } catch { return 0; }
+}
+function saveSkipStreak(n) {
+  try {
+    mkdirSync(join(homedir(), "Library", "Application Support", "searchx-check-runner"), { recursive: true });
+    writeFileAtomic(skipStreakFile(), String(n));
+  } catch {}
+}
+
 // attempts 失败计数的本机持久化：JSON 文件放在与锁文件同目录。
 function makeAttemptsStore() {
   const path = join(homedir(), "Library", "Application Support", "searchx-check-runner", "attempts.json");
@@ -243,9 +272,18 @@ async function main() {
   // 耗时，只用来兜断电残留锁被复用 pid 判活的死锁——不会误杀正在跑的长任务。
   const release = acquireLock(config.claudeTimeoutMs + 30 * 60_000);
   if (!release) {
-    console.log("⏭  已有一轮核查 runner 在运行，本次跳过。");
+    // 跳过也要被监控：跳过是 exit 0，scheduled-run.sh 的连败报警按退出码统计，于是
+    // 「持有者活着但卡死」造成的永久停摆会完全静默（手机上的任务一路 pending 到 7 天 TTL）。
+    const n = (loadSkipStreak() || 0) + 1;
+    saveSkipStreak(n);
+    if (n >= SKIP_ALERT_TICKS) {
+      console.error(`✗ 连续 ${n} 个 tick 都因「已有一轮在运行」而跳过，疑似锁被卡死的进程占住 → exit 1 报警`);
+      process.exit(1);
+    }
+    console.log(`⏭  已有一轮核查 runner 在运行，本次跳过（连续第 ${n}/${SKIP_ALERT_TICKS} 次）。`);
     process.exit(0);
   }
+  saveSkipStreak(0);
   const stopHeartbeat = startLockHeartbeat(lockFile());
   process.on("exit", () => { stopHeartbeat(); release(); });
 

@@ -30,7 +30,9 @@ export async function runOnce(config, deps) {
   const maxFailures = config.maxFailures ?? 3;
   const pendingExpireMs = config.pendingExpireMs ?? 24 * 3600_000;
 
-  const summary = { processed: 0, published: 0, emailed: 0, deduped: 0, parked: 0, failed: 0, pendingPublish: 0 };
+  // stateUnwritable：本机状态盘写不进去（磁盘满/权限）。这类故障不体现在 failed 上，
+  // 却会让止损闸失效或让待补发邮件无声丢失，必须让 index.js 据此以非零码退出触发报警。
+  const summary = { processed: 0, published: 0, emailed: 0, deduped: 0, parked: 0, failed: 0, pendingPublish: 0, stateUnwritable: false };
 
   // 连续失败计数（issue 号 → 次数，跨 tick 存本地文件）。「研究未产出→留待重跑」的 Issue
   // 若持续失败，launchd 每 5 分钟一 tick 会全额重跑一次 /research（每次都真实花额度），
@@ -117,6 +119,7 @@ export async function runOnce(config, deps) {
         return true;
       } catch (err) {
         log(`⚠️ 待确认队列落盘失败（${err.message}），中止本轮补发以免下轮重复发信`);
+        summary.stateUnwritable = true;
         saveBroken = true;
         return false;
       }
@@ -167,7 +170,12 @@ export async function runOnce(config, deps) {
       } catch (err) {
         log(`#${p.number} 已确认上线但补发邮件失败：${err.message}，留待下一轮再补`);
         stillPending.push({ ...p, firstSeen });
-        await persistRemaining(i); // 把它放回队列（上面已按「出队」落过盘）
+        // 把它放回队列（上面已按「出队」落过盘）。这次再落盘失败就危险了：条目既没发出信、
+        // 又已经从磁盘上消失，下轮不会重试、彻底无痕。必须留下报警信号。
+        if (!(await persistRemaining(i))) {
+          summary.stateUnwritable = true;
+          log(`⚠️ #${p.number} 放回待确认队列也失败——该条「已上线」邮件有永久丢失风险，请人工核对：${p.url}`);
+        }
       }
     }
     pending = stillPending;
@@ -348,15 +356,20 @@ export async function runOnce(config, deps) {
     // 研究确实产出了文件夹，但没有一个能被 scanResearch 解析出来（notes.md frontmatter 语法错）。
     // 这不是「没产出」——重跑三次也修不好一个 YAML 错，而且报告因为解析失败根本上不了站。
     // 按 park 的先例处理：贴 done 停跑 + 把真实原因告诉作者，由人工订正后重新发布。
-    if (ok && producedDirs.length && !after.some((e) => producedDirs.includes(e.dir))) {
+    // scanResearch 收不到这些目录有三种原因，必须分开处理：缺 notes.md（半成品，重跑就能好）、
+    // 被 park（另有分支）、以及 frontmatter 语法错（重跑修不好，只能人工订正）。
+    // 只有第三种才该停跑——把前两种也一并停掉，等于第一次失败就永久放弃一条本可自愈的调研。
+    const producedInfo = rawAfter.filter((d) => producedDirs.includes(d.dir));
+    const unparsable = producedInfo.filter((d) => d.hasNotes !== false && !d.parked);
+    if (ok && producedDirs.length && !after.some((e) => producedDirs.includes(e.dir)) && unparsable.length) {
       summary.parked++;
-      const badDirs = producedDirs.join("、");
+      const badDirs = unparsable.map((d) => d.dir).join("、");
       log(`#${issue.number} 研究已产出 ${badDirs}，但 notes.md 解析失败（报告无法上站），停跑待人工订正`);
       try {
         await sendEmail(composeParkNotice({
           topic,
           reason: `研究已产出目录 ${badDirs}，但其 notes.md 的 frontmatter 解析失败，报告无法进入站点构建。请人工订正 YAML 后重新发布（重跑无法修复语法错误）。`,
-          folder: producedDirs[0],
+          folder: unparsable[0].dir,
           authorEmail: config.authorEmail, fromEmail: config.smtpUser,
         }));
       } catch (err) {
@@ -388,11 +401,14 @@ export async function runOnce(config, deps) {
       if (count >= maxFailures) {
         await stopRetrying(issue, topic, count); // 达阈值就地止损，不必等下一轮再烧一次
       } else if (!persisted) {
-        // 计数存不下来 = 下一 tick 还会从旧计数起算，止损闸永远推不到阈值，每 5 分钟烧一次
-        // 全力档研究。宁可提前止损（作者收到「已停跑」专信、移除 done 即可恢复），
-        // 也不能放任无上限重跑。
-        log(`#${issue.number} 失败计数无法持久化，提前止损停跑（避免每 tick 无限重跑烧额度）`);
-        await stopRetrying(issue, topic, count);
+        // 计数存不下来 = 下一 tick 还会从旧计数起算，止损闸推不到阈值，每 5 分钟烧一次全力档研究。
+        // 但也不能就此对每条 Issue 贴 done：磁盘满/权限往往是瞬时运维故障，而贴 done 不可逆
+        // （得人工去 GitHub 摘标签），一次抖动会把整条队列全部永久停跑、并按 count=1 发出
+        // 「连续 1 次研究未产出」这种自相矛盾的信。正确做法是本轮就地收工、把故障报出去：
+        // 不再 spawn 新的 claude（额度不会失控），Issue 保持可重试，运维修好盘后自动恢复。
+        summary.stateUnwritable = true;
+        log(`#${issue.number} 失败计数无法持久化，本轮提前收工（不再开跑新研究，Issue 保持可重试）`);
+        break;
       } else {
         log(`#${issue.number} 研究未产出（claude 退出码非 0 或无新文件夹），连续第 ${count}/${maxFailures} 次，不贴 done，留待重跑`);
       }
@@ -441,6 +457,9 @@ export async function runOnce(config, deps) {
       try {
         await savePending(pending);
       } catch (e) {
+        // 这条已贴 done（下轮不会重跑）又没进磁盘队列——提交者那封「已上线」邮件会永久丢失。
+        // 必须留下能让 runner 以非零码退出的信号，否则整件事完全静默。
+        summary.stateUnwritable = true;
         log(`#${issue.number} 待确认队列落盘失败（${e.message}），该条补发邮件有丢失风险，请人工核对：${url}`);
       }
       try {
@@ -500,7 +519,7 @@ export async function runOnce(config, deps) {
 
   // 持久化「上线待确认」队列：含本轮新失败的 + 上一轮仍未补发成功的。
   // 落盘失败不让它冒泡打崩整轮——本轮该发的信都发完了，冒泡只会多一封误报的「管线故障」报警。
-  try { await savePending(pending); } catch (e) { log(`⚠️ 待确认队列落盘失败：${e.message}`); }
+  try { await savePending(pending); } catch (e) { summary.stateUnwritable = true; log(`⚠️ 待确认队列落盘失败：${e.message}`); }
 
   // 持久化失败计数，并修剪掉不在 approved 队列里的残留（已 done / 被人工处理的），防状态文件
   // 无限膨胀。被人工干预过的 Issue 若日后重新 approved 会从零重新计数——作者已介入，给新预算。

@@ -5,7 +5,7 @@
 // git 默认 core.quotePath=true 会把中文路径输出成 "\346\214\201..." 八进制转义串，
 // 闸里的 grep '持仓' 因此永远不命中——中文命名的持仓文件会被自动提交推上公开仓。
 import { test, expect } from "bun:test";
-import { mkdtempSync, writeFileSync, mkdirSync, cpSync, rmSync } from "node:fs";
+import { mkdtempSync, writeFileSync, mkdirSync, cpSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
@@ -128,6 +128,53 @@ test("自互斥：已有活着的同步锁时静默跳过，不并发动工作�
     const out = sh(`bash .claude/hooks/git-sync.sh push`, work, env);
     expect(out.trim()).toBe("");
     expect(pushedFiles(work, env)).toEqual(["seed.txt"]);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// ── 锁的三个风险分支（2026-07-31 第二轮审查：首轮只测了最顺的一条路）─────────
+test("自互斥：锁目录存在但没有 pid 文件且很新 → 静默跳过（视为刚建锁的另一进程）", () => {
+  const { root, work, env } = makeSandbox();
+  try {
+    mkdirSync(join(root, "searchx-gitsync.lock"), { recursive: true }); // 只有目录，没写 pid
+    writeFileSync(join(work, "改动.md"), "内容\n");
+    const out = sh(`bash .claude/hooks/git-sync.sh push`, work, env);
+    expect(out.trim()).toBe("");
+    expect(pushedFiles(work, env)).toEqual(["seed.txt"]);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("自互斥：持有者已死的残锁被抢过来，工作继续（不能因为残锁永久卡死）", () => {
+  const { root, work, env } = makeSandbox();
+  try {
+    const lock = join(root, "searchx-gitsync.lock");
+    mkdirSync(lock, { recursive: true });
+    writeFileSync(join(lock, "pid"), "999999"); // 几乎不可能存在的 pid
+    writeFileSync(join(work, "改动.md"), "内容\n");
+    const out = sh(`bash .claude/hooks/git-sync.sh push`, work, env);
+    expect(out).toContain("已自动提交");
+    expect(pushedFiles(work, env)).toContain("改动.md");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("自互斥：释放时核对归属——锁已被别人接管则不删（不误删接管者的锁）", () => {
+  const { root, work, env } = makeSandbox();
+  try {
+    writeFileSync(join(work, "改动.md"), "内容\n");
+    sh(`bash .claude/hooks/git-sync.sh push`, work, env);           // 正常跑一次，退出时应清掉自己的锁
+    expect(existsSync(join(root, "searchx-gitsync.lock"))).toBe(false);
+    // 再造一把「别人的」锁，跑一次脚本（会因活 pid 跳过），锁必须原封不动还在
+    const lock = join(root, "searchx-gitsync.lock");
+    mkdirSync(lock, { recursive: true });
+    writeFileSync(join(lock, "pid"), String(process.pid));
+    sh(`bash .claude/hooks/git-sync.sh pull`, work, env);
+    expect(existsSync(lock)).toBe(true);
+    expect(sh(`cat "${join(lock, "pid")}"`, work, env).trim()).toBe(String(process.pid));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

@@ -60,7 +60,7 @@ function extractTldr(content) {
     // 「## 一句话讲清 XXX」讲的是"这公司是干嘛的"，不是结论。老实现按 /一句话/ 一概命中，
     // 会截胡同篇里真正的「## 核心结论」（存量 2026-07-02_sungrow-power-300274 即中招，
     // 首页卡片导语显示的是科普段而不是结论）。
-    /^#{1,6}\s+(?:一句话(?!\s*(?:讲|说|解释|科普))|TL;?DR)/i,
+    /^#{1,6}\s+(?:一句话(?!\s*(?:讲|说|解释|科普)(?![^\n]*(?:结论|总结)))|TL;?DR)/i,
     /^#{1,6}\s+(?:[A-Za-z0-9]{1,3}[.、·\s]\s*)?(?:一屏结论|核心结论|结论先行)/,
   ];
   for (const pat of headingPasses) {
@@ -69,6 +69,14 @@ function extractTldr(content) {
       const t = quoteOrParaAfter(lines, i + 1);
       if (t) return t;
     }
+  }
+  // ①'' 兜底档：前面几档都没命中时，才回头认「一句话讲清 XXX」这类科普体裁标题。
+  // 排除它们是为了不让科普段截胡同篇里真正的结论；但如果这篇压根没有别的结论标题、
+  // 也没有引用块，那卡片导语就会整个空掉——有点东西总比没有强。
+  for (let i = 0; i < lines.length; i++) {
+    if (!/^#{1,6}\s+一句话/.test(lines[i])) continue;
+    const t = quoteOrParaAfter(lines, i + 1);
+    if (t) return t;
   }
   let firstHeadingIdx = lines.findIndex((l) => /^#{1,6}\s/.test(l));
   if (firstHeadingIdx === -1) firstHeadingIdx = lines.length;

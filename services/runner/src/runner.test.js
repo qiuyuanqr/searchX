@@ -57,7 +57,7 @@ test("快乐路径：贴 done、发信（含链接+TLDR+抄送）、评论、sum
     fetchImpl, scanDirs: world.scanDirs, runResearch: world.runResearch,
     sendEmail: async (m) => { sent = m; }, log: () => {},
   });
-  expect(summary).toEqual({ processed: 1, published: 1, emailed: 1, deduped: 0, parked: 0, failed: 0, pendingPublish: 0 });
+  expect(summary).toEqual({ processed: 1, published: 1, emailed: 1, deduped: 0, parked: 0, failed: 0, pendingPublish: 0, stateUnwritable: false });
   expect(fetchImpl.calls.some((c) =>
     /\/issues\/7\/labels$/.test(c.url) && JSON.parse(c.opts.body).labels.includes("done")
   )).toBe(true);
@@ -893,4 +893,52 @@ test("开跑前复查网络失败：按队列快照继续跑（可选检查不�
   });
   expect(ran).toBe(1);
   expect(summary.published).toBe(1);
+});
+
+// ── 状态盘写不进去时的行为（2026-07-31 第二轮审查）─────────────────
+// 修 68 项时引入的两个回归：①失败计数落盘一失败就对每条 Issue 贴 done（不可逆、且邮件写
+// 「连续 1 次」自相矛盾）；②待确认队列落盘失败被 try/catch 吞成完全静默（exit 0，无报警）。
+test("失败计数落盘失败：本轮就地收工，不给任何 Issue 贴 done，并给出报警信号", async () => {
+  const ISSUES = [
+    { number: 7, title: "A", body: "", labels: [{ name: "approved" }] },
+    { number: 8, title: "B", body: "", labels: [{ name: "approved" }] },
+  ];
+  const labeled = [];
+  const fetchImpl = async (url, opts = {}) => {
+    const u = String(url);
+    if (u.includes("/issues?")) return { ok: true, json: async () => ISSUES };
+    if (/\/issues\/\d+$/.test(u)) return { ok: true, json: async () => ({ state: "open", labels: ["approved"] }) };
+    if (/\/issues\/(\d+)\/labels$/.test(u)) { labeled.push(u.match(/issues\/(\d+)/)[1]); return { ok: true, json: async () => [] }; }
+    return { ok: true, json: async () => ({}) };
+  };
+  let ran = 0;
+  const sent = [];
+  const summary = await runOnce(CONFIG, {
+    fetchImpl,
+    scanDirs: () => [],
+    runResearch: async () => { ran++; return true; },   // 跑了但没产出 → 走失败分支
+    saveFailures: async () => { throw new Error("ENOSPC: no space left on device"); },
+    sendEmail: async (m) => { sent.push(m); },
+    log: () => {},
+  });
+  expect(summary.stateUnwritable).toBe(true);  // index.js 据此 exit 1 → 触发报警
+  expect(labeled).toEqual([]);                 // 没有任何 Issue 被贴 done（不可逆动作绝不因磁盘抖动触发）
+  expect(sent).toEqual([]);                    // 更不会发「连续 1 次研究未产出」这种自相矛盾的信
+  expect(ran).toBe(1);                         // 就地收工：第二条不再开跑，额度不会失控
+});
+
+test("待确认队列落盘失败：置 stateUnwritable，不再完全静默", async () => {
+  const fetchImpl = async (url) => {
+    const u = String(url);
+    if (u.includes("/issues?")) return { ok: true, json: async () => [] };
+    return { ok: true, json: async () => ({}) };
+  };
+  const summary = await runOnce(CONFIG, {
+    fetchImpl, scanDirs: () => [], runResearch: async () => true,
+    loadPending: async () => [{ number: 7, topic: "t", title: "T", tldr: "d", url: "https://site.dev/searchX/r/x/" }],
+    savePending: async () => { throw new Error("EACCES: permission denied"); },
+    verifyPublished: async () => true,
+    sendEmail: async () => {}, log: () => {},
+  });
+  expect(summary.stateUnwritable).toBe(true);
 });
