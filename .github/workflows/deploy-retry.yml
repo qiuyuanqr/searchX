@@ -10,23 +10,44 @@ on:
     types: [completed]
 permissions:
   actions: write
+  contents: read   # 读分支 HEAD，判断失败 run 的提交是否已被后续提交取代
 jobs:
   rerun:
     if: github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.run_attempt < 3
     runs-on: ubuntu-latest
     steps:
       - run: |
-          echo "Deploy site run ${{ github.event.workflow_run.id }} (attempt ${{ github.event.workflow_run.run_attempt }}) 失败，自动重跑失败的 job"
+          echo "Deploy site run ${{ github.event.workflow_run.id }} (attempt ${{ github.event.workflow_run.run_attempt }}) 失败，判断如何补跑"
           sleep 60  # 稍等再重跑：Pages 偶发 5xx 通常几十秒内自愈，立刻重跑容易撞上同一故障
-          # 防部署互踩：失败 run 等待期间若已有"更晚发起且成功"的部署（如 runner 又推了新报告、
-          # 新提交的部署已把站点带到更新状态），重跑旧 run 会用旧产物把新内容回滚下线（新报告
-          # 变 404，探活/probe 都测不出）。此时直接放弃重跑——站点已被更新的成功部署接管。
-          newer=$(gh api "repos/${{ github.repository }}/actions/workflows/deploy.yml/runs?status=success&per_page=10" \
-            --jq '[.workflow_runs[] | select(.created_at > "${{ github.event.workflow_run.created_at }}")] | length')
-          if [ "${newer:-0}" -gt 0 ]; then
-            echo "已有 ${newer} 个更晚发起且成功的部署，跳过重跑（避免旧产物回滚新内容）"
+
+          # —— 闸 1：已有更晚的部署接管 → 放弃重跑 ——
+          # 失败 run 等待期间若已有"更晚发起"的部署（runner 又推了新报告、新提交的部署已把站点
+          # 带到更新状态），重跑旧 run 会用旧产物把新内容回滚下线（新报告变 404，探活/probe 都
+          # 测不出）。注意**进行中/排队中的也要算**：只查 status=success 会漏掉正在跑的那个，
+          # 它完成后落地的顺序可能排在本次重跑之后，旧产物照样覆盖新内容（2026-07-31 审查发现）。
+          later=$(gh api "repos/${{ github.repository }}/actions/workflows/deploy.yml/runs?per_page=30" \
+            --jq '[.workflow_runs[]
+                   | select(.id != ${{ github.event.workflow_run.id }})
+                   | select(.created_at > "${{ github.event.workflow_run.created_at }}")
+                   | select(.status == "in_progress" or .status == "queued" or .conclusion == "success")] | length')
+          if [ "${later:-0}" -gt 0 ]; then
+            echo "已有 ${later} 个更晚的部署（成功或进行中），跳过重跑（避免旧产物回滚新内容）"
             exit 0
           fi
+
+          # —— 闸 2：失败的提交已被后续提交取代 → 重跑旧提交没有意义，改在 HEAD 上发起新部署 ——
+          # 重跑复用的是**失败 run 自己那个 commit**。如果失败原因是代码缺陷、而修复已经在后续
+          # 提交里，重跑同一个 commit 只会一次次失败到 attempt 上限；更糟的是那个修复提交若没动
+          # deploy.yml 的 paths（如只改了 .claude/hooks/ 或 services/），它自己也不会触发部署，
+          # 于是站点长期停在旧版本、而 probe 只测可达性完全发现不了（2026-07-31 亲历：a91ecc8
+          # 部署因测试失败挂掉，修复它的 d0753c0 只动 hooks 不触发部署，站点静默滞留）。
+          head_sha=$(gh api "repos/${{ github.repository }}/git/ref/heads/${{ github.event.workflow_run.head_branch }}" --jq '.object.sha')
+          if [ -n "$head_sha" ] && [ "$head_sha" != "${{ github.event.workflow_run.head_sha }}" ]; then
+            echo "失败 run 的提交 ${{ github.event.workflow_run.head_sha }} 已被 ${head_sha} 取代，改为在最新 HEAD 上发起一次新部署"
+            gh workflow run deploy.yml --ref "${{ github.event.workflow_run.head_branch }}" --repo ${{ github.repository }}
+            exit 0
+          fi
+
           gh run rerun ${{ github.event.workflow_run.id }} --failed --repo ${{ github.repository }}
         env:
           GH_TOKEN: ${{ github.token }}

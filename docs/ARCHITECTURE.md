@@ -24,7 +24,7 @@
 | check-runner | `services/check-runner/` | Mac mini launchd 每 300s（`com.searchx.check-runner`） | 轮询 `/check/pending` → 下载附图 → spawn `claude -p "/factcheck …"` → 读结论/整篇信号文件 → markDone 回传 |
 | worker 自动部署 | `services/intake-worker/deploy-cron.sh` + plist | Mac mini launchd 每 300s | 检测 HEAD 里 worker 源码变化 → `wrangler deploy`（worker 不随 CI 部署） |
 | CI 部署 | `.github/workflows/deploy.yml` | push 动到 `research/**`、`web/**`、`package.json`、`bun.lock` | `bun test` → `bun run build` → Pages 部署 → 冒烟探测 |
-| 部署自动补跑 | `.github/workflows/deploy-retry.yml` | Deploy site 失败时 | 自动 rerun --failed ≤2 次；有更新的成功部署时放弃（防旧产物回滚） |
+| 部署自动补跑 | `.github/workflows/deploy-retry.yml` | Deploy site 失败时 | 自动 rerun --failed ≤2 次；有更晚的部署（成功**或进行中**）时放弃（防旧产物回滚）；失败提交已被后续提交取代时改在 HEAD 上发起新部署（防「修复提交不在 deploy paths 里→站点静默滞留」） |
 | 海外探活 | `.github/workflows/probe.yml` + `.github/scripts/site-probe.sh` | 每半小时 cron | 首页可达 + 注入配置一致 + Worker 可达；挂了 GitHub 发失败邮件 |
 | 墙内探活 | `services/runner/src/probe-cli.js` | 每个 runner tick（`scheduled-run.sh`） | 站点+Worker 主备端点；只有本机测得到墙内 SNI 阻断；连续断满 4 tick 才报警（瞬时抖动只留痕），限频 6h/封 |
 | 双机 git 同步 | `.claude/hooks/git-sync.sh` + `.claude/settings.json` | SessionStart pull / SessionEnd push + push 后 SSH 即时通知对端 | 自动提交推送（带冲突回滚、机密文件闸、runner 互斥、仅本人仓库才动作） |
@@ -162,7 +162,7 @@
 7. **`services/check-runner/src/factcheck-cmd.js` 的分隔线与路径约定** —— 与 factcheck SKILL「无人值守」节是一对合同：`≡≡≡` 记号、`searchx-check/<id>/` 白名单、`裁定（把握度）：一句话真相` 结论格式。单方面改动任何一侧，注入边界或结论回显链条即断。
 8. **`.claude/skills/research/templates/report.html` 的 token 集合与 `src-XXX` 类名映射** —— 三方合同：SKILL 填、validate-report 校验、报告 CSS 渲染。加减 token 或改类名必须三处同步，否则构建失败（好的情况）或样式静默丢失。
 9. **`web/src/site.config.json` + `services/intake-worker/wrangler.toml`** —— 前端所有页面的 Worker 地址、CI 冒烟断言（`site-probe.sh` 校验首页注入值与仓库配置一致）、KV 绑定都挂在这两个文件上。写错一个 URL，冒烟会红，但前端已经拿旧缓存跑过一阵。
-10. **`.github/workflows/deploy.yml` 的 `concurrency.cancel-in-progress: false`** —— 注释写明：设 true 会让相邻两次部署互相掐断，失败时已上线的报告会跟着消失。同理 `deploy-retry.yml` 的「有更晚成功部署就放弃重跑」逻辑防旧产物回滚，别删。
+10. **`.github/workflows/deploy.yml` 的 `concurrency.cancel-in-progress: false`** —— 注释写明：设 true 会让相邻两次部署互相掐断，失败时已上线的报告会跟着消失。同理 `deploy-retry.yml` 的两道闸别删：闸 1「有更晚的部署（含进行中）就放弃重跑」防旧产物回滚；闸 2「失败提交已被取代就改在 HEAD 上发新部署」防站点静默滞留——2026-07-31 亲历：一次部署因测试失败挂掉，修它的提交只动了 `.claude/hooks/`（不在 deploy paths 里）故不触发部署，重跑又只会重跑那个必然失败的旧提交，站点就此停在旧版本，而 probe 只测可达性完全发现不了。
 
 ---
 
