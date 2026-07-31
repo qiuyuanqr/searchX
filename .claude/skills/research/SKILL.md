@@ -169,7 +169,7 @@ type: <概念|人物|方法论|事件|板块>
 tags: [research, <对象关键词…>]
 related: ["[[光模块]]", "[[算力]]"]   # 仅挂确有关联的板块；确与某板块相关就写进来，无则留 []，不硬凑
 source_count: <条数>
-archive: "<ARCHIVE_ROOT 下本主题文件夹的相对路径>"
+archive: "research/<YYYY-MM-DD>_<topic-slug>/"   # 固定带 research/ 前缀、带结尾斜杠
 ---
 ```
 > `related` 里的板块名要**原样准确**写（光模块 / 机器人 / 算力 / AI应用 / 航天）——用于 Obsidian 双链与关联判断（首页板块筛选与卡片板块标签已于 2026-07-14 前下线，`related` 不再驱动站点展示）。`related` 里非板块的跨主题双链照常放。
