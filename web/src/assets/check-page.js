@@ -183,8 +183,19 @@ async function openResult(id) {
   }
   if (!r.ok) { $("result-body").textContent = describeResultError(r.status); return; }
   let data = {};
-  try { data = await r.json(); } catch {}
-  renderResult(typeof (data && data.result) === "string" ? data.result : "");
+  try {
+    data = await r.json();
+  } catch {
+    // 解析失败静默兜底会让详情页一片空白、看不出发生了什么
+    $("result-body").textContent = describeResultError(0);
+    return;
+  }
+  const md = typeof (data && data.result) === "string" ? data.result : "";
+  if (!md.trim()) {
+    $("result-body").textContent = "这条核查没有回传全文（可能是旧任务）。完整结果请在本机 Obsidian 的 Factcheck/ 目录查看。";
+    return;
+  }
+  renderResult(md);
 }
 
 // 渲染完整结果：frontmatter → 顶部裁定条；正文 → md.js 渲染。
@@ -245,7 +256,7 @@ async function loadRecent(opts = {}) {
       headers: { "x-check-key": key },
       signal: timeoutSignal(RECENT_TIMEOUT_MS),
     });
-    if (!r.ok) { renderRecentError(describeRecentError(r.status)); return; }
+    if (!r.ok) { renderRecentError(describeRecentError(r.status)); scheduleRetry(r.status); return; }
     const { tasks } = await r.json();
     const list = Array.isArray(tasks) ? tasks : [];
     renderRecent(list);
@@ -254,10 +265,21 @@ async function loadRecent(opts = {}) {
       pollTimer = setTimeout(loadRecent, POLL_MS);
     }
   } catch {
-    renderRecentError(describeRecentError(0)); // 超时/不可达：给出"连不上"提示，点「刷新」重试
+    renderRecentError(describeRecentError(0)); // 超时/不可达：给出"连不上"提示
+    scheduleRetry(0);
   } finally {
     if (manual) setRefreshing(false);   // 无论成败都恢复按钮可点，避免卡在「刷新中…」
   }
+}
+
+// 拉列表失败后按退避重排一次轮询：一次瞬时失败（弱网、Worker 抖动）就永久停掉自动刷新的话，
+// 页面会一直停在旧列表上，用户不点「刷新」永远不知道任务其实早跑完了。
+// 401（密钥失效）不重排——那条路径已经退回密钥闸，重排只是白打请求。
+function scheduleRetry(status) {
+  if (status === 401) return;
+  if (document.visibilityState !== "visible") return;
+  clearTimeout(pollTimer);
+  pollTimer = setTimeout(loadRecent, POLL_MS * 2);
 }
 
 // 对齐站点约定（feed.js）：状态色靠 CSS `.form-status[data-kind="success"|"error"|"pending"]`。

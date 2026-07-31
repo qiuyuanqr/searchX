@@ -34,8 +34,12 @@ async function enter(presetKey) {
     if (session) session.setItem("searchx_admin_key", key);
     $("gate").hidden = true; $("panel").hidden = false; $("gate-msg").hidden = true;
   } catch (s) {
-    key = "";
-    if (session) session.removeItem("searchx_admin_key");
+    // 只有服务端明确判定密钥错（401）才清密钥。网络抖动、5xx、429（尝试过多被锁）、
+    // 响应不是 JSON —— 这些都不代表密钥不对，清掉只会让人以为自己记错了密钥、反复重输。
+    if (s === 401) {
+      key = "";
+      if (session) session.removeItem("searchx_admin_key");
+    }
     $("gate-msg").textContent = describeAdminError(s); $("gate-msg").hidden = false;
   }
 }

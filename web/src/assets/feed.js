@@ -213,7 +213,15 @@ function bindSubmitModal(){
     authorized = view.authorized;
     if (authState){ authState.textContent = view.text; authState.dataset.kind = view.authorized ? "ok" : "error"; authState.hidden = false; }
     if (submitBtn){
-      if (view.authorized){ if (submitBtn.dataset.noauth){ delete submitBtn.dataset.noauth; submitBtn.disabled = false; } }
+      // 两个禁用原因（未授权 noauth / 查重命中 dupBlocked）互相独立，解除任一个时都必须
+      // 检查另一个是否还在——否则 verify 由失败翻成成功时会连查重禁用一起解除，
+      // 已判定重复的题目照样能提交出去（对称的守卫下面 clearDup 那处早就有）。
+      if (view.authorized){
+        if (submitBtn.dataset.noauth){
+          delete submitBtn.dataset.noauth;
+          if (!submitBtn.dataset.dupBlocked) submitBtn.disabled = false;
+        }
+      }
       else { submitBtn.dataset.noauth = "1"; submitBtn.disabled = true; }
     }
   }

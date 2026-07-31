@@ -27,6 +27,8 @@
 - [2026-07-02 核查任务状态与结论回显设计](superpowers/specs/2026-07-02-核查任务状态与结论回显-设计.md)
 - [2026-07-02 factcheck 接入 akshare 行情核准设计](superpowers/specs/2026-07-02-factcheck接入akshare行情核准-设计.md)
 - [2026-07-03 Runner 失败退避（自动停跑止损）设计](superpowers/specs/2026-07-03-runner-failure-backoff-design.md)
+- [2026-07-06 factcheck 网页查看结果设计](superpowers/specs/2026-07-06-factcheck网页查看结果-设计.md)
+- [2026-07-21 Obsidian 全文同步 + 中文文件名设计](superpowers/specs/2026-07-21-obsidian-full-sync-chinese-names-design.md)
 
 **实现计划（plans）**
 - [2026-06-03 M1 · 信息流站](superpowers/plans/2026-06-03-m1-feed-site.md)
@@ -35,6 +37,7 @@
 - [2026-06-23 授权用户自助调研、自动放行](superpowers/plans/2026-06-23-授权用户自助调研自动放行.md)
 - [2026-06-25 事实核查手机入口阶段1](superpowers/plans/2026-06-25-事实核查-手机入口-阶段1.md)
 - [2026-06-27 首页与详情页重设计](superpowers/plans/2026-06-27-首页与详情页重设计.md)
+- [2026-07-06 factcheck 网页查看结果](superpowers/plans/2026-07-06-factcheck网页查看结果.md)
 
 **进度记录（progress）**
 - [2026-06-04 自动 runner + 全项目审计修复](progress/2026-06-04-runner-automation-and-audit.md)
@@ -42,3 +45,4 @@
 
 **待办（backlog）**
 - [2026-07-04 全项目审查 · 优化建议待办](backlog/2026-07-04-audit-suggestions.md) — 31 条建议 + 3 UI 实测，三档分级，已全部完成，存档
+- [2026-07-07 架构盘点 · 修复清单](backlog/2026-07-07-architecture-audit-fixes.md) — ARCHITECTURE.md 盘点出的 6 bug + 2 技术债，已全部完成，存档

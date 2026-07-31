@@ -151,6 +151,7 @@ bun run runner
 | `RUNNER_SITE_BASE` | — | 站点基址，默认 `https://qiuyuanqr.github.io/searchX` |
 | `RUNNER_DEDUP_WINDOW_DAYS` | — | 查重时效窗口（天），默认 `30`；空/非法/负数回退 30 |
 | `RUNNER_MAX_FAILURES` | — | 失败停跑阈值：同一 Issue 连续「研究未产出」达此次数即自动贴 `done` 停跑止损，默认 `3`；空/非法/小于 1 回退 3 |
+| `RUNNER_TIMEOUT_MINUTES` | — | 单条 `claude -p` 的硬超时（分钟），默认 `180`。到点先 TERM、宽限 10 秒再 KILL，按「研究未产出」计入失败退避。也是单实例锁「存活但超龄」判定的基数（超龄上限＝本值 + 30 分钟） |
 | `RUNNER_AUTHOR_EMAIL` | — | 抄送地址，默认同 `RUNNER_SMTP_USER` |
 | `RUNNER_OWNER` / `RUNNER_REPO` | — | 默认 `qiuyuanqr` / `searchX` |
 

@@ -500,24 +500,26 @@ if (import.meta.main) {
   const { readFile } = await import("node:fs/promises");
   const { basename } = await import("node:path");
   const folderName = basename(folder.replace(/\/+$/, ""));
-  let dest = join(researchDir, `${base}.md`);
-  try {
-    const prev = await readFile(dest, "utf8");
+  // 逐级找一个「没被别人占用」的文件名：<base> → <base> · <日期> → <base> · <日期> · <slug>。
+  // 只查一层不够：同一天出现第三个同名标的时，它会撞上第二个的「· 日期」文件名并静默覆盖，
+  // 而且还会打印「以免覆盖」——比不检查更误导。每一级都读目标的 archive 字段确认归属。
+  const date = (folderName.match(/^(\d{4}-\d{2}-\d{2})_/) || [])[1] || "";
+  const slug = folderName.replace(/^\d{4}-\d{2}-\d{2}_/, "");
+  const candidates = [base, date && `${base} · ${date}`, date && `${base} · ${date} · ${slug}`].filter(Boolean);
+
+  let dest = null;
+  for (const name of candidates) {
+    const path = join(researchDir, `${name}.md`);
+    let prev;
+    try { prev = await readFile(path, "utf8"); } catch { dest = path; break; }  // 没人占 → 用它
     // frontmatter 里的值带引号：archive: "research/<folder>/"
     const prevArchive = ((prev.match(/^archive:\s*(.+)$/m) || [])[1] || "").trim().replace(/^["']|["']$/g, "");
-    const sameFolder = prevArchive.replace(/\/+$/, "").endsWith(folderName);
-    if (!sameFolder) {
-      const date = (folderName.match(/^(\d{4}-\d{2}-\d{2})_/) || [])[1] || "";
-      if (date) {
-        dest = join(researchDir, `${base} · ${date}.md`);
-        console.log(`ℹ 同名笔记已存在（来自 ${prevArchive.trim() || "另一篇报告"}），本篇改写入带日期的文件名以免覆盖。`);
-      } else {
-        console.error(`✗ 同名笔记已存在且来自另一篇报告（${prevArchive.trim()}），文件夹名里也取不到日期做区分，停手不覆盖。`);
-        process.exit(1);
-      }
-    }
-  } catch {
-    // 读不到 = 没有同名文件，照常写
+    if (prevArchive.replace(/\/+$/, "").endsWith(folderName)) { dest = path; break; }  // 就是本篇 → 就地覆盖
+    console.log(`ℹ 「${name}.md」已被另一篇报告占用（${prevArchive.trim() || "来源不明"}），改试更长的文件名。`);
+  }
+  if (!dest) {
+    console.error(`✗ ${candidates.length} 个候选文件名全部被别的报告占用，停手不覆盖。请人工确认 Obsidian 库里的同名笔记。`);
+    process.exit(1);
   }
   await writeFile(dest, content, "utf8");
   console.log(`✓ 写入 ${dest}`);

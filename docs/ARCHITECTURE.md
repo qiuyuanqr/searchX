@@ -102,7 +102,7 @@
 ### D1 · 站点是纯静态的，`research/` 目录即数据库
 - **为什么**：产出本来就是「一次生成、之后只读」的快照型报告；GitHub Pages 免费、零运维、天然版本化（git 历史就是审计日志）；构建期能做发布前校验（`validate-report.js`），比运行时服务更容易保证「坏东西上不了线」。
 - **放弃了什么**：动态功能（评论、实时更新、服务端搜索——搜索用构建期 pagefind 补了）；报告发布后不可回填修改（要改就重跑重推）。
-- **什么条件下推翻**：报告数量大到构建/首页明显变慢（现在 35 篇，`bun run build` 秒级，离阈值很远），或出现「必须服务端」的需求（个性化、付费墙）。
+- **什么条件下推翻**：报告数量大到构建/首页明显变慢（现在 47 篇，`bun run build` 秒级，离阈值很远），或出现「必须服务端」的需求（个性化、付费墙）。
 
 ### D2 · 任务队列用 GitHub Issues + 标签状态机，不建真队列
 - **为什么**：`pending → approved → done` 三个标签就是完整状态机；手机上点标签即审批；Issue 评论天然留痕；免费、可靠、作者已有的工具链。一次 runner tick 处理整个 approved 队列，所以不需要 FIFO（`services/runner/README.md`「并发/互斥语义」）。
@@ -254,7 +254,8 @@
 
 ### 5.9 CI / 探活 / 部署
 
-- **deploy.yml 有 paths 过滤**：只改 `.claude/`、`services/`、`docs/` 不触发部署——「改了 skill 怎么站点没动静」是正常的，skill 改动本来就不该重建站点。
+- **deploy.yml 有 paths 过滤**：触发路径是 `research/**`、`web/**`、`package.json`、`bun.lock`、`.github/workflows/deploy.yml` 与 `services/runner/src/dedup.js`（最后这个会被 build 复制进 `web/dist/assets/`，属站点内容）。改 `.claude/`、`docs/`、以及 `services/` 下除 dedup.js 外的文件都不触发——「改了 skill 怎么站点没动静」是正常的。
+  - **副作用要知道**：修「部署失败」的提交若不落在这些路径里（如只改 `.claude/hooks/`），它自己不会触发部署；deploy-retry 的闸 2 会据此改在 HEAD 上发起新部署（2026-07-31 亲历过一次静默滞留）。
 - **「报告没上线」的排查顺序**（记忆 `pages-deploy-flaky`）：先看 Actions 是不是 deploy 失败（deploy-retry 会自动补跑 ≤2 次），再想 Pages HTML 入口的约 10 分钟缓存，最后才是代码问题。
 - **workers.dev 域名在墙内间歇 SNI 阻断是已知常态**：主用自定义域 `check.dumplingwild.com`（`web/src/site.config.json`），workers.dev 只是备用；site-probe 对备用端点只警告不拦。别因为备用域探活红了去「修」。
 - probe.yml 的 cron 特意避开整点（`7,37`）：GitHub 整点任务挤、易延迟丢跑。新加定时任务照这个习惯。

@@ -48,7 +48,7 @@ GitHub Issues → runner 取 approved 自动跑 /research（pending 等作者手
 | `src/github.js` | `createIssue({...},fetchImpl)` 调 GitHub Issues API |
 | `src/sub-read.js` | `handleSubRead` —— `GET /sub/<n>` 取提交者邮箱（`SUB_READ_SECRET`） |
 | `src/people.js` | `handlePeople` —— `GET /people` 授权列表（打码邮箱+token，`SUB_READ_SECRET`；供 runner 新链接自检） |
-| `src/check.js` | `handleCheckSubmit`/`handleCheckPending`/`handleCheckDone`/`handleCheckImage`/`handleCheckRecent` —— `/check/*` 私密核查任务编排（`CHECK_KEY`/`CHECK_RUNNER_SECRET`） |
+| `src/check.js` | `handleCheckSubmit`/`handleCheckPending`/`handleCheckDone`/`handleCheckImage`/`handleCheckRecent`/`handleCheckResult` —— `/check/*` 私密核查任务编排（`CHECK_KEY`/`CHECK_RUNNER_SECRET`） |
 | `src/handler.js` | `handleIntake(request,env,deps)` 提交编排（token 鉴权/校验/限频/建 Issue/存邮箱） |
 | `src/index.js` | Cloudflare 入口：路由 `/sub`、`/people`、`/admin`、`/verify`、`/check/*`、提交 |
 | `wrangler.toml` | Worker 配置（KV 绑定、公开 `[vars]`；机密走 secret） |

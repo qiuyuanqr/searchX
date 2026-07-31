@@ -31,6 +31,15 @@ ok "项目在 $REPO"
 # 公开仓库读取无需鉴权，所以这步在配 GitHub 推送授权之前也能跑通。
 if git rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; then
   if git pull --rebase --autostash --no-edit --quiet >/dev/null 2>&1; then
+    # autostash 弹回可能在 rebase 成功**之后**才冲突：整条命令退出码仍是 0，但工作区留着
+    # <<<<<<< 冲突标记、index 出现未合并条目。不拦下就会报「✓ 已拉取最新」然后继续跑
+    # 后面的 bun test / 构建，给出一堆误导性的红。与 git-sync.sh 里的同款守卫保持一致。
+    if [ -n "$(git ls-files -u 2>/dev/null)" ]; then
+      git reset --hard HEAD >/dev/null 2>&1
+      warn "⚠️ 拉取后 autostash 弹回冲突：已恢复干净工作区。原有改动安全保留在 git stash（git stash list 查看）。"
+      TODO+=("手动 git stash pop 解决冲突后重跑本脚本")
+      exit 1
+    fi
     ok "已拉取最新（含自动同步 hooks，开工/收工将自动 pull/push）"
   else
     git rebase --abort >/dev/null 2>&1
