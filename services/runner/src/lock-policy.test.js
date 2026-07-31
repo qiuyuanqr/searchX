@@ -1,7 +1,7 @@
 // services/runner/src/lock-policy.test.js
 // 把单实例锁的判定钉死。两轮审查里这段逻辑各出过一次问题，而它此前零测试：
 //   第一轮：超龄上限按「单次任务」估，合法多任务长批次必然被判超龄、锁被抢走 → 两个 claude 并发
-//   第二轮：加了心跳刷新 mtime 后，「进程活着但卡死」永远不超龄 → 锁永久占死、每 tick 静默跳过
+//   第二轮：加了「运行期间定期更新锁时间戳」之后，「进程活着但卡死」永远不超龄 → 锁永久占死、每 tick 静默跳过
 import { test, expect } from "bun:test";
 import { evaluateLock, formatLockFile, parseLockFile, STALE_MS, DEAD_PID_GRACE_MS } from "./lock-policy.js";
 
@@ -16,14 +16,14 @@ test("持有者活着、锁龄没到上限 → 让路（正常情况）", () => 
   expect(r.reason).toBe("alive");
 });
 
-test("心跳在刷 mtime，但持有已超硬上限 → 强制接管（唯一能兜住「活着但卡死」的一条）", () => {
-  // 心跳每 60s 刷新一次 mtime，所以 ageMs 永远很小；只有 startedAt 能表达真实持有时长
+test("锁的时间戳在被定期更新，但持有已超硬上限 → 强制接管（唯一能兜住「活着但卡死」的一条）", () => {
+  // 锁的时间戳每 60 秒被更新一次，所以 ageMs 永远很小；只有 startedAt 能表达真实持有时长
   const r = at({ pid: 111, startedAt: NOW - 9 * 3600_000, mtimeMs: NOW - 5_000, alive: true });
   expect(r.takeover).toBe(true);
   expect(r.reason).toBe("hard-cap");
 });
 
-test("合法长批次（3.5 小时、心跳正常）不被误杀 —— 第一轮的回归", () => {
+test("合法长批次（3.5 小时、时间戳更新正常）不被误杀 —— 第一轮的回归", () => {
   const r = at({ pid: 111, startedAt: NOW - 3.5 * 3600_000, mtimeMs: NOW - 10_000, alive: true });
   expect(r.takeover).toBe(false);
 });
@@ -65,7 +65,7 @@ test("锁文件格式：写出去能原样读回来；坏内容降级成 NaN 而
 
 test("check-runner 的取值（更短的上限）同样成立", () => {
   const limits = { maxAliveAgeMs: 60 * 60_000, hardCapMs: 4 * 3600_000 };
-  // 一批 3 条各 25 分钟的合法任务：心跳在刷，不该被抢
+  // 一批 3 条各 25 分钟的合法任务：锁的时间戳一直在更新，不该被抢
   expect(evaluateLock({ pid: 1, startedAt: NOW - 75 * 60_000, mtimeMs: NOW - 5_000, alive: true, now: NOW }, limits).takeover).toBe(false);
   // 卡死 5 小时：硬上限接管
   expect(evaluateLock({ pid: 1, startedAt: NOW - 5 * 3600_000, mtimeMs: NOW - 5_000, alive: true, now: NOW }, limits).reason).toBe("hard-cap");

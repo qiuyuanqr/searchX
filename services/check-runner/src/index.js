@@ -18,7 +18,7 @@ import { sendEmail } from "../../runner/src/email.js";
 
 // —— 全局单实例锁（锁文件与 research runner 不同，两者可并存）——
 // 逻辑与 research runner 完全对称，只是锁文件路径和目录不同。
-const HARD_CAP_MS = 4 * 3600_000; // 4h：单实例锁的绝对持有上限（与心跳无关，见 acquireLock 说明）
+const HARD_CAP_MS = 4 * 3600_000; // 4h：单实例锁的绝对持有上限（与定期更新无关，见 acquireLock 说明）
 
 function lockFile() {
   return join(homedir(), "Library", "Application Support", "searchx-check-runner", "check-runner.lock");
@@ -31,8 +31,8 @@ function pidAlive(pid) {
 function createLockExclusive(path) {
   let fd;
   try { fd = openSync(path, "wx"); } catch (e) { if (e.code === "EEXIST") return false; throw e; }
-  // 第一行 pid，第二行建锁时刻：心跳会不断刷新 mtime，只有这个 startedAt 能表达「这把锁到底
-  // 持有了多久」——没有它，进程「活着但卡死」时锁会被心跳无限续命、永远回收不了。
+  // 第一行 pid，第二行建锁时刻：运行期间会不断更新锁的时间戳，只有这个 startedAt 能表达「这把锁到底
+  // 持有了多久」——没有它，进程「活着但卡死」时锁会被定期更新锁时间戳无限续命、永远回收不了。
   try { writeSync(fd, formatLockFile(process.pid, Date.now())); } finally { closeSync(fd); }
   return true;
 }
@@ -52,11 +52,11 @@ function makeRelease(path) {
   };
 }
 
-// 心跳：批次期间周期性刷新锁文件 mtime。锁龄本来只在建锁时定格，而 runOnce 是串行处理整个
+// 定期更新锁时间戳：批次期间周期性刷新锁文件 mtime。锁龄本来只在建锁时定格，而 runOnce 是串行处理整个
 // 队列的——一批多条合法任务的总时长轻松超过「单条任务超时 + 余量」这个上限，于是下一个
 // launchd tick 会把仍在跑的实例判成超龄残锁抢走，两个实例并发跑 claude、并发写同一临时目录。
-// 有了心跳，「超龄」才真正只匹配死锁（进程没了自然不再刷新）。
-function startLockHeartbeat(path, intervalMs = 60_000) {
+// 有了这个定期更新，「超龄」才真正只匹配死锁（进程没了自然不再刷新）。
+function startLockRefresh(path, intervalMs = 60_000) {
   const timer = setInterval(() => {
     try {
       const owner = parseLockFile(readFileSync(path, "utf8")).pid;
@@ -80,7 +80,7 @@ function acquireLock(maxAliveAgeMs) {
   let mtimeMs = NaN;
   try { mtimeMs = statSync(path).mtimeMs; } catch {}
   // 判定逻辑在 lock-policy.js（纯函数、有测试）：四种情形与各自要防的故障见那里的注释。
-  // 关键一条：心跳会不断刷新 mtime，「活着但卡死」的进程靠锁龄永远判不出来，只有按建锁
+  // 关键一条：运行期间会不断更新锁的时间戳，「活着但卡死」的进程靠锁龄永远判不出来，只有按建锁
   // 时刻算的硬上限兜得住——否则每个 tick 静默 exit 0 跳过，管线停摆且零报警。
   const verdict = evaluateLock(
     { pid, startedAt, mtimeMs, alive: Number.isInteger(pid) && pidAlive(pid), now: Date.now() },
@@ -275,8 +275,8 @@ async function main() {
     process.exit(0);
   }
   saveSkipStreak(0);
-  const stopHeartbeat = startLockHeartbeat(lockFile());
-  process.on("exit", () => { stopHeartbeat(); release(); });
+  const stopLockRefresh = startLockRefresh(lockFile());
+  process.on("exit", () => { stopLockRefresh(); release(); });
 
   // 当前 spawn 的 claude 子进程句柄：SIGTERM/SIGINT 是「裸 kill runner 进程」场景（区别于下面
   // runFactcheck 内部 termTimer/killTimer 那条超时自杀路径）。没有这层，进程退出只会跑

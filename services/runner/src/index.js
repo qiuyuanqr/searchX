@@ -27,7 +27,7 @@ import { nextQueueStreak, QUEUE_FETCH_CONFIRM_TICKS } from "./alert.js";
 // 回收策略保守——只有「读到一个明确已死的 pid」「pid 不可读且锁已超 1 小时」或「持有者仍判活
 // 但锁已超远大于一次合法批次最长耗时的年龄上限」才回收，其余（含 pid 刚创建还没读到）一律
 // 视为有人持有、本次跳过。
-const HARD_CAP_MS = 8 * 3600_000; // 8h：单实例锁的绝对持有上限（与心跳无关，见 acquireLock 说明）
+const HARD_CAP_MS = 8 * 3600_000; // 8h：单实例锁的绝对持有上限（与定期更新无关，见 acquireLock 说明）
 function lockFile() {
   return join(homedir(), "Library", "Application Support", "searchx-runner", "runner.lock");
 }
@@ -38,8 +38,8 @@ function pidAlive(pid) {
 function createLockExclusive(path) {
   let fd;
   try { fd = openSync(path, "wx"); } catch (e) { if (e.code === "EEXIST") return false; throw e; }
-  // 第一行 pid，第二行建锁时刻：心跳会不断刷新 mtime，只有这个 startedAt 能表达「这把锁到底
-  // 持有了多久」——没有它，进程「活着但卡死」时锁会被心跳无限续命、永远回收不了。
+  // 第一行 pid，第二行建锁时刻：运行期间会不断更新锁的时间戳，只有这个 startedAt 能表达「这把锁到底
+  // 持有了多久」——没有它，进程「活着但卡死」时锁会被定期更新锁时间戳无限续命、永远回收不了。
   try { writeSync(fd, formatLockFile(process.pid, Date.now())); } finally { closeSync(fd); }
   return true;
 }
@@ -58,13 +58,13 @@ function makeRelease(path) {
   };
 }
 
-// 心跳：批次期间周期性刷新锁文件 mtime。锁龄本来只在建锁时定格，而 runOnce 是串行处理整个
+// 定期更新锁时间戳：批次期间周期性刷新锁文件 mtime。锁龄本来只在建锁时定格，而 runOnce 是串行处理整个
 // approved 队列的——「单篇 claude 超时 + 30 分钟」这个上限对付得了单篇，对付不了一次审批两三条
 // 的合法长批次：批次跑到第二篇时锁龄就越线，下一个 launchd tick 会把仍在跑的实例当成残锁抢走，
-// 两个 claude 并发写同一 git 工作树、push 互顶。有心跳后「超龄」才真正只匹配死锁。
+// 两个 claude 并发写同一 git 工作树、push 互顶。有了定期更新后「超龄」才真正只匹配死锁。
 // 同时 git-sync.sh 的 6 小时锁龄闸也依赖 mtime 反映「还活着」，否则长批次期间 autopull 会
 // 在 claude 正写 research/ 时对同一工作树 pull --rebase --autostash。
-function startLockHeartbeat(path, intervalMs = 60_000) {
+function startLockRefresh(path, intervalMs = 60_000) {
   const timer = setInterval(() => {
     try {
       const owner = parseLockFile(readFileSync(path, "utf8")).pid;
@@ -88,7 +88,7 @@ function acquireLock(maxAliveAgeMs) {
   let mtimeMs = NaN;
   try { mtimeMs = statSync(path).mtimeMs; } catch {}
   // 判定逻辑在 lock-policy.js（纯函数、有测试）：四种情形与各自要防的故障见那里的注释。
-  // 关键一条：心跳会不断刷新 mtime，「活着但卡死」的进程靠锁龄永远判不出来，只有按建锁
+  // 关键一条：运行期间会不断更新锁的时间戳，「活着但卡死」的进程靠锁龄永远判不出来，只有按建锁
   // 时刻算的硬上限兜得住——否则每个 tick 静默 exit 0 跳过，管线停摆且零报警。
   const verdict = evaluateLock(
     { pid, startedAt, mtimeMs, alive: Number.isInteger(pid) && pidAlive(pid), now: Date.now() },
@@ -269,8 +269,8 @@ async function main() {
     process.exit(0);
   }
   saveSkipStreak(0); // 拿到锁 = 没被占住，清零
-  const stopHeartbeat = startLockHeartbeat(lockFile());
-  process.on("exit", () => { stopHeartbeat(); release(); });
+  const stopLockRefresh = startLockRefresh(lockFile());
+  process.on("exit", () => { stopLockRefresh(); release(); });
 
   // 当前 spawn 的 claude 子进程句柄：SIGTERM/SIGINT 是「裸 kill runner 进程」场景（区别于下面
   // runResearch 内部 termTimer/killTimer 那条超时自杀路径）。没有这层，进程退出只会跑
