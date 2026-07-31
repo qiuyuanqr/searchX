@@ -10,10 +10,12 @@ const FENCE = "≡≡≡";
 export const BLOCK_START = `${FENCE}待核查内容 开始${FENCE}`;
 export const BLOCK_END = `${FENCE}待核查内容 结束${FENCE}`;
 
-// 用户内容里若混入分隔线记号（伪造"内容已结束"来把指令挪到分隔线外），
-// 把记号压成两个 ≡ 使其失效。≡≡≡ 在正常内容里几乎不出现，改动可忽略。
+// 用户内容里若混入分隔线记号（伪造"内容已结束"来把指令挪到分隔线外），把记号打散使其失效。
+// 必须把任意长度的 ≡ 连串一次性折叠成单个 ≡：按 FENCE 逐个替换是「单遍非重叠」的，
+// 遇到 ≡≡≡≡ 只吃掉左边三个换成 ≡≡，与残留的第四个拼回来又是一条完整分隔线，边界照样被绕过。
+// 折叠成 1 个后，净化结果里不可能再出现连续 2 个及以上的 ≡，分隔线无法重构。
 function sanitizeContent(s) {
-  return String(s).trim().replaceAll(FENCE, "≡≡");
+  return String(s).trim().replace(/≡{2,}/g, "≡");
 }
 
 export function buildFactcheckPrompt({ text, link, imagePaths, verdictPath, resultPath, titlePath }) {

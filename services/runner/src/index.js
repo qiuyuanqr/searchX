@@ -3,7 +3,7 @@
 // 副作用集中在此（spawn claude / nodemailer / 文件系统 / 网络），不单测——逻辑都在被注入的纯函数里。
 
 import nodemailer from "nodemailer";
-import { existsSync, mkdirSync, writeFileSync, readFileSync, rmSync, openSync, closeSync, writeSync, statSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, openSync, closeSync, writeSync, statSync, utimesSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
 import { scanResearch } from "../../../web/build/scan.js";
@@ -13,6 +13,7 @@ import { sendEmail as sendEmailImpl } from "./email.js";
 import { runOnce } from "./runner.js";
 import { pollUntilOk } from "./verify-published.js";
 import { withNetRetry } from "./net-retry.js";
+import { writeFileAtomic } from "./atomic-write.js";
 import { nextQueueStreak, QUEUE_FETCH_CONFIRM_TICKS } from "./alert.js";
 
 // —— 全局单实例锁 ——
@@ -39,9 +40,36 @@ function createLockExclusive(path) {
   try { writeSync(fd, String(process.pid)); } finally { closeSync(fd); }
   return true;
 }
+// 释放前核对锁里的 pid 还是不是自己：本进程若已被别人（超龄判定）抢过锁，锁文件里写的是抢锁者
+// 的 pid，无条件删就会把仍在跑的那个实例的锁删掉，下一 tick 第三个实例又能进来，并发级联扩散。
 function makeRelease(path) {
   let released = false;
-  return () => { if (released) return; released = true; try { rmSync(path, { recursive: true, force: true }); } catch {} };
+  return () => {
+    if (released) return;
+    released = true;
+    try {
+      const owner = parseInt(readFileSync(path, "utf8").trim(), 10);
+      if (owner !== process.pid) return; // 锁已易主，不是我的，别动
+    } catch { return; }
+    try { rmSync(path, { recursive: true, force: true }); } catch {}
+  };
+}
+
+// 心跳：批次期间周期性刷新锁文件 mtime。锁龄本来只在建锁时定格，而 runOnce 是串行处理整个
+// approved 队列的——「单篇 claude 超时 + 30 分钟」这个上限对付得了单篇，对付不了一次审批两三条
+// 的合法长批次：批次跑到第二篇时锁龄就越线，下一个 launchd tick 会把仍在跑的实例当成残锁抢走，
+// 两个 claude 并发写同一 git 工作树、push 互顶。有心跳后「超龄」才真正只匹配死锁。
+// 同时 git-sync.sh 的 6 小时锁龄闸也依赖 mtime 反映「还活着」，否则长批次期间 autopull 会
+// 在 claude 正写 research/ 时对同一工作树 pull --rebase --autostash。
+function startLockHeartbeat(path, intervalMs = 60_000) {
+  const timer = setInterval(() => {
+    try {
+      const owner = parseInt(readFileSync(path, "utf8").trim(), 10);
+      if (owner === process.pid) utimesSync(path, new Date(), new Date());
+    } catch {}
+  }, intervalMs);
+  timer.unref?.();
+  return () => clearInterval(timer);
 }
 // maxAliveAgeMs：pid 有限，会被 OS 回收复用——断电残留锁若正好被复用给别的常驻进程（甚至
 // 常驻 root 进程，pidAlive 把 EPERM 也当活），会让「持有者活着」这条永远成立，锁永久占死、
@@ -58,12 +86,38 @@ function acquireLock(maxAliveAgeMs) {
   try { ageMs = Date.now() - statSync(path).mtimeMs; } catch {}
   if (Number.isInteger(pid) && pidAlive(pid)) {
     if (ageMs < maxAliveAgeMs) return null;                        // 持有者活着且未超龄 → 跳过
+  } else if (Number.isInteger(pid)) {
+    // pid 读得出来、且确证已死 → 就是崩溃/断电留下的残锁，没有等 1 小时的理由。
+    // 只留一个分钟级短窗口，防和「另一个 runner 刚 openSync 建锁、pid 还没落盘」的窗口撞车。
+    if (ageMs < 60_000) return null;
   } else if (ageMs < STALE_MS) {
-    return null;                                                    // pid 没写好/损坏但锁很新 → 视为刚起的另一轮，跳过
+    return null;                                                    // pid 没写好/损坏 → 拿不准，等够 1 小时才敢回收
   }
   // 确证持有者已死，或损坏锁已超时，或存活锁已超龄上限 → 回收并原子重建（重建失败=被别人抢先 → 跳过）
   try { rmSync(path, { recursive: true, force: true }); } catch {}
   return createLockExclusive(path) ? makeRelease(path) : null;
+}
+
+// 原始产出目录清单：只走文件系统、不解析 notes.md。
+// runner 判「研究有没有产出」必须用这个而不是 scanResearch——后者会把 frontmatter 解析失败的
+// 目录整个滤掉，一个 YAML 语法错就让成功的一次研究被判成「未产出」，重跑三次后发一封假停跑信。
+// mtimeMs 取 notes.md / report.html 中较新者：上次失败留下同名半成品、这次重跑就地覆写时，
+// 目录名没变、diffNewDirs 看不到新增，只能靠「内容是不是本次运行期间写的」认出这次的产出。
+function listResearchDirs(root) {
+  const DIR_RE = /^\d{4}-\d{2}-\d{2}_/;
+  let names = [];
+  try { names = readdirSync(root); } catch { return []; }
+  const out = [];
+  for (const name of names) {
+    if (!DIR_RE.test(name)) continue;
+    try { if (!statSync(join(root, name)).isDirectory()) continue; } catch { continue; }
+    let mtimeMs = 0;
+    for (const f of ["notes.md", "report.html"]) {
+      try { mtimeMs = Math.max(mtimeMs, statSync(join(root, name, f)).mtimeMs); } catch {}
+    }
+    out.push({ dir: name, mtimeMs });
+  }
+  return out;
 }
 
 // 「上线待确认」持久队列：研究已 push、但部署探活当轮没通过的条目存这里（本地 JSON）。
@@ -80,7 +134,7 @@ function loadPending() {
 function savePending(list) {
   const dir = join(homedir(), "Library", "Application Support", "searchx-runner");
   mkdirSync(dir, { recursive: true });
-  writeFileSync(pendingFile(), JSON.stringify(list, null, 2));
+  writeFileAtomic(pendingFile(), JSON.stringify(list, null, 2));
 }
 
 // 「连续失败计数」持久状态（issue 号 → 次数）：同一 Issue 连续「研究未产出」的次数，跨 tick
@@ -98,7 +152,7 @@ function loadFailures() {
 function saveFailures(map) {
   const dir = join(homedir(), "Library", "Application Support", "searchx-runner");
   mkdirSync(dir, { recursive: true });
-  writeFileSync(failuresFile(), JSON.stringify(map, null, 2));
+  writeFileAtomic(failuresFile(), JSON.stringify(map, null, 2));
 }
 
 // 「拉 approved 队列连续失败 tick 数」持久状态（跨 tick，每 tick 是独立进程）：外部瞬时故障
@@ -113,7 +167,7 @@ function loadQueueStreak() {
 function saveQueueStreak(n) {
   const dir = join(homedir(), "Library", "Application Support", "searchx-runner");
   mkdirSync(dir, { recursive: true });
-  writeFileSync(queueStreakFile(), String(n));
+  writeFileAtomic(queueStreakFile(), String(n));
 }
 
 // 当日完成计数：按「北京时间」分日存一个计数文件，每完成一篇 +1，返回 { date, count }。
@@ -126,7 +180,7 @@ function bumpDailyCount() {
   let n = 0;
   try { n = parseInt(readFileSync(file, "utf8").trim(), 10) || 0; } catch {}
   n += 1;
-  writeFileSync(file, String(n));
+  writeFileAtomic(file, String(n));
   return { date, count: n };
 }
 
@@ -174,7 +228,8 @@ async function main() {
     console.log("⏭  已有一轮 runner 在运行，本次跳过（它会处理完整个 approved 队列；新审批由下个定时 tick 兜底）。");
     process.exit(0);
   }
-  process.on("exit", release);
+  const stopHeartbeat = startLockHeartbeat(lockFile());
+  process.on("exit", () => { stopHeartbeat(); release(); });
 
   // 当前 spawn 的 claude 子进程句柄：SIGTERM/SIGINT 是「裸 kill runner 进程」场景（区别于下面
   // runResearch 内部 termTimer/killTimer 那条超时自杀路径）。没有这层，进程退出只会跑
@@ -200,7 +255,13 @@ async function main() {
     // 瞬时网络抖动（TLS 握手失败等）自动重试 + 单次硬超时，单次失败不打崩整轮、不误报警；
     // 持续故障重试用尽仍抛错 → exit=1 照常报警。
     fetchImpl: withNetRetry(fetch, { log: (m) => console.log(m) }),
-    scanDirs: () => scanResearch("research"),
+    // 查重与卡片元信息用解析过的条目；但**要剔除本地未发布的目录**：被 park 搁置（带 .parked
+    // 标记）或半成品目录只存在于本机、从没上过站，拿它当「已有报告」会给提交者回一个 404 链接
+    // 并把 Issue 贴 done——那条调研就此永远不会再跑。
+    scanDirs: () => scanResearch("research").filter((e) => !existsSync(join("research", e.dir, ".parked"))),
+    // 「有没有产出」只看文件系统，不看解析结果（frontmatter 语法错不等于没产出）。
+    // mtime 取 notes.md / report.html 里较新的那个，用来识别「重跑覆写了同名目录」。
+    listOutputDirs: () => listResearchDirs("research"),
     runResearch: async (prompt) => {
       console.log(`→ claude -p ${JSON.stringify(prompt)}`);
       // 剥机密 + 打 git-sync 哨兵：见 child-env.js（与 check-runner 共用同一套装配）。

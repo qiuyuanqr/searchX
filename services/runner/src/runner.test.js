@@ -703,17 +703,40 @@ test("补发成功后立即落盘：阶段 2 取 Issue 列表因外部瞬时故�
     return { ok: false, status: 404, json: async () => ({}) };
   };
   let sent = 0;
+  const order = [];
+  const summary = await runOnce(CONFIG, {
+    fetchImpl, scanDirs: () => [], runResearch: async () => true,
+    sendEmail: async () => { sent++; order.push("send"); }, log: () => {},
+    verifyPublished: async () => true,
+    loadPending: async () => [{ number: 7, topic: "t", title: "T", tldr: "d", url: "https://site.dev/searchX/r/x/" }],
+    savePending: async (list) => { saves.push(list.map((p) => p.number)); order.push("save"); },
+  });
+  expect(summary.queueUnreachable).toBe(true); // 拉队列因外部瞬时故障失败 → 防抖标记（不再抛错打崩整轮）
+  expect(sent).toBe(1);          // 补发信已发出一封
+  expect(order[0]).toBe("save"); // 先落盘、后发信：落盘失败也绝不会造成下轮重复发信
+  expect(saves[0]).toEqual([]);  // 出队后队列为空
+  expect(saves.at(-1)).toEqual([]); // 收尾落盘同样为空 → 下一轮不会重复发信
+});
+
+test("待确认队列落盘失败：不发信、条目留在队列，避免下一轮重复发信", async () => {
+  const fetchImpl = async (url) => {
+    if (String(url).includes("/issues?")) return { ok: true, json: async () => [] };
+    if (String(url).includes("/sub/")) return { ok: true, json: async () => ({ ok: true, email: "u@x.com" }) };
+    return { ok: true, json: async () => ({}) };
+  };
+  let sent = 0;
   const summary = await runOnce(CONFIG, {
     fetchImpl, scanDirs: () => [], runResearch: async () => true,
     sendEmail: async () => { sent++; }, log: () => {},
     verifyPublished: async () => true,
-    loadPending: async () => [{ number: 7, topic: "t", title: "T", tldr: "d", url: "https://site.dev/searchX/r/x/" }],
-    savePending: async (list) => { saves.push(list.map((p) => p.number)); },
+    loadPending: async () => [
+      { number: 7, topic: "t", title: "T", tldr: "d", url: "https://site.dev/searchX/r/x/" },
+      { number: 8, topic: "t2", title: "T2", tldr: "d2", url: "https://site.dev/searchX/r/y/" },
+    ],
+    savePending: async () => { throw new Error("磁盘满"); },
   });
-  expect(summary.queueUnreachable).toBe(true); // 拉队列因外部瞬时故障失败 → 防抖标记（不再抛错打崩整轮）
-  expect(sent).toBe(1);          // 补发信已发出一封
-  expect(saves.length).toBe(1);  // 拉队列失败前队列已落盘
-  expect(saves[0]).toEqual([]);  // 已补发条目不在落盘队列里 → 下一轮不会重复发信
+  expect(sent).toBe(0);          // 一封都没发：落盘坏了就宁可晚一轮，绝不冒重复发信的风险
+  expect(summary.emailed).toBe(0);
 });
 
 test("残留的 park 信号在跑研究前被清掉：研究实际成功的 Issue 不被旧信号张冠李戴判搁置", async () => {
@@ -769,4 +792,105 @@ test("拉 approved 队列 4xx（如 401 PAT 失效）→ 抛错，不防抖：�
     fetchImpl, scanDirs: () => [], runResearch: async () => true,
     sendEmail: async () => {}, log: () => {},
   })).rejects.toThrow(/401/);
+});
+
+// ── 产出判定：不再只看「有没有新增目录」 ────────────────────────────────
+
+test("重跑覆写同名残留目录：内容写于本次运行期间 → 算本次产出，不再误判「研究未产出」", async () => {
+  // 上一次失败留下同名半成品目录，这次重跑就地覆写它——目录名没变，diffNewDirs 看不到新增。
+  const fetchImpl = makeFetch();
+  const DIR = "2026-06-03_stablecoin";
+  let mtime = 1000;
+  const entries = [{ dir: DIR, title: "稳定币的清结算机制", tldr: "银行间记账", href: `r/${DIR}/` }];
+  const sent = [];
+  const summary = await runOnce(CONFIG, {
+    fetchImpl,
+    scanDirs: () => entries.slice(),
+    listOutputDirs: () => [{ dir: DIR, mtimeMs: mtime }],
+    runResearch: async () => { mtime = 5000; return true; }, // 覆写：mtime 落在本次运行窗口内
+    now: () => 3000, // startedAt=3000 < 覆写后的 5000
+    verifyPublished: async () => true,
+    sendEmail: async (m) => { sent.push(m); },
+    log: () => {},
+  });
+  expect(summary.failed).toBe(0);
+  expect(summary.published).toBe(1);
+  expect(summary.emailed).toBe(1);
+});
+
+test("目录还是上次那个、内容也没被改动 → 仍判「研究未产出」（防把旧目录当新产出）", async () => {
+  const fetchImpl = makeFetch();
+  const DIR = "2026-06-03_stablecoin";
+  const entries = [{ dir: DIR, title: "旧的", tldr: "t", href: `r/${DIR}/` }];
+  const summary = await runOnce(CONFIG, {
+    fetchImpl,
+    scanDirs: () => entries.slice(),
+    listOutputDirs: () => [{ dir: DIR, mtimeMs: 1000 }], // 一直是 1000，早于 startedAt
+    runResearch: async () => true,
+    now: () => 3000,
+    verifyPublished: async () => true,
+    sendEmail: async () => {},
+    log: () => {},
+  });
+  expect(summary.failed).toBe(1);
+  expect(summary.published).toBe(0);
+});
+
+test("产出了目录但 notes.md 解析失败：停跑待人工订正，不当「未产出」重跑三次", async () => {
+  const fetchImpl = makeFetch();
+  const sent = [];
+  const summary = await runOnce(CONFIG, {
+    fetchImpl,
+    scanDirs: () => [],                                        // scanResearch 把坏 frontmatter 的目录滤掉了
+    listOutputDirs: () => [{ dir: "2026-06-03_stablecoin", mtimeMs: 5000 }], // 文件系统里目录确实在
+    runResearch: async () => true,
+    now: () => 3000,
+    sendEmail: async (m) => { sent.push(m); },
+    log: () => {},
+  });
+  expect(summary.failed).toBe(0);   // 不计失败：重跑修不了 YAML 语法错
+  expect(summary.parked).toBe(1);
+  expect(sent).toHaveLength(1);
+  expect(sent[0].text).toContain("frontmatter 解析失败");
+  // 贴了 done 止损
+  const labeled = fetchImpl.calls.some((c) => /\/issues\/7\/labels$/.test(c.url));
+  expect(labeled).toBe(true);
+});
+
+// ── 开跑前复查 Issue 状态 ────────────────────────────────────────────
+test("批次中作者撤掉 approved：开跑前复查拦下，不再烧一次全力档研究", async () => {
+  let ran = 0;
+  const fetchImpl = async (url, opts = {}) => {
+    const u = String(url);
+    if (u.includes("/issues?")) return { ok: true, json: async () => ISSUE_LIST };
+    if (/\/issues\/7$/.test(u)) return { ok: true, json: async () => ({ state: "open", labels: [] }) }; // approved 已被撤
+    return { ok: true, json: async () => ({}) };
+  };
+  const summary = await runOnce(CONFIG, {
+    fetchImpl, scanDirs: () => [],
+    runResearch: async () => { ran++; return true; },
+    sendEmail: async () => {}, log: () => {},
+  });
+  expect(ran).toBe(0);
+  expect(summary.failed).toBe(0); // 不是失败，是主动跳过
+  expect(summary.published).toBe(0);
+});
+
+test("开跑前复查网络失败：按队列快照继续跑（可选检查不拦主流程）", async () => {
+  const world = makeWorld();
+  let ran = 0;
+  const fetchImpl = async (url) => {
+    const u = String(url);
+    if (u.includes("/issues?")) return { ok: true, json: async () => ISSUE_LIST };
+    if (/\/issues\/7$/.test(u)) throw new Error("ECONNRESET");
+    if (u.includes("/sub/")) return { ok: true, json: async () => ({ ok: true, email: "u@x.com" }) };
+    return { ok: true, json: async () => ({}) };
+  };
+  const summary = await runOnce(CONFIG, {
+    fetchImpl, scanDirs: world.scanDirs,
+    runResearch: async () => { ran++; return world.runResearch(); },
+    sendEmail: async () => {}, log: () => {},
+  });
+  expect(ran).toBe(1);
+  expect(summary.published).toBe(1);
 });

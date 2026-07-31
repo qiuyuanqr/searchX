@@ -15,16 +15,22 @@ export function withNetRetry(fetchImpl = fetch, {
   log = () => {},
 } = {}) {
   return async (url, init = {}) => {
+    // 只重试幂等请求。「请求抛错」包含「请求已送达、响应在回程丢了」这一种——对非幂等写操作
+    // （发评论）重试，服务端就多执行一次，Issue 下会冒出重复评论。GET/HEAD/PUT/DELETE 天然幂等；
+    // POST 默认不重试，效果幂等的（如贴一个已存在的标签）由调用方显式 retrySafe: true opt-in。
+    const method = String(init.method || "GET").toUpperCase();
+    const idempotent = init.retrySafe === true || ["GET", "HEAD", "OPTIONS", "PUT", "DELETE"].includes(method);
+    const maxAttempts = idempotent ? attempts : 1;
     let lastErr;
-    for (let i = 1; i <= attempts; i++) {
+    for (let i = 1; i <= maxAttempts; i++) {
       try {
         // 调用方自带 signal 时尊重之（当前无此调用方）；否则补单次硬超时
         return await fetchImpl(url, { ...init, signal: init.signal ?? AbortSignal.timeout(perTryMs) });
       } catch (e) {
         lastErr = e;
-        if (i === attempts) break;
+        if (i === maxAttempts) break;
         const delay = baseDelayMs * i;
-        log(`网络请求失败（第 ${i}/${attempts} 次：${e?.code || e?.message || e}），${Math.round(delay / 1000)}s 后重试：${url}`);
+        log(`网络请求失败（第 ${i}/${maxAttempts} 次：${e?.code || e?.message || e}），${Math.round(delay / 1000)}s 后重试：${url}`);
         await sleep(delay);
       }
     }

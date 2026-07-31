@@ -46,12 +46,12 @@ export default {
         return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers: { "content-type": "application/json" } });
       }
       if (pathname === "/check/pending") {
-        if (request.method === "GET") return await handleCheckPending(request, env);
+        if (request.method === "GET") return await handleCheckPending(request, env, { now: () => new Date().toISOString() });
         return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers: { "content-type": "application/json" } });
       }
       // 作者查最近任务（CHECK_KEY）；OPTIONS 预检由 handleCheckRecent 自己处理
       if (pathname === "/check/recent") {
-        if (request.method === "GET" || request.method === "OPTIONS") return await handleCheckRecent(request, env);
+        if (request.method === "GET" || request.method === "OPTIONS") return await handleCheckRecent(request, env, { now: () => new Date().toISOString() });
         return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers: { "content-type": "application/json" } });
       }
       const doneMatch = pathname.match(/^\/check\/([^/]+)\/done$/);
@@ -60,7 +60,7 @@ export default {
         if (doneMatch[1] === "pending" || doneMatch[1] === "recent")
           return new Response(JSON.stringify({ ok: false, error: "not found" }), { status: 404, headers: { "content-type": "application/json" } });
         if (request.method === "POST")
-          return await handleCheckDone(request, env, doneMatch[1]);
+          return await handleCheckDone(request, env, doneMatch[1], { now: () => new Date().toISOString() });
         return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers: { "content-type": "application/json" } });
       }
       const imgMatch = pathname.match(/^\/check\/([^/]+)\/image\/(\d+)$/);

@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { parseNote } from "./parse-note.js";
+import { parseNote, cleanInline } from "./parse-note.js";
 
 const SAMPLE = `---
 date: 2026-06-03
@@ -150,4 +150,33 @@ test("source_count 强转数字：字符串带标记归 0（不让恶意 frontma
   expect(mk('"12"').sourceCount).toBe(12);
   expect(mk("15").sourceCount).toBe(15);
   expect(mk('"abc"').sourceCount).toBe(0);
+});
+
+// ── 2026-07-31 审查修复 ─────────────────────────────────────────
+test("cleanInline：只剥真的行内标签，不吞掉「小于号…大于号」之间的正文", () => {
+  expect(cleanInline("营收 <5 亿元，毛利率 >40%，仍在爬坡")).toBe("营收 <5 亿元，毛利率 >40%，仍在爬坡");
+  expect(cleanInline("<strong>加粗</strong>与<em>斜体</em>都剥掉")).toBe("加粗与斜体都剥掉");
+});
+
+test("结论标题下首块是 markdown 表格 → 不当首段（竖线串不上首页）", () => {
+  const raw =
+    "---\ntype: 股票\n---\n\n# 某股\n\n## 一句话结论\n\n| 指标 | 数值 |\n| --- | --- |\n| PE | 30 |\n\n" +
+    "> 真正的结论在这里。\n";
+  const e = parseNote(raw, "2026-06-05_tbl");
+  expect(e.tldr).not.toContain("|");
+});
+
+test("「## 一句话讲清」是科普节，不截胡同篇的「## 核心结论」", () => {
+  const raw =
+    "---\ntype: 股票\n---\n\n# 某股\n\n## 核心结论（未来 3 个月）\n\n方向偏跌，估值透支。\n\n" +
+    "## 一句话讲清\n\n这家公司做的是逆变器和储能。\n";
+  const e = parseNote(raw, "2026-07-02_x");
+  expect(e.tldr).toBe("方向偏跌，估值透支。");
+});
+
+test("「## 一句话结论 / 一句话本质区别 / 一句话内核」仍照常命中（别把排除做过头）", () => {
+  for (const h of ["一句话结论", "一句话本质区别", "一句话内核", "一句话"]) {
+    const raw = `---\ntype: 概念\n---\n\n# T\n\n## ${h}\n\n真结论。\n`;
+    expect(parseNote(raw, "2026-06-05_y").tldr).toBe("真结论。");
+  }
 });

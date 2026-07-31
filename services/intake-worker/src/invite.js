@@ -45,18 +45,53 @@ export async function mintInvite(kv, email, { now = Date.now, gen = genToken } =
   // 「已生效却不被任何列表追踪、revoke/rotate 都够不着」的孤儿 token。
   await kv.put(allowKey(email), JSON.stringify({ token, addedAt }));
   await kv.put(inviteKey(token), email);
+  const idx = (await readEmailIndex(kv)) || (await rebuildEmailIndex(kv));
+  if (!idx.includes(email)) await writeEmailIndex(kv, [...idx, email]);
   return { email, token, addedAt };
 }
 
+// 授权邮箱索引键：把「列名单」从 list 降级成一次 read。
+// /people 被 runner 每 5 分钟一 tick 的新链接自检调用（约 288 次/天），全表 list 会吃掉
+// 免费版 list 日额度（约 1000/天）的近三成——正是 2026-07-06 打爆过额度的同一模式。
+// 索引只存邮箱清单，token/addedAt 仍逐条 read（授权名单是个位数规模，read 额度充裕）。
+const IDX_KEY = "allow:idx";
+
+async function readEmailIndex(kv) {
+  try {
+    const raw = await kv.get(IDX_KEY);
+    const p = raw ? JSON.parse(raw) : null;
+    return Array.isArray(p) ? p.filter((x) => typeof x === "string") : null;
+  } catch { return null; }
+}
+
+async function writeEmailIndex(kv, emails) {
+  try { await kv.put(IDX_KEY, JSON.stringify([...new Set(emails)])); } catch {}
+}
+
+// 用一次全表 list 重建邮箱索引（仅索引缺失时走）。
+async function rebuildEmailIndex(kv) {
+  // list 不可用（额度耗尽 / 调用方注入的极简 kv）时降级为空清单，绝不抛错拖成 500——
+  // 授权列表少列几个人远好过整个端点崩掉，且下一次 mint 会把索引补回来。
+  let keys = [];
+  try { ({ keys = [] } = await kv.list({ prefix: "allow:" })); } catch { return []; }
+  const emails = keys
+    .map(({ name }) => name)
+    .filter((name) => name !== IDX_KEY)
+    .map((name) => decodeURIComponent(name.slice("allow:".length)));
+  await writeEmailIndex(kv, emails);
+  return emails;
+}
+
 export async function listPeople(kv) {
-  const { keys } = await kv.list({ prefix: "allow:" });
+  let emails = await readEmailIndex(kv);
+  if (!emails) emails = await rebuildEmailIndex(kv);   // 无索引（首次/被清）→ 重建一次
   const out = [];
-  for (const { name } of keys) {
-    const raw = await kv.get(name);
-    if (!raw) continue;
+  for (const email of emails) {
+    const raw = await kv.get(allowKey(email));
+    if (!raw) continue;                                 // 索引滞后于删除 → 跳过
     const parsed = parseAllow(raw);
-    if (!parsed) continue; // 跳过损坏条目，不拖垮整列表
-    out.push({ email: decodeURIComponent(name.slice("allow:".length)), token: parsed.token, addedAt: parsed.addedAt });
+    if (!parsed) continue;                              // 跳过损坏条目，不拖垮整列表
+    out.push({ email, token: parsed.token, addedAt: parsed.addedAt });
   }
   return out;
 }
@@ -75,6 +110,8 @@ export async function revoke(kv, email) {
     if ((await kv.get(name)) === email) await kv.delete(name);
   }
   await kv.delete(allowKey(email));                      // 无论是否损坏，都清掉 allow 记录
+  const idx = await readEmailIndex(kv);
+  if (idx) await writeEmailIndex(kv, idx.filter((e) => e !== email));
   return true;
 }
 

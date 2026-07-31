@@ -13,7 +13,18 @@ export function maskEmail(email) {
 }
 
 // 用代码围栏包裹用户内容，杜绝 markdown/HTML 注入。
-const fence = (label, text) => ["", `### ${label}`, "```", text, "```"];
+// 围栏长度按内容自适应（markdown 规则）：内容里若含 ``` ，固定三反引号会被提前闭合，
+// 之后的用户文本就跑到了围栏外——既能伪造 `### 侧重点` 小节骗过 runner 的解析，
+// 也让 Issue 页面渲染错乱。取「内容里最长反引号串 + 1」，保证不可能被内容闭合。
+export function fenceMarker(text) {
+  let longest = 0;
+  for (const m of String(text || "").matchAll(/`+/g)) longest = Math.max(longest, m[0].length);
+  return "`".repeat(Math.max(3, longest + 1));
+}
+const fence = (label, text) => {
+  const marker = fenceMarker(text);
+  return ["", `### ${label}`, marker, text, marker];
+};
 
 // 公开仓库 → Issue 公开：这里**总是**内部打码（纵深防御，不依赖调用方先打码；
 // maskEmail 幂等，即使 handler 已先打码也安全）。

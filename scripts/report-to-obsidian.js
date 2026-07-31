@@ -27,8 +27,10 @@ function parseAttrs(s) {
 
 function tokenize(html) {
   const out = [];
-  // 注释 | 起止标签。属性值里不含 '>'（模板如此），故 [^>]* 够用。
-  const re = /<!--[\s\S]*?-->|<(\/?)([a-zA-Z][\w-]*)([^>]*?)(\/?)>/g;
+  // 注释 | 起止标签。属性段按引号状态匹配：引号内的 '>' 不算标签结束。
+  // 老写法用 [^>]*，一旦属性值里出现 '>'（title="营收 >5 亿"）就会把标签拦腰截断，
+  // 后半截当成正文吐出来、真正的标签结构错位，正文与链接文字被啃掉。
+  const re = /<!--[\s\S]*?-->|<(\/?)([a-zA-Z][\w-]*)((?:"[^"]*"|'[^']*'|[^>"'])*?)(\/?)>/g;
   let last = 0;
   let m;
   while ((m = re.exec(html))) {
@@ -68,13 +70,24 @@ export function parseHtml(html) {
   return root.children;
 }
 
-const NAMED_ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
+// 报告模板里常见的命名实体。表外的实体会原样残留成字面「&mdash;」进 Obsidian 笔记，
+// 所以破折号/引号/省略号这几类高频的必须覆盖。
+const NAMED_ENTITIES = {
+  amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ",
+  mdash: "—", ndash: "–", hellip: "…", middot: "·", bull: "•",
+  ldquo: "\u201c", rdquo: "\u201d", lsquo: "\u2018", rsquo: "\u2019",
+  laquo: "«", raquo: "»", times: "×", divide: "÷", deg: "°",
+  copy: "©", reg: "®", trade: "™", permil: "‰", prime: "′", Prime: "″",
+  larr: "←", rarr: "→", uarr: "↑", darr: "↓", harr: "↔",
+};
 
 export function decodeEntities(s) {
   return String(s)
     .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => codePoint(parseInt(h, 16)))
     .replace(/&#(\d+);/g, (_, d) => codePoint(parseInt(d, 10)))
-    .replace(/&(amp|lt|gt|quot|apos|nbsp);/g, (_, n) => NAMED_ENTITIES[n]);
+    .replace(/&([a-zA-Z][a-zA-Z0-9]*);/g, (m, n) =>
+      Object.prototype.hasOwnProperty.call(NAMED_ENTITIES, n) ? NAMED_ENTITIES[n] : m
+    );
 }
 
 function codePoint(n) {
@@ -172,13 +185,24 @@ export function renderBlocks(nodes) {
   return blocks.filter((b) => b && b.trim()).join("\n\n");
 }
 
-function renderList(node, ordered) {
+function renderList(node, ordered, depth = 0) {
   const items = node.children.filter((c) => c.tag === "li");
+  const pad = "  ".repeat(depth);
   return items
     .map((li, i) => {
       const marker = ordered ? `${i + 1}.` : "-";
-      const content = renderInline(li.children).replace(/\s*\n\s*/g, " ").trim();
-      return `${marker} ${content}`;
+      // li 里嵌套的 ul/ol 要递归成缩进子行。老实现把整个 li.children 丢给 renderInline，
+      // 嵌套列表不属任何行内分支、落进兜底被拆成纯文字拼接：一个 li 下的所有子项被压成
+      // 一条无分隔的超长 bullet（实测存量 12 份报告的 Obsidian 笔记因此丢失子弹点结构）。
+      const inline = li.children.filter((c) => c.tag !== "ul" && c.tag !== "ol");
+      const nested = li.children.filter((c) => c.tag === "ul" || c.tag === "ol");
+      const content = renderInline(inline).replace(/\s*\n\s*/g, " ").trim();
+      const lines = [`${pad}${marker} ${content}`];
+      for (const n of nested) {
+        const sub = renderList(n, n.tag === "ol", depth + 1);
+        if (sub.trim()) lines.push(sub);
+      }
+      return lines.join("\n");
     })
     .join("\n");
 }
@@ -198,7 +222,18 @@ function renderTable(node) {
   }
   const cellText = (cell) =>
     renderInline(cell.children, { inCell: true }).replace(/\s+/g, " ").replace(/\|/g, "\\|").trim();
-  const rowCells = (tr) => tr.children.filter((c) => c.tag === "th" || c.tag === "td").map(cellText);
+  // colspan 要展开成对应数量的列，否则「<td colspan="3">信息缺口…</td>」这类跨列单元格
+  // 会让该行比表头少几列，Markdown 表格里内容落错列、尾列空缺（实测 5 篇存量报告中招）。
+  const rowCells = (tr) => {
+    const out = [];
+    for (const c of tr.children) {
+      if (c.tag !== "th" && c.tag !== "td") continue;
+      out.push(cellText(c));
+      const span = parseInt((c.attrs && c.attrs.colspan) || "1", 10);
+      for (let k = 1; Number.isInteger(span) && k < span; k++) out.push("");
+    }
+    return out;
+  };
 
   let header = headRows.length ? rowCells(headRows[0]) : null;
   const rest = [...bodyRows];
@@ -285,10 +320,26 @@ function extractSources(sec) {
       for (const c of li.children) {
         if (c.tag === "span" && (c.attrs.class || "").includes("src-tag")) type = renderInline(c.children).trim();
         else if (c.tag === "a") {
-          title = renderInline(c.children).trim();
-          href = (c.attrs && c.attrs.href) || "";
-        } else if (c.tag === "em") date = renderInline(c.children).trim();
-        else summary += c.tag === "#text" ? decodeEntities(c.value) : renderInline([c]);
+          const text = renderInline(c.children).trim();
+          const url = (c.attrs && c.attrs.href) || "";
+          if (!title && !href) { title = text; href = url; }
+          // 一条来源里出现多个链接时，后面的不能把第一个顶掉（老实现是后者覆盖，前面的链接直接丢）。
+          // 追加成 markdown 链接并入摘要，信息不丢。
+          else summary += ` [${text}](${url})`;
+        } else if (c.tag === "em") {
+          // 第一个 <em> 当日期，后面的 <em> 是备注——老实现同样是后者覆盖，把真实日期顶掉了。
+          if (!date) date = renderInline(c.children).trim();
+          else summary += ` *${renderInline(c.children).trim()}*`;
+        } else summary += c.tag === "#text" ? decodeEntities(c.value) : renderInline([c]);
+      }
+      // 没有 <a> 的来源（纯文字条目）：首段裸文字当标题，别让标题槽位空着
+      if (!title) {
+        const firstText = summary.replace(/\s+/g, " ").replace(/^[\s—–-]+/, "").trim();
+        if (firstText) {
+          const cut = firstText.search(/[。；;]|\s—\s/);
+          title = cut > 0 ? firstText.slice(0, cut) : firstText;
+          summary = cut > 0 ? firstText.slice(cut).replace(/^[。；;\s—–-]+/, "") : "";
+        }
       }
       summary = summary.replace(/\s+/g, " ").replace(/^[\s—–-]+/, "").trim();
       return { type, title, href, date, summary };
@@ -441,7 +492,33 @@ if (import.meta.main) {
   const researchDir = join(vault, "Research");
   await mkdir(researchDir, { recursive: true });
   const content = await noteFromFolder(folder);
-  const dest = join(researchDir, `${sanitizeFilename(name)}.md`);
+  const base = sanitizeFilename(name);
+  // 同名冲突：同一只票二次调研是常态（INDEX 的「对象」列本来就同名，SKILL 也要求 --name
+  // 用与 INDEX 相同的中文名），而老实现直接覆盖写——给新报告跑一遍标准命令，就把上一篇的
+  // 全文笔记无提示销毁了，反过来重刷旧的又会销毁新的，两篇永远无法共存。
+  // 与 backfill-obsidian.js 的策略对齐：目标已被**另一个归档文件夹**占用时加「· 日期」后缀。
+  const { readFile } = await import("node:fs/promises");
+  const { basename } = await import("node:path");
+  const folderName = basename(folder.replace(/\/+$/, ""));
+  let dest = join(researchDir, `${base}.md`);
+  try {
+    const prev = await readFile(dest, "utf8");
+    // frontmatter 里的值带引号：archive: "research/<folder>/"
+    const prevArchive = ((prev.match(/^archive:\s*(.+)$/m) || [])[1] || "").trim().replace(/^["']|["']$/g, "");
+    const sameFolder = prevArchive.replace(/\/+$/, "").endsWith(folderName);
+    if (!sameFolder) {
+      const date = (folderName.match(/^(\d{4}-\d{2}-\d{2})_/) || [])[1] || "";
+      if (date) {
+        dest = join(researchDir, `${base} · ${date}.md`);
+        console.log(`ℹ 同名笔记已存在（来自 ${prevArchive.trim() || "另一篇报告"}），本篇改写入带日期的文件名以免覆盖。`);
+      } else {
+        console.error(`✗ 同名笔记已存在且来自另一篇报告（${prevArchive.trim()}），文件夹名里也取不到日期做区分，停手不覆盖。`);
+        process.exit(1);
+      }
+    }
+  } catch {
+    // 读不到 = 没有同名文件，照常写
+  }
   await writeFile(dest, content, "utf8");
   console.log(`✓ 写入 ${dest}`);
 }

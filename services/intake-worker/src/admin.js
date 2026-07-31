@@ -34,14 +34,19 @@ export async function handleAdmin(request, env, deps = {}) {
 
   // 鉴权 + 失败限流：对密钥优先放行（清零失败计数——邻居 IP 的错误尝试绝不能把合法管理员锁在门外）；
   // 错 / 空密钥才计数，达 maxFails 起一律 429（不泄露对错），否则 401。定长比较防时序侧信道、空密钥一律拒。
-  const fails = parseInt((await kv.get(failKey)) || "0", 10);
+  const rawFails = parseInt((await kv.get(failKey)) || "0", 10);
+  const fails = Number.isInteger(rawFails) && rawFails >= 0 ? rawFails : 0; // 坏值按 0 起算，别永久卡死
   const keyOk = !!env.ADMIN_KEY && safeEqual(request.headers.get("x-admin-key") || "", env.ADMIN_KEY);
   if (keyOk) {
     if (fails) await kv.delete(failKey);
   } else {
     const n = fails + 1;
-    await kv.put(failKey, String(n), { expirationTtl: 7200 });
     const locked = n >= maxFails;
+    // 计数达上限后不再写。/admin/* 无任何前置鉴权，谁都能打——每个错密钥请求都写一次 KV 的话，
+    // 约一千个请求就能耗尽免费版每日写额度，全 Worker 的写路径（站内提交计数、sub:<n> 邮箱映射、
+    // 核查任务落库与回传）跟着瘫一整天。封顶后只读不写，单 IP 每小时写次数上限 = maxFails
+    //（与 check.js 的 authFailuresExceeded 同一形态）。
+    if (fails < maxFails) await kv.put(failKey, String(n), { expirationTtl: 7200 });
     return json({ ok: false, error: locked ? "locked" : "unauthorized" }, locked ? 429 : 401);
   }
 

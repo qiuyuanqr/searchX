@@ -4,7 +4,7 @@
 
 | 子目录 | 是什么 |
 |---|---|
-| `src/` | **源**：页面模板（`index.template.html` 含提交弹窗 / `submit.template.html` 跳转壳 / `admin.template.html` 授权管理页 / `check.template.html` 私密核查提交页）、前端资源（`assets/feed.css`、`feed.js`、`feed-filter.js`、`submit.js`、`admin.js`、`admin-page.js`、`check.js`、`check-page.js`）、站点配置（`site.config.json`，只放公开值 Worker URL） |
+| `src/` | **源**：页面模板（`index.template.html` 含提交弹窗 / `submit.template.html` 跳转壳 / `admin.template.html` 授权管理页 / `check.template.html` 私密核查提交页）、前端资源（`assets/feed.css`、`feed.js`、`feed-filter.js`、`submit.js`、`admin.js`、`admin-page.js`、`check.js`、`check-page.js`、`md.js`）、站点配置（`site.config.json`，只放公开值 Worker URL） |
 | `build/` | **构建逻辑**（注意：不是产物）：扫描 `research/` 下各 `<日期>_<主题>/` 的 `notes.md` → 渲染信息流卡片 + 报告页。含构建脚本与单元测试，入口 `cli.js` |
 | `dist/` | **构建产物**：`bun run build` 的输出（已 gitignore，CI 部署时现生成） |
 
@@ -16,4 +16,4 @@ bun test           # 跑 build/ 下的单元测试
 bun run serve      # 构建 + 本地预览 http://localhost:8080
 ```
 
-CI（`.github/workflows/deploy.yml`）在 push 改动到 `research/**`、`web/**`、`package.json` 或 `bun.lock` 时，自动跑 `bun run build` 并部署到 Pages。卡片按 `notes.md` frontmatter 里的 `created` 时间倒序排列（新内容置顶）。
+CI（`.github/workflows/deploy.yml`）在 push 改动到 `research/**`、`web/**`、`package.json`、`bun.lock`、`services/runner/src/dedup.js` 或该 workflow 文件本身时，自动跑 `bun run build` 并部署到 Pages。卡片排序以**目录名日期**为主序（降序），同一天内才按 frontmatter 的 `created` 精确时间排——目录名里的日期写错，frontmatter 救不回来。

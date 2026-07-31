@@ -77,7 +77,7 @@ function upsertIndexEntry(items, id, t) {
 
 // 从全表 list 重建索引——唯一还用 list 的地方，仅索引缺失/不完整时走一次；成功即落
 // { complete:true }，此后正常态不再 list。可能抛（list 额度耗尽）——调用方负责兜底。
-async function rebuildIndex(env) {
+async function rebuildIndex(env, nowMs = Date.now()) {
   const listed = await env.INTAKE_KV.list({ prefix: "check:" });
   const items = [];
   for (const k of listed.keys) {
@@ -88,30 +88,91 @@ async function rebuildIndex(env) {
     if (!t) continue;                                 // 跳过损坏条目
     items.push(toIndexEntry(k.name.slice("check:".length), t));
   }
-  await env.INTAKE_KV.put(IDX_KEY, JSON.stringify({ complete: true, items }), { expirationTtl: TTL });
+  await env.INTAKE_KV.put(IDX_KEY, JSON.stringify({ complete: true, rebuiltAt: nowMs, items }), { expirationTtl: TTL });
   return { items, complete: true };
 }
 
-// 读索引：complete 则直接用（1 read，不 list）；缺失/不完整则尝试重建；重建失败（如 list
-// 额度耗尽）降级——返回已有不完整条目或空，绝不抛错拖成 500。返回 { items, complete }。
-async function loadIndexEx(env) {
+// 从注入的 now()（ISO 串）取毫秒时间戳；取不到就退回真实时钟。
+// 索引的过期修剪必须和写入 createdAt 用同一个时钟，否则测试/回放场景下会把有效条目全判过期。
+function nowMsOf(opts) {
+  const f = opts && typeof opts.now === "function" ? opts.now : null;
+  if (!f) return Date.now();
+  const t = Date.parse(f());
+  return Number.isNaN(t) ? Date.now() : t;
+}
+
+// 索引强制重建周期：complete:true 会让 rebuildIndex 永不再跑，于是任何一次索引写丢条目
+// （KV 无 CAS，两个 PoP 的读-改-写会互相覆盖）都没有自愈路径——那条任务全文还在 KV、状态还是
+// pending，却永远不被 runner 下发、也不在手机列表里，直到 7 天 TTL 静默过期。
+// 每 6 小时强制 list 重建一次 = 4 次 list/天，对每日约 1000 的额度可忽略，换来「最多 6 小时自愈」。
+const REBUILD_EVERY_MS = 6 * 3600 * 1000;
+
+// 惰性修剪：任务本体 7 天 TTL 到期后自动消失，索引条目却只增不删。不修剪的话，手机页会长期
+// 列出一堆点开即 404 的幽灵条目，其中 pending 状态的还会让页面永远 50 秒一轮地空转轮询。
+function pruneExpired(items, nowMs) {
+  if (!Number.isFinite(nowMs)) return items;
+  return items.filter((e) => {
+    if (!e || !e.id) return false;
+    const t = Date.parse(e.createdAt || "");
+    if (Number.isNaN(t)) return true;          // 时间读不出来 → 保守保留
+    return nowMs - t < TTL * 1000;
+  });
+}
+
+// 读索引：complete 且未到强制重建时点则直接用（1 read，不 list）；缺失/不完整/到期则尝试重建；
+// 重建失败（如 list 额度耗尽）降级——返回已有不完整条目或空，绝不抛错拖成 500。
+// 返回 { items, complete }。
+async function loadIndexEx(env, nowMs = Date.now()) {
   let obj = null;
   try {
     const raw = await env.INTAKE_KV.get(IDX_KEY);
     if (raw) { const p = JSON.parse(raw); if (p && Array.isArray(p.items)) obj = p; }
   } catch { obj = null; }
-  if (obj && obj.complete) return { items: obj.items, complete: true };
+  const fresh = obj && obj.complete &&
+    Number.isFinite(obj.rebuiltAt) && nowMs - obj.rebuiltAt < REBUILD_EVERY_MS;
+  if (fresh) return { items: pruneExpired(obj.items, nowMs), complete: true };
   try {
-    return await rebuildIndex(env);
+    const rebuilt = await rebuildIndex(env, nowMs);
+    return { items: pruneExpired(rebuilt.items, nowMs), complete: true };
   } catch {
-    return { items: obj && Array.isArray(obj.items) ? obj.items : [], complete: false };
+    // 重建不了（list 额度耗尽等）→ 用手上这份将就，绝不 500
+    return { items: pruneExpired(obj && Array.isArray(obj.items) ? obj.items : [], nowMs), complete: !!(obj && obj.complete) };
   }
+}
+
+// 索引的读-改-写：写回前重读一次最新索引做并集合并。
+// KV 没有 CAS，saveIndex 是整表盲覆盖：两个 PoP（手机提交 / runner 回传 done）并发时，
+// 后写的那份会把先写的新条目整表抹掉。合并写至少保证失败方向是「留下多余条目」（会被
+// pruneExpired 和下次重建清掉）而不是「丢任务」。
+async function upsertIndexMerged(env, id, task, nowMs = Date.now()) {
+  const { items, complete } = await loadIndexEx(env, nowMs);
+  upsertIndexEntry(items, id, task);
+  try {
+    const raw = await env.INTAKE_KV.get(IDX_KEY);
+    const latest = raw ? JSON.parse(raw) : null;
+    if (latest && Array.isArray(latest.items)) {
+      for (const e of latest.items) {
+        if (e && e.id && e.id !== id && !items.some((x) => x && x.id === e.id)) items.push(e);
+      }
+    }
+  } catch {}
+  await saveIndex(env, pruneExpired(items, nowMs), complete);
 }
 
 // 写回索引（沿用当前完整性标志）。调用方以 best-effort 方式 catch——索引维护失败绝不该
 // 让 submit/done 本身失败（全文已落库，索引可由后续惰性重建补上）。
-async function saveIndex(env, items, complete) {
-  await env.INTAKE_KV.put(IDX_KEY, JSON.stringify({ complete, items }), { expirationTtl: TTL });
+async function saveIndex(env, items, complete, rebuiltAt) {
+  // rebuiltAt 原样带过去：普通 upsert 不算「重建」，不该把强制重建的时钟拨回去。
+  const prev = rebuiltAt ?? (await readRebuiltAt(env));
+  await env.INTAKE_KV.put(IDX_KEY, JSON.stringify({ complete, rebuiltAt: prev, items }), { expirationTtl: TTL });
+}
+
+async function readRebuiltAt(env) {
+  try {
+    const raw = await env.INTAKE_KV.get(IDX_KEY);
+    const p = raw ? JSON.parse(raw) : null;
+    return Number.isFinite(p?.rebuiltAt) ? p.rebuiltAt : 0;
+  } catch { return 0; }
 }
 
 // POST /check —— 作者凭 CHECK_KEY 提交一条核查任务。
@@ -197,9 +258,7 @@ export async function handleCheckSubmit(request, env, { now }) {
   await env.INTAKE_KV.put(`check:${id}`, JSON.stringify(task), { expirationTtl: TTL });
   // 维护 check:idx 索引（best-effort，失败不影响提交成功——全文已落库，索引可由后续惰性重建补上）。
   try {
-    const { items, complete } = await loadIndexEx(env);
-    upsertIndexEntry(items, id, task);
-    await saveIndex(env, items, complete);
+    await upsertIndexMerged(env, id, task, nowMsOf({ now }));
   } catch {}
   return corsJson({ ok: true, id }, 201);
 }
@@ -207,7 +266,7 @@ export async function handleCheckSubmit(request, env, { now }) {
 // GET /check/recent —— 作者凭 CHECK_KEY 查最近任务（手机核查页状态区用）。
 // 只回轻量视图 { id, createdAt, status, textSnippet, summary? }，按 createdAt 降序；
 // 绝不回 text/link 全文、更不回图片字节。浏览器跨域调用，带 CORS + OPTIONS 预检。
-export async function handleCheckRecent(request, env) {
+export async function handleCheckRecent(request, env, opts = {}) {
   const cors = {
     "access-control-allow-origin": env.ALLOWED_ORIGIN,
     "access-control-allow-methods": "GET, OPTIONS",
@@ -228,7 +287,7 @@ export async function handleCheckRecent(request, env) {
   }
 
   // 从索引直接映射轻量视图——不再逐条 get 全文、更不 list（根治 list 额度耗尽 → 500）。
-  const { items } = await loadIndexEx(env);
+  const { items } = await loadIndexEx(env, nowMsOf(opts));
   const tasks = items
     .filter((e) => e && e.id)
     .map((e) => {
@@ -259,12 +318,12 @@ function taskSnippet(t) {
 }
 
 // GET /check/pending —— runner 凭 CHECK_RUNNER_SECRET 取待处理任务
-export async function handleCheckPending(request, env) {
+export async function handleCheckPending(request, env, opts = {}) {
   if (!runnerAuthed(request, env)) return json({ ok: false, error: "unauthorized" }, 401);
 
   // 靠索引筛出 pending 的 id 再逐条取全文——不再全表 list（根治 list 额度耗尽 → 500）。
   // 以全文 status 为准：索引可能滞后（done 的索引同步是 best-effort），避免误把已完成任务发回 runner。
-  const { items } = await loadIndexEx(env);
+  const { items } = await loadIndexEx(env, nowMsOf(opts));
   const tasks = [];
   for (const e of items) {
     if (!e || e.status !== "pending") continue;
@@ -291,7 +350,7 @@ export async function handleCheckImage(request, env, id, n) {
 // 可选 JSON body { outcome: "done"|"failed", summary }：failed 用于退休任务，
 // summary 是一行结论（≤200 字），供 /check/recent 回显给作者手机页。
 // 无 body / 坏 body 一律按旧行为（status=done、无 summary）容错处理——别把 done 卡死。
-export async function handleCheckDone(request, env, id) {
+export async function handleCheckDone(request, env, id, opts = {}) {
   if (!runnerAuthed(request, env)) return json({ ok: false, error: "unauthorized" }, 401);
 
   const raw = await env.INTAKE_KV.get(`check:${id}`);
@@ -323,9 +382,7 @@ export async function handleCheckDone(request, env, id) {
   // 同步 check:idx 索引条目 status/summary（best-effort，失败不影响 done——全文已更新，
   // 索引可由后续惰性重建/自愈补上）。索引缺该条时 upsert 会追加（self-heal）。
   try {
-    const { items, complete } = await loadIndexEx(env);
-    upsertIndexEntry(items, id, t);
-    await saveIndex(env, items, complete);
+    await upsertIndexMerged(env, id, t, nowMsOf(opts));
   } catch {}
   // 隐私加固：任务跑完即清图片字节（云端只停留到处理完）。best-effort——
   // 删失败不该影响 done 的 200（任务已标完成，图片随 7 天 TTL 兜底过期）。

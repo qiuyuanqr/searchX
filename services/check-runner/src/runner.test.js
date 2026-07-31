@@ -409,7 +409,7 @@ describe("runOnce", () => {
     expect(cleaned).toBe(1);
   });
 
-  it("readVerdict 返回 null / 抛错：降级为无 summary，照常 markDone（结论回显不是硬依赖）", async () => {
+  it("readVerdict 返回 null / 抛错但整篇写出来了：降级为无 summary，照常 markDone（单项回显不是硬依赖）", async () => {
     const tasks = makeTasks(2); // task-0 读到 null、task-1 读取抛错
     const doneArgs = [];
     const deps = {
@@ -419,6 +419,7 @@ describe("runOnce", () => {
       prepareVerdict: (t) => ({
         verdictPath: `/tmp/${t.id}/verdict.txt`,
         readVerdict: () => { if (t.id === "task-1") throw new Error("读文件失败"); return null; },
+        readResult: () => "---\n核查全文\n---\n",
         cleanup: () => {},
       }),
       buildPrompt: () => "/factcheck x",
@@ -428,9 +429,107 @@ describe("runOnce", () => {
     const result = await runOnce({}, deps);
     expect(result).toEqual({ processed: 2, done: 2, fail: 0, retired: 0 });
     expect(doneArgs).toEqual([
-      ["task-0", { outcome: "done", summary: "" }],
-      ["task-1", { outcome: "done", summary: "" }],
+      ["task-0", { outcome: "done", summary: "", result: "---\n核查全文\n---\n" }],
+      ["task-1", { outcome: "done", summary: "", result: "---\n核查全文\n---\n" }],
     ]);
+  });
+
+  // 回归：claude 因额度耗尽/拒答/上下文超限而「正常退出但什么都没干」时，退出码同样是 0。
+  // 老实现照常 markDone，任务永久出队 + 发一封「结果已存进 Obsidian」的假完成通知，
+  // 作者去 Obsidian 里什么也找不到，且不会自动重试。
+  it("退出码 0 但三个信号文件全空：判未产出，不 markDone、不发通知、计失败留待重跑", async () => {
+    const tasks = makeTasks(1);
+    const doneArgs = [];
+    let notified = 0;
+    const counts = {};
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id, info) => { doneArgs.push([id, info]); },
+      runFactcheck: async () => 0,
+      prepareVerdict: (t) => ({
+        verdictPath: `/tmp/${t.id}/verdict.txt`,
+        resultPath: `/tmp/${t.id}/result.md`,
+        titlePath: `/tmp/${t.id}/title.txt`,
+        readVerdict: () => null,
+        readResult: () => null,
+        readTitle: () => null,
+        cleanup: () => {},
+      }),
+      buildPrompt: () => "/factcheck x",
+      attempts: {
+        get: (id) => counts[id] || 0,
+        increment: (id) => { counts[id] = (counts[id] || 0) + 1; },
+        clear: (id) => { delete counts[id]; },
+      },
+      notify: async () => { notified++; },
+      log: () => {},
+    };
+    const result = await runOnce({}, deps);
+    expect(result).toEqual({ processed: 1, done: 0, fail: 1, retired: 0 });
+    expect(doneArgs).toEqual([]);   // 任务保持 pending，下轮会重跑
+    expect(notified).toBe(0);       // 不发假的「已完成」通知
+    expect(counts["task-0"]).toBe(1); // 计入失败次数，达上限走退休
+  });
+
+  it("三个信号只要有一个有内容就算产出（标题写出来了、结论没写）", async () => {
+    const tasks = makeTasks(1);
+    const doneArgs = [];
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id, info) => { doneArgs.push([id, info]); },
+      runFactcheck: async () => 0,
+      prepareVerdict: (t) => ({
+        verdictPath: `/tmp/${t.id}/verdict.txt`,
+        titlePath: `/tmp/${t.id}/title.txt`,
+        readVerdict: () => null,
+        readResult: () => null,
+        readTitle: () => "某公司裁员传闻真伪",
+        cleanup: () => {},
+      }),
+      buildPrompt: () => "/factcheck x",
+      notify: null,
+      log: () => {},
+    };
+    const result = await runOnce({}, deps);
+    expect(result).toEqual({ processed: 1, done: 1, fail: 0, retired: 0 });
+    expect(doneArgs).toEqual([["task-0", { outcome: "done", summary: "", title: "某公司裁员传闻真伪" }]]);
+  });
+
+  // 回归：markDone 失败时核查其实已经跑完（Obsidian 笔记已落地）。老实现下轮会重跑整条
+  // /factcheck，白烧一次额度还在 Obsidian 里留下重复笔记。
+  it("markDone 失败：结果进缓存，下轮只补回传、不重跑核查", async () => {
+    const tasks = makeTasks(1);
+    const cache = {};
+    const doneCache = {
+      get: (id) => cache[id] || null,
+      set: (id, p) => { cache[id] = p; },
+      clear: (id) => { delete cache[id]; },
+    };
+    let factcheckRuns = 0;
+    let markDoneCalls = 0;
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async () => { markDoneCalls++; if (markDoneCalls === 1) throw new Error("Worker 502"); },
+      runFactcheck: async () => { factcheckRuns++; return 0; },
+      prepareVerdict: (t) => ({
+        verdictPath: `/tmp/${t.id}/verdict.txt`,
+        readVerdict: () => "属实（高）：确有其事",
+        cleanup: () => {},
+      }),
+      buildPrompt: () => "/factcheck x",
+      doneCache,
+      notify: null,
+      log: () => {},
+    };
+    const first = await runOnce({}, deps);
+    expect(first).toEqual({ processed: 1, done: 0, fail: 1, retired: 0 });
+    expect(cache["task-0"]).toEqual({ outcome: "done", summary: "属实（高）：确有其事" });
+
+    const second = await runOnce({}, deps);
+    expect(second).toEqual({ processed: 1, done: 1, fail: 0, retired: 0 });
+    expect(factcheckRuns).toBe(1);  // 第二轮没有重跑 claude
+    expect(markDoneCalls).toBe(2);
+    expect(cache["task-0"]).toBeUndefined(); // 补回传成功后清缓存
   });
 
   it("prepareVerdict 本身抛错：降级为不带结论文件，任务照常核查", async () => {

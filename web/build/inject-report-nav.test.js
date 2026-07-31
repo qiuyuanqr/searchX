@@ -276,3 +276,19 @@ test("正文含字面 </head> 时，favicon/CSP 仍注入到真正的文档头�
   const headEnd = out.indexOf("</head>");
   expect(out.indexOf("favicon.png")).toBeLessThan(headEnd);
 });
+
+// ── 缺 </head> 的报告也必须带 CSP（2026-07-31 审查）─────────────────
+// 老实现遇到没有 </head> 的 report.html 直接跳过注入，那篇报告就以「无 CSP」状态
+// 上线公开站主域——这道防线恰好在最异常的产物上失效。
+test("report.html 缺 </head>：CSP 与 viewport 仍被注入（插在 <html> 之后）", () => {
+  const out = injectReportNav("<html><body><main><h1>标题</h1></main></body></html>");
+  expect(out).toContain("Content-Security-Policy");
+  expect(out).toContain("script-src 'sha256-");
+  expect(out).toContain('name="viewport"');
+  expect(out.indexOf("Content-Security-Policy")).toBeLessThan(out.indexOf("<main>"));
+});
+
+test("连 <html> 都没有的碎片：CSP 插到文档最前面", () => {
+  const out = injectReportNav("<main><h1>标题</h1></main>");
+  expect(out.startsWith('<meta http-equiv="Content-Security-Policy"')).toBe(true);
+});

@@ -1,15 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import {
-  parseHtml,
-  renderInline,
-  renderBlocks,
-  extractReport,
-  buildObsidianNote,
-  collectWikilinks,
-  splitFrontmatter,
-  sanitizeFilename,
-  decodeEntities,
-} from "./report-to-obsidian.js";
+import { parseHtml, renderInline, renderBlocks, extractReport, buildObsidianNote, collectWikilinks, splitFrontmatter, sanitizeFilename, decodeEntities } from "./report-to-obsidian.js";
 
 describe("parseHtml", () => {
   test("嵌套行内标签建成树，void 标签不入栈", () => {
@@ -196,4 +186,48 @@ describe("buildObsidianNote", () => {
     expect(note).toContain("[科普](http://b) — 摘要二。");
     expect(note).not.toContain("— — —");
   });
+});
+
+// ── 2026-07-31 审查修复 ─────────────────────────────────────────
+test("li 内嵌套列表：递归成缩进子行，不再压平成一条超长 bullet", () => {
+  const html = `<main><ul>
+    <li><strong>护城河检测：</strong>
+      <ul><li><strong>技术专利（高）：</strong>垂直一体化能力。</li>
+          <li><strong>客户粘性（中高）：</strong>认证周期数年。</li></ul>
+    </li>
+  </ul></main>`;
+  const md = extractReport(html).bodyMd;
+  expect(md).toContain("- **护城河检测：**");
+  expect(md).toContain("  - **技术专利（高）：**垂直一体化能力。");
+  expect(md).toContain("  - **客户粘性（中高）：**认证周期数年。");
+  expect(md.split("\n").some((l) => l.length > 200)).toBe(false);
+});
+
+test("表格 colspan：跨列单元格后补空列，行列数与表头一致", () => {
+  const html = `<main><table>
+    <thead><tr><th>项目</th><th>2024</th><th>2025</th><th>2026</th></tr></thead>
+    <tbody><tr><td>CapEx</td><td colspan="3">信息缺口（未取到明细）</td></tr></tbody>
+  </table></main>`;
+  const md = extractReport(html).bodyMd;
+  const rows = md.split("\n").filter((l) => l.startsWith("|"));
+  const widths = new Set(rows.map((r) => r.split("|").length));
+  expect(widths.size).toBe(1); // 表头、分隔行、数据行列数全一致
+});
+
+test("属性值里含 > 时标签不被截断（正文与链接文字不丢）", () => {
+  const html = '<main><p title="营收 >5 亿">这段正文必须完整保留</p></main>';
+  expect(extractReport(html).bodyMd).toContain("这段正文必须完整保留");
+});
+
+test("常用命名实体被解码，不字面残留进笔记", () => {
+  const html = "<main><p>营收&mdash;利润&hellip;&ldquo;引用&rdquo;&middot;结束</p></main>";
+  const md = extractReport(html).bodyMd;
+  expect(md).not.toContain("&mdash;");
+  expect(md).not.toContain("&hellip;");
+  expect(md).toContain("—");
+  expect(md).toContain("…");
+});
+
+test("未知实体原样保留（不误删）", () => {
+  expect(extractReport("<main><p>A&unknownent;B</p></main>").bodyMd).toContain("&unknownent;");
 });

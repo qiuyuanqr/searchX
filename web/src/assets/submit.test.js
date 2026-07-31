@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { buildPayload, tokenFromQuery, resolveToken, clearStoredToken, TOKEN_STORAGE_KEY, describeVerify, describeResult, escapeHtml, renderSearchResultsHTML, findReportMeta, describeExistingReport, fetchAny } from "./submit.js";
+import { buildPayload, tokenFromQuery, resolveToken, clearStoredToken, TOKEN_STORAGE_KEY, describeVerify, describeResult, escapeHtml, renderSearchResultsHTML, findReportMeta, describeExistingReport, fetchAny, renderExcerpt } from "./submit.js";
 
 // 假 storage：Map 撑起 get/set/remove；可选 throwOn 模拟隐私模式下方法抛错。
 function fakeStorage(init = {}, throwOn = new Set()) {
@@ -230,4 +230,41 @@ test("fetchAny：每次调用都带 AbortSignal（超时兜底，杜绝无限『
   await fetchAny(["https://a/"], {}, { fetchImpl: f });
   expect(f.calls[0].signal).toBeTruthy();
   expect(typeof f.calls[0].signal.aborted).toBe("boolean");
+});
+
+// ── Pagefind 摘录必须转义（2026-07-31 审查）─────────────────────
+// excerpt 是从报告正文里摘出来的片段，而报告正文由全权限 headless Claude 生成。
+// 老实现「按 Pagefind 约定原样保留」等于把报告正文直接写进首页 innerHTML；
+// 首页同源 localStorage 里存着邀请 token 与 CHECK_KEY。
+test("renderExcerpt：只放行 <mark>，其余标签一律转义", () => {
+  expect(renderExcerpt("普通<mark>命中</mark>文字")).toBe("普通<mark>命中</mark>文字");
+  expect(renderExcerpt('<img src=x onerror=alert(1)>')).toBe("&lt;img src=x onerror=alert(1)&gt;");
+  expect(renderExcerpt("<script>alert(1)</script>")).toBe("&lt;script&gt;alert(1)&lt;/script&gt;");
+  expect(renderExcerpt(null)).toBe("");
+});
+
+test("renderSearchResultsHTML：excerpt 里的注入被转义后才拼进 HTML", () => {
+  const html = renderSearchResultsHTML([
+    { url: "/r/x/", meta: { title: "标题" }, excerpt: '<img src=x onerror=alert(1)><mark>命中</mark>' },
+  ]);
+  expect(html).not.toContain("<img");
+  expect(html).toContain("&lt;img");
+  expect(html).toContain("<mark>命中</mark>");
+});
+
+// ── degraded 信号必须传达给提交者（2026-07-31 审查）───────────────
+// Worker 在「Issue 建成、但 issue 号→邮箱映射没写进 KV」时回 {ok:true, degraded:true}。
+// 邮箱映射写不进去，runner 跑完就不知道该发给谁，那封「已上线」邮件永远发不出。
+// 老实现只看 ok，照样承诺「结果会发到你的邮箱」，提交者干等一场还不知道出了什么事。
+test("describeResult：degraded 时不承诺发邮件，如实说明", () => {
+  const out = describeResult({ ok: true, degraded: true });
+  expect(out.kind).toBe("warn");
+  expect(out.text).not.toContain("会发到你的邮箱。");
+  expect(out.text).toContain("可能发不到");
+});
+
+test("describeResult：正常成功仍是 success 文案（不回归）", () => {
+  const out = describeResult({ ok: true });
+  expect(out.kind).toBe("success");
+  expect(out.text).toContain("发到你的邮箱");
 });

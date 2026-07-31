@@ -108,3 +108,29 @@ test("提交 token 当 admin 密钥 → 401（凭证隔离）", async () => {
   const r = await handleAdmin(req("GET", "/admin/list", { key: add.token }), env);
   expect(r.status).toBe(401);
 });
+
+// ── 无鉴权写额度放大（2026-07-31 审查）────────────────────────────
+// /admin/* 前面没有任何鉴权，谁都能打。老实现「先写计数、后判锁定」，锁定之后每个错密钥请求
+// 仍写一次 KV——约一千个请求就能耗尽免费版每日写额度，全 Worker 的写路径瘫一整天。
+test("锁定后不再写 KV：单 IP 每小时写次数封顶 maxFails", async () => {
+  const env = ENV({ ADMIN_MAX_FAILS_PER_HOUR: "3" });
+  let writes = 0;
+  const put = env.INTAKE_KV.put.bind(env.INTAKE_KV);
+  env.INTAKE_KV.put = async (...a) => { writes++; return put(...a); };
+  for (let i = 0; i < 200; i++) {
+    await handleAdmin(req("GET", "/admin/list", { key: "X" }), env, { now: () => 0 });
+  }
+  expect(writes).toBe(3); // 200 次攻击，只写了 3 次
+});
+
+test("计数值被写坏（非数字）：按 0 起算并覆盖回合法值，限流不永久失效", async () => {
+  const env = ENV({ ADMIN_MAX_FAILS_PER_HOUR: "2" });
+  // 先失败一次拿到真实的计数键名，再把值写坏，验证下一次能自愈
+  await handleAdmin(req("GET", "/admin/list", { key: "X" }), env, { now: () => 0 });
+  const failKey = [...env.INTAKE_KV.store.keys()].find((k) => k.startsWith("afail:"));
+  expect(failKey).toBeTruthy();
+  env.INTAKE_KV.store.set(failKey, "NaN");
+  const r = await handleAdmin(req("GET", "/admin/list", { key: "X" }), env, { now: () => 0 });
+  expect(r.status).toBe(401);                              // 坏值按 0 起算 → 没被误判成已锁定
+  expect(env.INTAKE_KV.store.get(failKey)).toBe("1");      // 已覆盖回合法数字，可自愈
+});

@@ -69,3 +69,41 @@ test("stripLeadBoilerplate：中段的「信息截止」纪律行与悬着的方
     "一只被题材推到极端估值的股票。未来 3 个月震荡偏弱、高波动；真正贡献业绩的只有 MLCC 等少数业务。"
   )).toBe("一只被题材推到极端估值的股票。真正贡献业绩的只有 MLCC 等少数业务。");
 });
+
+// ── 冒号接续形态（2026-07-31 审查）─────────────────────────────────
+// SKILL 钉死的格式是「第一句给方向，随后讲差异化理由」，但作者普遍写成
+// 「未来约 13 周方向偏X：理由一，理由二；理由三。」这种冒号长句。
+// 老实现的 [^。；]* 会一路吃到第一个句号，把冒号后的全部核心理由一并吞掉——
+// 实测存量 4 篇股票卡的首页导语因此被掏空或从半截转折句开头。
+test("方向句用冒号携带理由：只剥到冒号，理由全部保留", () => {
+  const tldr = "未来约 13 周方向偏跌：市净率约 26 倍、市盈率 900 倍以上的极端估值，叠加 89.82% 的资产负债率；主力资金持续净流出。";
+  const out = stripLeadBoilerplate(tldr);
+  expect(out.startsWith("市净率约 26 倍")).toBe(true);
+  expect(out).toContain("89.82%");
+  expect(out).toContain("主力资金持续净流出");
+});
+
+test("方向句不带冒号：整句照旧剥掉（不回归）", () => {
+  const tldr = "未来约 13 周方向偏跌。基本面恶化叠加估值透支是下行主线。";
+  expect(stripLeadBoilerplate(tldr)).toBe("基本面恶化叠加估值透支是下行主线。");
+});
+
+test("导语几乎只有方向句：兜底也要清掉置信度套话，不整段回流首页", () => {
+  const tldr = "未来约 13 周方向偏跌。整体置信度：中。不给目标价与买卖评级。";
+  const out = stripLeadBoilerplate(tldr);
+  expect(out).not.toContain("置信度");
+  expect(out).not.toContain("不给目标价");
+});
+
+// ── 首句里的裸「震荡」不截胡真方向 ────────────────────────────────
+test("首句先出现行情描述里的「震荡」，方向仍按后面的「偏涨」判定", () => {
+  const d = extractDirection("近期股价震荡整理，未来约 13 周方向偏涨：产能释放在即。");
+  expect(d.cls).toBe("up");
+  expect(d.arrow).toBe("↗");
+});
+
+test("首句只有裸「震荡」时仍判 flat（别把判定做过头）", () => {
+  const d = extractDirection("未来约 13 周方向震荡。");
+  expect(d.cls).toBe("flat");
+  expect(d.arrow).toBe("↔");
+});

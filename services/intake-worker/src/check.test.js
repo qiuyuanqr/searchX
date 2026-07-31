@@ -199,6 +199,7 @@ function getPending(env, headers = {}) {
       headers,
     }),
     env,
+    { now: NOW },
   );
 }
 
@@ -267,6 +268,7 @@ function postDone(env, id, headers = {}) {
     }),
     env,
     id,
+    { now: NOW },
   );
 }
 
@@ -642,6 +644,7 @@ function postDoneBody(env, id, body) {
     }),
     env,
     id,
+    { now: NOW },
   );
 }
 
@@ -698,6 +701,7 @@ test("done：坏 JSON body → 容错按无 body 处理（不把 done 卡死）"
     }),
     env,
     "t1",
+    { now: NOW },
   );
   expect(res.status).toBe(200);
   expect(JSON.parse(kv.store.get("check:t1")).status).toBe("done");
@@ -748,6 +752,7 @@ function getRecent(env, headers = {}) {
   return handleCheckRecent(
     new Request("https://w.dev/check/recent", { method: "GET", headers }),
     env,
+    { now: NOW },
   );
 }
 
@@ -826,7 +831,7 @@ test("recent：不回传 text 全文 / link 全文 / images 字节等重字段",
 
 test("recent：索引条目有 title → view 带 title；pending 无 title → 不带（前端 fallback snippet）", async () => {
   const kv = fakeKV({
-    "check:idx": JSON.stringify({ complete: true, items: [
+    "check:idx": JSON.stringify({ complete: true, rebuiltAt: Date.parse(NOW()), items: [
       { id: "d", createdAt: "2026-07-02T09:00:00.000Z", status: "done", snippet: "1 张图", title: "某截图核查", summary: "不实（高）：假" },
       { id: "p", createdAt: "2026-07-01T08:00:00.000Z", status: "pending", snippet: "排队文本" },
     ] }),
@@ -1007,7 +1012,7 @@ test("根治·done：标完成同步更新索引条目 status/summary", async ()
     method: "POST",
     headers: { "x-check-runner-secret": "RS_GOOD", "content-type": "application/json" },
     body: JSON.stringify({ outcome: "done", summary: "属实（高）：确认" }),
-  }), env, "t");
+  }), env, "t", { now: NOW });
   const idx = JSON.parse(kv.store.get("check:idx"));
   const e = idx.items.find((x) => x.id === "t");
   expect(e.status).toBe("done");
@@ -1071,7 +1076,7 @@ function resultReq(env, headers = {}, method = "GET") {
 
 test("done 带 result：存进 checkresult:<id>，不写进 task / idx", async () => {
   const env = ENV({ INTAKE_KV: fakeKV({ "check:ID1": JSON.stringify({ text: "t", status: "pending", images: [] }) }) });
-  const r = await handleCheckDone(doneReq({ outcome: "done", summary: "属实（高）：真", result: "---\nverdict: 属实\n---\n## 真相直述\n真。" }), env, "ID1");
+  const r = await handleCheckDone(doneReq({ outcome: "done", summary: "属实（高）：真", result: "---\nverdict: 属实\n---\n## 真相直述\n真。" }), env, "ID1", { now: NOW });
   expect(r.status).toBe(200);
   expect(env.INTAKE_KV.store.get("checkresult:ID1")).toContain("真相直述");
   // task 不含 result 全文；idx 条目也不含
@@ -1083,13 +1088,13 @@ test("done 带 result：存进 checkresult:<id>，不写进 task / idx", async (
 test("done 的 result 超 200KB：跳过存储（不截断）", async () => {
   const env = ENV({ INTAKE_KV: fakeKV({ "check:ID1": JSON.stringify({ text: "t", status: "pending", images: [] }) }) });
   const big = "x".repeat(200 * 1024 + 1);
-  await handleCheckDone(doneReq({ outcome: "done", result: big }), env, "ID1");
+  await handleCheckDone(doneReq({ outcome: "done", result: big }), env, "ID1", { now: NOW });
   expect(env.INTAKE_KV.store.has("checkresult:ID1")).toBe(false);
 });
 
 test("done 不带 result：不产生 checkresult 键", async () => {
   const env = ENV({ INTAKE_KV: fakeKV({ "check:ID1": JSON.stringify({ text: "t", status: "pending", images: [] }) }) });
-  await handleCheckDone(doneReq({ outcome: "done", summary: "s" }), env, "ID1");
+  await handleCheckDone(doneReq({ outcome: "done", summary: "s" }), env, "ID1", { now: NOW });
   expect(env.INTAKE_KV.store.has("checkresult:ID1")).toBe(false);
 });
 
@@ -1133,4 +1138,102 @@ test("GET /check/<id>/result 经 worker 路由分发正确", async () => {
   const r = await worker.fetch(new Request("https://w.dev/check/ID1/result", { headers: { "x-check-key": "CK_GOOD" } }), env);
   expect(r.status).toBe(200);
   expect((await r.json()).result).toBe("hi");
+});
+
+// ── 索引自愈与修剪（2026-07-31 审查）─────────────────────────────
+// KV 没有 CAS，check:idx 的读-改-写在两个 PoP 并发时会互相整表覆盖。老实现一旦丢条目，
+// complete:true 让 rebuildIndex 永不再跑，任务全文还在、状态还是 pending，却永远不被
+// runner 下发、也不在手机列表里，直到 7 天 TTL 静默过期——没有任何自愈路径。
+test("索引丢了条目：超过强制重建周期后自动 list 重建，丢失的 pending 任务回到队列", async () => {
+  const nowMs = Date.parse(NOW());
+  const kv = fakeKV({
+    // 索引只剩 A（B 被并发写覆盖掉了），且 rebuiltAt 已是 7 小时前
+    "check:idx": JSON.stringify({
+      complete: true,
+      rebuiltAt: nowMs - 7 * 3600 * 1000,
+      items: [{ id: "A", createdAt: NOW(), status: "done", snippet: "甲" }],
+    }),
+    "check:A": JSON.stringify({ text: "甲", link: "", status: "done", createdAt: NOW() }),
+    "check:B": JSON.stringify({ text: "乙", link: "", status: "pending", createdAt: NOW() }),
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  const body = await (await getPending(env, { "x-check-runner-secret": "RS_GOOD" })).json();
+  expect(body.tasks.map((t) => t.id)).toEqual(["B"]); // B 被重建捞回来，会被 runner 下发
+  const idx = JSON.parse(kv.store.get("check:idx"));
+  expect(idx.items.map((x) => x.id).sort()).toEqual(["A", "B"]);
+  expect(idx.rebuiltAt).toBe(nowMs); // 重建时点已刷新，不会每次都 list
+});
+
+test("未到重建周期：照常只读索引、不 list（保住 list 额度）", async () => {
+  const nowMs = Date.parse(NOW());
+  const kv = fakeKV({
+    "check:idx": JSON.stringify({
+      complete: true,
+      rebuiltAt: nowMs - 60_000, // 1 分钟前刚重建过
+      items: [{ id: "A", createdAt: NOW(), status: "pending", snippet: "甲" }],
+    }),
+    "check:A": JSON.stringify({ text: "甲", link: "", status: "pending", createdAt: NOW() }),
+  });
+  kv.list = async () => { throw new Error("不该调用 list"); };
+  const env = ENV({ INTAKE_KV: kv });
+  const body = await (await getPending(env, { "x-check-runner-secret": "RS_GOOD" })).json();
+  expect(body.tasks.map((t) => t.id)).toEqual(["A"]);
+});
+
+test("并发写：done 回传基于旧快照，也不会把新提交的任务从索引里抹掉", async () => {
+  const nowMs = Date.parse(NOW());
+  const kv = fakeKV({
+    "check:idx": JSON.stringify({
+      complete: true, rebuiltAt: nowMs,
+      items: [{ id: "A", createdAt: NOW(), status: "pending", snippet: "甲" }],
+    }),
+    "check:A": JSON.stringify({ text: "甲", link: "", status: "pending", createdAt: NOW() }),
+    "check:B": JSON.stringify({ text: "乙", link: "", status: "pending", createdAt: NOW() }),
+  });
+  // 模拟最终一致：done 所在节点第一次读索引拿到的是不含 B 的旧快照，
+  // 但写回前的那次重读能看到含 B 的最新版本。
+  const stale = kv.store.get("check:idx");
+  const latest = JSON.stringify({
+    complete: true, rebuiltAt: nowMs,
+    items: [
+      { id: "A", createdAt: NOW(), status: "pending", snippet: "甲" },
+      { id: "B", createdAt: NOW(), status: "pending", snippet: "乙" },
+    ],
+  });
+  kv.store.set("check:idx", latest);
+  const realGet = kv.get.bind(kv);
+  let firstIdxRead = true;
+  kv.get = async (key, type) => {
+    if (key === "check:idx" && firstIdxRead) { firstIdxRead = false; return stale; }
+    return realGet(key, type);
+  };
+  const env = ENV({ INTAKE_KV: kv });
+  await handleCheckDone(
+    new Request("https://w.dev/check/A/done", {
+      method: "POST",
+      headers: { "x-check-runner-secret": "RS_GOOD", "content-type": "application/json" },
+      body: JSON.stringify({ outcome: "done", summary: "属实（高）：确认" }),
+    }),
+    env, "A", { now: NOW }
+  );
+  const idx = JSON.parse(kv.store.get("check:idx"));
+  expect(idx.items.map((x) => x.id).sort()).toEqual(["A", "B"]); // B 没被抹掉
+  expect(idx.items.find((x) => x.id === "A").status).toBe("done");
+});
+
+test("索引里超过 7 天 TTL 的幽灵条目被修剪（手机页不再列出点开即 404 的条目）", async () => {
+  const nowMs = Date.parse(NOW());
+  const old = new Date(nowMs - 8 * 24 * 3600 * 1000).toISOString();
+  const kv = fakeKV({
+    "check:idx": JSON.stringify({
+      complete: true, rebuiltAt: nowMs,
+      items: [
+        { id: "old", createdAt: old, status: "pending", snippet: "早就过期了" },
+        { id: "new", createdAt: NOW(), status: "done", snippet: "还在" },
+      ],
+    }),
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  const body = await (await getRecent(env, { "x-check-key": "CK_GOOD" })).json();
+  expect(body.tasks.map((t) => t.id)).toEqual(["new"]);
 });

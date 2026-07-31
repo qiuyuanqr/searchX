@@ -51,17 +51,20 @@ export function validateContent(input, limits = LIMITS) {
   const focus = get("focus").trim();
   const message = get("message").trim();
 
-  const errors = [];
-  if (!title) errors.push("title_required");
-  if (title.length > limits.title) errors.push("title_too_long");
-  if (focus.length > limits.focus) errors.push("focus_too_long");
-  if (message.length > limits.message) errors.push("message_too_long");
-
+  // 先清洗再校验：反过来的话，只由控制字符组成的题目能通过「非空」校验，清洗后却变成空标题，
+  // 建出来的 Issue 标题为空、runner 拿到空 topic 照样开跑一次全力档研究。
+  // 长度同理按清洗后的算，否则可以用大量控制字符把实际内容顶到上限之外。
   const clean = {
     title: sanitize(title),
     focus: sanitize(focus),
     message: sanitize(message),
   };
+
+  const errors = [];
+  if (!clean.title) errors.push("title_required");
+  if (clean.title.length > limits.title) errors.push("title_too_long");
+  if (clean.focus.length > limits.focus) errors.push("focus_too_long");
+  if (clean.message.length > limits.message) errors.push("message_too_long");
   // HTML / 脚本注入命中 → 直接拒收：加错误码 forbidden_content，令 ok:false。
   if (hardRejectSubmission(clean)) errors.push("forbidden_content");
   // flags 始终计算（不影响 ok）：作为放行前的红旗，其余高信号模式（含 shell / 路径 / 机密）命中只降级人工复核。

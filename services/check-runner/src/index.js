@@ -3,7 +3,7 @@
 // 副作用集中在此（spawn claude / nodemailer / 文件锁 / 网络），不单测——逻辑都在被注入的纯函数里。
 
 import nodemailer from "nodemailer";
-import { mkdirSync, openSync, closeSync, writeSync, writeFileSync, readFileSync, rmSync, statSync } from "fs";
+import { mkdirSync, openSync, closeSync, writeSync, writeFileSync, readFileSync, rmSync, statSync, utimesSync } from "fs";
 import { join } from "path";
 import { homedir, tmpdir } from "os";
 import { loadCheckRunnerConfig } from "./config.js";
@@ -12,6 +12,7 @@ import { buildFactcheckPrompt } from "./factcheck-cmd.js";
 import { createAttemptsStore } from "./attempts.js";
 import { runOnce } from "./runner.js";
 import { buildChildEnv } from "../../runner/src/child-env.js";
+import { writeFileAtomic } from "../../runner/src/atomic-write.js";
 import { sendEmail } from "../../runner/src/email.js";
 
 // —— 全局单实例锁（锁文件与 research runner 不同，两者可并存）——
@@ -33,9 +34,34 @@ function createLockExclusive(path) {
   return true;
 }
 
+// 释放前核对锁里的 pid 还是不是自己：本进程若已被别人（超龄判定）抢过锁，锁文件里写的是抢锁者的
+// pid，无条件删就会把还在跑的那个实例的锁删掉，下一 tick 第三个实例又能进来，并发级联扩散。
 function makeRelease(path) {
   let released = false;
-  return () => { if (released) return; released = true; try { rmSync(path, { recursive: true, force: true }); } catch {} };
+  return () => {
+    if (released) return;
+    released = true;
+    try {
+      const owner = parseInt(readFileSync(path, "utf8").trim(), 10);
+      if (owner !== process.pid) return; // 锁已易主，不是我的，别动
+    } catch { return; }
+    try { rmSync(path, { recursive: true, force: true }); } catch {}
+  };
+}
+
+// 心跳：批次期间周期性刷新锁文件 mtime。锁龄本来只在建锁时定格，而 runOnce 是串行处理整个
+// 队列的——一批多条合法任务的总时长轻松超过「单条任务超时 + 余量」这个上限，于是下一个
+// launchd tick 会把仍在跑的实例判成超龄残锁抢走，两个实例并发跑 claude、并发写同一临时目录。
+// 有了心跳，「超龄」才真正只匹配死锁（进程没了自然不再刷新）。
+function startLockHeartbeat(path, intervalMs = 60_000) {
+  const timer = setInterval(() => {
+    try {
+      const owner = parseInt(readFileSync(path, "utf8").trim(), 10);
+      if (owner === process.pid) utimesSync(path, new Date(), new Date());
+    } catch {}
+  }, intervalMs);
+  timer.unref?.();
+  return () => clearInterval(timer);
 }
 
 // maxAliveAgeMs：pid 有限，会被 OS 回收复用——断电残留锁若正好被复用给别的常驻进程（甚至
@@ -52,11 +78,28 @@ function acquireLock(maxAliveAgeMs) {
   try { ageMs = Date.now() - statSync(path).mtimeMs; } catch {}
   if (Number.isInteger(pid) && pidAlive(pid)) {
     if (ageMs < maxAliveAgeMs) return null;
+  } else if (Number.isInteger(pid)) {
+    // pid 读得出来且确证已死 = 崩溃/断电残锁，没理由再等一小时（否则管线静默停摆一小时）。
+    // 留一分钟短窗防和「另一实例刚建锁、pid 还没落盘」撞车。
+    if (ageMs < 60_000) return null;
   } else if (ageMs < STALE_MS) {
     return null;
   }
   try { rmSync(path, { recursive: true, force: true }); } catch {}
   return createLockExclusive(path) ? makeRelease(path) : null;
+}
+
+// 任务 id 会被 join 进临时目录、并且那个目录会被 rm -rf，还会被拼进 Worker 的 URL。
+// id 由 Worker 端 crypto.randomUUID 生成，正常形态就是 [0-9a-f-]；但 runner 是照单全收地
+// 信任远端返回的字段，一旦拿到 "../../x" 这种，rm -rf 就会删到目录外面去。这里当硬断言处理。
+const SAFE_TASK_ID = /^[A-Za-z0-9_-]{1,64}$/;
+export function assertSafeTaskId(id) {
+  if (!SAFE_TASK_ID.test(String(id || ""))) throw new Error(`任务 id 形态非法，拒绝处理：${JSON.stringify(id)}`);
+  return id;
+}
+
+function taskTmpDir(id) {
+  return join(tmpdir(), "searchx-check", assertSafeTaskId(id));
 }
 
 function extFromMime(mime) {
@@ -71,7 +114,7 @@ function extFromMime(mime) {
 async function prepareCheckImages(task, { workerUrl, secret }) {
   const imgs = Array.isArray(task.images) ? task.images : [];
   if (!imgs.length) return { imagePaths: [], cleanup: () => {} };
-  const dir = join(tmpdir(), "searchx-check", task.id);
+  const dir = taskTmpDir(task.id);
   const cleanup = () => { try { rmSync(dir, { recursive: true, force: true }); } catch {} };
   try {
     mkdirSync(dir, { recursive: true });
@@ -94,11 +137,17 @@ async function prepareCheckImages(task, { workerUrl, secret }) {
 // 渲染、标题当手机列表那行标题）。与图片临时文件同目录，任一 cleanup 都会连目录一并清掉。读不到
 // 各自降级（结论→空、整篇→null、标题→null），绝不影响核查主流程。
 function prepareCheckVerdict(task) {
-  const dir = join(tmpdir(), "searchx-check", task.id);
+  const dir = taskTmpDir(task.id);
   mkdirSync(dir, { recursive: true });
   const verdictPath = join(dir, "verdict.txt");
   const resultPath = join(dir, "result.md");
   const titlePath = join(dir, "title.txt");
+  // 先清掉上一轮的残留：runOnce 的 cleanup 在 async finally 里，裸 kill（launchd bootout / 关机）
+  // 走 process.exit 会跳过它，信号文件整套留在原地。下一轮同一任务重跑时若 claude 没写（或只写了
+  // 一部分），读到的就是上一轮的旧结论/旧标题/旧全文，被当成本轮结果 markDone 上报。
+  for (const p of [verdictPath, resultPath, titlePath]) {
+    try { rmSync(p, { force: true }); } catch {}
+  }
   return {
     verdictPath,
     resultPath,
@@ -158,8 +207,22 @@ function makeAttemptsStore() {
   mkdirSync(join(path, ".."), { recursive: true });
   return createAttemptsStore({
     load: () => JSON.parse(readFileSync(path, "utf8")), // 文件不存在 / 损坏 → store 内部按空表处理
-    save: (map) => writeFileSync(path, JSON.stringify(map)),
+    save: (map) => writeFileAtomic(path, JSON.stringify(map)),
   });
+}
+
+// 已核查完成但回传失败的结果缓存：让下一轮只补 markDone，不重跑 /factcheck（否则 Obsidian
+// 里会多出一份重复笔记）。与 attempts 同目录的小 JSON，读写失败一律降级为「没有缓存」。
+function makeDoneCache() {
+  const path = join(homedir(), "Library", "Application Support", "searchx-check-runner", "pending-done.json");
+  mkdirSync(join(path, ".."), { recursive: true });
+  const load = () => { try { return JSON.parse(readFileSync(path, "utf8")) || {}; } catch { return {}; } };
+  const save = (map) => { try { writeFileAtomic(path, JSON.stringify(map)); } catch {} };
+  return {
+    get: (id) => load()[id] || null,
+    set: (id, payload) => { const m = load(); m[id] = payload; save(m); },
+    clear: (id) => { const m = load(); delete m[id]; save(m); },
+  };
 }
 
 async function main() {
@@ -183,7 +246,8 @@ async function main() {
     console.log("⏭  已有一轮核查 runner 在运行，本次跳过。");
     process.exit(0);
   }
-  process.on("exit", release);
+  const stopHeartbeat = startLockHeartbeat(lockFile());
+  process.on("exit", () => { stopHeartbeat(); release(); });
 
   // 当前 spawn 的 claude 子进程句柄：SIGTERM/SIGINT 是「裸 kill runner 进程」场景（区别于下面
   // runFactcheck 内部 termTimer/killTimer 那条超时自杀路径）。没有这层，进程退出只会跑
@@ -216,7 +280,11 @@ async function main() {
     prepareVerdict: prepareCheckVerdict,
     buildPrompt: buildFactcheckPrompt,
     runFactcheck: async (prompt) => {
-      console.log(`→ claude -p ${JSON.stringify(prompt)}`);
+      // 只打元信息：prompt 里含被核查内容的明文（私人核查，可能是聊天记录/截图 OCR），
+      // 日志文件长期留在本机且会被排障时随手 cat/贴出来，正文不该落盘。
+      // 确需看全文时用 CHECK_RUNNER_LOG_PROMPT=1 临时打开。
+      if (process.env.CHECK_RUNNER_LOG_PROMPT === "1") console.log(`→ claude -p ${JSON.stringify(prompt)}`);
+      else console.log(`→ claude -p （prompt ${prompt.length} 字，正文不入日志）`);
       // 剥机密（RUNNER_* 与 CHECK_RUNNER_* 一起剥——共用同一个 .env，只剥一组等于白送另一组）
       // + 打 git-sync 哨兵防止子会话钩子把脏工作树推上公开仓：见 child-env.js。
       const proc = Bun.spawn(["claude", "-p", prompt, ...config.claudeArgs], {
@@ -242,6 +310,7 @@ async function main() {
       return code;
     },
     attempts: makeAttemptsStore(),
+    doneCache: makeDoneCache(),
     notify: transport
       ? async (_task) => {
           // 邮件正文绝不含核查内容明文（隐私红线）——只提示"去 Obsidian 看"

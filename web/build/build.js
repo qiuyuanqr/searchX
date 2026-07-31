@@ -56,8 +56,10 @@ export function build({
   }
 
   // 首页：注入卡片 + 提交配置（弹窗表单用 WORKER_URL / WORKER_FALLBACK_URL）
-  const tpl = readFileSync(template, "utf8");
-  writeFileSync(join(out, "index.html"), injectConfig(renderIndex(entries, tpl), cfg));
+  // 先注模板占位符、再渲染卡片：反过来的话，笔记标题/导语里若出现 {{WORKER_URL}} 这样的
+  // 字面字样，会被 injectConfig 一并替换成真实配置值（配置值本身不敏感，但内容被悄悄改写了）。
+  const tpl = injectConfig(readFileSync(template, "utf8"), cfg);
+  writeFileSync(join(out, "index.html"), renderIndex(entries, tpl));
   cpSync(assets, join(out, "assets"), {
     recursive: true,
     filter: (src) => !src.endsWith(".test.js"),
@@ -71,6 +73,9 @@ export function build({
     title: e.title, type: e.type, date: e.date, slug: e.slug, tags: e.tags, href: e.href,
   }));
   writeFileSync(join(out, "reports.json"), JSON.stringify(slim));
+  // reports.json 没有内容指纹（它是被 fetch 的数据文件、不是被引用的资源），新报告上线后
+  // 短时窗口内浏览器仍可能用旧缓存清单，前端查重会漏掉最新那篇。给它一个短缓存声明帮不上忙
+  //（Pages 不读这个），故由调用方 fetch 时带上构建版本号——见 assets/feed.js 的 loadReports。
 
   // submit.html：保留旧网址，跳转回主页并打开提交弹窗（#submit）
   const submitTpl = readFileSync(submitTemplate, "utf8");

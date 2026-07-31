@@ -20,10 +20,17 @@ function counterKeys(ip, email, dayKeyStr, limits) {
 // 不会白白扣掉提交者的当日额度。
 export async function peekRateLimit(kv, { ip, email, dayKeyStr, limits = { ip: 8, email: 4 } }) {
   for (const c of counterKeys(ip, email, dayKeyStr, limits)) {
-    const cur = parseInt((await kv.get(c.key)) || "0", 10);
-    if (cur >= c.max) return { allowed: false, reason: c.reason };
+    if (readCount(await kv.get(c.key)) >= c.max) return { allowed: false, reason: c.reason };
   }
   return { allowed: true, reason: null };
+}
+
+// 计数值一旦读成非数字（KV 里被写坏、控制台误改），老实现的 parseInt→NaN 会让
+// `NaN + 1` 再 String 化成 "NaN" 永久写死：此后该 IP/邮箱的当日限频彻底失效且无法自愈。
+// 坏值一律按 0 起算，下一次写入就把它覆盖回合法数字（与 check.js 的失败计数同一处理）。
+function readCount(raw) {
+  const n = parseInt(raw || "0", 10);
+  return Number.isInteger(n) && n >= 0 ? n : 0;
 }
 
 // 把两个计数器各 +1。handler 在 Issue 建成功之后才调它，确保只有真正入队的请求才计入额度。
@@ -32,7 +39,7 @@ export async function commitRateLimit(
   { ip, email, dayKeyStr, limits = { ip: 8, email: 4 }, ttl = 172800 }
 ) {
   for (const c of counterKeys(ip, email, dayKeyStr, limits)) {
-    const cur = parseInt((await kv.get(c.key)) || "0", 10);
+    const cur = readCount(await kv.get(c.key));
     await kv.put(c.key, String(cur + 1), { expirationTtl: ttl });
   }
 }

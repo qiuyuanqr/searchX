@@ -188,7 +188,7 @@
 ### 5.1 skills / prompt 链（research · stock · factcheck）
 
 - **SKILL.md 是生产代码但没有编译器**。它的「函数签名」是：模板 token 集合（`templates/report.html` 顶部注释）、notes.md frontmatter 字段（`web/build/parse-note.js` 消费）、INDEX.md 表列、`.parked.json` 的 JSON 字段（`services/runner/src/index.js` 的 `readParkSignal` 消费）、verdict/result 信号文件格式（check-runner 消费）。改任何「产出格式」段落 = 改接口，必须找齐消费方。
-- **`related` 里的板块名是筛选功能的硬编码键**：必须与 `web/build/boards.js` 的 `["光模块","机器人","算力","AI应用","航天"]` 逐字一致，写「AI 应用」（带空格）就静默匹配不到。YAML 写法必须整体带引号 `["[[算力]]"]`——裸写 `[[算力]]` 被 YAML 解析成嵌套数组（factcheck SKILL 168 行注释）。
+- **`related` 里的板块名只用于 Obsidian 双链，不再驱动站点展示**：板块筛选与卡片板块标签已于 2026-07-14 随首页改版下线（`web/build/boards.js` 已删除，`parse-note.js` 解析出的 `boards` 字段当前无人消费）；首页筛选 chips 由 `render-index.js` 按 `type` 数据自动生成。写法仍建议与 CLAUDE.md 的五大板块逐字一致（供双链聚合）。YAML 写法必须整体带引号 `["[[算力]]"]`——裸写 `[[算力]]` 被 YAML 解析成嵌套数组（factcheck SKILL 168 行注释）。
 - **`created` 字段驱动同日排序**：缺失或格式坏 → 按 0 处理排到同日最末（`web/build/scan.js` 的 `compareByNewest` 专门处理了 NaN）。日期取自**目录名**而非 frontmatter `date`（`parse-note.js`）——目录名写错日期，frontmatter 救不了。
 - **stock 转交的三个坑**：① 模板固定取 research 目录下那份（stock SKILL 明写「不要用当前 skill 目录变量」）；② Step 5.5 不因转交而省略（曾漏写被审计补上）；③ ETF/指数/可转债/未上市标的**不算**股票，不转交（research SKILL Step 0 边界段——这是修过的真实误判）。
 - **「无法确认有人在场一律按无人值守处理、不反问」**（research SKILL Step 5.5 第 5 步引言）是全 skill 通则。给 skill 加任何新「问用户」分支前先读这条——无人值守下反问 = 研究白跑一轮全额额度。

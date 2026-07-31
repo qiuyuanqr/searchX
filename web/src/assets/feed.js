@@ -15,15 +15,24 @@ if (tokenFromQuery(location.search) && window.history && history.replaceState) {
 
 const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-let reportsCache = null;
+let reportsCache = null;      // 成功结果才长期缓存
+let reportsInflight = null;   // 在途请求：并发调用共享同一次 fetch，不重复打
 async function loadReports(){
   if (reportsCache) return reportsCache;
-  try {
-    const url = new URL("reports.json", document.baseURI).href; // 站点根的报告清单（构建产出）
-    const r = await fetch(url);
-    reportsCache = r.ok ? await r.json() : [];
-  } catch { reportsCache = []; } // 取不到就当无可比对：不拦提交，runner 仍会兜底查重
-  return reportsCache;
+  // 失败不写缓存：老实现把失败的空数组缓存起来，一次网络抖动就让本次会话里的前端查重与
+  // 搜索元信息全部静默失效，刷新页面前再也不会重试。
+  if (!reportsInflight) {
+    reportsInflight = (async () => {
+      const url = new URL("reports.json", document.baseURI).href; // 站点根的报告清单（构建产出）
+      const r = await fetch(url);
+      if (!r.ok) throw new Error("reports.json " + r.status);
+      return r.json();
+    })()
+      .then((data) => { reportsCache = data; return data; })
+      .catch(() => [])                       // 取不到就当无可比对：不拦提交，runner 仍会兜底查重
+      .finally(() => { reportsInflight = null; });
+  }
+  return reportsInflight;
 }
 function todayBeijing(){
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai" }).format(new Date());
@@ -152,9 +161,13 @@ function bindSearch(){
     const items = await Promise.all(search.results.slice(0, 20).map((r) => r.data()));
     if (seq !== searchSeq) return; // 期间有更新的输入/清空动作 → 旧结果直接丢弃
     if (!items.length) { showResults(0); results.innerHTML = ""; empty.hidden = false; return; }
+    // 清单要在写 DOM 之前 await 完，然后紧挨着再查一次 seq：
+    // 守卫放在这个 await 之前的话，旧查询照样能在 loadReports 返回后覆盖掉新查询的结果。
+    const reports = await loadReports();
+    if (seq !== searchSeq) return;
     empty.hidden = true;
     // 传 reports.json 清单：结果卡带上日期/类型元信息（取不到清单则退化为纯标题+摘录）
-    results.innerHTML = renderSearchResultsHTML(items, await loadReports()); // title/url 在此函数内已转义，防 DOM-XSS
+    results.innerHTML = renderSearchResultsHTML(items, reports); // title/url 在此函数内已转义，防 DOM-XSS
     showResults(items.length);
   }, 180);
 
@@ -322,9 +335,12 @@ function bindSubmitModal(){
       });
       const data = await r.json().catch(() => ({ ok: false }));
       const out = describeResult(data);
-      if (out.kind === "success") {
+      // warn = 提交成功但服务端降级（没记下邮箱，结果可能发不出）：同样收起表单、进"已提交"态，
+      // 但把降级原因如实显示出来，不让提交者干等一封永远不会到的邮件。
+      if (out.kind === "success" || out.kind === "warn") {
         form.hidden = true; done.hidden = false;
         if (card) card.scrollTop = 0;
+        if (out.kind === "warn") setStatus(out.text, "warn");
       } else {
         setStatus(out.text, out.kind);
       }

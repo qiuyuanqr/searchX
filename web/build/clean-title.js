@@ -25,7 +25,15 @@ export function cleanStockTitle(title) {
   const t = String(title).trim();
   // 优先找括号里的代码串（全角/半角），再退到裸代码（如「巨轮智能 002031」）
   let m = new RegExp(`[（(]\\s*(${CODES.source})\\s*[)）]`).exec(t);
-  if (!m) m = new RegExp(`\\s(${CODES.source})(?=\\s|·|—|-|$)`).exec(t);
+  // 裸代码回退：排除 19xx/20xx 这类年份形态，否则「某公司 2025 年回顾」会把 2025 当成股票代码。
+  if (!m) {
+    const re = new RegExp(`\\s(${CODES.source})(?=\\s|·|—|-|$)`, "g");
+    for (const cand of t.matchAll(re)) {
+      if (/^(?:19|20)\d{2}$/.test(cand[1])) continue;
+      m = cand;
+      break;
+    }
+  }
   if (!m) return null;
   const name = t.slice(0, m.index).replace(/[（(]\s*$/, "").trim();
   if (!name) return null; // 只有代码没有名称的标题不清洗

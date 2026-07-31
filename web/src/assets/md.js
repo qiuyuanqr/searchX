@@ -10,15 +10,23 @@ function escapeHtml(s) {
 }
 
 // 行内格式：先转义，再依次处理双链→链接→加粗→行内代码。
+// 链接先占位、最后回填：不占位的话，后面的加粗/行内代码替换会改写已经生成的 href
+//（URL 里带 ** 或反引号的链接会被拦腰插进 <strong>/<code> 标签，链接直接坏掉）。
 function renderInline(raw) {
   let s = escapeHtml(raw);
   s = s.replace(/\[\[([^\]]+)\]\]/g, (_, t) => t);                 // [[X]] → X
-  s = s.replace(/\[([^\]]*)\]\(([^)\s]+)\)/g, (m, label, url) => { // [text](url)
+  const links = [];
+  // URL 段支持一层平衡括号：维基百科等链接常带右括号（…_(disambiguation)），
+  // 用 [^)\s]+ 会在第一个 ) 处截断、把 URL 剩下半截当正文吐出来。
+  s = s.replace(/\[([^\]]*)\]\(((?:[^()\s]|\([^()\s]*\))+)\)/g, (m, label, url) => {
     if (!/^https?:\/\//i.test(url)) return label;                 // 非 http(s) 退化为纯文字
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+    const i = links.length;
+    links.push(`<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`);
+    return `\u0000L${i}\u0000`;
   });
   s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");       // **x**
   s = s.replace(/`([^`]+)`/g, "<code>$1</code>");                 // `x`
+  s = s.replace(/\u0000L(\d+)\u0000/g, (_, i) => links[Number(i)]);
   return s;
 }
 

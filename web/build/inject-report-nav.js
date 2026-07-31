@@ -141,7 +141,17 @@ export function injectReportNav(html, {
   const headInject = csp + "\n" + favicon;
   // 注入到 <head> 末尾（第一个 </head>，即真正的头部结束；正文里若出现字面 </head> 不受影响）。
   const headM = html.match(/<\/head>/i);
-  if (headM) html = html.replace(headM[0], headInject + "\n" + headM[0]);
+  if (headM) {
+    html = html.replace(headM[0], headInject + "\n" + headM[0]);
+  } else {
+    // 没有 </head> 的报告（模板被改坏、AI 产出漏写）也必须带上 CSP：老实现这里直接跳过，
+    // 那篇报告就以「无 CSP」的状态上线公开站主域，等于这道防线对最异常的产物恰好失效。
+    // 退而求其次插在文档最前面——meta CSP 只要出现在任何脚本/资源之前就生效。
+    const htmlTagM = html.match(/<html\b[^>]*>/i);
+    html = htmlTagM
+      ? html.replace(htmlTagM[0], htmlTagM[0] + "\n" + headInject)
+      : headInject + "\n" + html;
+  }
 
   // 表格不进全文索引（data-pagefind-ignore）：表格里的裸数字串会被 Pagefind 摘成
   // 「682 亿. 82.10. 15.15.」这类无意义摘录；关键事实正文都有，摘录落在正文段落上更可读。
@@ -155,6 +165,7 @@ export function injectReportNav(html, {
   const vpRe = /<meta\s+name=["']viewport["'][^>]*>/i;
   if (vpRe.test(html)) html = html.replace(vpRe, lockedViewport);
   else if (headM) html = html.replace(/<\/head>/i, lockedViewport + "\n</head>");
+  else html = html.replace(headInject, headInject + "\n" + lockedViewport); // 无 </head> 时跟着 CSP 一起走
 
   const snippet = `
 <!-- searchX 站点导航（构建时注入，不写入归档 report.html） -->

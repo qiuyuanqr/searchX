@@ -35,12 +35,23 @@ export function findReportDefects(html) {
   // 先剥掉引号内的内容（保留引号本身）：否则 <img alt="a>b" onerror=alert(1)> 这类值里带 >
   // 的属性，会让 [^>]* 在真正标签结束前就被这个内部 > 截断，onerror= 落在检测范围外、零缺陷。
   const noQuotedContent = s.replace(/"[^"]*"/g, '""').replace(/'[^']*'/g, "''");
-  const onM = noQuotedContent.match(/<[^>]*\son([a-z]+)\s*=/i);
+  // on<词> 前允许的属性分隔符不止空白：`<svg/onload=1>` 用 / 分隔、`<img alt="x"onerror=1>`
+  // 剥掉引号内容后留下的 `""` 残壳同样是合法边界。只认 \s 的话这两种写法都能绕过检测。
+  const onM = noQuotedContent.match(/<[^>]*[\s/"']on([a-z]+)\s*=/i);
   if (onM) {
     defects.push(`出现内联事件处理器 on${onM[1]}=（报告不应含事件处理器，疑似注入）`);
   }
-  if (/javascript:/i.test(s)) {
-    defects.push("出现 javascript: 协议（报告不应含脚本式链接，疑似注入）");
+  // 只在属性位置（href/src/action…）算缺陷。正文里出现「javascript:」这个词是完全正常的
+  // ——报告聊前端、聊 XSS 时就会写到它，而老实现的裸 /javascript:/i 会让整次站点构建抛错、
+  // 全站停止发布。真正危险的是它出现在链接/资源地址里。
+  // 注意用原文 s 而不是 noQuotedContent：属性值已被后者清空，得在原文里看。
+  if (/\b(?:href|src|action|formaction|xlink:href)\s*=\s*["']?\s*javascript:/i.test(s)) {
+    defects.push("出现 javascript: 协议链接（报告不应含脚本式链接，疑似注入）");
+  }
+  // meta refresh 整页跳转：CSP 没有对应指令能挡（frame-src/script-src 都管不到它），
+  // 报告被单独打开/分享时会把读者直接送到外站，是这道校验独有的价值所在。
+  if (/<meta[^>]+http-equiv\s*=\s*["']?refresh/i.test(s)) {
+    defects.push("出现 <meta http-equiv=refresh>（报告不应整页跳转，疑似注入）");
   }
   const frameM = s.match(/<(iframe|object|embed)\b/i);
   if (frameM) {

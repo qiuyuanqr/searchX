@@ -81,3 +81,26 @@ test("一篇只含内联 <style> + 外部 <a> 的干净报告无缺陷", () => {
     + `<body><a href="https://sec.gov/x">监管</a></body>`;
   expect(findReportDefects(html)).toEqual([]);
 });
+
+// ── 检测绕过（2026-07-31 审查）───────────────────────────────────
+// on<词> 前的属性分隔符不止空白：`/` 和「剥掉引号内容后留下的引号残壳」都是合法边界。
+test("内联事件处理器：用 / 或引号紧贴当分隔符也被检出", () => {
+  expect(findReportDefects('<svg/onload=alert(1)>').join()).toContain("onload");
+  expect(findReportDefects('<img alt="x"onerror=alert(1)>').join()).toContain("onerror");
+});
+
+test("meta refresh 整页跳转被检出（CSP 没有指令能挡它）", () => {
+  expect(findReportDefects('<meta http-equiv="refresh" content="0;url=https://evil.example">').join())
+    .toContain("refresh");
+});
+
+// 反向：正文里出现「javascript:」这个词是完全正常的（报告聊前端、聊 XSS 就会写到），
+// 老实现的裸 /javascript:/i 会让整次站点构建抛错、全站停止发布。
+test("正文里作为普通文字出现的 javascript: 不算缺陷（不再击穿整站构建）", () => {
+  expect(findReportDefects("<p>老式写法会把 javascript: 协议写进链接，这是反面教材。</p>")).toEqual([]);
+});
+
+test("javascript: 出现在链接属性里仍算缺陷", () => {
+  expect(findReportDefects('<a href="javascript:alert(1)">点我</a>').join()).toContain("javascript:");
+  expect(findReportDefects("<a href='javascript:alert(1)'>点我</a>").join()).toContain("javascript:");
+});

@@ -39,6 +39,14 @@ export function addVersionToImports(js, version) {
   );
 }
 
+// 纯函数：把 JS 里对 reports.json 的引用改写为带数据版本号。
+// 它和 assets 用**不同的**版本号：reports.json 每上线一篇新报告就变，而 assets 内容通常没变——
+// 沿用 assets 的版本号根本起不到破缓存的作用，前端查重会在一段时间里看不到最新那篇报告。
+export function addVersionToDataRefs(js, dataVersion) {
+  // 负向先行只排掉「已带 ?」的（幂等），闭合引号必须允许出现在后面
+  return js.replace(/(["'])reports\.json(?!\?)/g, (_, q) => `${q}reports.json?v=${dataVersion}`);
+}
+
 // 对已构建好的 dist 目录做指纹后处理：算版本号 → 改写所有 HTML 引用 + 所有 assets/*.js 的 import。
 // 必须在 dist 全部写完之后调用。返回注入的版本号（供日志/测试）。
 export function fingerprintAssets({ out = "web/dist" } = {}) {
@@ -56,10 +64,18 @@ export function fingerprintAssets({ out = "web/dist" } = {}) {
     const p = join(out, n);
     writeFileSync(p, addVersionToHtml(readFileSync(p, "utf8"), version));
   }
-  // 所有 assets/*.js：改写模块间 import
+  // reports.json 的独立数据版本号（内容一变就变，与 assets 版本互不牵连）
+  let dataVersion = "";
+  try {
+    dataVersion = createHash("sha256").update(readFileSync(join(out, "reports.json"))).digest("hex").slice(0, 10);
+  } catch {}
+
+  // 所有 assets/*.js：改写模块间 import + reports.json 数据引用
   for (const n of assetFiles.filter((n) => n.endsWith(".js"))) {
     const p = join(assetsDir, n);
-    writeFileSync(p, addVersionToImports(readFileSync(p, "utf8"), version));
+    let js = addVersionToImports(readFileSync(p, "utf8"), version);
+    if (dataVersion) js = addVersionToDataRefs(js, dataVersion);
+    writeFileSync(p, js);
   }
   return version;
 }

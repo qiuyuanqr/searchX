@@ -22,10 +22,20 @@ const STRONG_DIR_RE = /(高位震荡转跌|高位震荡偏空|震荡偏[强弱�
 
 // 只认导语开头的方向（BLUF 格式方向在第一句；个别笔记先给一两句定性、方向落在第二/三句——
 // 该句须以「未来/方向」引导且是强方向短语才算，扫更靠后会把正文行情描述误当结论）。
+// 首句里挑方向短语：按出现顺序取第一个不是裸「震荡」的；全是裸「震荡」才用它。
+function pickFirstSentenceDir(s) {
+  const all = [...s.matchAll(new RegExp(DIR_RE.source, "g"))];
+  if (!all.length) return null;
+  return all.find((x) => x[1] !== "震荡") || all[0];
+}
+
 export function extractDirection(tldr) {
   const sentences = String(tldr || "").split(/[。；]/);
   const firstSentence = (sentences[0] || "").slice(0, 60);
-  let m = DIR_RE.exec(firstSentence);
+  // 首句里取第一个「有倾向信息」的匹配，裸「震荡」只当兜底。
+  // 直接用 DIR_RE 取最左匹配不行：首句若先出现一个描述行情的裸「震荡」（"近期股价震荡整理，
+  // 未来约 13 周方向偏涨"），它会截胡后面真正的结论，把偏涨的卡片标成 ↔ 震荡。
+  let m = pickFirstSentenceDir(firstSentence);
   for (let i = 1; !m && i <= 2; i++) {
     const s = (sentences[i] || "").slice(0, 60);
     if (/未来|方向/.test(s)) m = STRONG_DIR_RE.exec(s);
@@ -39,16 +49,56 @@ export function extractDirection(tldr) {
 
 // 导语去套话：剥掉开头的「未来（约）13 周 / 3 个月方向…。」整句与行内的「置信度：中」
 // 「不给目标价/评级…」碎片。剥完剩太短（<15 字）说明导语本身只有方向句，返回原文兜底。
+// 「未来约 13 周方向偏X」这句的开头部分。作者普遍写成两种形态：
+//   a) 「…方向偏跌。理由一，理由二。」——整句都是套话，剥到句号
+//   b) 「…方向偏跌：估值 26 倍 PB、负债率 89.8%…。」——冒号后是全部差异化理由，只能剥到冒号
+// 老实现只有 a) 那条规则（剥到第一个句号/分号为止），碰上 b) 会把冒号后的核心理由整段吞掉：
+// 卡片导语要么被掏空、只剩一句操作提示，要么从半截转折句开头，甚至与方向徽章表达相反的观感。
+const LEAD_TO_COLON = /^未来\s*[~约]?\s*1?3\s*(?:周|个月)[^。；：:]*[：:]\s*/;
+const LEAD_TO_STOP = /^未来\s*[~约]?\s*1?3\s*(?:周|个月)[^。；]*[。；]\s*/;
+// 中段形态（定性句在前、方向句在后的笔记）：同样两种冒号角色
+const MID_TO_COLON = /(?:^|。)\s*未来\s*[~约]?\s*1?3\s*(?:周|个月)[^。；：:]*[：:]\s*/;
+const MID_TO_STOP = /(?:^|。)\s*未来\s*[~约]?\s*1?3\s*(?:周|个月)[^。；]*[。；]\s*/;
+
+// 与方向无关的套话碎片：置信度、免责、信息截止日
+function stripFragments(s) {
+  return s
+    .replace(/(?:整体)?置信度[：:]?\s*(?:仅)?[高中低][。；，]?\s*/g, "")
+    .replace(/不给目标价[^。；]*[。；]?\s*/g, "")
+    .replace(/信息截止[^。；]*[。；]\s*/g, ""); // 「信息截止 2026-06-04（北京时间）。」类报告纪律行，读者不需要
+}
+
+// 冒号有两种角色，必须分清，否则不是吞掉理由就是把方向套话留在首页：
+//   「方向偏跌：<理由>」 —— 冒号前已经出现方向短语 → 冒号后是理由，只剥到冒号
+//   「方向：<方向短语>…」 —— 冒号前没有方向短语 → 冒号本身还是套话的一部分，照旧剥到句读
+function stripLead(text, colonRe, stopRe) {
+  const colonHit = colonRe.exec(text);
+  // 冒号前已出现方向短语 → 冒号后是理由，用剥得更少的冒号规则；否则用整句规则
+  const re = colonHit && DIR_RE.test(colonHit[0]) ? colonRe : stopRe;
+  const m = re.exec(text);
+  if (!m) return text;
+  // 中段形态匹配到的那个句号是上一句的收尾，得留着
+  return text.replace(re, m[0].startsWith("。") ? "。" : "");
+}
+
 export function stripLeadBoilerplate(tldr) {
   const src = String(tldr || "").trim();
-  let t = src;
-  // 方向套话句剥到「。或；」即止——[^。]* 会越过分号把真内容一并吃掉
-  t = t.replace(/^未来\s*[~约]?\s*1?3\s*(?:周|个月)[^。；]*[。；]\s*/, "");
-  t = t.replace(/(?:整体)?置信度[：:]?\s*(?:仅)?[高中低][。；，]?\s*/g, "");
-  t = t.replace(/不给目标价[^。；]*[。；]?\s*/g, "");
-  t = t.replace(/信息截止[^。；]*[。；]\s*/g, ""); // 「信息截止 2026-06-04（北京时间）。」类报告纪律行，读者不需要
+  let t = stripLead(src, LEAD_TO_COLON, LEAD_TO_STOP);
+  t = stripFragments(t);
   // 中段悬着的方向句（定性句在前、方向句在后的笔记）也剥——方向已提为标记，不必在导语里重复
-  t = t.replace(/(^|。)\s*未来\s*[~约]?\s*1?3\s*(?:周|个月)[^。；]*[。；]\s*/, "$1");
+  t = stripLead(t, MID_TO_COLON, MID_TO_STOP);
   t = t.replace(/^[，、；\s]+/, "");
-  return t.length >= 15 ? t : src;
+  if (t.length >= 15) return t;
+  // 剥完太短 = 这条导语基本上就是一句方向句。直接回退原文会把方向套话原样送上首页、
+  // 与旁边的方向徽章重复（正是首页改版要根治的形态）。
+  // 退一步：只剥到冒号，再把紧跟其后的方向短语本身去掉，往往还能留下一句有信息的尾巴
+  //（"未来 ~13 周方向判断：震荡偏中性，上下空间均不对称地大。" → "上下空间均不对称地大。"）。
+  let tail = stripFragments(src.replace(LEAD_TO_COLON, ""));
+  const dm = DIR_RE.exec(tail);
+  if (dm && dm.index === 0) tail = tail.slice(dm[0].length);
+  tail = tail.replace(/^[，、；：:\s]+/, "").trim();
+  // 尾巴得像一句话才用：以正文字符开头（排除「（基准情景约 50%）。」这种只剩括注的残渣）且够长
+  if (tail.length >= 8 && /^[一-龥A-Za-z0-9]/.test(tail)) return tail;
+  const light = stripFragments(src).replace(/^[，、；\s]+/, "").trim();
+  return light.length ? light : src;
 }

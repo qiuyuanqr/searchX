@@ -21,6 +21,11 @@ cd "$REPO" 2>/dev/null || { echo "[git-sync] 找不到仓库目录，跳过"; ex
 warn(){ printf "\033[33m[git-sync] %s\033[0m\n" "$1"; }
 ok(){   printf "\033[32m[git-sync] %s\033[0m\n" "$1"; }
 
+# 读暂存区文件名：core.quotePath=false + -z 保证中文/特殊字符原样输出。
+# 默认的 quotePath=true 会把非 ASCII 路径转义成 "\346\214\201..." 八进制串，
+# 下面几道按文件名匹配的闸（机密词、park 目录）对中文名会全部失效。
+staged_names(){ git -c core.quotePath=false diff --cached --name-only -z 2>/dev/null | tr '\0' '\n'; }
+
 # —— 即时通知对端拉取（仅 MacBook→Mac mini 方向；best-effort，绝不阻塞收工）——
 # 自我识别：只有本机 ssh 配了别名 mac-mini→stocks 时才触发（Mac mini 无指向自己的别名，
 # 故不会自 ping、不会反向回环）。对端睡眠/离线就静默跳过——它的定时自动拉 autopull 会补上。
@@ -47,6 +52,27 @@ esac
 # 1) 本会话若就是 runner spawn 出来的研究子进程（带哨兵）→ 直接跳过，别让会话级 pull/push
 #    与 /research Step6 的 push 打架。
 [ -n "${SEARCHX_IN_RUNNER:-}" ] && exit 0
+# 1.5) 自互斥：ssh 即时通知触发的 pull 与本机定时 autopull 的 tick 会撞在一起，
+#      两个 git-sync 对同一工作树并发 pull --rebase --autostash 是要出事的。
+#      拿不到锁就静默跳过——对端马上/稍后那一轮会拉到同样的东西，不丢活。
+# 固定路径，不用 $TMPDIR：ssh 触发的那次（TMPDIR 常为空→/tmp）与 launchd 拉起的那次
+# （TMPDIR 是 per-user 私有目录）会算出不同的锁路径，互斥就形同虚设。测试可用 SEARCHX_SYNC_LOCK 覆盖。
+SYNC_LOCK="${SEARCHX_SYNC_LOCK:-/tmp/searchx-gitsync.lock}"
+if mkdir "$SYNC_LOCK" 2>/dev/null; then
+  echo $$ > "$SYNC_LOCK/pid" 2>/dev/null
+  trap '[ "$(tr -dc "0-9" < "$SYNC_LOCK/pid" 2>/dev/null)" = "$$" ] && rm -rf "$SYNC_LOCK" 2>/dev/null' EXIT
+else
+  SPID="$(tr -dc '0-9' < "$SYNC_LOCK/pid" 2>/dev/null)"
+  SAGE=$(( $(date +%s) - $(stat -f %m "$SYNC_LOCK" 2>/dev/null || date +%s) ))
+  # 持有者还活着、且锁没老到离谱 → 让路。否则判定为残锁，抢过来接着干。
+  if [ -n "$SPID" ] && [ "$SAGE" -lt 1800 ] && kill -0 "$SPID" 2>/dev/null; then
+    exit 0
+  fi
+  rm -rf "$SYNC_LOCK" 2>/dev/null
+  mkdir "$SYNC_LOCK" 2>/dev/null || exit 0
+  echo $$ > "$SYNC_LOCK/pid" 2>/dev/null
+  trap '[ "$(tr -dc "0-9" < "$SYNC_LOCK/pid" 2>/dev/null)" = "$$" ] && rm -rf "$SYNC_LOCK" 2>/dev/null' EXIT
+fi
 # 2) 别的会话同步时，若 runner 正持锁跑研究 → 也跳过（同步可跳过、下次补，不丢活）。
 RUNNER_LOCK="$HOME/Library/Application Support/searchx-runner/runner.lock"
 if [ -f "$RUNNER_LOCK" ]; then
@@ -99,7 +125,7 @@ case "$MODE" in
         exit 0
       fi
       # 闸2：暂存文件名命中机密/敏感模式 → 中止（公开仓库，绝不自动提交机密/临时密钥）
-      SENSITIVE="$(git diff --cached --name-only 2>/dev/null | grep -iE '(^|/)\.env($|\.)|\.(pem|key|p12|pfx|keystore)$|(^|/)(secret|secrets|credential|credentials|token)([._-]|$)|持仓|holding' || true)"
+      SENSITIVE="$(staged_names | grep -iE '(^|/)\.env($|\.)|\.(pem|key|p12|pfx|keystore)$|(^|/)(secret|secrets|credential|credentials|token)([._-]|$)|持仓|holding' || true)"
       if [ -n "$SENSITIVE" ]; then
         git reset -q >/dev/null 2>&1
         warn "⚠️ 暂存区出现疑似机密/敏感文件，已取消自动提交，避免推上公开仓："
@@ -111,7 +137,7 @@ case "$MODE" in
       # research SKILL Step 5.5 规定 park 的报告"绝不 push"；交互式 park 只把文件夹带
       # .parked 标记留在本地、不写 .parked.json（那是给 runner 的信号），若不在此拦下，
       # 收工时这里的 git add -A 会把它连同完整报告一起自动提交推送、被 deploy.yml 发布上线。
-      PARKED_DIRS="$(git diff --cached --name-only 2>/dev/null | grep -E '^research/[^/]+/\.parked$' | sed -E 's#^(research/[^/]+)/\.parked$#\1#' | sort -u)"
+      PARKED_DIRS="$(staged_names | grep -E '^research/[^/]+/\.parked$' | sed -E 's#^(research/[^/]+)/\.parked$#\1#' | sort -u)"
       if [ -n "$PARKED_DIRS" ]; then
         N="$(printf '%s\n' "$PARKED_DIRS" | grep -c .)"
         warn "⚠️ ${N} 个被搁置（park）的报告文件夹已从自动提交排除：$(printf '%s' "$PARKED_DIRS" | tr '\n' ' ')"
@@ -119,7 +145,7 @@ case "$MODE" in
           [ -n "$d" ] && git reset -q -- "$d" >/dev/null 2>&1
         done <<< "$PARKED_DIRS"
       fi
-      if [ -n "$(git diff --cached --name-only 2>/dev/null)" ]; then
+      if [ -n "$(staged_names)" ]; then
         HOST="$(hostname -s 2>/dev/null || echo unknown)"
         STAMP="$(date '+%Y-%m-%d %H:%M')"
         if git commit --quiet -m "chore(sync): 自动同步 · ${HOST} · ${STAMP}"; then

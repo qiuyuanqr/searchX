@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { addVersionToHtml, addVersionToImports } from "./fingerprint.js";
+import { addVersionToHtml, addVersionToImports, addVersionToDataRefs } from "./fingerprint.js";
 
 // --- addVersionToHtml：给 HTML 里 assets/*.js|css 引用加 ?v=<版本> ---
 
@@ -66,4 +66,18 @@ test("addVersionToImports：已带 query 的不重复加（幂等）", () => {
 test("addVersionToImports：非 import 的字符串（如 fetch 的 .json 路径）不动", () => {
   const s = 'const u = "./reports.json"; fetch(u);';
   expect(addVersionToImports(s, "v1")).toBe(s);
+});
+
+// ── reports.json 用独立数据版本号（2026-07-31 审查）───────────────
+// 它和 assets 用不同的版本号：reports.json 每上线一篇新报告就变，而 assets 内容通常没变，
+// 沿用 assets 版本号根本破不了缓存——前端查重会在一段时间里看不到最新那篇报告。
+test("addVersionToDataRefs：给 reports.json 引用加数据版本号", () => {
+  expect(addVersionToDataRefs('new URL("reports.json", document.baseURI)', "abc123"))
+    .toBe('new URL("reports.json?v=abc123", document.baseURI)');
+  expect(addVersionToDataRefs("fetch('reports.json')", "abc123")).toBe("fetch('reports.json?v=abc123')");
+});
+
+test("addVersionToDataRefs：已带 query 的幂等，不重复追加", () => {
+  const once = addVersionToDataRefs('"reports.json"', "v1");
+  expect(addVersionToDataRefs(once, "v1")).toBe(once);
 });

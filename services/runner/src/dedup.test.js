@@ -128,3 +128,45 @@ test("公司名只在 tags 不在标题时不再匹配（取舍：宁可漏拦�
   const noCodeTitle = { ...guoci, title: "国瓷材料" };
   expect(findFreshReport({ topic: "300285.SZ", entries: [noCodeTitle], today: "2026-07-14", windowDays: 30 })).toBeTruthy();
 });
+
+// ── 多标的题目不查重 ──────────────────────────────────────────────
+// 双向包含的名称匹配会把"胜宏科技和沪电股份哪个更好"拦成单票旧报告，
+// 提交者收到一封答非所问的「已有报告」信，Issue 被贴 done，这条对比调研永远不会跑。
+test("多标的对比题：不被单票旧报告拦下", () => {
+  const entries = [
+    { type: "股票", title: "胜宏科技（300476.SZ）", slug: "shenghong-300476", date: "2026-06-20", href: "r/a/" },
+    { type: "股票", title: "沪电股份（002463.SZ）", slug: "hudian-002463", date: "2026-06-21", href: "r/b/" },
+  ];
+  const today = "2026-06-25";
+  for (const topic of [
+    "胜宏科技和沪电股份哪个更好",
+    "胜宏科技、沪电股份对比",
+    "对比 300476 与 002463",
+    "胜宏科技 vs 沪电股份",
+  ]) {
+    expect(findFreshReport({ topic, entries, today })).toBeNull();
+  }
+});
+
+test("单标的题目照常查重（别把多标的判定做得过宽）", () => {
+  const entries = [
+    { type: "股票", title: "胜宏科技（300476.SZ）", slug: "shenghong-300476", date: "2026-06-20", href: "r/a/" },
+  ];
+  const hit = findFreshReport({ topic: "胜宏科技", entries, today: "2026-06-25" });
+  expect(hit).toBeTruthy();
+  expect(hit.matchedBy).toBe("name");
+  const byCode = findFreshReport({ topic: "300476", entries, today: "2026-06-25" });
+  expect(byCode).toBeTruthy();
+});
+
+// ── 未来日期的异常条目不遮蔽有效报告 ───────────────────────────────
+test("同标的存在未来日期的坏条目：仍能命中窗口内的有效报告，不整体失效", () => {
+  const entries = [
+    { type: "股票", title: "胜宏科技（300476.SZ）", slug: "s-300476", date: "2027-01-01", href: "r/bad/" }, // 异常
+    { type: "股票", title: "胜宏科技（300476.SZ）", slug: "s-300476", date: "2026-06-20", href: "r/ok/" },
+  ];
+  const hit = findFreshReport({ topic: "胜宏科技", entries, today: "2026-06-25" });
+  expect(hit).toBeTruthy();
+  expect(hit.entry.href).toBe("r/ok/");
+  expect(hit.ageDays).toBe(5);
+});

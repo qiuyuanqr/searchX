@@ -184,7 +184,8 @@ Obsidian 笔记**不再是 notes.md 精简版**，而是 `report.html` 的**完�
 bun run scripts/report-to-obsidian.js research/<YYYY-MM-DD>_<topic-slug> --vault "<OBSIDIAN_VAULT>" --name "<中文对象名>"
 ```
 
-- `<OBSIDIAN_VAULT>` 取 CLAUDE.md / CLAUDE.local.md 的值；`<中文对象名>` 用**与本次 INDEX「对象」列同一个中文名**（如 `海光信息 688041.SH`、`CPO 共封装光学`）。转换器把它消毒成合法文件名，写到 `<OBSIDIAN_VAULT>/Research/<中文名>.md`（幂等，重跑覆盖同一文件）。
+- `<OBSIDIAN_VAULT>` 取 CLAUDE.md / CLAUDE.local.md 的值；`<中文对象名>` 用**与本次 INDEX「对象」列同一个中文名**（如 `海光信息 688041.SH`、`CPO 共封装光学`）。转换器把它消毒成合法文件名，写到 `<OBSIDIAN_VAULT>/Research/<中文名>.md`。
+- **同一标的二次调研不会互相覆盖**：目标文件已存在、且它来自**另一个归档文件夹**时，转换器自动改写成 `<中文名> · <YYYY-MM-DD>.md` 并打印提示，两篇笔记共存；重跑**同一个**归档文件夹仍是就地覆盖（幂等，不会越刷越多）。所以照常传同一个中文名即可，不必自己加日期后缀。
 - **库路径护栏（必守）**：转换器在 `OBSIDIAN_VAULT` 根目录不存在时**直接非零退出、不落任何文件**——**无人值守下容忍这一步失败、照常进 Step 6**（站点与归档都不依赖 Obsidian；runner 那台机器本就挂不到外置库）；交互式可提醒用户库未挂载。**绝不自行猜落点、绝不改写 `CLAUDE.local.md`（用户私有、不归 skill 动）、绝不写进仓库目录。** `Research/` 子目录不存在转换器会自建。
 - 若 Step 5.5 之后对 `report.html` 有定点修订，**重跑本条命令**刷新 Obsidian 笔记即可（幂等）。存量笔记已由 `scripts/backfill-obsidian.js` 一次性回填过，日常无需再动。
 

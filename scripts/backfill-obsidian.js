@@ -86,9 +86,20 @@ async function main() {
     const raw = index[folder] || (await fallbackName(folder));
     plan.push({ folder, slug: slugOf(folder), date: dateOf(folder), base: sanitizeFilename(raw), fromIndex: !!index[folder] });
   }
-  const baseCount = {};
-  for (const p of plan) baseCount[p.base] = (baseCount[p.base] || 0) + 1;
-  for (const p of plan) p.name = baseCount[p.base] > 1 ? `${p.base} · ${p.date}` : p.base;
+  // 冲突消歧按「标的」而不是「文件名字符串」归并：同一只票两次调研，INDEX 里的中文名可能
+  // 写法不同（带/不带港股代码、全角/半角括号），base 不相等就都不加日期后缀，产出两份看似
+  // 无关、实则同标的的笔记；反过来 base 与日期都相同的两条会静默互相覆盖。
+  const groupKey = (p) => {
+    const codes = [...String(p.base).matchAll(/\d{6}/g)].map((m) => m[0]).sort().join(",");
+    return codes || p.base;  // 有 6 位代码就按代码归并，没有就退回文件名
+  };
+  const groupCount = {};
+  for (const p of plan) groupCount[groupKey(p)] = (groupCount[groupKey(p)] || 0) + 1;
+  for (const p of plan) p.name = groupCount[groupKey(p)] > 1 ? `${p.base} · ${p.date}` : p.base;
+  // 兜底：加了日期后仍重名（同标的同一天两个文件夹）→ 再追加 slug，绝不让两份计划互相覆盖
+  const nameCount = {};
+  for (const p of plan) nameCount[p.name] = (nameCount[p.name] || 0) + 1;
+  for (const p of plan) if (nameCount[p.name] > 1) p.name = `${p.name} · ${p.slug}`;
 
   // 需要删除的旧英文名笔记 = 现有 Research/*.md 里 basename 恰好等于某个已知 slug 的
   const knownSlugs = new Set(plan.map((p) => p.slug));

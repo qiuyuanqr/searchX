@@ -120,3 +120,22 @@ test("非字符串字段不抛异常", () => {
   expect(r.ok).toBe(false);
   expect(r.errors).toContain("title_required");
 });
+
+
+// ── 先清洗再校验（2026-07-31 审查）───────────────────────────────
+// 老实现在未清洗文本上判必填/长度：只含控制字符的题目能通过「非空」校验，清洗后却变成空标题，
+// 建出来的 Issue 标题为空，runner 拿到空 topic 照样开跑一次全力档研究。
+const CTRL_CHARS = String.fromCharCode(0x01, 0x02, 0x1f, 0x7f);
+
+test("只含控制字符的题目 → title_required（不再清洗后变成空标题）", () => {
+  const r = validateContent({ title: CTRL_CHARS });
+  expect(r.ok).toBe(false);
+  expect(r.errors).toContain("title_required");
+  expect(r.clean.title).toBe("");
+});
+
+test("长度按清洗后的算：控制字符不能把实际内容顶出上限", () => {
+  const r = validateContent({ title: "正常题目" + CTRL_CHARS.repeat(200) });
+  expect(r.ok).toBe(true);
+  expect(r.clean.title).toBe("正常题目");
+});

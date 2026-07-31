@@ -7,7 +7,10 @@ export function cleanInline(s) {
     .replace(/\[\[([^\]]+)\]\]/g, "$1")       // [[双链]] → 双链
     .replace(/\*\*([^*]+)\*\*/g, "$1")        // **加粗** → 加粗
     .replace(/`([^`]+)`/g, "$1")              // `代码` → 代码
-    .replace(/<[^>]+>/g, "")                  // 漏进的 HTML 标签（如 <strong>）→ 去掉，卡片是纯文本展示层
+    // 只剥真的行内标签（漏进来的 <strong> 之类）。老实现用 /<[^>]+>/g 一律剥，
+    // 会把导语里「小于号 … 大于号」之间的正文整段吞掉（"营收 <5 亿元，毛利率 >40%" 直接少一截）。
+    // 非标签的尖括号原样留着——渲染层本来就会 escapeHtml。
+    .replace(/<\/?(?:strong|em|b|i|u|s|code|span|small|sub|sup|mark|br|a)\b[^>]*>/gi, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -27,12 +30,14 @@ function quoteOrParaAfter(lines, startIdx) {
     }
     return cleanInline(block.join(" "));
   }
-  if (/^\s*([-*+]|\d+\.)\s/.test(lines[i])) return "";
+  // 列表与表格都不算「首段」：表格首行被当成段落时，卡片导语会变成一串竖线
+  // （"| 指标 | 数值 | | --- | --- |"）直出首页。
+  if (/^\s*([-*+]|\d+\.)\s/.test(lines[i]) || /^\s*\|/.test(lines[i])) return "";
   const para = [];
   for (; i < lines.length; i++) {
     if (/^\s*$/.test(lines[i])) break;
     if (/^#{1,6}\s/.test(lines[i])) break;
-    if (/^\s*([-*+]|\d+\.)\s/.test(lines[i])) break;
+    if (/^\s*([-*+]|\d+\.)\s/.test(lines[i]) || /^\s*\|/.test(lines[i])) break;
     para.push(lines[i]);
   }
   return cleanInline(para.join(" "));
@@ -51,7 +56,11 @@ function quoteOrParaAfter(lines, startIdx) {
 function extractTldr(content) {
   const lines = content.split("\n");
   const headingPasses = [
-    /^#{1,6}\s+(?:一句话|TL;?DR)/i,
+    // ①档排除「讲清/说清/解释/科普」这类明显是科普体裁的标题：
+    // 「## 一句话讲清 XXX」讲的是"这公司是干嘛的"，不是结论。老实现按 /一句话/ 一概命中，
+    // 会截胡同篇里真正的「## 核心结论」（存量 2026-07-02_sungrow-power-300274 即中招，
+    // 首页卡片导语显示的是科普段而不是结论）。
+    /^#{1,6}\s+(?:一句话(?!\s*(?:讲|说|解释|科普))|TL;?DR)/i,
     /^#{1,6}\s+(?:[A-Za-z0-9]{1,3}[.、·\s]\s*)?(?:一屏结论|核心结论|结论先行)/,
   ];
   for (const pat of headingPasses) {

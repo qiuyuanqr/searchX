@@ -285,9 +285,16 @@ async function enter(presetKey) {
       body: JSON.stringify({ text: "" }),
       signal: timeoutSignal(PROBE_TIMEOUT_MS),
     });
-    // 401 = 密钥错；其它状态（包括 400 bad request）视为密钥本身是好的
+    // 401 = 密钥错；429 = 该 IP 已因连续错密钥被临时锁定（此时无论密钥对错都返回 429，
+    // 当成"密钥没问题"放行的话，错密钥会被写进 localStorage，之后每次提交都失败且看不出原因）。
+    // 其它状态（包括 400 bad request）视为密钥本身是好的。
     if (r.status === 401) {
       $("gate-msg").textContent = "密钥不对，请重输。";
+      $("gate-msg").hidden = false;
+      return;
+    }
+    if (r.status === 429) {
+      $("gate-msg").textContent = "尝试过多，已临时锁定（约一小时后自动解除），请稍后再试。";
       $("gate-msg").hidden = false;
       return;
     }

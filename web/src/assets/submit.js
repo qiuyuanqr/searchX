@@ -102,15 +102,27 @@ export function findReportMeta(url, entries) {
 }
 
 // 纯函数：把 Pagefind 命中项渲染成搜索结果列表 HTML。
-// title 与 url 来自被检索的报告内容，直接拼进 innerHTML 会有 DOM-XSS，必须先转义；
-// excerpt 是 Pagefind 生成的高亮片段（含 <mark>），按其约定原样保留。
+// title 与 url 来自被检索的报告内容，直接拼进 innerHTML 会有 DOM-XSS，必须先转义。
+// excerpt 同样是不可信内容——它是从报告正文里摘出来的片段，而报告正文由全权限 headless
+// Claude 生成。老实现「按 Pagefind 约定原样保留」等于把报告正文直接写进首页的 innerHTML：
+// Pagefind 只承诺注入 <mark>，其余一律当文本处理才对。做法是先整段转义，再把被转义的
+// &lt;mark&gt; 还原成真标签。
 // entries（可选）= reports.json 清单：能反查到条目时，结果卡带「日期 · 类型」元信息，与信息流卡片一致。
+
+// 搜索片段：整段转义后只放行 <mark>（Pagefind 唯一承诺注入的标签）。
+export function renderExcerpt(excerpt) {
+  if (excerpt == null) return "";
+  return escapeHtml(String(excerpt))
+    .replace(/&lt;mark&gt;/g, "<mark>")
+    .replace(/&lt;\/mark&gt;/g, "</mark>");
+}
+
 export function renderSearchResultsHTML(items, entries) {
   return items
     .map((d) => {
       const url = escapeHtml(d.url);
       const title = escapeHtml(d.meta && d.meta.title) || "(无标题)";
-      const ex = d.excerpt == null ? "" : String(d.excerpt);
+      const ex = renderExcerpt(d.excerpt);
       const entry = findReportMeta(d.url, entries);
       const meta = entry
         ? `<div class="rmeta">${escapeHtml(String(entry.date || "").replace(/-/g, "·"))}${entry.type ? " · " + escapeHtml(entry.type) : ""}</div>`
@@ -134,6 +146,16 @@ export function describeExistingReport(match) {
 // 纯函数：把服务端响应（或异常）映射成给用户看的中文。
 export function describeResult(res) {
   if (res && res.ok) {
+    // degraded：Issue 建成了，但配套的 KV 写（限频计数、issue 号→邮箱映射）失败。
+    // 邮箱映射写不进去，runner 跑完就查不到该发给谁——那封「已上线」邮件永远发不出。
+    // Worker 特意把这个信号回传给前端，前端却只看 ok、照样承诺「结果会发到你的邮箱」，
+    // 于是提交者干等一场、也无从知道出了什么事。这里把它如实说出来。
+    if (res.degraded) {
+      return {
+        kind: "warn",
+        text: "已提交，作者会尽快审核。但服务器暂时没能记下你的邮箱，结果可能发不到你邮箱里——请留意站点更新，或直接联系作者。",
+      };
+    }
     return {
       kind: "success",
       text: "已提交，作者会尽快审核。审核通过后研究结果会发到你的邮箱。",

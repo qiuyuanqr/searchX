@@ -43,12 +43,31 @@ export async function listApprovedIssues({ owner, repo, token }, fetchImpl = fet
     .filter((it) => it.labels.includes("approved") && !it.labels.includes("done"));
 }
 
+// 重查单条 Issue 的当前状态与标签。
+// 用途：一轮 runner 串行处理整个队列、每条可能跑上几小时，而队列快照是开跑前一次性取的。
+// 期间作者若撤了 approved 或关掉 Issue（发现题目有问题、提交者说不用了），对已在批次里的条目
+// 完全无效——照样烧一次全力档研究。开跑前花一次便宜的 GET 挡住它。
+// 取不到（网络故障等）时由调用方决定降级策略，绝不因为这个可选检查中断主流程。
+export async function fetchIssueState({ owner, repo, token, number }, fetchImpl = fetch) {
+  const url = `${API}/repos/${owner}/${repo}/issues/${number}`;
+  const res = await fetchImpl(url, { headers: ghHeaders(token) });
+  if (!res.ok) throw new Error(`get issue failed: ${res.status} ${await errText(res)}`.trim());
+  const it = await res.json();
+  return {
+    state: it.state,
+    labels: (it.labels || []).map((l) => (typeof l === "string" ? l : l.name)),
+  };
+}
+
 export async function addLabel({ owner, repo, token, number, label }, fetchImpl = fetch) {
   const url = `${API}/repos/${owner}/${repo}/issues/${number}/labels`;
   const res = await fetchImpl(url, {
     method: "POST",
     headers: ghHeaders(token),
     body: JSON.stringify({ labels: [label] }),
+    // 贴标签效果幂等（贴一个已存在的标签是 no-op），网络抖动可安全重试；
+    // 下面的发评论则不行——重试会在 Issue 下留重复评论，故不加这个标记。
+    retrySafe: true,
   });
   if (!res.ok) throw new Error(`add label failed: ${res.status} ${await errText(res)}`.trim());
   return true;

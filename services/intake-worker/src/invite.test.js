@@ -132,3 +132,45 @@ test("mintInvite 写序：先 allow（追踪键）后 invite（生效键）—�
   expect(again.token).toBe("TOK1");                              // 重试复用被追踪的 token
   expect(await kv.get(inviteKey("TOK1"))).toBe("bob@x.com");     // 自愈补写完成，链接恢复可用
 });
+
+// ── /people 不再每次全表 list（2026-07-31 审查）──────────────────
+// runner 每 5 分钟一 tick 调 /people 做新链接自检 ≈ 288 次/天，全表 list 会吃掉免费版
+// list 日额度（约 1000/天）的近三成——正是 2026-07-06 打爆过额度的同一模式。
+test("listPeople：有索引时只 read、不 list", async () => {
+  const kv = fakeKV();
+  await mintInvite(kv, "a@x.com", { now: () => 1, gen: () => "TA" });
+  await mintInvite(kv, "b@x.com", { now: () => 2, gen: () => "TB" });
+  kv.list = async () => { throw new Error("不该调用 list"); };
+  const people = await listPeople(kv);
+  expect(people.map((p) => p.email).sort()).toEqual(["a@x.com", "b@x.com"]);
+});
+
+test("listPeople：索引缺失（首次/被清）→ 用一次 list 重建，之后不再 list", async () => {
+  const kv = fakeKV();
+  await mintInvite(kv, "a@x.com", { now: () => 1, gen: () => "TA" });
+  kv.store.delete("allow:idx");
+  let lists = 0;
+  const realList = kv.list.bind(kv);
+  kv.list = async (o) => { lists++; return realList(o); };
+  expect((await listPeople(kv)).map((p) => p.email)).toEqual(["a@x.com"]);
+  expect(lists).toBe(1);
+  expect((await listPeople(kv)).map((p) => p.email)).toEqual(["a@x.com"]);
+  expect(lists).toBe(1); // 第二次走索引，没有再 list
+});
+
+test("revoke 后索引同步移除，listPeople 不再列出该人", async () => {
+  const kv = fakeKV();
+  await mintInvite(kv, "a@x.com", { now: () => 1, gen: () => "TA" });
+  await mintInvite(kv, "b@x.com", { now: () => 2, gen: () => "TB" });
+  await revoke(kv, "a@x.com");
+  kv.list = async () => { throw new Error("不该调用 list"); };
+  expect((await listPeople(kv)).map((p) => p.email)).toEqual(["b@x.com"]);
+});
+
+test("索引里残留已删邮箱：listPeople 跳过它，不返回幽灵条目", async () => {
+  const kv = fakeKV();
+  await mintInvite(kv, "a@x.com", { now: () => 1, gen: () => "TA" });
+  kv.store.set("allow:idx", JSON.stringify(["a@x.com", "ghost@x.com"]));
+  kv.list = async () => { throw new Error("不该调用 list"); };
+  expect((await listPeople(kv)).map((p) => p.email)).toEqual(["a@x.com"]);
+});

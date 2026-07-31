@@ -19,7 +19,7 @@ GitHub Issues → runner 取 approved 自动跑 /research（pending 等作者手
 
 **其它路由：** `GET /verify?k=`（提交前确认 token、回显打码邮箱）、`GET|POST /admin/*`（授权名单增/查/删/轮换，凭 `ADMIN_KEY`）、`GET /sub/<n>`（runner 取邮箱，凭 `SUB_READ_SECRET`）、`GET /people`（runner 取授权列表做新链接自检：打码邮箱+token+addedAt，凭 `SUB_READ_SECRET`）。
 
-**私密核查路由（/check/\*，凭 `CHECK_KEY`/`CHECK_RUNNER_SECRET`，任务只进 KV、不进公开 Issue）：** `POST /check`（作者提交核查任务）、`GET /check/pending`（check-runner 取待办）、`POST /check/<id>/done`（check-runner 标完成）、`GET /check/<id>/image/<n>`（取任务附带截图）、`GET /check/recent`（作者查最近任务状态）。
+**私密核查路由（/check/\*，凭 `CHECK_KEY`/`CHECK_RUNNER_SECRET`，任务只进 KV、不进公开 Issue）：** `POST /check`（作者提交核查任务）、`GET /check/pending`（check-runner 取待办）、`POST /check/<id>/done`（check-runner 标完成）、`GET /check/<id>/image/<n>`（取任务附带截图）、`GET /check/recent`（作者查最近任务状态）、`GET /check/<id>/result`（作者查单条核查全文，手机页详情视图懒加载用）。
 
 ## 授权白名单 / 专属链接 / 管理页
 

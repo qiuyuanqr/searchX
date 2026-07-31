@@ -6,7 +6,7 @@
 // 全部副作用经 deps 注入，离线可测。
 
 export async function runOnce(config, deps) {
-  const { fetchPending, markDone, runFactcheck, buildPrompt, prepareImages, prepareVerdict, attempts, notify, notifyFailure, log } = deps;
+  const { fetchPending, markDone, runFactcheck, buildPrompt, prepareImages, prepareVerdict, attempts, notify, notifyFailure, doneCache, log } = deps;
   const maxAttempts = config.maxAttempts || 3;
 
   const tasks = await fetchPending();
@@ -31,12 +31,37 @@ export async function runOnce(config, deps) {
         continue;
       }
       attempts.clear(t.id);
+      if (doneCache) { try { doneCache.clear(t.id); } catch {} }
       if (notifyFailure) {
         try {
           await notifyFailure(t);
         } catch (err) {
           log(`失败通知发送失败 ${t.id}（${err.message}），不影响主流程`);
         }
+      }
+      continue;
+    }
+
+    // 上一轮核查其实跑完了、只是 markDone 回传失败（网络/Worker 5xx）——结果已缓存在本机。
+    // 这种情况下重跑整条 /factcheck 除了白烧一次额度，还会在 Obsidian 里再落一份重复笔记。
+    // 只补回传即可：成功就照常收尾，仍失败就计一次数、留到下轮（达上限走退休）。
+    const cached = doneCache ? doneCache.get(t.id) : null;
+    if (cached) {
+      log(`任务 ${t.id} 上轮已核查完成、仅回传失败，本轮只补回传（不重跑核查）`);
+      try {
+        await markDone(t.id, cached);
+      } catch (err) {
+        fail++;
+        recordFailure(t.id);
+        log(`补回传仍失败 ${t.id}（${err.message}），留待下轮`);
+        continue;
+      }
+      doneCache.clear(t.id);
+      done++;
+      if (attempts) attempts.clear(t.id);
+      log(`核查完成 ${t.id}（补回传）`);
+      if (notify) {
+        try { await notify(t); } catch (err) { log(`通知发送失败 ${t.id}（${err.message}），不影响主流程`); }
       }
       continue;
     }
@@ -98,13 +123,28 @@ export async function runOnce(config, deps) {
         if (typeof verdict.readTitle === "function") {
           try { title = String(verdict.readTitle() || "").trim(); } catch {}   // 读不到就不带标题（前端 fallback 旧摘要）
         }
+        // 退出码 0 但三个信号文件一个都没写 = claude 什么也没干就正常退出了
+        //（额度耗尽、拒答、上下文超限都会这样）。此时若照常 markDone，任务永久出队、
+        // attempts 清零、还发一封"结果已存进 Obsidian"的假完成通知，作者去 Obsidian 里什么也找不到。
+        // 单个信号文件读失败仍按老规矩降级（回显是增强、不是硬依赖），三个全空才判未产出。
+        if (!summary && !result && !title) {
+          fail++;
+          recordFailure(t.id);
+          log(`核查未产出 ${t.id}（退出码 0 但结论/全文/标题信号文件都没写），按失败留待重跑`);
+          continue;
+        }
       }
+      const payload = { outcome: "done", summary, ...(result ? { result } : {}), ...(title ? { title } : {}) };
       try {
-        await markDone(t.id, { outcome: "done", summary, ...(result ? { result } : {}), ...(title ? { title } : {}) });
+        await markDone(t.id, payload);
       } catch (err) {
         fail++;
         recordFailure(t.id);
-        log(`标记完成失败 ${t.id}（${err.message}），任务仍 pending、留待下轮重跑`);
+        // 核查本身已完成（Obsidian 笔记已落地），缓存结果供下轮只补回传，避免重跑产生重复笔记
+        if (doneCache) {
+          try { doneCache.set(t.id, payload); } catch (e) { log(`结果缓存失败 ${t.id}（${e.message}）`); }
+        }
+        log(`标记完成失败 ${t.id}（${err.message}），结果已缓存、下轮只补回传`);
         continue;
       }
       done++;

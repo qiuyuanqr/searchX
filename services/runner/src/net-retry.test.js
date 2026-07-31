@@ -82,3 +82,33 @@ test("重试时输出日志（含次数与原因）", async () => {
   expect(logs[0]).toContain("1/3");
   expect(logs[0]).toContain("ECONNRESET");
 });
+
+// ── 非幂等写操作不重试 ──────────────────────────────────────────────
+// 「请求抛错」包含「请求已送达、响应在回程丢了」这一种：对发评论这类非幂等 POST 重试，
+// 服务端会多执行一次，Issue 下冒出重复评论。
+test("POST 默认不重试（发评论等非幂等写）", async () => {
+  let calls = 0;
+  const wrapped = withNetRetry(async () => { calls++; throw new Error("ECONNRESET"); }, {
+    sleep: async () => {}, log: () => {},
+  });
+  await expect(wrapped("https://api/x", { method: "POST", body: "{}" })).rejects.toThrow("ECONNRESET");
+  expect(calls).toBe(1);
+});
+
+test("POST 显式 retrySafe:true（如贴标签，效果幂等）仍重试", async () => {
+  let calls = 0;
+  const wrapped = withNetRetry(async () => { calls++; throw new Error("ECONNRESET"); }, {
+    sleep: async () => {}, log: () => {},
+  });
+  await expect(wrapped("https://api/x", { method: "POST", retrySafe: true })).rejects.toThrow("ECONNRESET");
+  expect(calls).toBe(3);
+});
+
+test("GET 照常重试（幂等）", async () => {
+  let calls = 0;
+  const wrapped = withNetRetry(async () => { calls++; throw new Error("ECONNRESET"); }, {
+    sleep: async () => {}, log: () => {},
+  });
+  await expect(wrapped("https://api/x")).rejects.toThrow("ECONNRESET");
+  expect(calls).toBe(3);
+});

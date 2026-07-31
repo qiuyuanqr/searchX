@@ -74,6 +74,10 @@ function matchEntry(topic, entry) {
 // 在 entries 里找「同标的且在 windowDays 天内」的最新报告。
 // 命中返回 { entry, ageDays, matchedBy }；命中但已过窗口 / 无命中 → null（允许重做）。
 export function findFreshReport({ topic, entries, today, windowDays = DEFAULT_DEDUP_WINDOW_DAYS, types = ["股票"] }) {
+  // 多标的题目（"A 和 B 哪个更好""对比 X/Y/Z"）不查重：单票的旧报告答不了对比题，
+  // 拦下来只会给提交者回一篇答非所问的报告并把 Issue 贴 done，这条调研就此再不会跑。
+  if (countTargets(topic) >= 2) return null;
+
   const want = new Set(types);
   let best = null;
   for (const entry of entries || []) {
@@ -81,10 +85,27 @@ export function findFreshReport({ topic, entries, today, windowDays = DEFAULT_DE
     const matchedBy = matchEntry(topic, entry);
     if (!matchedBy) continue;
     const ageDays = daysBetween(entry.date, today);
+    // 日期异常（排在"今天"之后）的条目直接跳过，不参与"最新"评选。
+    // 否则它会以最小 ageDays 当选 best，再被下面那条 ageDays<0 一票否决——
+    // 同标的窗口内真正有效的报告被它遮住，查重整体失效、放行全额重跑。
+    if (ageDays < 0) continue;
     if (!best || ageDays < best.ageDays) best = { entry, ageDays, matchedBy };
   }
   if (!best) return null;
-  if (best.ageDays < 0) return null;          // 报告日期在"今天"之后（异常）→ 不拦
   if (best.ageDays > windowDays) return null; // 命中但已过时效 → 允许重做
   return best;
+}
+
+// 题目里出现了几个互不相同的标的：6 位代码算一个，逗号/顿号/"和""与""对比""vs"等分隔出的
+// ≥2 字名段也各算一个。只用于识别"这是不是一道多标的题"，不追求精确。
+function countTargets(topic) {
+  const s = String(topic || "");
+  const codes = extractCodes(s);
+  if (codes.size >= 2) return codes.size;
+  const segs = s
+    .split(/[、,，/／|｜]|\s+和\s+|和(?=[一-龥]{2,})|与(?=[一-龥]{2,})|\bvs\.?\b|对比|相比/i)
+    .map((x) => normName(x))
+    .filter((x) => x.length >= 2);
+  const uniq = new Set(segs);
+  return Math.max(codes.size, uniq.size);
 }
