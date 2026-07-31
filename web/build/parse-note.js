@@ -1,5 +1,27 @@
 import matter from "gray-matter";
 
+// gray-matter 支持按分隔线后缀切换解析引擎（yaml / json / javascript）。
+// notes.md 首行只要写成 `---js`，frontmatter 就会被当成 JS **执行**——站点构建（web/build）
+// 与 runner 的 scanResearch 都会踩到，等于一份笔记内容可以在两台机器上跑任意代码。
+// notes.md 由 headless Claude 按 SKILL 生成，而调研题目来自站内自由文本表单，
+// 这条链路不该存在「内容能变成代码」的可能。两道防线：
+//   ① 显式限定引擎表，javascript 引擎直接抛错；
+//   ② 分隔线带任何语言后缀一律拒解析（比引擎表更早、也覆盖未来新增的引擎）。
+const SAFE_ENGINES = {
+  yaml: matter.engines.yaml,
+  json: matter.engines.json,
+  javascript: () => { throw new Error("frontmatter 不允许 javascript 引擎"); },
+};
+const MATTER_OPTS = { language: "yaml", engines: SAFE_ENGINES };
+
+function assertPlainDelimiter(raw) {
+  const first = String(raw || "").split(/\r?\n/, 1)[0].trim();
+  // 合法开头就是纯 `---`；`---js` / `---javascript` / `---toml` 一律拒绝
+  if (/^-{3,}\s*\S/.test(first)) {
+    throw new Error(`frontmatter 分隔线不得带语言后缀（读到 ${JSON.stringify(first)}），只允许纯 ---`);
+  }
+}
+
 // 把一句话结论里的 markdown 噪声洗成纯文本（卡片是纸感展示层，不渲染 markdown）
 export function cleanInline(s) {
   return String(s)
@@ -89,7 +111,8 @@ function extractTldr(content) {
 }
 
 export function parseNote(raw, dir) {
-  const { data, content } = matter(raw);
+  assertPlainDelimiter(raw);
+  const { data, content } = matter(raw, MATTER_OPTS);
   const titleMatch = content.match(/^#\s+(.+)$/m);
 
   // 标题也走 cleanInline：H1 里若带 **加粗** / [[双链]] / `代码`，卡片是纯文本展示层，不该漏出字面记号。

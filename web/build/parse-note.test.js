@@ -196,3 +196,27 @@ test("同篇另有「## 核心结论」时，科普节仍不得截胡（兜底�
     "---\ntype: 股票\n---\n\n# T\n\n## 核心结论（未来 3 个月）\n\n方向偏跌，估值透支。\n\n## 一句话讲清\n\n这家公司做逆变器。\n";
   expect(parseNote(raw, "2026-07-02_z").tldr).toBe("方向偏跌，估值透支。");
 });
+
+// ── frontmatter 不得变成可执行代码（2026-07-31 第二轮审查）─────────────
+// gray-matter 支持按分隔线后缀切换引擎：notes.md 首行写 `---js`，frontmatter 就会被
+// 当成 JS 执行——站点构建与 runner 的 scanResearch 都会踩到（实测已复现代码被执行）。
+test("`---js` 分隔线被拒绝解析，不执行其中的代码", () => {
+  globalThis.__PARSE_NOTE_PWNED__ = false;
+  const raw =
+    "---js\nmodule.exports = { type: (globalThis.__PARSE_NOTE_PWNED__ = true, '股票') };\n---\n\n# T\n\n## 一句话结论\n\n结论。\n";
+  expect(() => parseNote(raw, "2026-07-31_x")).toThrow(/语言后缀/);
+  expect(globalThis.__PARSE_NOTE_PWNED__).toBe(false);
+});
+
+test("其它语言后缀（javascript / toml）同样被拒", () => {
+  for (const lang of ["javascript", "toml", "coffee"]) {
+    expect(() => parseNote(`---${lang}\na = 1\n---\n\n# T\n`, "2026-07-31_y")).toThrow(/语言后缀/);
+  }
+});
+
+test("正常的纯 `---` frontmatter 照常解析（不误伤）", () => {
+  const raw = "---\ntype: 股票\ntitle: 某股\n---\n\n# T\n\n## 一句话结论\n\n结论。\n";
+  const e = parseNote(raw, "2026-07-31_z");
+  expect(e.type).toBe("股票");
+  expect(e.tldr).toBe("结论。");
+});
