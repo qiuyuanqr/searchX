@@ -47,3 +47,20 @@
 - [研究] a16z Fintech Newsletter · Stripe 收购 Bridge 的意义 — https://a16z.com/newsletter/what-stripes-acquisition-of-bridge-means-for-fintech-and-stablecoins-april-2025-fintech-newsletter/ — 2025-04 — a16z 对 Stripe-Bridge 交易的战略分析与稳定币基础设施图景。
 - [研究] 21analytics · MiCA 下的稳定币规则 — https://www.21analytics.ch/blog/stablecoins-in-the-eu/ — 2025 — 欧盟 EMT/ART 分类、USDT 退出欧洲市场时间线的合规视角分析。
 - [研究] Cross River Bank 新闻稿 · 与 Highnote 加入 Visa 稳定币结算试点 — https://www.crossriver.com/newsroom/cross-river-and-highnote-launch-stablecoin-settlement-capability-in-visa-pilot — 2025 — 银行端对接 Visa 稳定币结算的具体案例。
+
+## 回填补记（2026-07-31）
+
+> 以下来源正文引用过、但当时未记入本清单，2026-07-31 从 report.html 反向补齐（
+> `bun run check:sources` 的守门规则要求「清单 ⊇ 正文引用」）。
+> 标题取自正文引用处的措辞；标 `（原始日期未记录）` 的条目其发布日期与摘要当时没有记录，
+> **未做事后推测**。类型由本仓库既有 47 份清单的同域名标注学得，只在压倒性多数
+> （≥5 次且占比 ≥80%）时沿用，否则标 `待归类`——同一域名在既有清单里本就会按内容
+> 标成不同类型，靠域名硬猜会抬高来源的表观可信度。
+
+- [待归类] Atomic settlement — https://everstake.one/resources/blog/atomic-settlement-and-t0-explained-how-blockchain-vs-legacy — （原始日期未记录）— 回填补记；正文引用处：稳定币的核心范式：原子结算
+- [待归类] Ethereum 当前的经济最终性要等约两个 epoch、合计 13 分钟 — https://ethereum.org/roadmap/single-slot-finality/ — （原始日期未记录）— 回填补记；正文引用处：稳定币的核心范式：原子结算
+- [待归类] Solana 的最终性大约 15 秒 — https://www.cube.exchange/what-is/finality — （原始日期未记录）— 回填补记；正文引用处：稳定币的核心范式：原子结算
+- [待归类] 授权交易对手（authorized counterparties） — https://eco.com/support/en/articles/14796320-inside-tether-usdt-reserves-explained — （原始日期未记录）— 回填补记；正文引用处：① 发行人层（Primary Market）：mint 和 redeem
+- [待归类] Curve 3pool（DAI/USDC/USDT 三方稳定币池） — https://eco.com/support/en/articles/15182160-stablecoin-depeg-what-causes-it-and-how-to-spot-risk — （原始日期未记录）— 回填补记；正文引用处：② 链上转账层（Secondary Market）：散户的世界
+- [待归类] 实时公开每次冻结 — https://coin.wiselawai.com/blog/tether-publish-blacklisted-usdt-wallets-in-real-time — （原始日期未记录）— 回填补记；正文引用处：② 链上转账层（Secondary Market）：散户的世界
+- [待归类] 13+ 主网 — https://eco.com/support/en/articles/11813797-circle-cctp-v2-native-usdc-across-13-chains — （原始日期未记录）— 回填补记；正文引用处：③ 跨链层：CCTP 把"原生 USDC"从一条链搬到另一条链

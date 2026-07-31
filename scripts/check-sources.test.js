@@ -1,6 +1,6 @@
 // scripts/check-sources.test.js
 import { test, expect } from "bun:test";
-import { extractUrls, checkArchive } from "./check-sources.js";
+import { extractUrls, checkArchive, normalizeUrl } from "./check-sources.js";
 
 test("extractUrls：抽出 http(s) 链接，剥掉结尾的中英文标点", () => {
   const s = "见 https://a.example/x 与 https://b.example/y。另有 (https://c.example/z)，以及 https://d.example/w;";
@@ -44,4 +44,29 @@ test("checkArchive：完全对得上时两边都空", () => {
   expect(r.missing).toEqual([]);
   expect(r.extra).toEqual([]);
   expect(r.counts).toEqual({ sources: 1, report: 1 });
+});
+
+// ── URL 归一化（同一来源在正文与清单里写法常不一致）─────────────
+test("normalizeUrl：协议/结尾斜杠/#锚点/大小写/www 前缀都不影响比对", () => {
+  const forms = [
+    "http://www.Example.com/a/b/",
+    "https://example.com/a/b",
+    "https://example.com/a/b#frag",
+    "https://WWW.example.com/a/b/",
+  ];
+  const keys = new Set(forms.map(normalizeUrl));
+  expect(keys.size).toBe(1);
+});
+
+test("normalizeUrl：查询参数保留（不同参数是不同页面）", () => {
+  expect(normalizeUrl("https://a.example/p?id=1")).not.toBe(normalizeUrl("https://a.example/p?id=2"));
+});
+
+test("checkArchive：写法不同的同一来源不再被误报为缺失", () => {
+  const r = checkArchive({
+    sourcesMd: "- [媒体] 甲 — http://www.a.example/x/ — 2026-01-01 — 摘要",
+    reportHtml: '<a href="https://a.example/x">甲</a>',
+  });
+  expect(r.missing).toEqual([]);
+  expect(r.extra).toEqual([]);
 });

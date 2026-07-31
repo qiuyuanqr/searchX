@@ -28,7 +28,8 @@ searchX/
 ├── scripts/                 ← 生产脚本（各带单测，计入 bun test）
 │   ├── report-to-obsidian.js   把 report.html 全文转成 Obsidian 笔记（中文文件名、带双链）
 │   ├── backfill-obsidian.js    一次性全量回填（带演练与备份；日常刷新用上面那个）
-│   └── check-sources.js        核对 sources.md 是否覆盖报告引用的全部外链（bun run check:sources）
+│   ├── check-sources.js        核对 sources.md 是否覆盖报告引用的全部外链（bun run check:sources）
+│   └── backfill-sources.js     从 report.html 反向补齐漏记的来源（一次性，带演练；bun run backfill:sources）
 ├── docs/                    ← 开发文档：设计稿 / 实现计划 / 进度记录（见 docs/README.md）
 ├── .github/workflows/       deploy.yml（push 动到 research/ 或 web/ 即自动 build + 部署 Pages）、probe.yml（海外视角定时探活）、deploy-retry.yml（部署失败自动补跑）
 ├── CLAUDE.md                项目约定（语言 / 信息源 / 时间 / 隐私红线 / 板块）——Claude Code 自动加载

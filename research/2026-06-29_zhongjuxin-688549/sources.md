@@ -45,3 +45,17 @@
 - [披露] akshare：stock_financial_abstract 688549 财务摘要 — 2026-06-29 拉取 — 2023–2025 营收 / 毛利率 / 净利 / 经营现金流 / 资产负债率全表（值在 C 节）。
 - [披露] akshare：stock_individual_fund_flow 688549 资金流向 — 2026-06-29 拉取 — 5/15 至 6/26 主力资金净流向逐日明细。
 - [披露] akshare：stock_zh_a_spot_em 同业（晶瑞电材 300655、江化微 603078、雅克科技 002409、安集科技 688019、南大光电 300346） — 2026-06-29 拉取 — 同业当前 PE-TTM / PB 见 D 节对比表。
+
+## 回填补记（2026-07-31）
+
+> 以下来源正文引用过、但当时未记入本清单，2026-07-31 从 report.html 反向补齐（
+> `bun run check:sources` 的守门规则要求「清单 ⊇ 正文引用」）。
+> 标题取自正文引用处的措辞；标 `（原始日期未记录）` 的条目其发布日期与摘要当时没有记录，
+> **未做事后推测**。类型由本仓库既有 47 份清单的同域名标注学得，只在压倒性多数
+> （≥5 次且占比 ≥80%）时沿用，否则标 `待归类`——同一域名在既有清单里本就会按内容
+> 标成不同类型，靠域名硬猜会抬高来源的表观可信度。
+
+- [媒体] 大基金、巨化股份并列第一大股东！中巨芯拟科创板募资 15 亿元扩产 台积电、德州仪器等客户云集 — https://www.cls.cn/detail/916443 — 2022-01 — 财联社：股东与客户背景（早期报道，IPO 阶段）。
+- [待归类] cspengyuan.com（正文中未给标题） — http://www.cspengyuan.com/pengyuancmscn/credit-research/industry-research/subject/20241203165442633/集成电路 — （原始日期未记录）— 回填补记；正文引用处：正文
+- [监管] 上交所监管问询专栏 — http://www.sse.com.cn/disclosure/credibility/supervision/inquiries/ — （原始日期未记录）— 回填补记；正文引用处：额外重点盯的指标 Top3
+- [监管] 公告披露专栏 — http://www.sse.com.cn/assortment/stock/list/info/company/index.shtml?COMPANY_CODE=688549 — （原始日期未记录）— 回填补记；正文引用处：额外重点盯的指标 Top3

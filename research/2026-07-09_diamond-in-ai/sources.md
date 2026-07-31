@@ -45,3 +45,17 @@
 ## 社区 / 厂商博客（弱来源，仅作叙事示例，不支撑硬数据）
 
 - [社区] diamondsemicon 厂商博客 — Why Diamond Is Emerging as the Ultimate Heat Spreader for AI/GPU — https://www.diamondsemicon.com/blog/why-diamond-is-emerging-as-the-ultimate-heat-spreader-for-ai-and-gpu-chips — 未标注日期 — "GPU 降 10–20℃/风扇转速减半"等厂商宣传数字（未独立核实）。
+
+## 回填补记（2026-07-31）
+
+> 以下来源正文引用过、但当时未记入本清单，2026-07-31 从 report.html 反向补齐（
+> `bun run check:sources` 的守门规则要求「清单 ⊇ 正文引用」）。
+> 标题取自正文引用处的措辞；标 `（原始日期未记录）` 的条目其发布日期与摘要当时没有记录，
+> **未做事后推测**。类型由本仓库既有 47 份清单的同域名标注学得，只在压倒性多数
+> （≥5 次且占比 ≥80%）时沿用，否则标 `待归类`——同一域名在既有清单里本就会按内容
+> 标成不同类型，靠域名硬猜会抬高来源的表观可信度。
+
+- [待归类] 800 到 2200+ 之间 — https://eureka.patsnap.com/materials/diamond-film-thermal-materials — （原始日期未记录）— 回填补记；正文引用处：本领一：导热快到离谱
+- [待归类] 超过 6 万美元 — https://www.samaterials.com/cvd-diamond-wafer.html — （原始日期未记录）— 回填补记；正文引用处：路线二：金刚石半导体——"终极半导体"为何迟迟造不出来
+- [待归类] 击穿电压 4612 V 的金刚石肖特基二极管 — https://www.allaboutcircuits.com/news/diamond-based-schottky-barrier-diodes-show-highest-breakdown-voltage/ — （原始日期未记录）— 回填补记；正文引用处：路线二：金刚石半导体——"终极半导体"为何迟迟造不出来
+- [待归类] "3–4 年出样品、再约 10 年才实用化" — https://jstories.media/article/unveiling-the-future-of-electronics-saga-university-develops-worlds-first-diamond-semiconductor-power-circuit — （原始日期未记录）— 回填补记；正文引用处：路线二：金刚石半导体——"终极半导体"为何迟迟造不出来

@@ -18,3 +18,21 @@
 - [研究] Co-Packaged Optics (CPO) – Scaling with Light — https://newsletter.semianalysis.com/p/co-packaged-optics-cpo-book-scaling — 2025 — CPO 技术全景、功耗/密度收益量化、"可部署产品 2025 才真正到来"的判断。
 - [研究] Co-Packaged Optics (CPO) 2026-2036: Technologies, Market, Forecasts — https://www.idtechex.com/en/research-report/co-packaged-optics-cpo/1138 — 2026 — CPO 市场规模预测：2036 年超 200 亿美元、CAGR ~37%（与其它机构口径差异极大，正文已并列标注）。
 - [研究] Lumentum and the Laser Bottleneck — https://www.chipstrat.com/p/lumentum-and-the-laser-bottleneck — 2025 — EML/CW 激光为何是结构性瓶颈、产能扩张为何受设备长交期与可靠性测试拖累。
+
+## 回填补记（2026-07-31）
+
+> 以下来源正文引用过、但当时未记入本清单，2026-07-31 从 report.html 反向补齐（
+> `bun run check:sources` 的守门规则要求「清单 ⊇ 正文引用」）。
+> 标题取自正文引用处的措辞；标 `（原始日期未记录）` 的条目其发布日期与摘要当时没有记录，
+> **未做事后推测**。类型由本仓库既有 47 份清单的同域名标注学得，只在压倒性多数
+> （≥5 次且占比 ≥80%）时沿用，否则标 `待归类`——同一域名在既有清单里本就会按内容
+> 标成不同类型，靠域名硬猜会抬高来源的表观可信度。
+
+- [待归类] CPO vs LPO 对比 — https://resources.l-p.com/knowledge-center/cpo-vs-lpo-key-differences-benefits-for-data-centers — （原始日期未记录）— 回填补记；正文引用处：先分清三个词：硅光、CPO、LPO 不是一回事（前提校正）
+- [待归类] Broadcom — https://www.broadcom.com/info/optics/cpo — （原始日期未记录）— 回填补记；正文引用处：为什么是现在：功耗墙与带宽墙
+- [待归类] TechTimes — https://www.techtimes.com/articles/317281/20260527/ai-data-center-optical-component-shortage-nvidias-4b-laser-lockup-pushes-rivals-past-2027.htm — （原始日期未记录）— 回填补记；正文引用处：真正的瓶颈：激光器，与英伟达的"锁仓"
+- [待归类] 界面新闻 — https://m.jiemian.com/article/13962033.html — （原始日期未记录）— 回填补记；正文引用处：中国玩家：下游"易中天"与国产光芯片
+- [待归类] mordorintelligence.com（正文中未给标题，标注为「链接」） — https://www.mordorintelligence.com/industry-reports/co-packaged-optics-market — （原始日期未记录）— 回填补记；正文引用处：市场有多大：预测打架，但方向一致
+- [待归类] precedenceresearch.com（正文中未给标题，标注为「链接」） — https://www.precedenceresearch.com/co-packaged-optics-market — （原始日期未记录）— 回填补记；正文引用处：市场有多大：预测打架，但方向一致
+- [待归类] Wevolver — https://www.wevolver.com/article/what-is-co-packaged-optics-architecture-benefits-challenges-and-performance — （原始日期未记录）— 回填补记；正文引用处：路线之争：CPO 一定赢吗？
+- [待归类] GenAI Tech — https://www.genaitech.net/p/nvidias-4b-cpo-bet-scaleout-first — （原始日期未记录）— 回填补记；正文引用处：路线之争：CPO 一定赢吗？

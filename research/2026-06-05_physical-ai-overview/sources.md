@@ -32,3 +32,17 @@
 - [研究] 天风证券：拓普集团（601689.SH）公司深度报告——Tier 0.5 级汽车 + 机器人供应商 — https://pdf.dfcfw.com/pdf/H3_AP202504031650863529_1.pdf — 2025-04-03 — 天风证券深度研报披露拓普集团是 Optimus 执行器总成独家一级供应商、Tesla 业务占比 35-40%。
 - [研究] From embodied intelligence to physical AI — https://www.nature.com/articles/s42256-026-01239-3 — 2026-01-15 — Nature Machine Intelligence 综述文章，给出具身智能与物理 AI 的学术边界区分。
 - [研究] 绿的谐波（688017）概念题材 — https://basic.10jqka.com.cn/688017/concept.html — 2026-05-30 — 同花顺 F10 资料，绿的谐波客户、产品与人形机器人弹性测算。
+
+## 回填补记（2026-07-31）
+
+> 以下来源正文引用过、但当时未记入本清单，2026-07-31 从 report.html 反向补齐（
+> `bun run check:sources` 的守门规则要求「清单 ⊇ 正文引用」）。
+> 标题取自正文引用处的措辞；标 `（原始日期未记录）` 的条目其发布日期与摘要当时没有记录，
+> **未做事后推测**。类型由本仓库既有 47 份清单的同域名标注学得，只在压倒性多数
+> （≥5 次且占比 ≥80%）时沿用，否则标 `待归类`——同一域名在既有清单里本就会按内容
+> 标成不同类型，靠域名硬猜会抬高来源的表观可信度。
+
+- [待归类] Uber 是物理 AI 在自动驾驶层的核心受益者 — https://finance.sina.com.cn/roll/2025-03-04/doc-inennqmi9801929.shtml — （原始日期未记录）— 回填补记；正文引用处：② 自动驾驶与 Robotaxi
+- [待归类] 2026/6/5 单股调研 — https://qiuyuanqr.github.io/searchX/r/2026-06-05_sanhua-zhikong-002050/ — （原始日期未记录）— 回填补记；正文引用处：A 股（按产业链角色）
+- [社区] 国产谐波减速器龙头 — https://xueqiu.com/S/SH688017 — （原始日期未记录）— 回填补记；正文引用处：A 股（按产业链角色）
+- [待归类] 单股调研 — https://qiuyuanqr.github.io/searchX/r/2026-06-05_beite-technology-603009/ — （原始日期未记录）— 回填补记；正文引用处：A 股（按产业链角色）

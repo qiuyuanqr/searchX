@@ -50,3 +50,23 @@
   - stock_individual_fund_flow（个股资金流向）— 7-1 主力净流出 20.06 亿
   - stock_financial_abstract（财务摘要）— C 表所有历年财务字段
   - stock_history_dividend_detail（分红历史）— 2026-05-12 除权 10 派 6.9 元
+
+## 回填补记（2026-07-31）
+
+> 以下来源正文引用过、但当时未记入本清单，2026-07-31 从 report.html 反向补齐（
+> `bun run check:sources` 的守门规则要求「清单 ⊇ 正文引用」）。
+> 标题取自正文引用处的措辞；标 `（原始日期未记录）` 的条目其发布日期与摘要当时没有记录，
+> **未做事后推测**。类型由本仓库既有 47 份清单的同域名标注学得，只在压倒性多数
+> （≥5 次且占比 ≥80%）时沿用，否则标 `待归类`——同一域名在既有清单里本就会按内容
+> 标成不同类型，靠域名硬猜会抬高来源的表观可信度。
+
+- [待归类] 业绩说明会 — https://caifuhao.eastmoney.com/news/20260331225711170053230 — （原始日期未记录）— 回填补记；正文引用处：关键发现
+- [待归类] AIDC 电源事业群 5-14 首单落地 — https://emcreative.eastmoney.com/app_fortune/article/index.html?artCode=20260514120744214223800&postId=1707890710 — （原始日期未记录）— 回填补记；正文引用处：关键发现
+- [待归类] 从 5-28 高点 190.98 至 7-2 收盘 131.03、25 个交易日累计跌 31.4% — https://caifuhao.eastmoney.com/news/20260610083754786818920 — （原始日期未记录）— 回填补记；正文引用处：关键发现
+- [待归类] 40 亿 — https://mp.ofweek.com/solar/a356714958527 — （原始日期未记录）— 回填补记；正文引用处：C. 财务健康（先表后结论）
+- [待归类] CNESA — https://www.cnesa.org/information/detail/?column_id=4&id=7650 — （原始日期未记录）— 回填补记；正文引用处：护城河检测
+- [待归类] 观研 — https://www.chinabaogao.com/detail/739429.html — （原始日期未记录）— 回填补记；正文引用处：护城河检测
+- [待归类] "在美国等竞争格局稳定的市场传导相对顺畅、在中国等竞争激烈的市场传导有限" — https://stock.stockstar.com/RB2026051400015970.shtml — （原始日期未记录）— 回填补记；正文引用处：G. 产业链与基本面
+- [待归类] 公司官网 2026 描述 — https://cn.sungrowpower.com/news/1666.html — （原始日期未记录）— 回填补记；正文引用处：H. AI / 科技方向关联性
+- [待归类] 新浪财经 — https://finance.sina.com.cn/jjxw/2026-04-27/doc-inhvxxxe7812670.shtml — （原始日期未记录）— 回填补记；正文引用处：近 3 个月重大事件清单（时间倒序）
+- [待归类] 深交所披露 — https://disc.static.szse.cn/download/disc/disk03/finalpage/2025-12-24/79cc9885-9825-43a2-b20a-11aab89ee539.PDF — （原始日期未记录）— 回填补记；正文引用处：近 3 个月重大事件清单（时间倒序）

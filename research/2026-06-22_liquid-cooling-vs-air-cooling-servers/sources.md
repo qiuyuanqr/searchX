@@ -44,3 +44,18 @@
 - Introl 博文给的 "Air cooling runs out of physics at exactly 41.3 kW per rack" 等过度精确的论断不直接采用，正文用"约 30–50 kW/rack 的舒适区"等保守表述；
 - 高盛 76% 渗透率预测、IDC China 33.9 亿美元、英维克 GB300 1200 台订单等均为卖方研究 / 媒体口径，正文就地标注"卖方预期 / 未独立核实"；
 - 不在本清单出现的具体硬数字，正文一律降级为定性或加 "（未独立核实）"。
+
+## 回填补记（2026-07-31）
+
+> 以下来源正文引用过、但当时未记入本清单，2026-07-31 从 report.html 反向补齐（
+> `bun run check:sources` 的守门规则要求「清单 ⊇ 正文引用」）。
+> 标题取自正文引用处的措辞；标 `（原始日期未记录）` 的条目其发布日期与摘要当时没有记录，
+> **未做事后推测**。类型由本仓库既有 47 份清单的同域名标注学得，只在压倒性多数
+> （≥5 次且占比 ≥80%）时沿用，否则标 `待归类`——同一域名在既有清单里本就会按内容
+> 标成不同类型，靠域名硬猜会抬高来源的表观可信度。
+
+- [待归类] 行业媒体 The Cooling Report — https://thecoolingreport.com/intel/pfas-two-phase-immersion-cooling-crisis — （原始日期未记录）— 回填补记；正文引用处：PFAS 监管风暴：两相浸没的供应链危机
+- [媒体] Introl：Water Usage Efficiency (WUE) AI Data Center Cooling Guide 2025 — https://introl.com/blog/water-usage-efficiency-wue-ai-data-center-cooling-guide-2025 — 2025 — WUE 指标与闭环液冷水耗对比，行业均值蒸发冷却 ~1.8 L/kWh、闭环液冷接近 0。
+- [媒体] IntuitionLabs：NVIDIA HGX Platform Data Center Physical Requirements Guide — https://intuitionlabs.ai/articles/nvidia-hgx-data-center-requirements — 2025 — 总结 NVIDIA 设计参考文档中的 GB200 NVL72 单柜功率、冷却液流量等物理需求（二手汇总）。
+- [待归类] ToneCooling 集成商 2026 — https://tonecooling.com/gb300-liquid-cooling-requirements-2026/ — （原始日期未记录）— 回填补记；正文引用处：为什么 2025–2026 是分水岭：AI 把液冷从"选项"推成"基础设施"
+- [待归类] arXiv 2025-12 漏液预测论文 — https://arxiv.org/pdf/2512.21801 — （原始日期未记录）— 回填补记；正文引用处：风险与争议（不仅是技术，也是治理与人）

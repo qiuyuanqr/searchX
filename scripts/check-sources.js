@@ -29,13 +29,30 @@ export function extractUrls(text) {
   return out;
 }
 
+// URL 归一化后再比对：同一个来源在正文与清单里常写成不同形式（http/https、结尾斜杠、
+// #锚点、大小写、www 前缀）。不归一就会把「其实已记录」的来源报成缺失——实测 111 条
+// 缺失里有 4 条纯属这种形式差异。
+export function normalizeUrl(u) {
+  try {
+    const x = new URL(String(u));
+    x.protocol = "https:";
+    x.hash = "";
+    const path = x.pathname.replace(/\/+$/, "");
+    return (x.hostname.replace(/^www\./, "") + path + x.search).toLowerCase();
+  } catch {
+    return String(u).toLowerCase();
+  }
+}
+
 // 单个归档的核对结果：missing = 报告引了但清单没有（真问题）；extra = 清单有但报告没引（可接受）
 export function checkArchive({ sourcesMd, reportHtml }) {
   const inSources = extractUrls(sourcesMd);
   const inReport = extractUrls(reportHtml);
+  const sourceKeys = new Set([...inSources].map(normalizeUrl));
+  const reportKeys = new Set([...inReport].map(normalizeUrl));
   return {
-    missing: [...inReport].filter((u) => !inSources.has(u)),
-    extra: [...inSources].filter((u) => !inReport.has(u)),
+    missing: [...inReport].filter((u) => !sourceKeys.has(normalizeUrl(u))),
+    extra: [...inSources].filter((u) => !reportKeys.has(normalizeUrl(u))),
     counts: { sources: inSources.size, report: inReport.size },
   };
 }

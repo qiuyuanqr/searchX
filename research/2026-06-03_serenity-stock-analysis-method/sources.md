@@ -34,3 +34,14 @@
 - [社区] Serenity Tracker（semiconstocks） — https://semiconstocks.com/ — 滚动更新 — 把方法落成"七层 chokepoint 链路图"并引 Hormuz/40% InP 原话；明示"无基金无 13F、仓位未知、只晒赢家、败例与止损不被同等曝光"。
 - [社区] Serenity 是谁？X 上 21 万粉丝的"光通信瓶颈猎人" — https://www.jimmyhuli.com/p/serenity-x-21 — 2026-05 — 最完整的"硅光多层瓶颈框架"与标的清单（含 Soitec/Riber/TSEM/GFS 等社区外延项，非其本人公开清单，未独立核实）；"21 万粉"对应 5 月中旬时点。
 - [社区] 如何看待最近推特爆火的散户 Serenity？ — https://www.zhihu.com/question/2043660509396865080 — 2026 — 社区正反讨论与质疑（身份存疑、拉高出货、"买的也是热股"），报告相关社区观点据此并标注未独立核实。
+
+## 回填补记（2026-07-31）
+
+> 以下来源正文引用过、但当时未记入本清单，2026-07-31 从 report.html 反向补齐（
+> `bun run check:sources` 的守门规则要求「清单 ⊇ 正文引用」）。
+> 标题取自正文引用处的措辞；标 `（原始日期未记录）` 的条目其发布日期与摘要当时没有记录，
+> **未做事后推测**。类型由本仓库既有 47 份清单的同域名标注学得，只在压倒性多数
+> （≥5 次且占比 ≥80%）时沿用，否则标 `待归类`——同一域名在既有清单里本就会按内容
+> 标成不同类型，靠域名硬猜会抬高来源的表观可信度。
+
+- [待归类] 来源标注为作者 industry checks 估算，未独立核实 — https://globalsemiresearch.substack.com/p/axt-the-indium-phosphide-play-for — （原始日期未记录）— 回填补记；正文引用处：完整走一遍：AXTI 是怎么被他"推"出来的（含硬数据核实）

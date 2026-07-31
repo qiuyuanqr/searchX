@@ -48,3 +48,14 @@
 - [研究] CoinCentral — Vertiv (VRT) Stock Surges 90% in 2026 — https://coincentral.com/vertiv-vrt-stock-surges-90-in-2026-is-it-still-a-buy-at-these-levels/ — 2026-06-18 — 2026 YTD +90%、卖方共识目标 $380
 - [研究] Motley Fool — Is This AI Data Center Stock a Buy While the Market Panics About Oversupply? — https://www.fool.com/investing/2026/05/22/ai-data-center-stock-buy-oversupply-vrt/ — 2026-05-22 — Vertiv 在 AI 数据中心供应过剩担忧下的估值讨论
 - [研究] TECHi — Vertiv Is Winning AI's Heat Problem. The Stock Already Knows — https://www.techi.com/vertiv-vrt-ai-cooling-backlog-valuation/ — 2026-05 — Vertiv AI 热管理领先地位与估值矛盾
+
+## 回填补记（2026-07-31）
+
+> 以下来源正文引用过、但当时未记入本清单，2026-07-31 从 report.html 反向补齐（
+> `bun run check:sources` 的守门规则要求「清单 ⊇ 正文引用」）。
+> 标题取自正文引用处的措辞；标 `（原始日期未记录）` 的条目其发布日期与摘要当时没有记录，
+> **未做事后推测**。类型由本仓库既有 47 份清单的同域名标注学得，只在压倒性多数
+> （≥5 次且占比 ≥80%）时沿用，否则标 `待归类`——同一域名在既有清单里本就会按内容
+> 标成不同类型，靠域名硬猜会抬高来源的表观可信度。
+
+- [披露] Vertiv IR — Q4/FY2025 Earnings Conference Call — https://investors.vertiv.com/events-presentations/events-presentations/event-details/2026/Vertiv-Fourth-Quarter-and-Full-Year-2025-Earnings-Conference-Call/default.aspx — 2026-02-11 — Q4/FY2025 财报电话会主页
