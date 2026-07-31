@@ -26,12 +26,22 @@ mkdir -p "$LOG_DIR"
 
 ts(){ date '+%Y-%m-%d %H:%M:%S'; }
 
+# 文件 mtime（秒）：macOS 是 stat -f %m、GNU 是 stat -c %Y，且 GNU 的 -f 喂 %m 会打印挂载点
+# 而不是报错——按「结果必须是纯数字」来选，否则锁龄算术会炸掉、锁龄判定形同虚设。
+file_mtime(){
+  local m
+  m="$(stat -c %Y "$1" 2>/dev/null)"
+  case "$m" in ''|*[!0-9]*) m="$(stat -f %m "$1" 2>/dev/null)";; esac
+  case "$m" in ''|*[!0-9]*) m="$(date +%s)";; esac
+  printf '%s' "$m"
+}
+
 # —— 自锁：拿不到锁＝上一轮还在跑 → 跳过本轮 ——
 # 判残留看的是「持有者进程还在不在」，不是单纯的锁龄：弱网下一轮 fetch 卡十几分钟属正常，
 # 纯按 10 分钟拆锁会把还活着的那轮挤掉、两轮并发拉同一工作树。锁龄只作为 pid 不可读时的兜底。
 if ! mkdir "$LOCK" 2>/dev/null; then
   lpid="$(tr -dc '0-9' < "$LOCK/pid" 2>/dev/null)"
-  age=$(( $(date +%s) - $(stat -f %m "$LOCK" 2>/dev/null || date +%s) ))
+  age=$(( $(date +%s) - $(file_mtime "$LOCK") ))
   if [ -n "$lpid" ] && kill -0 "$lpid" 2>/dev/null && [ "$age" -le 3600 ]; then exit 0; fi
   [ -z "$lpid" ] && [ "$age" -le 600 ] && exit 0
   rm -rf "$LOCK" 2>/dev/null; mkdir "$LOCK" 2>/dev/null || exit 0

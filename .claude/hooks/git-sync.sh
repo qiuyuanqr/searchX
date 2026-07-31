@@ -26,6 +26,17 @@ ok(){   printf "\033[32m[git-sync] %s\033[0m\n" "$1"; }
 # 下面几道按文件名匹配的闸（机密词、park 目录）对中文名会全部失效。
 staged_names(){ git -c core.quotePath=false diff --cached --name-only -z 2>/dev/null | tr '\0' '\n'; }
 
+# 文件 mtime（秒）。macOS 用 stat -f %m、GNU 用 stat -c %Y——两边语法互不兼容，且
+# GNU 的 -f 是「文件系统状态」，喂 %m 会打印挂载点「/」而不是报错，直接拿去做减法会让
+# 整个算术表达式炸掉、锁龄判定失效（锁被误判成残锁抢走）。所以按「结果必须是纯数字」来选。
+file_mtime(){
+  local m
+  m="$(stat -c %Y "$1" 2>/dev/null)"
+  case "$m" in ''|*[!0-9]*) m="$(stat -f %m "$1" 2>/dev/null)";; esac
+  case "$m" in ''|*[!0-9]*) m="$(date +%s)";; esac
+  printf '%s' "$m"
+}
+
 # —— 即时通知对端拉取（仅 MacBook→Mac mini 方向；best-effort，绝不阻塞收工）——
 # 自我识别：只有本机 ssh 配了别名 mac-mini→stocks 时才触发（Mac mini 无指向自己的别名，
 # 故不会自 ping、不会反向回环）。对端睡眠/离线就静默跳过——它的定时自动拉 autopull 会补上。
@@ -63,7 +74,7 @@ if mkdir "$SYNC_LOCK" 2>/dev/null; then
   trap '[ "$(tr -dc "0-9" < "$SYNC_LOCK/pid" 2>/dev/null)" = "$$" ] && rm -rf "$SYNC_LOCK" 2>/dev/null' EXIT
 else
   SPID="$(tr -dc '0-9' < "$SYNC_LOCK/pid" 2>/dev/null)"
-  SAGE=$(( $(date +%s) - $(stat -f %m "$SYNC_LOCK" 2>/dev/null || date +%s) ))
+  SAGE=$(( $(date +%s) - $(file_mtime "$SYNC_LOCK") ))
   # 持有者还活着、且锁没老到离谱 → 让路。否则判定为残锁，抢过来接着干。
   if [ -n "$SPID" ] && [ "$SAGE" -lt 1800 ] && kill -0 "$SPID" 2>/dev/null; then
     exit 0
@@ -80,7 +91,7 @@ if [ -f "$RUNNER_LOCK" ]; then
   # pid 有限会被 OS 回收复用：断电残留锁若正好被复用给别的常驻进程（甚至常驻 root 进程），
   # kill -0 会一直"判活"，没有年龄兜底就永久静默跳过同步。6 小时远大于一次研究批次最长可能
   # 占锁的时长（claude 超时默认 3h + push 余量），真在跑的合法长批次锁龄够不到这个上限。
-  LOCK_AGE=$(( $(date +%s) - $(stat -f %m "$RUNNER_LOCK" 2>/dev/null || date +%s) ))
+  LOCK_AGE=$(( $(date +%s) - $(file_mtime "$RUNNER_LOCK") ))
   if [ -n "$LPID" ] && [ "$LOCK_AGE" -lt 21600 ] && kill -0 "$LPID" 2>/dev/null; then
     warn "runner 正在跑研究（pid=$LPID），本次 git 同步跳过（避免并发冲突，下次收工补）。"
     exit 0
