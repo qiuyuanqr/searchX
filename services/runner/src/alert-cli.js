@@ -19,9 +19,18 @@ function markerFile(key) {
 function readPrev(key) {
   try { return parseInt(readFileSync(markerFile(key), "utf8").trim(), 10); } catch { return NaN; }
 }
+// 返回是否成功落盘。**绝不抛**：这一步在邮件已经发出去之后，抛出去会被 main 的 catch
+// 当成「报警发送失败」（日志谎报），而限频标记又没落上 → 下个 tick 原样再发一封。
+// 本项目有过一周 8 封误报轰炸的前科，这条路径必须是「宁可日志吵，也不重复发信」。
 function writePrev(key, ms) {
-  mkdirSync(stateDir(), { recursive: true });
-  writeFileSync(markerFile(key), String(ms));
+  try {
+    mkdirSync(stateDir(), { recursive: true });
+    writeFileSync(markerFile(key), String(ms));
+    return true;
+  } catch (e) {
+    console.error(`⚠️ 限频标记写盘失败（key=${key}：${e.message}）——报警已发出，但下个 tick 可能重复发。`);
+    return false;
+  }
 }
 function beijingNow() {
   return new Intl.DateTimeFormat("zh-CN", {

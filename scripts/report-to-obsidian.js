@@ -194,12 +194,19 @@ function renderList(node, ordered, depth = 0) {
       // li 里嵌套的 ul/ol 要递归成缩进子行。老实现把整个 li.children 丢给 renderInline，
       // 嵌套列表不属任何行内分支、落进兜底被拆成纯文字拼接：一个 li 下的所有子项被压成
       // 一条无分隔的超长 bullet（实测存量 12 份报告的 Obsidian 笔记因此丢失子弹点结构）。
-      const inline = li.children.filter((c) => c.tag !== "ul" && c.tag !== "ol");
-      const nested = li.children.filter((c) => c.tag === "ul" || c.tag === "ol");
+      // li 里可能混着行内内容与块级内容。块级的（嵌套列表、段落、表格、引用、标题）
+      // 各自按块渲染再缩进挂到 bullet 下面；只把真行内的拼进 bullet 那一行。
+      // 老实现只认 ul/ol，li 里的 <p>/<table> 会被 renderInline 拆包压成一条超长单行。
+      const BLOCK = new Set(["ul", "ol", "p", "div", "table", "blockquote", "pre", "h1", "h2", "h3", "h4", "h5", "h6"]);
+      const inline = li.children.filter((c) => !BLOCK.has(c.tag));
+      const blocks = li.children.filter((c) => BLOCK.has(c.tag));
       const content = renderInline(inline).replace(/\s*\n\s*/g, " ").trim();
       const lines = [`${pad}${marker} ${content}`];
-      for (const n of nested) {
-        const sub = renderList(n, n.tag === "ol", depth + 1);
+      const childPad = "  ".repeat(depth + 1);
+      for (const n of blocks) {
+        const sub = n.tag === "ul" || n.tag === "ol"
+          ? renderList(n, n.tag === "ol", depth + 1)
+          : renderBlocks([n]).split("\n").map((l) => (l.trim() ? childPad + l : l)).join("\n");
         if (sub.trim()) lines.push(sub);
       }
       return lines.join("\n");

@@ -231,3 +231,18 @@ test("常用命名实体被解码，不字面残留进笔记", () => {
 test("未知实体原样保留（不误删）", () => {
   expect(extractReport("<main><p>A&unknownent;B</p></main>").bodyMd).toContain("&unknownent;");
 });
+
+test("li 里的块级内容（段落/表格）缩进成子行，不被压成一条超长单行", () => {
+  const html = `<main><ul>
+    <li><strong>要点：</strong>一句话说明
+      <p>这是列表项里的一个独立段落，不该被拼进 bullet 那一行。</p>
+      <table><thead><tr><th>项</th><th>值</th></tr></thead><tbody><tr><td>A</td><td>1</td></tr></tbody></table>
+    </li>
+  </ul></main>`;
+  const md = extractReport(html).bodyMd;
+  const lines = md.split("\n");
+  expect(lines.some((l) => /^- \*\*要点：\*\*一句话说明$/.test(l.trim()))).toBe(true);
+  expect(lines.some((l) => /^\s{2,}这是列表项里的一个独立段落/.test(l))).toBe(true);
+  expect(lines.some((l) => /^\s{2,}\|/.test(l))).toBe(true);   // 表格也缩进挂在下面
+  expect(lines.every((l) => l.length < 200)).toBe(true);        // 没有被压平的超长行
+});

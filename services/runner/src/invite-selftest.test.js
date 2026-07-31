@@ -34,7 +34,7 @@ test("composeInviteReport：主端点+站点都通 → ✅ 且附可转发链接
   expect(m.to).toBe("au@x.com");
 });
 
-test("composeInviteReport：主端点挂 → ❌ 不附链接、说明会自动复检", () => {
+test("composeInviteReport：主端点挂 → ❌ 不附链接、且如实说明不会自动复检", () => {
   const m = composeInviteReport({
     person: P("t2", "b***@x.com"), link: "https://site/?k=t2",
     primaryOk: false, fallbackOk: true, siteOk: true,
@@ -43,6 +43,11 @@ test("composeInviteReport：主端点挂 → ❌ 不附链接、说明会自动�
   expect(m.pass).toBe(false);
   expect(m.subject).toContain("❌");
   expect(m.text).not.toContain("https://site/?k=t2");
+  // 文案必须与实际行为一致：邮件发出后该 token 就进「已见」，下个 tick 不会复检重发。
+  // 原文承诺「修好后自动复检重发」是假的，会让作者干等（2026-07-31 第二轮审查）。
+  expect(m.text).not.toContain("无需手动重试");   // 原文的假承诺
+  expect(m.text).toContain("**不会**自动复检重发"); // 现在如实说明
+  expect(m.text).toContain("rotate");              // 并给出真正可行的补救办法
   expect(m.text).toContain("自动复检");
 });
 

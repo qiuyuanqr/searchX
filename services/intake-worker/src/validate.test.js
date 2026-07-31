@@ -139,3 +139,21 @@ test("长度按清洗后的算：控制字符不能把实际内容顶出上限",
   expect(r.ok).toBe(true);
   expect(r.clean.title).toBe("正常题目");
 });
+
+// ── 长度上限的边界（2026-07-31 第二轮审查：把 > 改成 >= 后测试全绿，说明边界没被钉住）──
+test("长度边界：恰好到上限算通过，超一个字才报 too_long", () => {
+  const { title: T, focus: F, message: M } = { title: 160, focus: 500, message: 1000 };
+  const okAll = validateContent({ title: "题".repeat(T), focus: "点".repeat(F), message: "留".repeat(M) });
+  expect(okAll.ok).toBe(true);
+  expect(okAll.errors).toEqual([]);
+
+  expect(validateContent({ title: "题".repeat(T + 1) }).errors).toContain("title_too_long");
+  expect(validateContent({ title: "题", focus: "点".repeat(F + 1) }).errors).toContain("focus_too_long");
+  expect(validateContent({ title: "题", message: "留".repeat(M + 1) }).errors).toContain("message_too_long");
+});
+
+test("长度边界：自定义 limits 同样按「恰好通过、超一个报错」", () => {
+  const limits = { title: 5, focus: 5, message: 5 };
+  expect(validateContent({ title: "abcde" }, limits).ok).toBe(true);
+  expect(validateContent({ title: "abcdef" }, limits).errors).toContain("title_too_long");
+});

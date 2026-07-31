@@ -59,4 +59,12 @@ console.log(
   `探活：站点=${siteOk ? "通" : "断"} 主端点=${primaryOk ? "通" : "断"} 备用=${fallbackOk ? "通" : "断"}` +
   (verdict.detail === "全部可达" ? "" : ` → ${verdict.detail}`)
 );
-if (verdict.alert) await sendRateLimitedAlert("probe", verdict.detail);
+// 发信失败不该让探活以未捕获异常裸栈退出——探活本身是监控，监控挂了不能连累主链路的日志可读性。
+// 与 alert-cli 的处理保持一致：打一行明确的错误就收工。
+if (verdict.alert) {
+  try {
+    await sendRateLimitedAlert("probe", verdict.detail);
+  } catch (e) {
+    console.error(`✗ 探活报警发送失败：${e.message}`);
+  }
+}

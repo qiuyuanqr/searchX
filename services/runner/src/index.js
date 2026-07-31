@@ -14,6 +14,7 @@ import { runOnce } from "./runner.js";
 import { pollUntilOk } from "./verify-published.js";
 import { withNetRetry } from "./net-retry.js";
 import { writeFileAtomic } from "./atomic-write.js";
+import { evaluateLock, formatLockFile, parseLockFile } from "./lock-policy.js";
 import { nextQueueStreak, QUEUE_FETCH_CONFIRM_TICKS } from "./alert.js";
 
 // —— 全局单实例锁 ——
@@ -26,7 +27,6 @@ import { nextQueueStreak, QUEUE_FETCH_CONFIRM_TICKS } from "./alert.js";
 // 回收策略保守——只有「读到一个明确已死的 pid」「pid 不可读且锁已超 1 小时」或「持有者仍判活
 // 但锁已超远大于一次合法批次最长耗时的年龄上限」才回收，其余（含 pid 刚创建还没读到）一律
 // 视为有人持有、本次跳过。
-const STALE_MS = 3600_000;        // 1h：pid 损坏/没写好的锁，超此年龄才敢回收，兜底永久死锁
 const HARD_CAP_MS = 8 * 3600_000; // 8h：单实例锁的绝对持有上限（与心跳无关，见 acquireLock 说明）
 function lockFile() {
   return join(homedir(), "Library", "Application Support", "searchx-runner", "runner.lock");
@@ -40,7 +40,7 @@ function createLockExclusive(path) {
   try { fd = openSync(path, "wx"); } catch (e) { if (e.code === "EEXIST") return false; throw e; }
   // 第一行 pid，第二行建锁时刻：心跳会不断刷新 mtime，只有这个 startedAt 能表达「这把锁到底
   // 持有了多久」——没有它，进程「活着但卡死」时锁会被心跳无限续命、永远回收不了。
-  try { writeSync(fd, `${process.pid}\n${Date.now()}`); } finally { closeSync(fd); }
+  try { writeSync(fd, formatLockFile(process.pid, Date.now())); } finally { closeSync(fd); }
   return true;
 }
 // 释放前核对锁里的 pid 还是不是自己：本进程若已被别人（超龄判定）抢过锁，锁文件里写的是抢锁者
@@ -51,7 +51,7 @@ function makeRelease(path) {
     if (released) return;
     released = true;
     try {
-      const owner = parseInt(String(readFileSync(path, "utf8").split("\n")[0]).trim(), 10);
+      const owner = parseLockFile(readFileSync(path, "utf8")).pid;
       if (owner !== process.pid) return; // 锁已易主，不是我的，别动
     } catch { return; }
     try { rmSync(path, { recursive: true, force: true }); } catch {}
@@ -67,7 +67,7 @@ function makeRelease(path) {
 function startLockHeartbeat(path, intervalMs = 60_000) {
   const timer = setInterval(() => {
     try {
-      const owner = parseInt(String(readFileSync(path, "utf8").split("\n")[0]).trim(), 10);
+      const owner = parseLockFile(readFileSync(path, "utf8")).pid;
       if (owner === process.pid) utimesSync(path, new Date(), new Date());
     } catch {}
   }, intervalMs);
@@ -84,28 +84,18 @@ function acquireLock(maxAliveAgeMs) {
   if (createLockExclusive(path)) return makeRelease(path);
   // 锁已存在：判定持有者死活（拿不准就当有人在跑，保守跳过）
   let pid = NaN, startedAt = NaN;
-  try {
-    const [a, b] = readFileSync(path, "utf8").split("\n");
-    pid = parseInt(String(a).trim(), 10);
-    startedAt = parseInt(String(b || "").trim(), 10);
-  } catch {}
-  let ageMs = 0;
-  try { ageMs = Date.now() - statSync(path).mtimeMs; } catch {}
-  // 绝对封顶：与心跳无关，按「建锁到现在」算。心跳会不断刷新 mtime，一个「活着但卡死」的
-  // 进程（如对半开连接做无超时 fetch）会让 ageMs 永远小于上限、锁永不回收，每个 tick 静默
-  // exit 0 跳过，管线永久停摆且零报警。这条硬上限保证再怎么卡也终会被接管。
-  const heldMs = Number.isInteger(startedAt) ? Date.now() - startedAt : 0;
-  const overHardCap = Number.isInteger(startedAt) && heldMs >= HARD_CAP_MS;
-  if (Number.isInteger(pid) && pidAlive(pid)) {
-    if (ageMs < maxAliveAgeMs && !overHardCap) return null;                        // 持有者活着且未超龄 → 跳过
-  } else if (Number.isInteger(pid)) {
-    // pid 读得出来、且确证已死 → 就是崩溃/断电留下的残锁，没有等 1 小时的理由。
-    // 只留一个分钟级短窗口，防和「另一个 runner 刚 openSync 建锁、pid 还没落盘」的窗口撞车。
-    if (ageMs < 60_000) return null;
-  } else if (ageMs < STALE_MS) {
-    return null;                                                    // pid 没写好/损坏 → 拿不准，等够 1 小时才敢回收
-  }
-  // 确证持有者已死，或损坏锁已超时，或存活锁已超龄上限 → 回收并原子重建（重建失败=被别人抢先 → 跳过）
+  try { ({ pid, startedAt } = parseLockFile(readFileSync(path, "utf8"))); } catch {}
+  let mtimeMs = NaN;
+  try { mtimeMs = statSync(path).mtimeMs; } catch {}
+  // 判定逻辑在 lock-policy.js（纯函数、有测试）：四种情形与各自要防的故障见那里的注释。
+  // 关键一条：心跳会不断刷新 mtime，「活着但卡死」的进程靠锁龄永远判不出来，只有按建锁
+  // 时刻算的硬上限兜得住——否则每个 tick 静默 exit 0 跳过，管线停摆且零报警。
+  const verdict = evaluateLock(
+    { pid, startedAt, mtimeMs, alive: Number.isInteger(pid) && pidAlive(pid), now: Date.now() },
+    { maxAliveAgeMs, hardCapMs: HARD_CAP_MS }
+  );
+  if (!verdict.takeover) return null;
+  console.log(`↻ 回收锁（判定：${verdict.reason}）`);
   try { rmSync(path, { recursive: true, force: true }); } catch {}
   return createLockExclusive(path) ? makeRelease(path) : null;
 }

@@ -61,18 +61,20 @@ function parseTask(raw) {
 // 正常态只 read（额度约 100 倍）。索引存 { complete, items:[{id,createdAt,status,snippet,summary?}] }。
 
 // 轻量条目：recent 直接渲染、pending 靠它筛 id。绝不含 text/link/images 全文重字段。
-function toIndexEntry(id, t) {
-  const e = { id, createdAt: t.createdAt || "", status: t.status || "pending", snippet: taskSnippet(t) };
+function toIndexEntry(id, t, nowMs = Date.now()) {
+  // updatedAt 是合并写择新的依据：两个 PoP 并发时，双方快照里都有的 id 必须取较新的那份，
+  // 否则「done 被回退成 pending」——手机页据 pending 一直空转轮询，任务看着永远没跑完。
+  const e = { id, createdAt: t.createdAt || "", status: t.status || "pending", snippet: taskSnippet(t), updatedAt: nowMs };
   if (t.summary) e.summary = t.summary;
   if (t.title) e.title = t.title;   // 核查完成回传的内容标题；未完成/旧任务无此字段，前端 fallback snippet
   return e;
 }
 
 // upsert：已存在则就地更新（去重 + 状态同步），否则追加。
-function upsertIndexEntry(items, id, t) {
+function upsertIndexEntry(items, id, t, nowMs = Date.now()) {
   const e = items.find((x) => x && x.id === id);
-  if (e) Object.assign(e, toIndexEntry(id, t));
-  else items.push(toIndexEntry(id, t));
+  if (e) Object.assign(e, toIndexEntry(id, t, nowMs));
+  else items.push(toIndexEntry(id, t, nowMs));
 }
 
 // 从全表 list 重建索引——唯一还用 list 的地方，仅索引缺失/不完整时走一次；成功即落
@@ -86,7 +88,7 @@ async function rebuildIndex(env, nowMs = Date.now()) {
     if (!raw) continue;
     const t = parseTask(raw);
     if (!t) continue;                                 // 跳过损坏条目
-    items.push(toIndexEntry(k.name.slice("check:".length), t));
+    items.push(toIndexEntry(k.name.slice("check:".length), t, nowMs));
   }
   await env.INTAKE_KV.put(IDX_KEY, JSON.stringify({ complete: true, rebuiltAt: nowMs, items }), { expirationTtl: TTL });
   return { items, complete: true };
@@ -104,8 +106,10 @@ function nowMsOf(opts) {
 // 索引强制重建周期：complete:true 会让 rebuildIndex 永不再跑，于是任何一次索引写丢条目
 // （KV 无 CAS，两个 PoP 的读-改-写会互相覆盖）都没有自愈路径——那条任务全文还在 KV、状态还是
 // pending，却永远不被 runner 下发、也不在手机列表里，直到 7 天 TTL 静默过期。
-// 每 6 小时强制 list 重建一次 = 4 次 list/天，对每日约 1000 的额度可忽略，换来「最多 6 小时自愈」。
-const REBUILD_EVERY_MS = 6 * 3600 * 1000;
+// 周期定在 30 分钟：并发丢条目无法用 KV 根治（没有 CAS），这条重建就是兜底，窗口多长
+// 就意味着一条 pending 任务最久可能有多久不被 runner 下发。30 分钟 ≈ 48 次 list/天，
+// 占免费版每日约 1000 的 5%，换掉原来 6 小时那个不可接受的失明窗口。
+const REBUILD_EVERY_MS = 30 * 60 * 1000;
 
 // 惰性修剪：任务本体 7 天 TTL 到期后自动消失，索引条目却只增不删。不修剪的话，手机页会长期
 // 列出一堆点开即 404 的幽灵条目，其中 pending 状态的还会让页面永远 50 秒一轮地空转轮询。
@@ -142,17 +146,30 @@ async function loadIndexEx(env, nowMs = Date.now()) {
 
 // 索引的读-改-写：写回前重读一次最新索引做并集合并。
 // KV 没有 CAS，saveIndex 是整表盲覆盖：两个 PoP（手机提交 / runner 回传 done）并发时，
-// 后写的那份会把先写的新条目整表抹掉。合并写至少保证失败方向是「留下多余条目」（会被
-// pruneExpired 和下次重建清掉）而不是「丢任务」。
+// 后写的那份会把先写的新条目整表抹掉。写回前重读一次做并集能盖住**大部分**交错，
+// 但**不能声称杜绝丢条目**——真并发下两次读可能都拿到同一份旧值，合并不到任何东西
+// （2026-07-31 第二轮审查实测证伪了这里原本「至少不会丢任务」的断言）。
+// 所以真正兜底的是下面的强制重建周期：丢了条目最多 REBUILD_EVERY_MS 后由 list 重建捞回来。
 async function upsertIndexMerged(env, id, task, nowMs = Date.now()) {
   const { items, complete } = await loadIndexEx(env, nowMs);
-  upsertIndexEntry(items, id, task);
+  upsertIndexEntry(items, id, task, nowMs);
   try {
     const raw = await env.INTAKE_KV.get(IDX_KEY);
     const latest = raw ? JSON.parse(raw) : null;
     if (latest && Array.isArray(latest.items)) {
+      const byId = new Map(items.map((x) => [x && x.id, x]).filter(([k]) => k));
       for (const e of latest.items) {
-        if (e && e.id && e.id !== id && !items.some((x) => x && x.id === e.id)) items.push(e);
+        if (!e || !e.id || e.id === id) continue;      // 本次改的这条以我为准
+        const mine = byId.get(e.id);
+        if (!mine) { items.push(e); continue; }        // 我快照里没有 → 并进来
+        // 两边都有：取较新的那份。没有 updatedAt 的老条目当 0，新写的一定更大。
+        const a = Number.isFinite(mine.updatedAt) ? mine.updatedAt : 0;
+        const b = Number.isFinite(e.updatedAt) ? e.updatedAt : 0;
+        // 时间戳打平时（同一毫秒内的两次并发写很常见）还要看状态：pending → done/failed 是
+        // 单向的，任务不会从「已完成」退回「处理中」。少了这条，两条 done 并发时先写的那条
+        // 会被后写者的旧快照覆盖回 pending，手机页据此永远空转轮询。
+        const terminal = (x) => x && x.status && x.status !== "pending";
+        if (b > a || (b === a && terminal(e) && !terminal(mine))) Object.assign(mine, e);
       }
     }
   } catch {}

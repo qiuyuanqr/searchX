@@ -113,4 +113,10 @@ for (const person of fresh) {
     console.error(`✗ 链接自检通知发送失败（${person.email}，下个 tick 重试）：${e.message}`);
   }
 }
-writeSeen(nextSeenTokens(people, notified, seen));
+// 「已见」写盘失败绝不能冒泡：邮件都发完了，抛出去只会让进程带栈崩掉，而状态没落盘 →
+// 下个 tick 同一批授权再发一遍通知。宁可日志吵一句，也不让作者被重复轰炸。
+try {
+  writeSeen(nextSeenTokens(people, notified, seen));
+} catch (e) {
+  console.error(`⚠️ 「已见」状态写盘失败（${e.message}）——本轮通知已发出，下个 tick 可能重复发。`);
+}

@@ -1180,45 +1180,103 @@ test("未到重建周期：照常只读索引、不 list（保住 list 额度）
   expect(body.tasks.map((t) => t.id)).toEqual(["A"]);
 });
 
-test("并发写：done 回传基于旧快照，也不会把新提交的任务从索引里抹掉", async () => {
+test("真并发的两条 done：全文状态一定正确，索引即便短暂回退也不会把已完成任务误发给 runner", async () => {
+  // 诚实边界：KV 没有 CAS，真并发下两个节点的「读—改—写」可能都拿到同一份旧快照，
+  // 合并写盖不住这种交错，索引里某条会被覆盖回 pending。这是固有限制，不假装能根治。
+  // 真正必须成立的是下面三条——它们决定会不会出实际故障。
   const nowMs = Date.parse(NOW());
   const kv = fakeKV({
     "check:idx": JSON.stringify({
       complete: true, rebuiltAt: nowMs,
-      items: [{ id: "A", createdAt: NOW(), status: "pending", snippet: "甲" }],
+      items: [
+        { id: "A", createdAt: NOW(), status: "pending", snippet: "甲", updatedAt: nowMs },
+        { id: "B", createdAt: NOW(), status: "pending", snippet: "乙", updatedAt: nowMs },
+      ],
     }),
     "check:A": JSON.stringify({ text: "甲", link: "", status: "pending", createdAt: NOW() }),
     "check:B": JSON.stringify({ text: "乙", link: "", status: "pending", createdAt: NOW() }),
   });
-  // 模拟最终一致：done 所在节点第一次读索引拿到的是不含 B 的旧快照，
-  // 但写回前的那次重读能看到含 B 的最新版本。
-  const stale = kv.store.get("check:idx");
-  const latest = JSON.stringify({
-    complete: true, rebuiltAt: nowMs,
-    items: [
-      { id: "A", createdAt: NOW(), status: "pending", snippet: "甲" },
-      { id: "B", createdAt: NOW(), status: "pending", snippet: "乙" },
-    ],
+  const env = ENV({ INTAKE_KV: kv });
+  const done = (id) =>
+    handleCheckDone(
+      new Request(`https://w.dev/check/${id}/done`, {
+        method: "POST",
+        headers: { "x-check-runner-secret": "RS_GOOD", "content-type": "application/json" },
+        body: JSON.stringify({ outcome: "done", summary: `属实（高）：${id}` }),
+      }),
+      env, id, { now: NOW }
+    );
+  // 真并发：不 mock kv.get 的交错顺序
+  const rs = await Promise.all([done("A"), done("B")]);
+  expect(rs.map((r) => r.status)).toEqual([200, 200]);
+
+  // ① 全文是逐条独立 put 的，不受索引竞态影响——这才是任务的权威状态
+  expect(JSON.parse(kv.store.get("check:A")).status).toBe("done");
+  expect(JSON.parse(kv.store.get("check:B")).status).toBe("done");
+
+  // ② 要害：即便索引把某条写回了 pending，/check/pending 也以全文为准，
+  //    绝不会把已完成的任务再发给 runner 重跑一遍
+  const pend = await (await getPending(env, { "x-check-runner-secret": "RS_GOOD" })).json();
+  expect(pend.tasks).toEqual([]);
+
+  // ③ 索引里不会凭空丢 id（两条都还在，最坏是状态短暂滞后，30 分钟内由强制重建纠正）
+  const idx = JSON.parse(kv.store.get("check:idx"));
+  expect(idx.items.map((e) => e.id).sort()).toEqual(["A", "B"]);
+});
+
+test("重读若拿到的确实是更新的版本，合并要择新（done 不被旧快照覆盖回 pending）", async () => {
+  const nowMs = Date.parse(NOW());
+  const kv = fakeKV({
+    "check:idx": JSON.stringify({
+      complete: true, rebuiltAt: nowMs,
+      items: [{ id: "A", createdAt: NOW(), status: "pending", snippet: "甲", updatedAt: nowMs }],
+    }),
+    "check:A": JSON.stringify({ text: "甲", link: "", status: "pending", createdAt: NOW() }),
+    "check:B": JSON.stringify({ text: "乙", link: "", status: "pending", createdAt: NOW() }),
   });
-  kv.store.set("check:idx", latest);
+  // 模拟：本节点读到的是旧快照（A 还是 pending），但写回前重读时另一节点已把 A 标成 done
+  const stale = kv.store.get("check:idx");
+  const fresher = JSON.stringify({
+    complete: true, rebuiltAt: nowMs,
+    items: [{ id: "A", createdAt: NOW(), status: "done", snippet: "甲", summary: "属实（高）：甲", updatedAt: nowMs }],
+  });
   const realGet = kv.get.bind(kv);
-  let firstIdxRead = true;
-  kv.get = async (key, type) => {
-    if (key === "check:idx" && firstIdxRead) { firstIdxRead = false; return stale; }
-    return realGet(key, type);
+  let first = true;
+  kv.get = async (k, t) => {
+    if (k === "check:idx") { if (first) { first = false; return stale; } return fresher; }
+    return realGet(k, t);
   };
   const env = ENV({ INTAKE_KV: kv });
   await handleCheckDone(
-    new Request("https://w.dev/check/A/done", {
+    new Request("https://w.dev/check/B/done", {
       method: "POST",
       headers: { "x-check-runner-secret": "RS_GOOD", "content-type": "application/json" },
-      body: JSON.stringify({ outcome: "done", summary: "属实（高）：确认" }),
+      body: JSON.stringify({ outcome: "done", summary: "属实（高）：乙" }),
     }),
-    env, "A", { now: NOW }
+    env, "B", { now: NOW }
   );
   const idx = JSON.parse(kv.store.get("check:idx"));
-  expect(idx.items.map((x) => x.id).sort()).toEqual(["A", "B"]); // B 没被抹掉
-  expect(idx.items.find((x) => x.id === "A").status).toBe("done");
+  expect(idx.items.find((e) => e.id === "A").status).toBe("done"); // 没被旧快照按回 pending
+  expect(idx.items.find((e) => e.id === "B").status).toBe("done");
+});
+
+// 诚实记录已知局限：KV 没有 CAS，真并发下索引仍可能丢条目，兜底是强制重建而非合并写。
+// 这条测试锁的就是「兜底真的能把丢掉的 pending 捞回来」。
+test("并发丢了条目也能自愈：过了强制重建周期，pending 任务重新回到下发队列", async () => {
+  const nowMs = Date.parse(NOW());
+  const kv = fakeKV({
+    // 索引里 B 被并发写抹掉了，且 rebuiltAt 已过期
+    "check:idx": JSON.stringify({
+      complete: true,
+      rebuiltAt: nowMs - 31 * 60 * 1000,
+      items: [{ id: "A", createdAt: NOW(), status: "done", snippet: "甲", updatedAt: nowMs }],
+    }),
+    "check:A": JSON.stringify({ text: "甲", link: "", status: "done", createdAt: NOW() }),
+    "check:B": JSON.stringify({ text: "乙", link: "", status: "pending", createdAt: NOW() }),
+  });
+  const env = ENV({ INTAKE_KV: kv });
+  const body = await (await getPending(env, { "x-check-runner-secret": "RS_GOOD" })).json();
+  expect(body.tasks.map((t) => t.id)).toEqual(["B"]);
 });
 
 test("索引里超过 7 天 TTL 的幽灵条目被修剪（手机页不再列出点开即 404 的条目）", async () => {
