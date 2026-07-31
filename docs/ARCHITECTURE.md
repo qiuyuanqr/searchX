@@ -42,7 +42,7 @@
 【链路 A · 公开调研流水线】
 
   作者手动:                    朋友提交:
-  /research 或 /stock          站点表单(?k=token) ──POST──▶ intake-worker (Cloudflare)
+  /research 或 /stock          站点表单(#k=token，旧式 ?k= 永久兼容) ──POST──▶ intake-worker (Cloudflare)
   (交互式,任何一台机)                                      │ token反查邮箱/校验/初筛/限频
        │                                                   │ 干净→approved Issue
        │                                                   │ 可疑→pending Issue(等作者手动批)

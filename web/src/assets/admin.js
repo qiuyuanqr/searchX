@@ -7,7 +7,9 @@ export function escapeHtml(s){
 
 // 按站点 base 拼专属提交链接（base = admin.html 所在站点根，submit 表单也在该根的首页弹窗）。
 export function inviteLink(base, token){
-  return new URL("?k=" + encodeURIComponent(token), base).href;
+  // 新式专属链接用 fragment：hash 不随 HTTP 请求发出，token 不会落进 Pages / Worker 访问日志，
+  // 也不会随 referer 外泄。已发出去的 ?k= 旧链接前端仍然认，永久兼容。
+  return new URL("#k=" + encodeURIComponent(token), base).href;
 }
 
 // 把授权人列表渲染成表格行。email/链接拼进 innerHTML 前必须转义防 DOM-XSS。

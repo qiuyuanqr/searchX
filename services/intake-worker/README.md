@@ -3,7 +3,7 @@
 这是系统对外开放的唯一写入口：站内提交表单把内容 POST 到这个 Cloudflare Worker。**只有持「专属链接」的授权用户能提交**——链接里带一个只属于本人的 token，Worker 凭它反查邮箱、确认身份。干净内容直接建 `approved` Issue（runner 自动跑、无需人工）；命中安全初筛红旗的可疑件降级 `pending`，等作者手动核对后再放行。授权名单由作者在 `admin.html`（凭 `ADMIN_KEY`）管理。
 
 ```
-专属链接打开站点 (?k=<token>) → 站内表单
+专属链接打开站点 (#k=<token>，旧式 ?k= 永久兼容) → 站内表单
    │  POST JSON {k, title, focus, message}
    ▼
 Cloudflare Worker (本目录)
@@ -17,13 +17,14 @@ Cloudflare Worker (本目录)
 GitHub Issues → runner 取 approved 自动跑 /research（pending 等作者手动批）
 ```
 
-**其它路由：** `GET /verify?k=`（提交前确认 token、回显打码邮箱）、`GET|POST /admin/*`（授权名单增/查/删/轮换，凭 `ADMIN_KEY`）、`GET /sub/<n>`（runner 取邮箱，凭 `SUB_READ_SECRET`）、`GET /people`（runner 取授权列表做新链接自检：打码邮箱+token+addedAt，凭 `SUB_READ_SECRET`）。
+**其它路由：** `GET /verify`（提交前确认 token、回显打码邮箱；token 走 `x-invite-token` 请求头，兼容旧式 `?k=` 查询串；带自定义头需预检，故同时处理 `OPTIONS`）、`GET|POST /admin/*`（授权名单增/查/删/轮换，凭 `ADMIN_KEY`）、`GET /sub/<n>`（runner 取邮箱，凭 `SUB_READ_SECRET`）、`GET /people`（runner 取授权列表做新链接自检：打码邮箱+token+addedAt，凭 `SUB_READ_SECRET`）。
 
 **私密核查路由（/check/\*，凭 `CHECK_KEY`/`CHECK_RUNNER_SECRET`，任务只进 KV、不进公开 Issue）：** `POST /check`（作者提交核查任务）、`GET /check/pending`（check-runner 取待办）、`POST /check/<id>/done`（check-runner 标完成）、`GET /check/<id>/image/<n>`（取任务附带截图）、`GET /check/recent`（作者查最近任务状态）、`GET /check/<id>/result`（作者查单条核查全文，手机页详情视图懒加载用）。
 
 ## 授权白名单 / 专属链接 / 管理页
 
-- **授权 = 持有专属链接**。作者在 `admin.html` 加一个邮箱 → Worker 生成该人专属 token、双向存 KV（`invite:<token>→email`、`allow:<encEmail>→{token,addedAt}`，**永不过期**），返回链接 `<站点>/?k=<token>`。作者私发给本人。
+- **授权 = 持有专属链接**。作者在 `admin.html` 加一个邮箱 → Worker 生成该人专属 token、双向存 KV（`invite:<token>→email`、`allow:<encEmail>→{token,addedAt}`，**永不过期**），返回链接 `<站点>/#k=<token>`。作者私发给本人。
+  - **为什么用 fragment（`#k=`）**：hash 不随 HTTP 请求发出，token 因此不落进 Pages / Worker 的访问日志，也不随 referer 外泄（与 `check.html` 的 `CHECK_KEY` 同一做法）。**2026-07-31 之前发出的 `?k=` 旧链接永久有效**——前端两种都认，落盘后一律从地址栏抹掉。
 - **撤销 / 轮换**：删 `allow:`+`invite:` 双键即让链接立即失效；轮换 = 撤旧发新。
 - **邮箱不由用户输入**：提交时邮箱来自 token 映射，杜绝冒充他人 / 往邮箱字段塞注入。
 - **管理页访问控制**：`admin.html` 是纯密钥验证页（输对 `ADMIN_KEY` 前不加载任何数据）；真正鉴权在 Worker 服务端逐次 `safeEqual` 校验；错误密钥按 IP 计数、超 `ADMIN_MAX_FAILS_PER_HOUR` 临时 429 锁定；管理凭证与提交 token 完全隔离（提交 token 对 `/admin/*` 无效）。
@@ -42,7 +43,7 @@ GitHub Issues → runner 取 approved 自动跑 /research（pending 等作者手
 | `src/issue-format.js` | `formatIssue(clean,{author,flags,approved})` + `maskEmail`；按 approved/pending 分流标签与措辞 |
 | `src/invite.js` | token 生成 + 白名单 KV 读写（`mintInvite`/`emailForToken`/`listPeople`/`revoke`/`rotate`） |
 | `src/admin.js` | `handleAdmin` —— `/admin/*` 鉴权（`ADMIN_KEY`）+ 失败限流 + 增/查/删/轮换 |
-| `src/verify.js` | `handleVerify` —— `GET /verify?k=` 提交前确认 token、回显打码邮箱 |
+| `src/verify.js` | `handleVerify` —— `GET /verify` 提交前确认 token、回显打码邮箱（token 优先读 `x-invite-token` 头，回退 `?k=`；处理 `OPTIONS` 预检） |
 | `src/safe-equal.js` | `safeEqual(a,b)` 定长时间比较（admin / sub-read 共用） |
 | `src/ratelimit.js` | `peek/commitRateLimit(kv,{...})` + `dayKey(date)` KV 每日计数 |
 | `src/github.js` | `createIssue({...},fetchImpl)` 调 GitHub Issues API |
@@ -161,9 +162,9 @@ git push origin main          # 触发既有 Action 部署
 ### 7. 端到端验收（「完成」定义）
 1. 打开线上 `admin.html`，输 `ADMIN_KEY` → 进管理面板（错密钥→提示、连错多次→临时锁定）。
 2. 加一个**你自己的测试邮箱** → 复制生成的专属链接。
-3. 无痕窗口打开专属链接 `…/?k=<token>` → 提交弹窗显示「已授权（打码邮箱）」→ 填题目提交 → 成功文案。
+3. 无痕窗口打开专属链接 `…/#k=<token>`（以及一条旧式 `…/?k=<token>`）→ 地址栏里的 token 应立即消失 → 提交弹窗显示「已授权（打码邮箱）」→ 填题目提交 → 成功文案。
 4. 仓库 Issues 出现一条 **`approved`** Issue：标题=题目，正文含**打码**邮箱、状态标「自动放行」；runner 下一轮自动跑。
-5. 反向①：去掉 `?k=` 直接打开站点 → 提交被禁用、提示「需要专属链接」。
+5. 反向①：不带任何 token 直接打开站点（且清掉 localStorage）→ 提交被禁用、提示「需要专属链接」。
 6. 反向②：把题目写成命中红旗（如含 ```` ``` ````）→ 建的是 **`pending`**（降级人工），不自动跑。
 7. 清理：`admin.html` 撤销测试邮箱（链接立即失效）、关掉测试 Issue。
 
@@ -172,5 +173,5 @@ git push origin main          # 触发既有 Action 部署
 ## 接口（给 runner / 站点）
 - 状态机：`approved`（自动/手动）→ `done`；可疑件 `pending → approved → done`。
 - KV：`sub:<issue号>`=提交者邮箱（runner 取，60 天）；`invite:<token>`/`allow:<email>`=授权名单（永久，admin 管理）。
-- `/admin/*`（`ADMIN_KEY`）、`/verify?k=`、`/sub/<n>`（`SUB_READ_SECRET`）。
+- `/admin/*`（`ADMIN_KEY`）、`/verify`（`x-invite-token` 头或 `?k=`）、`/sub/<n>`（`SUB_READ_SECRET`）。
 - runner 用受限 token 拉 `approved` 未 `done` 的 Issue（不变）。

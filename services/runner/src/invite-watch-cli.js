@@ -103,7 +103,8 @@ for (const person of fresh) {
     verifyOk(fallback, person.token),
     siteReachable(),
   ]);
-  const link = `${site}/?k=${encodeURIComponent(person.token)}`;
+  // 用 fragment 形式（#k=）：token 不进访问日志、不随 referer 外泄。旧的 ?k= 链接前端仍认。
+  const link = `${site}/#k=${encodeURIComponent(person.token)}`;
   const msg = composeInviteReport({ person, link, primaryOk, fallbackOk, siteOk, authorEmail, fromEmail: smtpUser });
   try {
     await transport.sendMail(msg);

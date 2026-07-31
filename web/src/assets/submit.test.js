@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { buildPayload, tokenFromQuery, resolveToken, clearStoredToken, TOKEN_STORAGE_KEY, describeVerify, describeResult, escapeHtml, renderSearchResultsHTML, findReportMeta, describeExistingReport, fetchAny, renderExcerpt } from "./submit.js";
+import { buildPayload, tokenFromQuery, resolveToken, clearStoredToken, TOKEN_STORAGE_KEY, describeVerify, describeResult, escapeHtml, renderSearchResultsHTML, findReportMeta, describeExistingReport, fetchAny, renderExcerpt, tokenFromHash } from "./submit.js";
 
 // 假 storage：Map 撑起 get/set/remove；可选 throwOn 模拟隐私模式下方法抛错。
 function fakeStorage(init = {}, throwOn = new Set()) {
@@ -267,4 +267,45 @@ test("describeResult：正常成功仍是 success 文案（不回归）", () => 
   const out = describeResult({ ok: true });
   expect(out.kind).toBe("success");
   expect(out.text).toContain("发到你的邮箱");
+});
+
+// ── 专属链接：新式 #k= 与旧式 ?k= 都要认（2026-07-31）─────────────
+// token 走 fragment 后不再进 Pages / Worker 访问日志、不随 referer 外泄；
+// 但已经发给朋友的 ?k= 旧链接必须永久有效，不能让人重新去要链接。
+test("tokenFromHash：从 #k= 取 token；无则空串", () => {
+  expect(tokenFromHash("#k=ABC")).toBe("ABC");
+  expect(tokenFromHash("#k=A%2FB")).toBe("A/B");     // 解码
+  expect(tokenFromHash("#submit")).toBe("");
+  expect(tokenFromHash("")).toBe("");
+  expect(tokenFromHash(null)).toBe("");
+});
+
+test("resolveToken：新式 #k= 优先于旧式 ?k=，两者都会落盘", () => {
+  const mk = () => { const m = new Map(); return { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, v), removeItem: (k) => m.delete(k) }; };
+  const s1 = mk();
+  expect(resolveToken({ search: "?k=OLD", hash: "#k=NEW" }, s1)).toBe("NEW");
+  expect(s1.getItem(TOKEN_STORAGE_KEY)).toBe("NEW");
+
+  const s2 = mk();
+  expect(resolveToken({ search: "?k=OLD", hash: "" }, s2)).toBe("OLD");   // 旧链接照常工作
+  expect(s2.getItem(TOKEN_STORAGE_KEY)).toBe("OLD");
+});
+
+test("resolveToken：URL 没带就回退本机存储（点开报告再返回、刷新、冷启动都还在授权态）", () => {
+  const m = new Map([[TOKEN_STORAGE_KEY, "SAVED"]]);
+  const st = { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, v), removeItem: (k) => m.delete(k) };
+  expect(resolveToken({ search: "", hash: "" }, st)).toBe("SAVED");
+});
+
+test("resolveToken：仍兼容「只传 search 字符串」的旧调用形态", () => {
+  const m = new Map();
+  const st = { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, v), removeItem: (k) => m.delete(k) };
+  expect(resolveToken("?k=OLD", st)).toBe("OLD");
+});
+
+test("resolveToken：storage 不可用时不抛，仍能返回链接里的 token", () => {
+  const boom = { getItem: () => { throw new Error("x"); }, setItem: () => { throw new Error("x"); } };
+  expect(resolveToken({ search: "", hash: "#k=T" }, boom)).toBe("T");
+  expect(resolveToken({ search: "", hash: "" }, boom)).toBe("");
+  expect(resolveToken({ search: "", hash: "" }, null)).toBe("");
 });

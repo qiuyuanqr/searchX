@@ -1,4 +1,4 @@
-import { buildPayload, tokenFromQuery, resolveToken, clearStoredToken, describeVerify, describeResult, renderSearchResultsHTML, describeExistingReport, fetchAny } from "./submit.js";
+import { buildPayload, tokenFromQuery, tokenFromHash, resolveToken, TOKEN_STORAGE_KEY, clearStoredToken, describeVerify, describeResult, renderSearchResultsHTML, describeExistingReport, fetchAny } from "./submit.js";
 import { findFreshReport, DEFAULT_DEDUP_WINDOW_DAYS } from "./dedup.js";
 import { computeFeedView } from "./feed-filter.js";
 
@@ -7,10 +7,18 @@ function safeStorage(){ try { return window.localStorage; } catch { return null;
 
 // 专属链接里的 token（?k=…）：提交的唯一凭证。空 = 未授权，不能提交。
 // 优先取地址栏 ?k=，没有则回退本机存储——这样点开报告再返回首页、刷新、从手机主屏图标冷启动重开，都还在授权态。
-const TOKEN = resolveToken(location.search, safeStorage());
-// 地址栏若带了 ?k=，读完（已落盘）立即从地址栏 / 历史里抹掉：避免 token 残留浏览器历史、或随后续 referer 泄露。
-if (tokenFromQuery(location.search) && window.history && history.replaceState) {
-  try { history.replaceState(null, "", location.pathname + location.hash); } catch {}
+const TOKEN = resolveToken(location, safeStorage());
+// 地址栏若带了 #k=（新式）或 ?k=（旧式），读完（已落盘）立即从地址栏 / 历史里抹掉：
+// 避免 token 常驻屏幕被旁人瞥见、残留浏览器历史、或随后续 referer 泄露。
+// 两种形态要分别处理：旧式 token 在查询串里，抹掉 search 但要保留 hash（#submit 靠它打开弹窗）；
+// 新式 token 本身就在 hash 里，得连 hash 一起抹掉，否则等于没藏。
+if (window.history && history.replaceState) {
+  const hadHashToken = !!tokenFromHash(location.hash);
+  const hadQueryToken = !!tokenFromQuery(location.search);
+  if (hadHashToken || hadQueryToken) {
+    const keepHash = hadHashToken ? "" : location.hash;
+    try { history.replaceState(null, "", location.pathname + keepHash); } catch {}
+  }
 }
 
 const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -232,7 +240,10 @@ function bindSubmitModal(){
       // 主备端点各带超时（fetchAny）：任一端口被网络黑洞时不至于永远「验证中」
       const fb = form.dataset.workerFallback;
       const r = await fetchAny(
-        [form.dataset.verify, fb && fb + "/verify"].map((u) => u && u + "?k=" + encodeURIComponent(TOKEN))
+        // token 走请求头而不是查询串：查询串会原样落进 Worker 的访问日志。
+        // 服务端仍兼容 ?k=（缓存的旧前端还在用），这里只管新式传法。
+        [form.dataset.verify, fb && fb + "/verify"],
+        { headers: { "x-invite-token": TOKEN } }
       );
       // 只有 2xx + 合法 JSON 才算服务端确定答复（/verify 对无效 token 也回 200 {ok:false}）。
       // 5xx / 网关 HTML 错误页绝不能当「token 无效」：那会误清本机有效 token（?k= 已从
@@ -372,6 +383,17 @@ function bindSubmitModal(){
 
   // 旧网址 submit.html 跳来时带 #submit → 自动打开弹窗
   if (location.hash === "#submit") open();
+
+  // 页面已开着时在地址栏贴入新式专属链接（#k=…）只改 hash、不重载脚本 →
+  // 靠 hashchange 补上同样的接收逻辑：存下 token、抹掉地址栏、重跑一次授权确认。
+  // 与 check.html 的 adoptHashKey 同一套做法。
+  window.addEventListener("hashchange", () => {
+    const t = tokenFromHash(location.hash);
+    if (!t) return;
+    try { safeStorage()?.setItem(TOKEN_STORAGE_KEY, t); } catch {}
+    if (window.history && history.replaceState) history.replaceState(null, "", location.pathname + location.search);
+    location.reload(); // TOKEN 是模块级常量，重载最省事也最不容易出错
+  });
 }
 
 // 刷新按钮（右下角常驻）

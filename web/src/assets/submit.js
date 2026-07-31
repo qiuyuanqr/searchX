@@ -13,9 +13,21 @@ export function buildPayload(fields, token) {
 }
 
 // 纯函数：从 location.search 取专属链接里的 token（?k=…）；无则空串。
+// 旧式链接（2026-07-31 之前发出去的）都是这个形态，永久兼容。
 export function tokenFromQuery(search) {
   try {
     return new URLSearchParams(search || "").get("k") || "";
+  } catch {
+    return "";
+  }
+}
+
+// 纯函数：从 location.hash 取专属链接里的 token（#k=…）；无则空串。
+// 新式链接用 fragment：hash 不会随 HTTP 请求发给服务端，因此 token 不会落进 Pages / Worker
+// 的访问日志，也不会随 referer 外泄——与同仓库 check.html 的 CHECK_KEY 同一做法。
+export function tokenFromHash(hash) {
+  try {
+    return new URLSearchParams(String(hash || "").replace(/^#/, "")).get("k") || "";
   } catch {
     return "";
   }
@@ -25,10 +37,13 @@ export function tokenFromQuery(search) {
 // （点开报告→返回首页）、刷新、以及从手机主屏图标冷启动后恢复——这些导航都不带 ?k=。
 export const TOKEN_STORAGE_KEY = "searchx_invite_token";
 
-// 纯函数：解析当前可用的 token。优先用 URL 里的 ?k=（并落盘覆盖旧值，支持换人/换链接）；
-// URL 没有就回退到 storage。storage 不可用（隐私模式、被禁用、为 null）时静默降级，绝不抛出。
-export function resolveToken(search, storage) {
-  const fromUrl = tokenFromQuery(search);
+// 纯函数：解析当前可用的 token。优先级 #k=（新式链接）＞ ?k=（旧式链接，永久兼容）＞ 本机存储。
+// 链接里带的一律落盘覆盖旧值，支持换人 / 换链接。
+// storage 不可用（隐私模式、被禁用、为 null）时静默降级，绝不抛出。
+// 第二个参数兼容两种调用形态：传 location 对象（推荐）或只传 search 字符串（旧调用方）。
+export function resolveToken(loc, storage) {
+  const { search, hash } = typeof loc === "string" ? { search: loc, hash: "" } : (loc || {});
+  const fromUrl = tokenFromHash(hash) || tokenFromQuery(search);
   if (fromUrl) {
     try { storage && storage.setItem(TOKEN_STORAGE_KEY, fromUrl); } catch {}
     return fromUrl;

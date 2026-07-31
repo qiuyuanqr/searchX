@@ -1,14 +1,14 @@
 import { test, expect } from "bun:test";
 import { inviteLink, renderPeopleRows, describeAdminError, escapeHtml } from "./admin.js";
 
-test("inviteLink：按站点 base 拼 ?k= 链接", () => {
-  expect(inviteLink("https://qiuyuanqr.github.io/searchX/", "TOK")).toBe("https://qiuyuanqr.github.io/searchX/?k=TOK");
+test("inviteLink：按站点 base 拼 #k= 链接（token 走 fragment，不进访问日志）", () => {
+  expect(inviteLink("https://qiuyuanqr.github.io/searchX/", "TOK")).toBe("https://qiuyuanqr.github.io/searchX/#k=TOK");
 });
 
 test("renderPeopleRows：含邮箱、专属链接、撤销按钮", () => {
   const html = renderPeopleRows([{ email: "a@x.com", token: "T", addedAt: 0 }], "https://s/");
   expect(html).toContain("a@x.com");
-  expect(html).toContain("?k=T");
+  expect(html).toContain("#k=T");
   expect(html).toContain('data-email="a@x.com"');
   expect(html).toContain('data-act="revoke"');
   expect(html).toContain('data-act="copy"');
