@@ -268,6 +268,9 @@ function renderCallout(div) {
   } else if (/\blimitation\b/.test(cls)) {
     admon = "warning";
     title = "数据局限";
+  } else if (/\bcorrection\b/.test(cls)) {
+    admon = "warning";
+    title = "更正说明";
   }
   const inner = renderBlocks(div.children).trim();
   if (!admon) return inner; // 未知 div：只保留内部块
@@ -356,6 +359,9 @@ function extractSources(sec) {
 export function extractReport(reportHtml) {
   const nodes = parseHtml(sliceBody(reportHtml));
   const h1 = findFirst(nodes, el("h1"));
+  // 更正说明：报告上线后就地更正时写在 masthead 里，正文遍历取不到，单独抽一次
+  const correctionEl =
+    findFirst(nodes, el("p", "correction")) || findFirst(nodes, el("div", "correction"));
   const plainDiv = findFirst(nodes, el("div", "plain"));
   const tldrDiv = findFirst(nodes, el("div", "tldr"));
   const findingsDiv = findFirst(nodes, el("div", "findings"));
@@ -366,6 +372,9 @@ export function extractReport(reportHtml) {
 
   return {
     title: h1 ? renderInline(h1.children).trim() : "",
+    correction: correctionEl
+      ? renderInline(correctionEl.children).replace(/\s+/g, " ").trim()
+      : "",
     plain: plainDiv ? renderInline(stripLabel(plainDiv.children)).replace(/\s+/g, " ").trim() : "",
     tldr: tldrDiv ? renderInline(stripLabel(tldrDiv.children)).replace(/\s+/g, " ").trim() : "",
     findings: liTexts(findingsDiv),
@@ -409,6 +418,11 @@ export function buildObsidianNote(reportHtml, notesMd) {
     out.push("");
   }
   if (r.title) out.push(`# ${r.title}`);
+  if (r.correction) {
+    out.push("");
+    out.push(`> [!warning] 更正说明`);
+    out.push(`> ${r.correction.replace(/\n+/g, " ")}`);
+  }
   if (r.tldr) {
     out.push("");
     out.push(`> **核心结论**　${r.tldr.replace(/\n+/g, " ")}`);

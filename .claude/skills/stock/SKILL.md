@@ -81,7 +81,7 @@ disable-model-invocation: false
 
 行情 / 估值 / 财务 / 板块类数据**第一优先从本机 Stocks 项目的行情库只读查询核准**（Tushare 付费源、每交易日日更，比网页抓取快且准），不止步于网页快照或财经媒体二手转述。
 
-**访问方式（一律 `mode=ro` 只读；命令模板与路径见 `CLAUDE.local.md` 的 `STOCKS_DB` 段——绝对路径与主机别名不入公开仓库）**：
+**访问方式（只读靠 `PRAGMA query_only=1`——**别用 `?mode=ro`，库是 WAL 模式，实测常态报 `unable to open database file (14)`**；命令模板与路径见 `CLAUDE.local.md` 的 `STOCKS_DB` 段——绝对路径与主机别名不入公开仓库）**：
 - 活库在常驻机上，每交易日 17:45 后更新当日数据（库内口径 = 最近收盘日，盘中查到的最新交易日是上一交易日）
 - 每次取数前先 `SELECT MAX(trade_date) FROM daily_kline;` 拿数据截止日；凡取自库的数据一律标注「**Stocks 库 · 数据截至 YYYYMMDD**」
 
@@ -100,9 +100,10 @@ disable-model-invocation: false
 | 指数日线 | `index_daily` | ts_code **带后缀**（`000300.SH`） |
 | 新闻 | `news_feed` | 全文检索用 `news_fts` |
 
-**两个格式陷阱（写错 = 查空，会被误判成「无数据」）**：
+**三个查空陷阱（写错 = 查空，会被误判成「无数据」甚至「这公司没上市」）**：
 1. `ts_code` 两格式：多数表存 **6 位裸码**（`600519`）；`theme_stock` / `stock_industry` / `index_daily` 存**带后缀**（`600519.SH`）——查询 / join 前先对准格式
 2. 日期一律 **8 位串**（`20260729`），不是 ISO
+3. **按注册名查，不是业务品牌名**：`stock_basic.name` 存的是注册简称。查「长鑫存储」是空的，注册名「长鑫科技」（688825）才查得到；「韦尔股份」现名「豪威集团」、「华虹」在库里是「华虹宏力」。**一次查空绝不等于未上市**——换名称、换代码、`LIKE` 模糊匹配、按行业列全表，都试过再下结论
 
 **库覆盖不到的，走接口渠道**：盘中实时价与当日盘口、资金流向（主力 / 北向）、融资融券、限售解禁、龙虎榜 / 大宗——curl 抓 eastmoney / sina 同源 API（akshare 可用时亦可；接口对照：实时快照 `stock_zh_a_spot_em`、资金流 `stock_individual_fund_flow` / `stock_hsgt_*`、两融 `stock_margin_detail_sse/szse`、解禁 `stock_restricted_release_queue_sina`、龙虎榜 / 大宗 `stock_lhb_*` / `stock_dzjy_*`）。**港股 / 美股标的库无覆盖**，直接走本段降级链。
 

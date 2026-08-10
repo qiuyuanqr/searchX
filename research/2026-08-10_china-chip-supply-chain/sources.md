@@ -9,9 +9,11 @@
 - [监管] 美《联邦公报》2022 首轮对华半导体管制规则（87 FR 62186） — https://www.federalregister.gov/documents/2022/10/13/2022-21658 — 2022-10-13 — 限制 16/14nm 及以下制造设备、首次限制"美国人"参与中国半导体产线。
 - [监管] 美《联邦公报》2024 实体清单加列文本 — https://www.federalregister.gov/documents/2024/12/05/2024-28267 — 2024-12-05 — 140 家中国实体入清单的正式法律文本。
 - [监管] 中国政府网（英文）：大基金一/二期注册资本 — https://english.www.gov.cn/news/202405/29/content_WS66569746c6d0868f4e8e7987.html — 2024-05-29 — 一期 1387 亿元、二期 2041 亿元。
+- [监管] 长江存储 IPO 辅导首期报告披露（武汉市政府门户转证监会官网辅导进展报告） — https://www.wuhan.gov.cn/sy/whyw/202607/t20260713_2820470.shtml — 2026-07-13 — 辅导期 2026-05-19 至 06-30，中信证券 + 中信建投联合辅导、31 人小组；明确"仍处于 IPO 辅导阶段"，尚需申报、问询、上市委审议与证监会注册。
 
 ## 披露
 
+- [披露] Stocks 行情库（Tushare 数据源，只读核准） — 本机库 · 数据截至 20260807 — 长鑫科技（688825）上市日 20260727 / 状态 L；2026Q1 营收 508.00 亿元、归母净利 247.62 亿元、毛利率 79.16%；20260807 收盘 52.48 元、总市值约 3.51 万亿元、PE(TTM) 124.48。同批核准正文数字：海光 143.77 亿、长电 388.71 亿、北方华创 393.53 亿（净利同比 -1.77%）、拓荆 65.19 亿、寒武纪 64.97 亿（净利 20.59 亿转正）、卓胜微净利 -2.93 亿（由盈转亏）、中芯 673.23 亿元（≈93 亿美元）、华虹宏力 2024 年 143.88 亿元（≈20 亿美元）——均与正文一致。
 - [披露] 中芯国际 2025 年度业绩公告（官方） — https://www.smics.com/en/site/news_read/7951 — 2026-03-26 — 2025 营收 93.27 亿美元（+16.2%）、毛利率 21%、产能利用率 93.5%、归母净利 6.85 亿美元。
 - [披露] 中芯国际 2025 年年度报告（A 股，巨潮） — https://static.cninfo.com.cn/finalpage/2026-03-27/1225037057.PDF — 2026-03-27 — 人民币口径 673.23 亿元等一手年报数据。
 - [披露] 华虹半导体 2024 年第四季度及全年业绩（港交所） — https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0213/2025021300345.pdf — 2025-02-13 — 2024 全年营收 20.04 亿美元（−12.3%）、特色工艺+成熟制程定位。
@@ -34,7 +36,8 @@
 - [媒体] Taipei Times：台积电占 2025 代工市场近 70% — https://www.taipeitimes.com/News/biz/archives/2026/03/14/2003853777 — 2026-03-14 — 引 TrendForce 全年排名，中芯全球第三（约 5.32% 份额、约 93.3 亿美元）。
 - [媒体] Reuters：中国设立三期大基金 3440 亿元 — https://www.reuters.com/technology/china-sets-up-475-bln-state-fund-boost-semiconductor-industry-2024-05-27/ — 2024-05-27 — 成立日 2024-05-24、注册资本 3440 亿元、超前两期之和。
 - [媒体] Reuters：英伟达 H20 恢复对华销售 — https://www.reuters.com/business/media-telecom/nvidia-resume-h20-gpu-sales-china-2025-07-15/ — 2025-07-15 — 4 月实质禁售、7 月恢复，管制"先禁后放"的动态博弈实例。
-- [媒体] Reuters：长鑫存储拟科创板 IPO 募约 295 亿元 — https://www.reuters.com/world/asia-pacific/chinas-cxmt-eyes-42-billion-shanghai-listing-fund-dram-expansion-2025-12-31/ — 2025-12-31 — 长鑫从"未上市"转向上市，DRAM 扩产。
+- [媒体] 证券时报：长鑫科技 7 月 27 日上市 — https://www.stcn.com/article/detail/4038571.html — 2026-07-24 — 长鑫上市主体「长鑫科技」（688825）挂牌科创板，发行总市值 5791.88 亿元、初期无限售流通股约 45.03 亿股（÷ 总股本 668.81 亿股 = 发行价 8.66 元）。本报告"长鑫未上市"初版表述据此更正。
+- [媒体] Reuters：长鑫存储拟科创板 IPO 募约 295 亿元 — https://www.reuters.com/world/asia-pacific/chinas-cxmt-eyes-42-billion-shanghai-listing-fund-dram-expansion-2025-12-31/ — 2025-12-31 — IPO 起点与募资规模出处；其"未上市"状态已于 2026-07-27 失效，不可再作现状引用。
 - [媒体] 证券时报：华特气体与电子特气国产化 — https://www.stcn.com/article/detail/1653218.html — 2025-04 — 中国电子特气约 88% 外资垄断、华特国内份额<5%、ASML+Gigaphoton 唯一认证、进台积电供应链。
 - [媒体] 华经产业研究院：中国半导体光刻胶现状与趋势 — https://www.huaon.com/channel/trend/1144405.html — 2026-02-21 — 光刻胶分档国产化率（g/i~20-30%、KrF 个位数、ArF<1%、EUV 近零，日本占 80-90%）。
 - [媒体] 新浪财经：拓荆科技 2025 年营收 65.19 亿元（+58.87%） — https://finance.sina.com.cn/tech/roll/2026-04-28/doc-inhvzfsq7349196.shtml — 2026-04-28 — 薄膜沉积龙头 2025 定报；2026Q1 利润大头为投资收益、扣非仅 1.02 亿。
