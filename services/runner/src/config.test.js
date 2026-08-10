@@ -1,6 +1,9 @@
 // services/runner/src/config.test.js
 import { test, expect } from "bun:test";
 import { loadRunnerConfig } from "./config.js";
+// 跟着单一权威走，别在测试里写死天数——2026-08-10 把窗口从 30 改成 20 时，
+// 这两个测试就是因为写死 30 而挂掉的（默认值本身另有 dedup.test.js 专门钉住）。
+import { DEFAULT_DEDUP_WINDOW_DAYS } from "./dedup.js";
 
 const FULL = {
   RUNNER_GITHUB_TOKEN: "ghp_x",
@@ -18,16 +21,17 @@ test("齐全 → 返回配置；URL 去尾斜杠；含默认 owner/repo/siteBase
   expect(c.repo).toBe("searchX");
   expect(c.authorEmail).toBe("me@gmail.com"); // 缺省回退到 RUNNER_SMTP_USER
   expect(c.siteBase).toBe("https://qiuyuanqr.github.io/searchX");
-  expect(c.dedupWindowDays).toBe(30); // 默认查重时效窗口 30 天
+  expect(c.dedupWindowDays).toBe(DEFAULT_DEDUP_WINDOW_DAYS); // 默认查重时效窗口
   expect(c.claudeArgs).toEqual(["--permission-mode", "bypassPermissions"]);
 });
 
-test("dedupWindowDays：可被 RUNNER_DEDUP_WINDOW_DAYS 覆盖；空/非法/负数回退 30", () => {
+test("dedupWindowDays：可被 RUNNER_DEDUP_WINDOW_DAYS 覆盖；空/非法/负数回退默认值", () => {
+  const D = DEFAULT_DEDUP_WINDOW_DAYS;
   expect(loadRunnerConfig({ ...FULL, RUNNER_DEDUP_WINDOW_DAYS: "7" }).dedupWindowDays).toBe(7);
   expect(loadRunnerConfig({ ...FULL, RUNNER_DEDUP_WINDOW_DAYS: "0" }).dedupWindowDays).toBe(0);
-  expect(loadRunnerConfig({ ...FULL, RUNNER_DEDUP_WINDOW_DAYS: "" }).dedupWindowDays).toBe(30);
-  expect(loadRunnerConfig({ ...FULL, RUNNER_DEDUP_WINDOW_DAYS: "abc" }).dedupWindowDays).toBe(30);
-  expect(loadRunnerConfig({ ...FULL, RUNNER_DEDUP_WINDOW_DAYS: "-5" }).dedupWindowDays).toBe(30);
+  expect(loadRunnerConfig({ ...FULL, RUNNER_DEDUP_WINDOW_DAYS: "" }).dedupWindowDays).toBe(D);
+  expect(loadRunnerConfig({ ...FULL, RUNNER_DEDUP_WINDOW_DAYS: "abc" }).dedupWindowDays).toBe(D);
+  expect(loadRunnerConfig({ ...FULL, RUNNER_DEDUP_WINDOW_DAYS: "-5" }).dedupWindowDays).toBe(D);
 });
 
 test("maxFailures：默认 3；可被 RUNNER_MAX_FAILURES 覆盖；空/非法/小于 1 回退 3", () => {

@@ -6,7 +6,9 @@
 
 // 查重时效窗口（天）默认值——全项目唯一权威：runner 的 config.js、浏览器端 feed.js
 // 都从这里 import，不各自硬编码，避免"改一处另两处不动"（见 docs/ARCHITECTURE.md 技术债 2）。
-export const DEFAULT_DEDUP_WINDOW_DAYS = 30;
+// 2026-08-10 由 30 天收紧到 20 天：股票报告是约 13 周的时点快照，但行情与基本面变得比
+// 原先估计的快（存储双雄上市那次，14 天前发生的事就已经让在写的报告过时了）。
+export const DEFAULT_DEDUP_WINDOW_DAYS = 20;
 
 // 日历天差：toYMD - fromYMD（按日期，时区无关）。日期坏 → 返回 Infinity（视为极旧，不拦：宁可重做不误拦）。
 export function daysBetween(fromYMD, toYMD) {

@@ -10,7 +10,7 @@ GitHub Issues（M2a 入队的，作者已贴 approved）
    ▼
 对每条 approved 未 done 的 Issue：
    ├─ parseIssueRequest        题目=标题、侧重点=正文围栏
-   ├─ findFreshReport          查重：同标的且 30 天内已有报告 → 不重复调研
+   ├─ findFreshReport          查重：同标的且 20 天内已有报告 → 不重复调研
    │     └─ 命中 → 取提交者邮箱、发「已有报告」回信（抄作者）、评论、贴 done、跳过（零额度）
    ├─ buildResearchPrompt      /research <题目> | <侧重点>（未命中查重才走到这）
    ├─ runResearch              Bun.spawn claude -p …（跑研究 + Step6 push 上线）
@@ -30,13 +30,13 @@ GitHub Issues（M2a 入队的，作者已贴 approved）
 - **机密永不入库**：GitHub PAT / 共享密钥 / Gmail 应用专用密码全部走未入库的根 `.env`（已 gitignore）或 `export`。`.env` / `.env.local` 已在 `.gitignore`。
 - **PAT 最小权限**：仅 searchX 仓库、Issues 读写，与 M2a 建 Issue 的 bot 身份分离。
 
-## 查重——已调研过的不重复做（30 天时效窗口）
+## 查重——已调研过的不重复做（20 天时效窗口）
 
-每条 Issue 在 spawn `claude` **之前**先查重（`src/dedup.js` 的 `findFreshReport`，纯脚本、零 token）：扫 `research/` 已有报告，按**股票代码**或**公司全名**比对，**同一只票且报告生成日期在 30 天内**就判为重复。
+每条 Issue 在 spawn `claude` **之前**先查重（`src/dedup.js` 的 `findFreshReport`，纯脚本、零 token）：扫 `research/` 已有报告，按**股票代码**或**公司全名**比对，**同一只票且报告生成日期在 20 天内**就判为重复。
 
 - **命中**：不重复调研——取提交者邮箱，发一封「已有调研报告」回信（含报告标题 / TLDR / 公开链接，抄送作者）、在 Issue 上评论留痕、贴 `done`，跳过本条。**不 spawn claude、零额度**。
-- **报告已超过 30 天**（行情、基本面大多已变动）或**查无报告**：照常跑研究。
-- 窗口可调：环境变量 `RUNNER_DEDUP_WINDOW_DAYS`（默认 30）。
+- **报告已超过 20 天**（行情、基本面大多已变动）或**查无报告**：照常跑研究。
+- 窗口可调：环境变量 `RUNNER_DEDUP_WINDOW_DAYS`（默认 20）。
 - 只查**股票类**（`type=股票`）报告；概念 / 人物 / 板块类不参与（它们的"再调研"通常是有意刷新）。
 - 匹配偏「宁可漏拦也少误拦」：漏拦最多多跑一次研究（会正常产出文件夹，不会死循环），误拦会把别的票报告硬塞给提交者更糟，故名称匹配以精确为主。
 - 回信失败（取邮箱 / SMTP 出错）：仍贴 `done` 防重判，评论提示「请手动告知提交者」。
@@ -149,7 +149,7 @@ bun run runner
 | `RUNNER_SMTP_PASS` | ✅ | Gmail 应用专用密码 |
 | `RUNNER_CLAUDE_ARGS` | — | 传给 `claude -p` 的额外参数，默认 `--permission-mode bypassPermissions` |
 | `RUNNER_SITE_BASE` | — | 站点基址，默认 `https://qiuyuanqr.github.io/searchX` |
-| `RUNNER_DEDUP_WINDOW_DAYS` | — | 查重时效窗口（天），默认 `30`；空/非法/负数回退 30 |
+| `RUNNER_DEDUP_WINDOW_DAYS` | — | 查重时效窗口（天），默认 `20`；空/非法/负数回退 20 |
 | `RUNNER_MAX_FAILURES` | — | 失败停跑阈值：同一 Issue 连续「研究未产出」达此次数即自动贴 `done` 停跑止损，默认 `3`；空/非法/小于 1 回退 3 |
 | `RUNNER_TIMEOUT_MINUTES` | — | 单条 `claude -p` 的硬超时（分钟），默认 `180`。到点先 TERM、宽限 10 秒再 KILL，按「研究未产出」计入失败退避。也是单实例锁「存活但超龄」判定的基数（超龄上限＝本值 + 30 分钟） |
 | `RUNNER_AUTHOR_EMAIL` | — | 抄送地址，默认同 `RUNNER_SMTP_USER` |

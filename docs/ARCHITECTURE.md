@@ -50,7 +50,7 @@
        │                                            GitHub Issues (队列)
        │                                                   │
        │                                    Mac mini runner (每300s tick)
-       │                                                   │ 查重(30天窗口,零token)
+       │                                                   │ 查重(20天窗口,零token)
        │                                                   ▼
        └────────────────▶ claude -p "/research <题目>"（唯一花钱环节）
                                 │  SKILL 六步: 检索→写三件套→Obsidian→Step5.5独立核验
@@ -285,7 +285,7 @@
 | 密钥对（值必须两端一致） | Cloudflare secret ↔ 根 `.env` | `SUB_READ_SECRET`↔`RUNNER_SUB_SECRET`；`CHECK_RUNNER_SECRET`↔同名；`CHECK_KEY`↔手机页输入 | 轮换任何一把要两端同时换；不一致的症状是**静默 401** |
 | 根 `.env`（双 runner 共用） | 作者手工 | 两个 runner 的 config.js；`child-env.js` 按前缀整组剥 | 新机密必须用 `RUNNER_` 或 `CHECK_RUNNER_` 前缀，否则不会被剥、会漏给 claude 子进程 |
 | GitHub 标签 `pending/approved/rejected/done` | worker createIssue、作者手机、runner addLabel | runner listApprovedIssues 过滤 | 标签是提前手工建的；换仓库要先建标签 |
-| 30 天查重窗口 | `dedup.js` 的 `DEFAULT_DEDUP_WINDOW_DAYS`（唯一权威，2026-07-07 起） | `config.js` 默认值、`feed.js` import、stock SKILL §0.1 文字 | 改默认值只动 dedup.js；runner 运行时仍可用 `RUNNER_DEDUP_WINDOW_DAYS` 覆盖（覆盖时前端提示仍按默认值） |
+| 查重窗口（现 20 天）| `dedup.js` 的 `DEFAULT_DEDUP_WINDOW_DAYS`（唯一权威，2026-07-07 起） | `config.js` 默认值、`feed.js` import、stock SKILL §0.1 文字 | 改默认值只动 dedup.js；runner 运行时仍可用 `RUNNER_DEDUP_WINDOW_DAYS` 覆盖（覆盖时前端提示仍按默认值） |
 | 锁与状态文件目录 `~/Library/Application Support/searchx-{runner,check-runner}/` | 两个 runner | `git-sync.sh` 读 `searchx-runner/runner.lock` 做互斥 | 移动锁文件路径要带上 git-sync.sh |
 | launchd 四个任务 | `com.searchx.runner`(300s) / `com.searchx.check-runner`(300s) / `com.searchx.autopull`(600s) / `com.searchx.worker-deploy`(300s) | 只装在 Mac mini；MacBook 同步到脚本但没装 plist 不会跑 | 改间隔要 bootout+bootstrap 重装 plist |
 
@@ -297,7 +297,7 @@
 - **新增站点页面**：`web/src/<名字>.template.html` + 需要的话 `assets/<名字>-page.js`（DOM 接线）与 `assets/<名字>.js`（纯逻辑+单测，参照 check 页的拆分）→ `web/build/build.js` 加一段 injectConfig 写出 → fingerprint 自动覆盖。私密页记得 noindex + `data-pagefind-ignore` + 不放入口链接。
 - **新增 Worker 路由**：`services/intake-worker/src/` 加模块 + 测试（注入 fetch/假 KV 离线测），`index.js` 里 `return await` 分发；浏览器可达的路由带 CORS + OPTIONS + 密钥限频（照抄 check.js 的 corsJson 模式）；列表需求走索引不走 list。部署靠 push 后 Mac mini 自动 deploy。
 - **换/加常驻机**：整目录拷到同路径 → `bash setup-macmini.sh` → 按 README 装需要的 plist。注意 ssh 别名拓扑（5.8）：新机器不该配 `mac-mini` 别名除非它是新的「开发机」。
-- **调参数**（查重窗口/失败阈值/超时/轮询间隔）：runner 侧全部走 `.env` 环境变量（见两个 README 的表），launchd 间隔走 plist。改「30 天窗口」记得技术债 2 的三处。
+- **调参数**（查重窗口/失败阈值/超时/轮询间隔）：runner 侧全部走 `.env` 环境变量（见两个 README 的表），launchd 间隔走 plist。改查重窗口只动 dedup.js 的 DEFAULT_DEDUP_WINDOW_DAYS，但 stock SKILL 与两个 README 的文字要手动同步。
 - **规模化**（报告数百篇后）：首页无分页、pagefind 全量索引、INDEX.md 单文件——都会先后变慢。到时优先做首页分页/按年分卷，不用动数据模型（目录即数据库的结构撑得住）。
 - **想让 factcheck 结果选择性公开**：新开显式白名单发布路径（如复制指定笔记进 `research/` 并补三件套），**不要**给 factcheck skill 加「顺便发布」开关——D5 的隔离是隐私底线。
 

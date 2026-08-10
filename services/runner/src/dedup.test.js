@@ -1,6 +1,6 @@
 // services/runner/src/dedup.test.js
 import { test, expect } from "bun:test";
-import { findFreshReport, daysBetween, extractCodes } from "./dedup.js";
+import { findFreshReport, daysBetween, extractCodes, DEFAULT_DEDUP_WINDOW_DAYS } from "./dedup.js";
 
 const verisilicon = {
   dir: "2026-06-08_verisilicon-688521",
@@ -204,4 +204,11 @@ test("公司名不被市场后缀/体裁词污染（「特变电工sh」类漏�
   const entries = [{ type: "股票", title: "阳光电源 300274.SZ 深度调研", slug: "s-300274", date: "2026-07-20", href: "r/d/" }];
   expect(findFreshReport({ topic: "阳光电源", entries, today: "2026-07-25" })).toBeTruthy();
   expect(findFreshReport({ topic: "阳光电源怎么看", entries, today: "2026-07-25" })).toBeTruthy();
+});
+
+test("默认窗口 = 20 天（改这个数要同步 stock SKILL §0.1 与两个 README 的文字）", () => {
+  expect(DEFAULT_DEDUP_WINDOW_DAYS).toBe(20);
+  // 不传 windowDays 时走默认值：20 天内命中、21 天放行
+  expect(findFreshReport({ topic: "芯原股份", entries: ENTRIES, today: "2026-06-28" })).toBeTruthy();
+  expect(findFreshReport({ topic: "芯原股份", entries: ENTRIES, today: "2026-06-29" })).toBeNull();
 });

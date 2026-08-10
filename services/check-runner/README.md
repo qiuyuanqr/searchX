@@ -20,7 +20,7 @@ Cloudflare KV（check:* 键）
 |---|---|---|
 | 任务来源 | GitHub Issues（approved 标签）| Cloudflare KV（/check/pending 端点）|
 | 产出 | 报告推 GitHub Pages 公开上线 | 笔记落本机 Obsidian，不上线 |
-| 查重 | 有（30 天窗口，零 token）| 无 |
+| 查重 | 有（20 天窗口，零 token）| 无 |
 | 锁文件 | `searchx-runner/runner.lock` | `searchx-check-runner/check-runner.lock` |
 | 日志目录 | `~/Library/Logs/searchx-runner/` | `~/Library/Logs/searchx-check-runner/` |
 
