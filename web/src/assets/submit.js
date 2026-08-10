@@ -1,3 +1,5 @@
+import { seriesBadgeHtml, seriesNewerLinkHtml } from "./series-badge.js";
+
 // 提交表单的纯逻辑：拼载荷 + 把响应映射成中文。
 // DOM 引导（打开/关闭弹窗、提交、Turnstile 渲染）统一由 feed.js 负责，feed.js 从这里 import 这两个纯函数。
 // 纯函数：从表单字段值 + 专属链接里的 token 拼 POST 载荷。
@@ -148,7 +150,13 @@ export function renderSearchResultsHTML(items, entries) {
       const meta = entry
         ? `<div class="rmeta">${escapeHtml(String(entry.date || "").replace(/-/g, "·"))}${entry.type ? " · " + escapeHtml(entry.type) : ""}</div>`
         : "";
-      return `<div class="result"><a href="${url}"><h3>${title}</h3><p class="ex">${ex}</p>${meta}</a></div>`;
+      // 同一标的的多份报告，搜索结果里会并排出现两张同名卡——这里最容易困惑，所以角标同样要出。
+      // series 由构建写进 reports.json（web/build/series.js），与信息流卡片同一份数据。
+      const series = entry && entry.series;
+      const badge = seriesBadgeHtml(series);
+      const newerLink = seriesNewerLinkHtml(series);   // 放 <a> 之外：<a> 套 <a> 会被浏览器拆开
+      const stale = series && series.newerHref ? " is-superseded" : "";
+      return `<div class="result${stale}"><a href="${url}"><h3>${title}${badge}</h3><p class="ex">${ex}</p>${meta}</a>${newerLink}</div>`;
     })
     .join("");
 }

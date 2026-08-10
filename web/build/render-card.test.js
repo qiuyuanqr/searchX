@@ -99,3 +99,31 @@ test("sourceCount 也走转义：即便上游漏拦，标记也不会进 HTML", 
   expect(html).not.toContain("<img");
   expect(html).toContain("&lt;img");
 });
+
+// ── 同一标的多份报告的角标（方案 C）────────────────────────────────
+const SERIES_BASE = { title: "胜宏科技（300476.SZ）", type: "股票", date: "2026-07-26", href: "r/new/", tldr: "偏震荡，前次判断已兑现" };
+
+test("系列里较新的一篇：标题行出「第 N 次 · X 天后」", () => {
+  const html = renderCard({ ...SERIES_BASE, series: { index: 2, total: 2, daysSincePrev: 48, newerHref: null } });
+  expect(html).toContain('<span class="series-badge">第 2 次<span class="series-gap"> · 48 天后</span></span>');
+  // 角标是标题行的独立 flex 项，不能落进 .card-title——后者 nowrap+省略号，窄屏会把它截没
+  expect(html).not.toMatch(/<h2 class="card-title">[^<]*<span class="series-badge"/);
+  expect(html).not.toContain("series-newer");     // 最新那篇不出「已有更新版」
+  expect(html).not.toContain("is-superseded");
+});
+
+test("系列里较旧的一篇：卡片压暗 + 出「已有更新版 →」，且该链接在 card-link 之外", () => {
+  const html = renderCard({ ...SERIES_BASE, date: "2026-06-08", href: "r/old/", series: { index: 1, total: 2, daysSincePrev: null, newerHref: "r/new/" } });
+  expect(html).toContain('class="article-card is-superseded"');
+  expect(html).toContain('<a class="series-newer" href="r/new/">已有更新版 →</a>');
+  // <a> 套 <a> 会被浏览器拆开导致链接失效：更新版链接必须出现在 card-link 闭合之后
+  expect(html.indexOf("series-newer")).toBeGreaterThan(html.indexOf("</a>"));
+  expect(html).not.toContain("series-badge");     // 最早那篇不挂「第 1 次」
+});
+
+test("非系列报告：两种角标都不出，卡片 HTML 与原先一致", () => {
+  const html = renderCard(SERIES_BASE);
+  expect(html).not.toContain("series-badge");
+  expect(html).not.toContain("series-newer");
+  expect(html).not.toContain("is-superseded");
+});

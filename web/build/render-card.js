@@ -1,5 +1,6 @@
 import { cleanStockTitle } from "./clean-title.js";
 import { extractDirection, stripLeadBoilerplate } from "./extract-direction.js";
+import { seriesBadgeHtml, seriesNewerLinkHtml } from "../src/assets/series-badge.js";
 
 export function escapeHtml(s) {
   return String(s)
@@ -31,15 +32,22 @@ export function renderCard(e) {
     : String(e.tldr || "").replace(/^一句话[：:]\s*/, "");
   const lead = (dirHtml || leadText) ? `<p class="lead">${dirHtml}${escapeHtml(leadText)}</p>` : "";
 
-  return `<li class="article-card" data-type="${escapeHtml(e.type)}">
+  // 同一标的的多份报告：新的在标题行挂「第 N 次 · X 天后」，旧的在卡片底部挂「已有更新版 →」。
+  // 后者必须放在 card-link 这个 <a> 之外——<a> 套 <a> 非法，浏览器会拆开、链接失效。
+  const badge = seriesBadgeHtml(e.series);
+  const newerLink = seriesNewerLinkHtml(e.series);
+  const staleCls = e.series && e.series.newerHref ? " is-superseded" : "";
+
+  return `<li class="article-card${staleCls}" data-type="${escapeHtml(e.type)}">
   <a class="card-link" href="${escapeHtml(e.href)}">
     <div class="card-body">
       <div class="title-row">
         <h2 class="card-title">${titleHtml}</h2>
+        ${badge}
         <span class="date-side">${dateSide}</span>
       </div>
       ${lead}
     </div>
-  </a>
+  </a>${newerLink}
 </li>`;
 }

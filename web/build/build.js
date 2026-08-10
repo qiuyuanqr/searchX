@@ -8,6 +8,7 @@ import { injectConfig } from "./inject-config.js";
 import { injectReportNav } from "./inject-report-nav.js";
 import { findReportDefects } from "./validate-report.js";
 import { fingerprintAssets } from "./fingerprint.js";
+import { annotateSeries } from "./series.js";
 
 export function build({
   root = "research",
@@ -27,7 +28,7 @@ export function build({
 
   // scan 的收录门禁只看 notes.md，但下面要读 report.html。缺 report.html 的半成品文件夹
   // （如 runner 中断留下的）不该让整次构建崩溃——跳过它（连同它的首页卡片），其余照常产出。
-  const entries = scanResearch(root).filter((e) => {
+  const scanned = scanResearch(root).filter((e) => {
     if (existsSync(join(root, e.dir, ".parked"))) {
       console.warn(`⚠️ 跳过 ${e.dir}：带 .parked 标记（上线前独立核验未过，已搁置）`);
       return false;
@@ -36,6 +37,11 @@ export function build({
     console.warn(`⚠️ 跳过 ${e.dir}：缺 report.html（半成品文件夹，本次不收录）`);
     return false;
   });
+
+  // 同一标的的多份报告归成系列，给每条补 series 字段（第几次 / 间隔天数 / 更新版链接）。
+  // 必须在上面的过滤之后算：被跳过的半成品不该占掉一个序号，否则线上会出现「第 3 次」却只有两篇。
+  // 信息流卡片与 reports.json（搜索结果卡片读它）都用这一份，不各算一套。
+  const entries = annotateSeries(scanned);
 
   // 报告副本：注入站点导航（回到顶部 + 返回档案首页），原始 report.html 不动
   for (const e of entries) {
@@ -71,6 +77,7 @@ export function build({
   // reports.json：表单 fetch 后本地比对，判断"这只票是否已有报告"。只放查重所需字段，邮箱等私密信息绝不出现。
   const slim = entries.map((e) => ({
     title: e.title, type: e.type, date: e.date, slug: e.slug, tags: e.tags, href: e.href,
+    ...(e.series ? { series: e.series } : {}),   // 搜索结果卡片据此出同样的角标
   }));
   writeFileSync(join(out, "reports.json"), JSON.stringify(slim));
   // reports.json 没有内容指纹（它是被 fetch 的数据文件、不是被引用的资源），新报告上线后

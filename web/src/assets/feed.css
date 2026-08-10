@@ -83,6 +83,30 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .card-link:hover .card-title{color:var(--seal)}
 .code{font-family:var(--sans); font-size:.76em; font-weight:500; color:var(--muted); letter-spacing:.02em} /* 股票代码：身份标注、不抢戏 */
 .tprefix{font-family:var(--sans); font-size:.72em; font-weight:600; color:var(--seal); letter-spacing:.03em} /* 少数派类型（概念/板块…）标题前缀 */
+/* 同一标的多份报告：新的挂「第 N 次 · X 天后」，旧的压暗并在卡片底部给一条「已有更新版 →」。
+   角标是 title-row 的独立弹性项（flex:none）——放进 .card-title 会被它的 nowrap+省略号在窄屏截没。 */
+.series-badge{flex:none; font-family:var(--sans); font-size:.66rem; letter-spacing:.02em;
+  color:var(--seal); background:var(--accent-bg); border-radius:20px; padding:.1rem .5rem; white-space:nowrap}
+.series-newer{display:inline-block; font-family:var(--sans); font-size:.7rem; color:var(--muted);
+  text-decoration:none; padding:0 0 .7rem 1.15rem; margin-top:-.35rem; transition:color .2s ease}
+.series-newer:hover{color:var(--seal)}
+.is-superseded .card-title, .is-superseded .lead{opacity:.62}          /* 压暗正文，别压角标与链接 */
+.result.is-superseded a > h3, .result.is-superseded a > .ex{opacity:.62}
+/* 搜索结果里那张白卡其实是 .result 内的 <a>，而「已有更新版」只能放在 <a> 之外（<a> 套 <a> 非法），
+   照原样它会掉到卡片外面、还不跟着卡片的 hover 位移。把卡片外观整体上移到 .result 容器， */
+/* 内层 <a> 退成透明，两者就重新是同一张卡了。 */
+.result.is-superseded{background:var(--card); border-radius:13px; box-shadow:0 1px 2px rgba(0,0,0,.03);
+  overflow:hidden; transition:box-shadow .25s ease, transform .18s ease}
+.result.is-superseded:hover{box-shadow:0 12px 26px rgba(0,0,0,.1); transform:translateY(-3px)}
+.result.is-superseded > a{background:transparent; box-shadow:none; border-radius:0; padding-bottom:.35rem}
+.result.is-superseded > a:hover{box-shadow:none; transform:none}   /* 位移交给外层容器，避免两层各动各的 */
+/* 选择器要压过 .result a{color:inherit}（同为 0,1,1 但它在后面），否则这条链接在搜索结果里
+   会继承正文色、显示成近白/近黑，与信息流那面的灰色不一致。 */
+.result .series-newer{display:block; padding:0 1.4rem 1.05rem; margin-top:0; color:var(--muted)}
+.result .series-newer:hover{color:var(--seal)}
+/* 窄屏收起「X 天后」：标题 + 角标 + 日期三项挤在一行，「第 N 次」才是必须看见的那半截 */
+@media (max-width:480px){ .series-gap{display:none} }
+
 .lead{color:var(--ink-soft); font-size:.86rem; line-height:1.5; margin:.18rem 0 0;
   display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
 /* 方向标记：从股票导语开头的固定句式提炼，红绿一眼分涨跌；绿/琥珀站内无变量，此处专用（与 check 页 vchip 同策略） */
