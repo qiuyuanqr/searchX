@@ -81,7 +81,9 @@ disable-model-invocation: false
 
 行情 / 估值 / 财务 / 板块类数据**第一优先从本机 Stocks 项目的行情库只读查询核准**（Tushare 付费源、每交易日日更，比网页抓取快且准），不止步于网页快照或财经媒体二手转述。
 
-**访问方式（只读靠 `PRAGMA query_only=1`——**别用 `?mode=ro`，库是 WAL 模式，实测常态报 `unable to open database file (14)`**；命令模板与路径见 `CLAUDE.local.md` 的 `STOCKS_DB` 段——绝对路径与主机别名不入公开仓库）**：
+**访问方式（命令模板与路径见 `CLAUDE.local.md` 的 `STOCKS_DB` 段——绝对路径与主机别名不入公开仓库）**：
+
+> **只读一律靠 `PRAGMA query_only=1`，别用 `?mode=ro`。** 库是 WAL 模式，`mode=ro` 在没有其他连接持有库时（即平时）无法创建 `-shm`，真实查询常态报 `unable to open database file (14)`；`SELECT 1` 不碰数据页却会成功，用它试连会误判成"库能用"。也别改用 `immutable=1`——它会忽略 `-wal`、可能静默读到旧数据。
 - 活库在常驻机上，每交易日 17:45 后更新当日数据（库内口径 = 最近收盘日，盘中查到的最新交易日是上一交易日）
 - 每次取数前先 `SELECT MAX(trade_date) FROM daily_kline;` 拿数据截止日；凡取自库的数据一律标注「**Stocks 库 · 数据截至 YYYYMMDD**」
 
