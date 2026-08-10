@@ -1,6 +1,6 @@
 import { buildPayload, tokenFromQuery, tokenFromHash, resolveToken, TOKEN_STORAGE_KEY, clearStoredToken, describeVerify, describeResult, renderSearchResultsHTML, describeExistingReport, fetchAny } from "./submit.js";
 import { findFreshReport, DEFAULT_DEDUP_WINDOW_DAYS } from "./dedup.js";
-import { computeFeedView } from "./feed-filter.js";
+import { computeFeedView, buildSearchItems } from "./feed-filter.js";
 
 // 取 localStorage，沙箱/隐私模式下属性访问本身可能抛错 → 兜成 null（resolveToken 再静默降级）。
 function safeStorage(){ try { return window.localStorage; } catch { return null; } }
@@ -164,15 +164,26 @@ function bindSearch(){
   const run = debounce(async (q) => {
     const seq = ++searchSeq;
     if (!q) { showFeed(); empty.hidden = true; return; }
-    const engine = await ensure();
-    const search = await engine.search(q);
-    const items = await Promise.all(search.results.slice(0, 20).map((r) => r.data()));
-    if (seq !== searchSeq) return; // 期间有更新的输入/清空动作 → 旧结果直接丢弃
-    if (!items.length) { showResults(0); results.innerHTML = ""; empty.hidden = false; return; }
-    // 清单要在写 DOM 之前 await 完，然后紧挨着再查一次 seq：
-    // 守卫放在这个 await 之前的话，旧查询照样能在 loadReports 返回后覆盖掉新查询的结果。
+    // 清单必须先取、且不能等 Pagefind：站内直配（按标题/标签/代码匹配已有报告）完全不依赖
+    // 全文索引。老实现在 Pagefind 返回 0 条时就早退了，于是「江丰电子」这类被中文分词切空的
+    // 查询永远走不到直配，明明有报告却显示"没找到"。
     const reports = await loadReports();
+    let pfItems = [];
+    try {
+      const engine = await ensure();
+      const search = await engine.search(q);
+      pfItems = await Promise.all(search.results.slice(0, 20).map((r) => r.data()));
+    } catch (err) {
+      // 全文索引加载/查询失败 → 退化为只用清单直配，不让整个搜索框瘫掉。
+      // 但要留痕：静默降级会让"全文检索坏了"这件事永远没人发现。
+      console.warn("[searchX] 全文检索不可用，已降级为站内清单匹配：", err);
+      pfItems = [];
+    }
+    // 所有 await 都在这一行之前；守卫之后到写 DOM 之间不许再有 await，
+    // 否则旧查询 resolve 回来会覆盖掉新查询的结果。
     if (seq !== searchSeq) return;
+    const items = buildSearchItems(q, reports, pfItems);
+    if (!items.length) { showResults(0); results.innerHTML = ""; empty.hidden = false; return; }
     empty.hidden = true;
     // 传 reports.json 清单：结果卡带上日期/类型元信息（取不到清单则退化为纯标题+摘录）
     results.innerHTML = renderSearchResultsHTML(items, reports); // title/url 在此函数内已转义，防 DOM-XSS
