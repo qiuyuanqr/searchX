@@ -136,18 +136,41 @@ export function truthValues(text, out = new Set()) {
 // 一个数字最多带 4 个候选，池子不膨胀，命中就是真命中。
 const UNIT_AFTER_RE = /^\s*(亿|万|%|％)/;
 
-export function candidates(val, tail) {
-  const out = [val, -val];
+// 容差按**正文写出的精度**定：写「262」就是把 261.5–262.5 里的值取整写出来的，
+// 写「46.06」只允许 ±0.005。这比拍一个相对容差准得多——2026-08-15 真跑时
+// 「262」（库内 262.3）和「46」（库内 46.06）都因为固定相对容差太紧被误报。
+export function toleranceOf(raw, val) {
+  const dot = String(raw).indexOf(".");
+  const dec = dot === -1 ? 0 : String(raw).length - dot - 1;
+  const halfUlp = 0.5 * Math.pow(10, -dec);
+  return Math.max(halfUlp, ABS_TOL, Math.abs(val) * REL_TOL);
+}
+
+// 返回 [{v, tol}]：候选值连同**同倍缩放后的容差**。
+// ⚠️ 容差必须跟着倍数一起缩放。原来对 val/1e4 这类缩小后的候选仍用固定的 ABS_TOL
+// （0.011），而候选值本身可能只有 0.05——0.011 的绝对容差等于 22% 的相对误差，
+// 于是任何小数都能碰上，判别力被这一条压掉一大截。
+export function candidates(val, tail, raw = String(val)) {
+  const tol = toleranceOf(raw, val);
+  const out = [{ v: val, tol }, { v: -val, tol }];
+  const push = (k) => out.push({ v: val * k, tol: tol * k });
   const u = (String(tail || "").match(UNIT_AFTER_RE) || [])[1];
-  if (u === "亿") out.push(val * 1e8, val * 1e4); // 取数存「元」或「万元」
-  else if (u === "万") out.push(val * 1e4, val / 1e4); // 存「元」或「亿元」
-  else if (u === "%" || u === "％") out.push(val / 100); // 存小数比率
-  else out.push(val / 1e8, val / 1e4); // 报告写裸数、取数存元/万元
+  if (u === "亿") { push(1e8); push(1e4); }        // 取数存「元」或「万元」
+  else if (u === "万") { push(1e4); push(1e-4); }   // 存「元」或「亿元」
+  else if (u === "%" || u === "％") push(1e-2);     // 存小数比率
+  else { push(1e-8); push(1e-4); }                  // 报告写裸数、取数存元/万元
   return out;
 }
 
-function nearAny(val, pool) {
-  const tol = Math.max(ABS_TOL, Math.abs(val) * REL_TOL);
+// 候选（带各自容差）逐个在真值池里找。
+function anyCandidateHits(cands, pool) {
+  for (const { v, tol } of cands) {
+    for (const t of pool) if (Math.abs(v - t) <= tol) return true;
+  }
+  return false;
+}
+
+function nearAny(val, pool, tol = Math.max(ABS_TOL, Math.abs(val) * REL_TOL)) {
   for (const t of pool) if (Math.abs(val - t) <= tol) return true;
   return false;
 }
@@ -164,7 +187,7 @@ export function checkNumbers(text, truthPool) {
   const pool = truthPool instanceof Set ? truthPool : new Set(truthPool);
   const seen = new Map();
   for (const { value, raw, context, tail } of reportNumbers(text)) {
-    if (candidates(value, tail).some((c) => nearAny(c, pool))) continue;
+    if (anyCandidateHits(candidates(value, tail, raw), pool)) continue;
     if (seen.has(value)) seen.get(value).count += 1;
     else seen.set(value, { value: raw, context, count: 1 });
   }
@@ -192,7 +215,7 @@ export function reconciliationPower(nums, truth, samples = 200) {
   for (let i = 0; i < samples; i++) {
     const v = Number((med * (0.2 + rnd() * 3)).toFixed(2));
     const tail = tails[Math.floor(rnd() * tails.length)] || "";
-    if (!candidates(v, tail).some((c) => nearAny(c, truth))) caught += 1;
+    if (!anyCandidateHits(candidates(v, tail, v.toFixed(2)), truth)) caught += 1;
   }
   return caught / samples;
 }
@@ -226,15 +249,16 @@ export function fileProbes(text, limit = 400) {
 export function checkCoverage(text, dataFiles) {
   // 正文侧只展开一次，得到一个**有界**的候选池（数字数 ×4）——同样绝不去展开取数侧，
   // 那会把池子撑爆、让每份取数都「看起来被引用过」。
-  const pool = new Set();
-  for (const { value, tail } of reportNumbers(text)) {
-    for (const c of candidates(value, tail)) pool.add(c);
+  const pool = [];
+  for (const { value, tail, raw } of reportNumbers(text)) {
+    for (const c of candidates(value, tail, raw)) pool.push(c);
   }
   const out = [];
   for (const { name, content } of dataFiles) {
     const probes = fileProbes(content);
     if (probes.length < 3) continue; // 探针太少 → 不下判断，别瞎报
-    if (!probes.some((p) => nearAny(p, pool))) {
+    // 探针落在任一候选的容差窗内即算「留下痕迹」
+    if (!probes.some((p) => pool.some((c) => Math.abs(c.v - p) <= c.tol))) {
       out.push({ file: name, probes: probes.slice(0, 4).map(String) });
     }
   }

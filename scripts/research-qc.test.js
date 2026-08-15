@@ -65,10 +65,30 @@ test("reportNumbers 认千分位写法", () => {
 
 // ========== 数字对账 ==========
 
+const candVals = (v, t, raw) => candidates(v, t, raw).map((c) => c.v);
+
 test("candidates 按正文里那个数字自己的单位构造候选值", () => {
-  expect(candidates(55.19, " 亿元")).toContain(5519000000); // 取数存「元」
-  expect(candidates(2283.83, " 万股")).toContain(22838300);
-  expect(candidates(50.4, "%——")).toContain(0.504); // 取数存小数比率
+  expect(candVals(55.19, " 亿元")).toContain(5519000000); // 取数存「元」
+  expect(candVals(2283.83, " 万股")).toContain(22838300);
+  expect(candVals(50.4, "%——")).toContain(0.504); // 取数存小数比率
+});
+
+test("容差按正文写出的精度定：写「262」能对上库里的 262.3", () => {
+  // 变异验证：改回固定相对容差（0.001→±0.262），本用例变红——2026-08-15 真跑时
+  // 正是这一条把「净利 +262%」（库内 262.3）误报成待核。
+  expect(checkNumbers("净利同比 +262%", new Set([262.3]))).toEqual([]);
+  expect(checkNumbers("毛利率守住 46% 附近", new Set([46.06]))).toEqual([]);
+  // 但写足精度就不该放过：46.99 与 46.06 差得远
+  expect(checkNumbers("毛利率 46.99%", new Set([46.06])).length).toBe(1);
+});
+
+test("容差随单位换算同倍缩放（缩小后的候选不许沿用绝对容差）", () => {
+  // 500.23 的 /1e4 候选是 0.050023。库里的 0.06 与它差 0.01——
+  // 按旧写法（缩小后的候选沿用 ±0.011 绝对容差）会被判成「对上」，
+  // 而 0.06 与 500.23 其实毫无关系。缩放容差后应判为未对上。
+  expect(checkNumbers("某值 500.23", new Set([0.06])).length).toBe(1);
+  // 真正对得上的（0.050023 本身）仍要放过
+  expect(checkNumbers("某值 500.23", new Set([0.05]))).toEqual([]);
 });
 
 test("candidates 每个数字最多 4 个候选——绝不反过来展开真值池", () => {
