@@ -1,0 +1,518 @@
+// scripts/research-qc.js
+// 交付前机器质检：把「对抗审查」里**机械可判**的那部分落成确定性代码，在 push 前跑。
+//
+// ## 为什么加这一层（本项目已有 Step 5.5 LLM 对抗核验，为什么还要它）
+//
+// 借鉴自 Stocks 项目 2026-08-15 的实证（`lib/research_qc.py`）：拿两份真报告把每个数字
+// 逐个对回库内真值，**事实层零编造**——「再找个 LLM 通读挑错」最想抓的毛病本来就不发生；
+// 而真正漏掉的两类缺陷，**通读一遍的审查者恰恰都抓不到**：
+//   1. **证据压根没去拿**——data/ 里拉了一份数据，正文一次没用上。只读报告的核验员
+//      手上没有那份数据，看不出「取回来的东西里还有什么被漏了」；
+//   2. **规则没在跑**——「不给目标价」「无买卖评级」这类红线，靠写作者自己数是抽查，
+//      靠正则查是 100% 准 + 秒级。
+//
+// ⚠️ **但本项目不照搬 Stocks 的结论**。Stocks 的数字全部来自自家行情库，所以零编造；
+// searchX 的事实主要来自 WebSearch，2026-08-15 智谱那篇 16 条硬错的根因正是「搜索摘要
+// ≠ 所引链接的内容」——那类错只有回到一手来源重抓才抓得到。所以 **Step 5.5 的 LLM
+// 对抗核验必须保留**，本模块是**加一层**，不是替代它。
+//
+// ## 与既有代码的分工（不重复造）
+//
+// - `web/build/validate-report.js` 已管**模板占位符残留 + 注入类**（构建期硬失败）——本模块不碰；
+// - `scripts/check-sources.js` 已管 **sources.md ⊇ report.html**——本模块不碰；
+// - `web/build/parse-note.js` 的 `parseNote` 是首页卡片的**真实**抽取器——导语检查直接调它，
+//   不另写一套正则（口径分家 = 这里绿、线上空白）。
+//
+// ## 一条不许破的线
+//
+// **质检自己绝不能弄死报告**。一份报告烧了几十分钟，绝不能因为质检函数抛异常就整份泡汤——
+// 所有入口 fail-open，出错记下来、当作「没测」，绝不把「没测」说成「测过了」。
+//
+//   bun run scripts/research-qc.js --dir <归档目录名>   # 单篇（收尾自查用）
+//   bun run scripts/research-qc.js --all                # 全部存量
+//   bun run scripts/research-qc.js --dir <x> --strict    # 有硬红线即非零退出（push 前闸）
+//   bun run scripts/research-qc.js --dir <x> --challenge # 输出喂给 Step 5.5 核验子 agent 的质证清单
+
+import { readdirSync, readFileSync, existsSync, statSync } from "fs";
+import { join, extname } from "path";
+import { parseNote } from "../web/build/parse-note.js";
+
+const ARCHIVE = "research";
+const DIR_RE = /^\d{4}-\d{2}-\d{2}_/;
+
+// ========== 文本提取 ==========
+
+// report.html → 正文纯文本。**必须先剥 style/script 整块**：模板里那段内联 CSS 有几百个
+// 数字（字号/颜色/间距），不剥的话数字对账会被它淹没，清单直接失信。
+// 再剥标签本身（连带属性），href 里的 URL 数字也就一起没了。
+export function htmlToText(html) {
+  return String(html || "")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"');
+}
+
+// 取 <h2>/<h3> 标题文本，用于章节齐全检查。
+export function headings(html) {
+  const out = [];
+  for (const m of String(html || "").matchAll(/<h[23]\b[^>]*>([\s\S]*?)<\/h[23]>/gi)) {
+    out.push(m[1].replace(/<[^>]+>/g, "").trim());
+  }
+  return out;
+}
+
+// ========== 数字提取与对账 ==========
+
+// 数字：整数或小数，允许千分位逗号。前面不许紧跟字母/数字/点，避免把 `02513.HK` 的
+// `2513`、`v4.2` 的 `2` 抠出来。（形态照抄 Stocks 实证过的写法）
+// ⚠️ 千分位那支必须自带小数部分 `(?:\.\d+)?`：写成 `\d{1,3}(?:,\d{3})+` 的话
+// 「2,646.93」只会匹配到「2,646」，小数被吞。（Stocks 原版有这个隐患，此处修正）
+const NUM_RE = /(?<![\w.])(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)/g;
+const URL_RE = /\((?:https?|ftp):\/\/[^)\s]+\)|(?:https?|ftp):\/\/\S+/g;
+const TIME_RE = /\d{1,2}:\d{2}/g;
+const FENCE_RE = /```[\s\S]*?```/g;
+
+// 对账容差：报告会把 34.4585 写成 34.46、把 2646.93 写成 2,646.93。
+// 绝对容差保住小数点后两位的四舍五入，相对容差保住大数的截断写法。
+const ABS_TOL = 0.011;
+const REL_TOL = 0.0015;
+
+// 从报告正文抽数字 → [{value, raw, context}]。已剔除 URL / 时间 / 代码围栏。
+export function reportNumbers(text) {
+  const clean = String(text || "")
+    .replace(FENCE_RE, " ")
+    .replace(URL_RE, " ")
+    .replace(TIME_RE, " ");
+  const out = [];
+  for (const m of clean.matchAll(NUM_RE)) {
+    const raw = m[1];
+    const val = Number(raw.replace(/,/g, ""));
+    if (!Number.isFinite(val)) continue;
+    // 年份 / 章节号 / 周号 / 百分号基准：不是事实性数字，对账无意义
+    if (val === 0 || val === 100) continue;
+    if (!raw.includes(".") && val >= 2000 && val <= 2100) continue;
+    if (!raw.includes(".") && val <= 13) continue;
+    // 证券代码不是事实性数字：`02513.HK` / `600519.SH` / `300476.SZ`。
+    // 两条特征——带前导零，或紧跟「.字母」后缀。本项目 A/H/美股代码满篇都是，
+    // 不滤掉会在待核清单里堆一层永远对不上的噪声。（Stocks 只处理 6 位裸码，没这问题）
+    if (/^0\d/.test(raw)) continue;
+    if (/^\.[A-Za-z]/.test(clean.slice(m.index + raw.length))) continue;
+    const ctx = clean
+      .slice(Math.max(0, m.index - 40), m.index + raw.length + 22)
+      .replace(/\s+/g, " ")
+      .trim();
+    out.push({ value: val, raw, context: ctx });
+  }
+  return out;
+}
+
+// data/ 里出现过的所有数值。**有意放宽**：字符串里的数字也收（`"20260331"`、新闻标题里的
+// 「涨超 12%」都算取回来过的值）——本对账的目的是找「取数里根本没有的数字」，宁可放过
+// 也别误伤，误报一多这份清单就没人看了。
+export function truthValues(text, out = new Set()) {
+  for (const m of String(text || "").matchAll(NUM_RE)) {
+    const v = Number(m[1].replace(/,/g, ""));
+    if (Number.isFinite(v)) out.add(v);
+  }
+  return out;
+}
+
+// 把取数真值扩成「报告合法写法」的全集：元↔亿元↔万元、小数↔百分数、四舍五入到 0/1/2 位。
+export function expandTruth(truth) {
+  const out = new Set();
+  for (const v of truth) {
+    for (const f of [v, -v, v / 100, v * 100, v / 10000, v * 10000, v / 1e8, v / 1e4]) {
+      out.add(f);
+      for (const nd of [0, 1, 2]) out.add(Number(f.toFixed(nd)));
+    }
+  }
+  return out;
+}
+
+function nearAny(val, pool) {
+  const tol = Math.max(ABS_TOL, Math.abs(val) * REL_TOL);
+  for (const t of pool) if (Math.abs(val - t) <= tol) return true;
+  return false;
+}
+
+// 报告数字逐个与取数对账，返回**对不上的**那些。
+//
+// 对不上 ≠ 编造。实测绝大多数是三类合法内容：报告自行推算的派生值、联网来的数字
+// （政策金额、海外预期——searchX 大量事实本就来自 WebSearch，天然不在 data/ 里）、
+// 以及本函数没法归一的写法。所以产出叫**「待核清单」**不是「错误清单」。
+//
+// ⚠️ **同一个值只报一次**（附带出现次数）：不去重的话同一个数在正文与括号里各出现一遍，
+// 几个待核值会渲染成十几行几乎一样的条目，清单立刻没法读。
+export function checkNumbers(text, truthPool) {
+  const pool = expandTruth(truthPool);
+  const seen = new Map();
+  for (const { value, raw, context } of reportNumbers(text)) {
+    if (nearAny(value, pool)) continue;
+    if (seen.has(value)) seen.get(value).count += 1;
+    else seen.set(value, { value: raw, context, count: 1 });
+  }
+  return [...seen.values()];
+}
+
+// ========== 取数点覆盖 ==========
+
+// 只认这些扩展名为「取数」。.py/.sh 是抓取脚本本身、.pdf 是二进制（读出来是乱码，
+// 数字全是假的），都不参与——测不了就别测，别让清单变成天天喊狼来了的噪声。
+const DATA_EXT = new Set([".json", ".csv", ".txt", ".md", ".tsv"]);
+const SKIP_EXT = new Set([".pdf", ".py", ".sh", ".png", ".jpg", ".jpeg", ".webp", ".xlsx", ".zip"]);
+
+// 一份取数文件的「探针」：挑**有辨识度**的值（带小数点、或 ≥1000 的整数）。
+// 1/2/3 这种值满篇都是，拿它当探针等于恒命中，测了跟没测一样。
+export function fileProbes(text, limit = 400) {
+  const out = [];
+  for (const v of truthValues(text)) {
+    if (!Number.isFinite(v)) continue;
+    if (Number.isInteger(v) && Math.abs(v) < 1000) continue;
+    if (Math.abs(v) >= 1e12) continue; // 时间戳 / 内部 id，不是会被引用的事实
+    out.push(v);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+// 逐份查「取回来了、正文却一次没露过面」的取数文件。
+//
+// 这是本模块最有价值的一条：**只有拿着 data/ 才看得出来**，报告本身读不出
+// 「取数里还有什么被漏了」。判定用「整份文件零命中」而非逐值命中——一份 K 线 JSON 有
+// 几百个值、报告只会引用其中几个，逐值查必然大面积误报。
+export function checkCoverage(text, dataFiles) {
+  const nums = reportNumbers(text).map((n) => n.value);
+  const out = [];
+  for (const { name, content } of dataFiles) {
+    const probes = fileProbes(content);
+    if (probes.length < 3) continue; // 探针太少 → 不下判断，别瞎报
+    const hit = probes.some((p) =>
+      nums.some((n) => Math.abs(n - p) <= Math.max(ABS_TOL, Math.abs(p) * REL_TOL)));
+    if (!hit) out.push({ file: name, probes: probes.slice(0, 4).map(String) });
+  }
+  return out;
+}
+
+// ========== 格式合规与红线 ==========
+
+// 股票报告必备章节（A–M）。**按关键词匹配、不按全名**：存量里同一节写法就有三种
+// （「AI 与科技方向关联性」/「人工智能方向关联性」/「AI 与科技方向关联」），按全名匹配必然误报。
+// G 节（AI 关联）skill 明写「如适用，否则跳过」，故**不列为必备**。
+export const STOCK_SECTIONS = [
+  { key: "一屏结论", re: /关键发现|一屏结论|核心结论/ },
+  { key: "公司快照", re: /公司快照|公司画像/ },
+  { key: "财务健康", re: /财务健康|关键财务|财务表现/ },
+  { key: "行业地位与护城河", re: /行业地位|护城河/ },
+  { key: "政策与宏观", re: /政策|宏观/ },
+  { key: "产业链", re: /产业链/ },
+  { key: "消息面与预期差", re: /消息面|预期差/ },
+  { key: "13 周事件日历", re: /事件日历|关键事件/ },
+  { key: "逻辑链推导", re: /逻辑链/ },
+  { key: "三情景走势", re: /情景/ },
+  { key: "决策与风控", re: /决策|风控/ },
+  { key: "逻辑自查", re: /逻辑自查|自查/ },
+];
+
+// 价位红线（skill §4.9 第 3 条 / §6）：**自己**给出的具体触发价位。
+// 客观披露价（基准日收盘、回购区间、历史高低点）合法，所以必须靠**触发语境**卡，
+// 不能见「元」就报——存量里每篇都有「收盘 212.75 元」，那是必含项。
+const TRIGGER_PRICE_RE =
+  /(突破|跌破|站上|站稳|回落至|回落到|下探至|上探至|回踩至|回调至|止损|止盈)[^。；！？\n]{0,24}?(\d[\d,]*(?:\.\d+)?)\s*(元|港元|美元|港币)/g;
+
+// 历史 / 现状陈述里的同款措辞**不算**红线：「现在回落到 311 元」是行情回顾，
+// 「突破 303.55 元后维持高位震荡」才是前瞻触发。2026-08-15 对 51 篇存量真跑标定出的
+// 唯一一类误报（江丰电子那篇），靠时间状语区分。
+// ⚠️ **不许把裸「已」放进来**。第一版放了，结果「若**已**持有…跌破 14 元转防御」
+// 这条真红线被静默吞掉——「若已持有」是条件不是过去时。这正是「加一层保护先问是不是
+// 拆掉了另一层」：为消一条误报而放跑真发现，是最难发现的一类回归（守卫见测试）。
+const PAST_TENSE_NEAR_RE = /(现在|目前|当前|已经|截至|收于|收盘|近期|上周|昨日|今年至今)[^。；\n]{0,6}$/;
+
+// 券商目标价：**不是**违规，是〔卖方预期〕模板里「别人的观点」。单列一档「需判断」，
+// 措辞不许写「请删除」——照搬 Stocks 8-15 的教训：一律命令删除，会让模型把券商评级
+// 也删掉，那是丢信息不是合规。
+const BROKER_TARGET_RE = /目标价[^。；\n]{0,20}?(\d[\d,]*(?:\.\d+)?)\s*(元|港元|美元|港币)/g;
+
+// 禁词（skill §6「不给买卖评级」）。「减仓」「回避」是允许的，只看这两个。
+export const FORBIDDEN_WORDS = ["买入", "卖出"];
+
+// 禁词的合法复合词：资金流 / 盘面口径术语，H 节必然出现，与「买卖评级」无关。
+// 不滤掉的话每份报告都会因为一句「融资净买入 8.85 亿元」被报违规。
+const FORBIDDEN_OK = [
+  "净买入", "净卖出", "融资买入", "融资卖出", "买入额", "卖出额",
+  "买入量", "卖出量", "买入方", "卖出方", "买入盘", "卖出盘", "买入信号",
+];
+
+function ctxAround(s, idx, len, before = 30, after = 20) {
+  return s.slice(Math.max(0, idx - before), idx + len + after).replace(/\s+/g, " ").trim();
+}
+
+// 隐私红线（CLAUDE.md 绝对红线 · Step 6 第 2 项，此前只靠肉眼扫）。
+// 模式必须**紧扣「个人的」**：报告正文合法地大量出现「机构持仓」「北向持仓」「股东户数」，
+// 泛匹配「持仓」会把每篇都报一遍。
+// ⚠️ 后面必须跟上负向前瞻：人物类调研写「他公开自己的**持仓理念**」是在讲被研究对象的
+// 作风，不是用户私人信息（2026-08-15 对 51 篇存量真跑，这是隐私检查唯一一条误报）。
+const PRIVACY_RES = [
+  { name: "个人持仓/账户", re: /(?:我|本人|自己|用户)的?(?:持仓|仓位|账户|持股|成本价|盈亏|浮盈|浮亏)(?!\s*(?:理念|风格|思路|方法|原则|逻辑|哲学|习惯|纪律))/g },
+  { name: "持仓规模", re: /(?:持仓|仓位)(?:规模|市值|金额)\s*(?:约|为|是)?\s*\d/g },
+  { name: "个人负债/还款", re: /(?:我|本人|自己)的?(?:负债|贷款|还款|房贷)/g },
+];
+
+// 返回 {blocking, review}：blocking = 硬红线（--strict 下挡 push）；
+// review = 需人判断的，列出来但不阻断（避免清单失信——Stocks 的核心误报治理经验）。
+export function checkFormat({ reportHtml, notesMd, type, dir }) {
+  const blocking = [];
+  const review = [];
+  const html = String(reportHtml || "");
+  const text = htmlToText(html);
+  const isStock = String(type || "") === "股票";
+
+  // 1) 章节齐全（仅股票——概念/人物/板块类没有 A–M 框架）
+  if (isStock) {
+    const hs = headings(html).join(" ｜ ");
+    const missing = STOCK_SECTIONS.filter((s) => !s.re.test(hs)).map((s) => s.key);
+    if (missing.length) {
+      blocking.push(`缺章节：${missing.join(" / ")}（A–M 框架应齐全，G 节 AI 关联除外）`);
+    }
+  }
+
+  // 2) 价位红线（仅股票）
+  if (isStock) {
+    for (const m of text.matchAll(TRIGGER_PRICE_RE)) {
+      if (PAST_TENSE_NEAR_RE.test(text.slice(Math.max(0, m.index - 12), m.index))) continue;
+      blocking.push(`具体触发价位「${m[0].trim()}」（§4.9 价位红线：操作触发条件不得用具体价位，改写成相对/条件表述）——上下文：…${ctxAround(text, m.index, m[0].length)}…`);
+    }
+    const targets = [...text.matchAll(BROKER_TARGET_RE)];
+    if (targets.length) {
+      review.push(`出现「目标价」${targets.length} 处——判断后再动：若是**引用券商**的目标价（属〔卖方预期〕模板里别人的观点）**保留原样**；若是你自己给出的，必须删掉。首处：…${ctxAround(text, targets[0].index, targets[0][0].length)}…`);
+    }
+  }
+
+  // 3) 禁词（仅股票；概念/方法论类报告聊交易时「买入」是正常词汇，测了全是噪声）
+  if (isStock) {
+    for (const word of FORBIDDEN_WORDS) {
+      const ctxs = [];
+      let i = text.indexOf(word);
+      while (i !== -1) {
+        const around = text.slice(Math.max(0, i - 3), i + word.length + 3);
+        if (!FORBIDDEN_OK.some((ok) => around.includes(ok))) ctxs.push(ctxAround(text, i, word.length));
+        i = text.indexOf(word, i + word.length);
+      }
+      if (!ctxs.length) continue;
+      // ⚠️ 一律**带上下文**报出，不报成光秃秃的「出现禁词：买入」。报告里可能既有合法引用
+      // （券商评级「买入 → 中性」、L 节自我声明「全文无买入/卖出表述」）又有真违规
+      // （「建议买入」），不带上下文读者只会以为报告给了买卖评级。给两处而非一处，
+      // 免得真违规被首处的合法引用藏起来。
+      const head = ctxs.slice(0, 2).map((c) => `…${c}…`).join("；");
+      const more = ctxs.length > 2 ? `（全文 ${ctxs.length} 处）` : "";
+      review.push(`出现「${word}」${more}——判断后再动：若是**你自己**给出的买卖倾向，改写掉；若只是引用券商评级、或资金流口径术语，保留原样。上下文：${head}`);
+    }
+  }
+
+  // 4) 隐私红线（所有类型）
+  for (const { name, re } of PRIVACY_RES) {
+    for (const m of String(text).matchAll(re)) {
+      blocking.push(`疑似用户私人信息（${name}）：…${ctxAround(text, m.index, m[0].length)}…（CLAUDE.md 绝对红线）`);
+    }
+  }
+
+  // 5) 首页导语——**调 parse-note 的真实抽取器**，不另写正则。
+  //    这里绿、线上空白，是本项目 2026-07-31 抓到过的高危形态。
+  if (notesMd != null) {
+    try {
+      const note = parseNote(notesMd, dir || "0000-00-00_x");
+      if (!note.tldr || !note.tldr.trim()) {
+        blocking.push("notes.md 抽不出首页导语（parse-note 返回空）——H1 之下须有 `## 一句话结论` 小节且内容为**完整段落**（列表/表格会被抽取器跳过）");
+      } else if (note.tldr.trim().length < 40) {
+        review.push(`首页导语只有 ${note.tldr.trim().length} 字（「${note.tldr.trim()}」）——首页会剥掉方向套话句，只写一句方向的段落上了首页就是空话`);
+      }
+      if (isStock && !/[（(]\s*\d{5,6}|[（(]\s*(?:NYSE|NASDAQ|HKEX)/i.test(note.title || "")) {
+        review.push(`notes.md H1「${note.title}」未见「名称（代码.交易所）」格式——首页卡片直接吃这处`);
+      }
+    } catch (e) {
+      review.push(`notes.md 解析失败（${e.message}）——首页卡片会受影响`);
+    }
+  }
+
+  return { blocking, review };
+}
+
+// ========== 汇总 ==========
+
+function readDataFiles(dirPath) {
+  const dataDir = join(dirPath, "data");
+  if (!existsSync(dataDir)) return { files: [], present: false, skipped: [] };
+  const files = [];
+  const skipped = [];
+  for (const name of readdirSync(dataDir)) {
+    const p = join(dataDir, name);
+    let st;
+    try {
+      st = statSync(p);
+    } catch {
+      continue;
+    }
+    if (!st.isFile()) continue;
+    const ext = extname(name).toLowerCase();
+    if (SKIP_EXT.has(ext) || !DATA_EXT.has(ext)) {
+      skipped.push(name);
+      continue;
+    }
+    if (st.size > 8 * 1024 * 1024) {
+      skipped.push(`${name}（>8MB，跳过）`);
+      continue;
+    }
+    try {
+      files.push({ name, content: readFileSync(p, "utf8") });
+    } catch {
+      skipped.push(`${name}（读取失败）`);
+    }
+  }
+  return { files, present: true, skipped };
+}
+
+// 跑全部检查。**任何异常都吞掉**——质检绝不能弄死一份跑了几十分钟的报告。
+export function runQc(dirName, root = ARCHIVE) {
+  const dirPath = join(root, dirName);
+  const base = {
+    dir: dirName, ok: false, blocking: [], review: [],
+    coverage: [], numbersTotal: 0, numbersUnmatched: [],
+    dataPresent: false, dataSkipped: [], type: "",
+  };
+  try {
+    const reportPath = join(dirPath, "report.html");
+    const notesPath = join(dirPath, "notes.md");
+    // 报告不存在就是「没得测」，必须 ok=false——否则会渲染成「✅ 未见红线」，
+    // 把「没测」说成「测过了」，正是本模块最不该犯的错。
+    if (!existsSync(reportPath)) {
+      return { ...base, error: `${join(dirName, "report.html")} 不存在` };
+    }
+    const reportHtml = readFileSync(reportPath, "utf8");
+    const notesMd = existsSync(notesPath) ? readFileSync(notesPath, "utf8") : null;
+    const type = (String(notesMd || "").match(/^type:\s*(.+)$/m) || [, ""])[1].trim();
+    const text = htmlToText(reportHtml);
+    const { files, present, skipped } = readDataFiles(dirPath);
+
+    const fmt = checkFormat({ reportHtml, notesMd, type, dir: dirName });
+    const nums = reportNumbers(text);
+
+    // 数字对账 / 取数点覆盖**只在 data/ 就位时才跑**。没有 data/ 就如实写「未跑」——
+    // 绝不把「没测」渲染成「测过了」。（data/ 是 gitignore 的，只在跑调研那台机器上有）
+    let coverage = [];
+    let unmatched = [];
+    if (present && files.length) {
+      const truth = new Set();
+      for (const f of files) truthValues(f.content, truth);
+      unmatched = checkNumbers(text, truth);
+      coverage = checkCoverage(text, files);
+    }
+    return {
+      ...base, ok: true, type,
+      blocking: fmt.blocking, review: fmt.review,
+      coverage, numbersTotal: nums.length, numbersUnmatched: unmatched,
+      dataPresent: present && files.length > 0, dataSkipped: skipped,
+    };
+  } catch (e) {
+    return { ...base, error: e.message };
+  }
+}
+
+export function hasBlocking(qc) {
+  return Boolean(qc && qc.ok && qc.blocking && qc.blocking.length);
+}
+
+// 终端清单。质检没跑成 → 明说「未跑完」，不写「一切正常」。
+export function renderReport(qc) {
+  const L = [];
+  L.push(`⚙️  交付前机器质检 · ${qc.dir}${qc.type ? `（${qc.type}）` : ""}`);
+  if (!qc.ok) {
+    L.push(`  ⛔ 质检未跑完（${qc.error || "未知原因"}）——按「未测」对待，别当通过`);
+    return L.join("\n");
+  }
+  if (!qc.blocking.length) L.push("  ✅ 硬红线：未见缺章节 / 具体触发价位 / 私人信息 / 导语抽空");
+  for (const p of qc.blocking) L.push(`  ⛔ ${p}`);
+  for (const p of qc.review) L.push(`  ⚠️  需判断：${p}`);
+
+  if (!qc.dataPresent) {
+    L.push("  ○ 数字对账 / 取数点覆盖：**未跑**（本篇无 data/ 取数留档——data/ 已 gitignore，只有跑调研那台机器上有）");
+  } else {
+    if (!qc.coverage.length) L.push("  ✅ 取数点覆盖：各取数文件均在正文留下引用痕迹");
+    for (const c of qc.coverage) {
+      // 措辞只说「未见引用痕迹」，不说「漏用」——本检查看不出报告有没有在「信息缺口」
+      // 里写明为何不用（那要判语义），把判断留给读者。
+      L.push(`  ⚠️  取数点覆盖：**data/${c.file}** 取回来了（如 ${c.probes.join("、")}），但正文未见引用痕迹——请确认是有意略过（并已写进信息缺口）还是漏用`);
+    }
+    const matched = Math.max(0, qc.numbersTotal - qc.numbersUnmatched.length);
+    L.push(`  · 数字对账：正文 ${qc.numbersTotal} 个数字，${matched} 个能对回 data/，${qc.numbersUnmatched.length} 个未对上（联网数字与自行推算的派生值本就对不上，逐条列出供核）`);
+    for (const it of qc.numbersUnmatched.slice(0, 12)) {
+      const times = it.count > 1 ? `（全文 ${it.count} 处）` : "";
+      L.push(`      - ${it.value}${times} — …${it.context}…`);
+    }
+    if (qc.numbersUnmatched.length > 12) {
+      L.push(`      - （另有 ${qc.numbersUnmatched.length - 12} 条，同类从略）`);
+    }
+  }
+  if (qc.dataSkipped.length) L.push(`  ○ 未参与对账的取数文件（非文本格式）：${qc.dataSkipped.join("、")}`);
+  return L.join("\n");
+}
+
+// 喂给 Step 5.5 核验子 agent 的定向质证清单——把「对不上的数字 + 没用上的取数点」
+// 交到核验员手上，核验从「凭印象通读」升级成「拿着证据清单逐条质证」，零新增轮次。
+// 无发现 → 空串（没问题就别硬造质证点，那只会诱导为了「有所交代」去改本来对的地方）。
+export function renderChallenge(qc) {
+  if (!qc || !qc.ok) return "";
+  const L = [];
+  for (const p of qc.blocking) L.push(`- 硬红线：${p} —— 请就地修正。`);
+  for (const p of qc.review) L.push(`- 需判断：${p}`);
+  for (const c of qc.coverage) {
+    L.push(`- 取数点「data/${c.file}」**取回来了**（如 ${c.probes.join("、")}），但正文没用上。请回到该数据把它写进对应章节；若判断确实不该用，就在「逻辑自查/信息缺口」里写明理由。`);
+  }
+  const un = qc.numbersUnmatched;
+  if (un.length) {
+    L.push(`- 下列 ${un.length} 个数字在 data/ 取数里找不到对应值。逐个确认：是取数里的值（那就改成取数的写法）、是自行推算的派生值（写明推算方式）、还是带来源与日期的联网结论（补上来源与日期）？三者都不是的，删掉或改写成「信息缺口」——绝不许补编。`);
+    for (const it of un.slice(0, 20)) L.push(`  · ${it.value}　（上下文：${it.context}）`);
+  }
+  if (!L.length) return "";
+  return ["【机器质检发现（请逐条处理，不要辩解）】", ...L].join("\n");
+}
+
+// ========== CLI ==========
+
+function main() {
+  const argv = process.argv.slice(2);
+  const strict = argv.includes("--strict");
+  const challenge = argv.includes("--challenge");
+  const di = argv.indexOf("--dir");
+  const one = di !== -1 ? argv[di + 1] : null;
+
+  let dirs;
+  if (one) {
+    dirs = [one.replace(/\/+$/, "").replace(/^research\//, "")];
+  } else {
+    dirs = readdirSync(ARCHIVE)
+      .filter((d) => DIR_RE.test(d) && existsSync(join(ARCHIVE, d, "notes.md")))
+      .sort();
+  }
+
+  let blocked = 0;
+  for (const d of dirs) {
+    const qc = runQc(d);
+    if (challenge) {
+      const c = renderChallenge(qc);
+      if (c) console.log(`\n===== ${d} =====\n${c}`);
+    } else {
+      console.log(renderReport(qc));
+      console.log("");
+    }
+    if (hasBlocking(qc)) blocked += 1;
+  }
+  if (dirs.length > 1) console.log(`—— 共 ${dirs.length} 篇，${blocked} 篇有硬红线`);
+  if (strict && blocked) process.exit(1);
+}
+
+if (import.meta.main) main();
