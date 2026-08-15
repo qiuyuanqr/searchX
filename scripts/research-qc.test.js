@@ -5,7 +5,7 @@
 
 import { test, expect } from "bun:test";
 import {
-  htmlToText, headings, reportNumbers, truthValues, expandTruth,
+  htmlToText, headings, reportNumbers, truthValues, candidates, reconciliationPower,
   checkNumbers, checkCoverage, checkFormat, runQc, renderReport, renderChallenge,
   hasBlocking, STOCK_SECTIONS, FORBIDDEN_WORDS,
 } from "./research-qc.js";
@@ -65,9 +65,44 @@ test("reportNumbers 认千分位写法", () => {
 
 // ========== 数字对账 ==========
 
-test("expandTruth 覆盖 元↔亿↔万 与四舍五入写法", () => {
-  const pool = expandTruth(new Set([1234567890]));
-  expect([...pool]).toContain(12.35); // 12.3456789 亿 → 报告写 12.35
+test("candidates 按正文里那个数字自己的单位构造候选值", () => {
+  expect(candidates(55.19, " 亿元")).toContain(5519000000); // 取数存「元」
+  expect(candidates(2283.83, " 万股")).toContain(22838300);
+  expect(candidates(50.4, "%——")).toContain(0.504); // 取数存小数比率
+});
+
+test("candidates 每个数字最多 4 个候选——绝不反过来展开真值池", () => {
+  // 变异验证：改回「展开真值池」的老做法，本条与下面的判别力用例一起变红。
+  // 老做法每个真值扩 32 个变体，数字空间被填满，捏造数字 100% 漏报。
+  for (const t of [" 亿元", " 万股", "%", " 元"]) {
+    expect(candidates(123.45, t).length).toBeLessThanOrEqual(4);
+  }
+});
+
+test("reconciliationPower：真值稀疏→判别力高，真值密集→判别力低", () => {
+  const nums = [{ value: 100.5, tail: " 亿元" }, { value: 88.2, tail: " 亿元" }];
+  const sparse = new Set([100.5, 88.2]);
+  expect(reconciliationPower(nums, sparse)).toBeGreaterThan(0.8);
+
+  const dense = new Set();
+  for (let v = 0; v < 400; v += 0.05) dense.add(Number(v.toFixed(2)));
+  expect(reconciliationPower(nums, dense)).toBeLessThan(0.4);
+});
+
+test("reconciliationPower 结果可复现（固定种子，不用 Math.random）", () => {
+  const nums = [{ value: 42.5, tail: " 亿元" }];
+  const truth = new Set([1, 2, 3, 42.5]);
+  expect(reconciliationPower(nums, truth)).toBe(reconciliationPower(nums, truth));
+});
+
+test("判别力弱时明说「说明不了问题」，不许把 0 个未对上渲染成已核对", () => {
+  const out = renderReport({
+    dir: "x", ok: true, blocking: [], review: [], coverage: [],
+    numbersTotal: 187, numbersUnmatched: [], dataPresent: true, dataSkipped: [],
+    power: 0, truthSize: 28178,
+  });
+  expect(out).toContain("判别力弱");
+  expect(out).toContain("别把它当作数字已核对过");
 });
 
 test("checkNumbers：对得上的不报，对不上的报", () => {

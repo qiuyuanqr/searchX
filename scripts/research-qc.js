@@ -81,7 +81,9 @@ const FENCE_RE = /```[\s\S]*?```/g;
 // 对账容差：报告会把 34.4585 写成 34.46、把 2646.93 写成 2,646.93。
 // 绝对容差保住小数点后两位的四舍五入，相对容差保住大数的截断写法。
 const ABS_TOL = 0.011;
-const REL_TOL = 0.0015;
+// 0.001 足够覆盖「三位有效数字四舍五入」（111.9 亿写成约 112 亿，相对误差 0.0009）；
+// 原来的 0.0015 在 500 量级上给出 ±0.75 的窗口，是真值池被撑密后误命中的帮凶之一。
+const REL_TOL = 0.001;
 
 // 从报告正文抽数字 → [{value, raw, context}]。已剔除 URL / 时间 / 代码围栏。
 export function reportNumbers(text) {
@@ -102,12 +104,14 @@ export function reportNumbers(text) {
     // 两条特征——带前导零，或紧跟「.字母」后缀。本项目 A/H/美股代码满篇都是，
     // 不滤掉会在待核清单里堆一层永远对不上的噪声。（Stocks 只处理 6 位裸码，没这问题）
     if (/^0\d/.test(raw)) continue;
-    if (/^\.[A-Za-z]/.test(clean.slice(m.index + raw.length))) continue;
-    const ctx = clean
-      .slice(Math.max(0, m.index - 40), m.index + raw.length + 22)
-      .replace(/\s+/g, " ")
-      .trim();
-    out.push({ value: val, raw, context: ctx });
+    const end = m.index + raw.length;
+    // tail = 紧跟其后的几个字，用来判单位（亿 / 万 / %）——对账按单位构造候选值全靠它。
+    // 只切这 4 个字、不要切「剩下的全文」再拿正则测开头：后者会在每个数字上复制一份
+    // 长字符串，几百个数字乘十万字的正文就是几十 MB 的无谓拷贝。
+    const tail = clean.slice(end, end + 4);
+    if (/^\.[A-Za-z]/.test(tail)) continue;
+    const ctx = clean.slice(Math.max(0, m.index - 40), end + 22).replace(/\s+/g, " ").trim();
+    out.push({ value: val, raw, context: ctx, tail });
   }
   return out;
 }
@@ -123,15 +127,22 @@ export function truthValues(text, out = new Set()) {
   return out;
 }
 
-// 把取数真值扩成「报告合法写法」的全集：元↔亿元↔万元、小数↔百分数、四舍五入到 0/1/2 位。
-export function expandTruth(truth) {
-  const out = new Set();
-  for (const v of truth) {
-    for (const f of [v, -v, v / 100, v * 100, v / 10000, v * 10000, v / 1e8, v / 1e4]) {
-      out.add(f);
-      for (const nd of [0, 1, 2]) out.add(Number(f.toFixed(nd)));
-    }
-  }
+// ⚠️ **绝不把真值池按单位展开**（第一版这么干，2026-08-15 变异验证当场推翻）：
+// 每个真值扩成 ×100 / ×10000 / ÷1e8 等 32 个变体后，数字空间被填满——往真实报告里塞
+// 300 个凭空捏造的数字，抓到率只有 0%–36%（data 越大漏得越狠），而当时它显示的是
+// 「199 个数字 199 个对上」。**看起来最漂亮的那份结果，恰恰是检查失效的样子。**
+//
+// 正确做法是**反过来**：真值池保持原样，按正文里那个数字**自己的单位**构造候选值去查。
+// 一个数字最多带 4 个候选，池子不膨胀，命中就是真命中。
+const UNIT_AFTER_RE = /^\s*(亿|万|%|％)/;
+
+export function candidates(val, tail) {
+  const out = [val, -val];
+  const u = (String(tail || "").match(UNIT_AFTER_RE) || [])[1];
+  if (u === "亿") out.push(val * 1e8, val * 1e4); // 取数存「元」或「万元」
+  else if (u === "万") out.push(val * 1e4, val / 1e4); // 存「元」或「亿元」
+  else if (u === "%" || u === "％") out.push(val / 100); // 存小数比率
+  else out.push(val / 1e8, val / 1e4); // 报告写裸数、取数存元/万元
   return out;
 }
 
@@ -150,14 +161,40 @@ function nearAny(val, pool) {
 // ⚠️ **同一个值只报一次**（附带出现次数）：不去重的话同一个数在正文与括号里各出现一遍，
 // 几个待核值会渲染成十几行几乎一样的条目，清单立刻没法读。
 export function checkNumbers(text, truthPool) {
-  const pool = expandTruth(truthPool);
+  const pool = truthPool instanceof Set ? truthPool : new Set(truthPool);
   const seen = new Map();
-  for (const { value, raw, context } of reportNumbers(text)) {
-    if (nearAny(value, pool)) continue;
+  for (const { value, raw, context, tail } of reportNumbers(text)) {
+    if (candidates(value, tail).some((c) => nearAny(c, pool))) continue;
     if (seen.has(value)) seen.get(value).count += 1;
     else seen.set(value, { value: raw, context, count: 1 });
   }
   return [...seen.values()];
+}
+
+// 本次对账的**判别力**：拿一批与正文同量级的凭空数字当对照，看有多少能被判为「对不上」。
+//
+// 为什么必须有这一条：数字对账的强弱**完全取决于 data/ 的构成**。一份结构化 JSON（几百个
+// 数值）判别力尚可；一坨公告全文（几万个数字）会把数字空间填满，此时「0 个未对上」
+// 完全说明不了问题。2026-08-15 实测：某篇 542KB 公告文本的存档，捏造数字 100% 漏报，
+// 而它当时显示的是「199 个数字全部对上」——**检查失效时反而显示得最漂亮**。
+// 所以让它自报家门：判别力低就明说这轮对账不作数，别让读者误以为数字已核过。
+//
+// 固定种子，结果可复现（不用 Math.random，否则同一篇每次跑出不同结论）。
+export function reconciliationPower(nums, truth, samples = 200) {
+  if (!nums.length || !truth.size) return null;
+  const mags = nums.map((n) => Math.abs(n.value)).filter((v) => v > 0).sort((a, b) => a - b);
+  if (!mags.length) return null;
+  const med = mags[Math.floor(mags.length / 2)] || 1;
+  const tails = nums.map((n) => n.tail || "");
+  let s = 987654321;
+  const rnd = () => (s = (s * 1103515245 + 12345) % 2147483648) / 2147483648;
+  let caught = 0;
+  for (let i = 0; i < samples; i++) {
+    const v = Number((med * (0.2 + rnd() * 3)).toFixed(2));
+    const tail = tails[Math.floor(rnd() * tails.length)] || "";
+    if (!candidates(v, tail).some((c) => nearAny(c, truth))) caught += 1;
+  }
+  return caught / samples;
 }
 
 // ========== 取数点覆盖 ==========
@@ -187,14 +224,19 @@ export function fileProbes(text, limit = 400) {
 // 「取数里还有什么被漏了」。判定用「整份文件零命中」而非逐值命中——一份 K 线 JSON 有
 // 几百个值、报告只会引用其中几个，逐值查必然大面积误报。
 export function checkCoverage(text, dataFiles) {
-  const nums = reportNumbers(text).map((n) => n.value);
+  // 正文侧只展开一次，得到一个**有界**的候选池（数字数 ×4）——同样绝不去展开取数侧，
+  // 那会把池子撑爆、让每份取数都「看起来被引用过」。
+  const pool = new Set();
+  for (const { value, tail } of reportNumbers(text)) {
+    for (const c of candidates(value, tail)) pool.add(c);
+  }
   const out = [];
   for (const { name, content } of dataFiles) {
     const probes = fileProbes(content);
     if (probes.length < 3) continue; // 探针太少 → 不下判断，别瞎报
-    const hit = probes.some((p) =>
-      nums.some((n) => Math.abs(n - p) <= Math.max(ABS_TOL, Math.abs(p) * REL_TOL)));
-    if (!hit) out.push({ file: name, probes: probes.slice(0, 4).map(String) });
+    if (!probes.some((p) => nearAny(p, pool))) {
+      out.push({ file: name, probes: probes.slice(0, 4).map(String) });
+    }
   }
   return out;
 }
@@ -222,8 +264,15 @@ export const STOCK_SECTIONS = [
 // 价位红线（skill §4.9 第 3 条 / §6）：**自己**给出的具体触发价位。
 // 客观披露价（基准日收盘、回购区间、历史高低点）合法，所以必须靠**触发语境**卡，
 // 不能见「元」就报——存量里每篇都有「收盘 212.75 元」，那是必含项。
+// ⚠️ 触发词表要含**裸「回踩」**：2026-08-15 修存量时发现「回踩 13.5 元区间（前期平台）」
+// 只写了「回踩」不写「回踩至」，第一版漏掉了它。同理收进「测试 / 回测」。
 const TRIGGER_PRICE_RE =
-  /(突破|跌破|站上|站稳|回落至|回落到|下探至|上探至|回踩至|回调至|止损|止盈)[^。；！？\n]{0,24}?(\d[\d,]*(?:\.\d+)?)\s*(元|港元|美元|港币)/g;
+  /(突破|跌破|站上|站稳|回落至|回落到|下探至|上探至|回踩至|回踩|回调至|回测|测试|止损|止盈)[^。；！？\n]{0,24}?(\d[\d,]*(?:\.\d+)?)\s*(元|港元|美元|港币)/g;
+
+// 预测性价格区间（「30–44 元宽幅震荡」）：K 节三情景的「走势特征」最常见的形态，
+// 实质就是给了目标价区间。存量 4 篇都栽在这里，而它不带任何触发动词、靠上面那条抓不到。
+const BAND_PRICE_RE =
+  /(\d[\d,]*(?:\.\d+)?)\s*[-–—~]\s*(\d[\d,]*(?:\.\d+)?)\s*(元|港元|美元|港币)\s*(区间|宽幅|震荡|附近|支撑|波动)/g;
 
 // 历史 / 现状陈述里的同款措辞**不算**红线：「现在回落到 311 元」是行情回顾，
 // 「突破 303.55 元后维持高位震荡」才是前瞻触发。2026-08-15 对 51 篇存量真跑标定出的
@@ -231,7 +280,18 @@ const TRIGGER_PRICE_RE =
 // ⚠️ **不许把裸「已」放进来**。第一版放了，结果「若**已**持有…跌破 14 元转防御」
 // 这条真红线被静默吞掉——「若已持有」是条件不是过去时。这正是「加一层保护先问是不是
 // 拆掉了另一层」：为消一条误报而放跑真发现，是最难发现的一类回归（守卫见测试）。
-const PAST_TENSE_NEAR_RE = /(现在|目前|当前|已经|截至|收于|收盘|近期|上周|昨日|今年至今)[^。；\n]{0,6}$/;
+// 窗口取 30 字：「随后两周半一路回落至 7.6 元」的时间状语离动词有点远，12 字够不着。
+// 「一路 / 随后 / 此后 / 触及 / 年初」是 2026-08-15 修存量时从真实误报里补进来的。
+// ⚠️ 绝不能放**裸「已」**（「若已持有…跌破 X 元」是条件不是过去时）、也不能放裸「后」
+// （「跌停反弹后…跌破 X 元转防御」会被误吞）——两条都有守卫钉着。
+const PAST_TENSE_NEAR_RE =
+  /(现在|目前|当前|已经|截至|收于|收盘|近期|上周|昨日|今年至今|一路|随后|此后|触及|年初)[^。；\n]{0,20}$/;
+
+// 「基准日收盘价」是 §4.9 第 5 条的**必含项**，「发行价」是客观披露，两者都不是触发价。
+// ⚠️ 只放这两个。别顺手把「历史高点 / 授予价」也加进来——存量里
+// 「突破 5 月 19 日历史高点 303.55 元后…」「回踩激励授予价 20.36 元附近」都是**真红线**，
+// 加进来会把它们一起放过（客观披露价一旦当触发条件用，就不再是客观披露）。
+const BASELINE_PRICE_RE = /基准日|发行价/;
 
 // 券商目标价：**不是**违规，是〔卖方预期〕模板里「别人的观点」。单列一档「需判断」，
 // 措辞不许写「请删除」——照搬 Stocks 8-15 的教训：一律命令删除，会让模型把券商评级
@@ -281,43 +341,49 @@ export function checkFormat({ reportHtml, notesMd, type, dir }) {
     }
   }
 
-  // 2) 价位红线（仅股票）
-  if (isStock) {
-    for (const m of text.matchAll(TRIGGER_PRICE_RE)) {
-      if (PAST_TENSE_NEAR_RE.test(text.slice(Math.max(0, m.index - 12), m.index))) continue;
-      blocking.push(`具体触发价位「${m[0].trim()}」（§4.9 价位红线：操作触发条件不得用具体价位，改写成相对/条件表述）——上下文：…${ctxAround(text, m.index, m[0].length)}…`);
-    }
-    const targets = [...text.matchAll(BROKER_TARGET_RE)];
-    if (targets.length) {
-      review.push(`出现「目标价」${targets.length} 处——判断后再动：若是**引用券商**的目标价（属〔卖方预期〕模板里别人的观点）**保留原样**；若是你自己给出的，必须删掉。首处：…${ctxAround(text, targets[0].index, targets[0][0].length)}…`);
-    }
-  }
+  // 2–4) 价位红线 / 禁词 / 隐私——**report.html 与 notes.md 都要扫**。
+  // notes.md 同样是公开产物（进公开仓库、还驱动首页卡片与 Obsidian 笔记），
+  // 只扫报告会漏：2026-08-15 修那 5 篇存量时，价位在 notes.md 里原封不动地留着。
+  for (const [label, scanned] of [["报告正文", text], ["notes.md", String(notesMd || "")]]) {
+    if (!scanned) continue;
+    const at = (m) => `…${ctxAround(scanned, m.index, m[0].length)}…`;
 
-  // 3) 禁词（仅股票；概念/方法论类报告聊交易时「买入」是正常词汇，测了全是噪声）
-  if (isStock) {
-    for (const word of FORBIDDEN_WORDS) {
-      const ctxs = [];
-      let i = text.indexOf(word);
-      while (i !== -1) {
-        const around = text.slice(Math.max(0, i - 3), i + word.length + 3);
-        if (!FORBIDDEN_OK.some((ok) => around.includes(ok))) ctxs.push(ctxAround(text, i, word.length));
-        i = text.indexOf(word, i + word.length);
+    if (isStock) {
+      for (const m of scanned.matchAll(TRIGGER_PRICE_RE)) {
+        if (PAST_TENSE_NEAR_RE.test(scanned.slice(Math.max(0, m.index - 30), m.index))) continue;
+        if (BASELINE_PRICE_RE.test(m[0])) continue;
+        blocking.push(`【${label}】具体触发价位「${m[0].trim()}」（§4.9 价位红线：操作触发条件不得用具体价位，改写成相对/条件表述）——上下文：${at(m)}`);
       }
-      if (!ctxs.length) continue;
-      // ⚠️ 一律**带上下文**报出，不报成光秃秃的「出现禁词：买入」。报告里可能既有合法引用
-      // （券商评级「买入 → 中性」、L 节自我声明「全文无买入/卖出表述」）又有真违规
-      // （「建议买入」），不带上下文读者只会以为报告给了买卖评级。给两处而非一处，
-      // 免得真违规被首处的合法引用藏起来。
-      const head = ctxs.slice(0, 2).map((c) => `…${c}…`).join("；");
-      const more = ctxs.length > 2 ? `（全文 ${ctxs.length} 处）` : "";
-      review.push(`出现「${word}」${more}——判断后再动：若是**你自己**给出的买卖倾向，改写掉；若只是引用券商评级、或资金流口径术语，保留原样。上下文：${head}`);
-    }
-  }
+      for (const m of scanned.matchAll(BAND_PRICE_RE)) {
+        blocking.push(`【${label}】预测性价格区间「${m[0].trim()}」（§4.9 价位红线：三情景走势不得给具体价位区间，等于给了目标价）——上下文：${at(m)}`);
+      }
+      const targets = [...scanned.matchAll(BROKER_TARGET_RE)];
+      if (targets.length) {
+        review.push(`【${label}】出现「目标价」${targets.length} 处——判断后再动：若是**引用券商**的目标价（属〔卖方预期〕模板里别人的观点）**保留原样**；若是你自己给出的，必须删掉。首处：${at(targets[0])}`);
+      }
 
-  // 4) 隐私红线（所有类型）
-  for (const { name, re } of PRIVACY_RES) {
-    for (const m of String(text).matchAll(re)) {
-      blocking.push(`疑似用户私人信息（${name}）：…${ctxAround(text, m.index, m[0].length)}…（CLAUDE.md 绝对红线）`);
+      // 禁词：一律**带上下文**报出，不报成光秃秃的「出现禁词：买入」。报告里可能既有
+      // 合法引用（券商评级「买入 → 中性」、自我声明「全文无买入/卖出表述」）又有真违规
+      // （「建议买入」）。给两处而非一处，免得真违规被首处的合法引用藏起来。
+      for (const word of FORBIDDEN_WORDS) {
+        const ctxs = [];
+        let i = scanned.indexOf(word);
+        while (i !== -1) {
+          const around = scanned.slice(Math.max(0, i - 3), i + word.length + 3);
+          if (!FORBIDDEN_OK.some((ok) => around.includes(ok))) ctxs.push(ctxAround(scanned, i, word.length));
+          i = scanned.indexOf(word, i + word.length);
+        }
+        if (!ctxs.length) continue;
+        const head = ctxs.slice(0, 2).map((c) => `…${c}…`).join("；");
+        const more = ctxs.length > 2 ? `（全文 ${ctxs.length} 处）` : "";
+        review.push(`【${label}】出现「${word}」${more}——判断后再动：若是**你自己**给出的买卖倾向，改写掉；若只是引用券商评级、或资金流口径术语，保留原样。上下文：${head}`);
+      }
+    }
+
+    for (const { name, re } of PRIVACY_RES) {
+      for (const m of scanned.matchAll(re)) {
+        blocking.push(`【${label}】疑似用户私人信息（${name}）：${at(m)}（CLAUDE.md 绝对红线）`);
+      }
     }
   }
 
@@ -405,17 +471,30 @@ export function runQc(dirName, root = ARCHIVE) {
     // 绝不把「没测」渲染成「测过了」。（data/ 是 gitignore 的，只在跑调研那台机器上有）
     let coverage = [];
     let unmatched = [];
+    let power = null;
+    let truthSize = 0;
     if (present && files.length) {
       const truth = new Set();
-      for (const f of files) truthValues(f.content, truth);
+      // 顺带记下每份取数各贡献多少真值：判别力弱时要能点名**是哪份在稀释**，
+      // 否则只说「太密了」读者不知道该动什么。实测：Stocks 库「只存引用行」的取数
+      // 判别力 89%，同样查库但存 90 天全历史掉到 35%，公告全文式存档 0%。
+      for (const f of files) {
+        const before = truth.size;
+        truthValues(f.content, truth);
+        f.added = truth.size - before;
+      }
+      truthSize = truth.size;
+      base.dataFiles = files.map((f) => ({ name: f.name, added: f.added }));
       unmatched = checkNumbers(text, truth);
       coverage = checkCoverage(text, files);
+      power = reconciliationPower(nums, truth);
     }
     return {
       ...base, ok: true, type,
       blocking: fmt.blocking, review: fmt.review,
       coverage, numbersTotal: nums.length, numbersUnmatched: unmatched,
       dataPresent: present && files.length > 0, dataSkipped: skipped,
+      power, truthSize, dataFiles: base.dataFiles || [],
     };
   } catch (e) {
     return { ...base, error: e.message };
@@ -449,6 +528,18 @@ export function renderReport(qc) {
     }
     const matched = Math.max(0, qc.numbersTotal - qc.numbersUnmatched.length);
     L.push(`  · 数字对账：正文 ${qc.numbersTotal} 个数字，${matched} 个能对回 data/，${qc.numbersUnmatched.length} 个未对上（联网数字与自行推算的派生值本就对不上，逐条列出供核）`);
+    if (qc.power != null) {
+      const pct = Math.round(qc.power * 100);
+      if (qc.power < 0.4) {
+        const top = [...(qc.dataFiles || [])].sort((a, b) => b.added - a.added)[0];
+        const who = top ? `，其中 data/${top.name} 一份就贡献 ${top.added} 个` : "";
+        L.push(`    ⚠️ **本轮对账判别力弱（${pct}%）**：data/ 里有 ${qc.truthSize} 个数字${who}，数字空间太密、随便一个数都能碰上。「${matched} 个对上」基本说明不了问题——**别把它当作数字已核对过**，该核的照旧回一手来源核。`);
+      } else if (qc.power < 0.8) {
+        L.push(`    · 本轮对账判别力中等（${pct}%，真值 ${qc.truthSize} 个）：能抓住大部分凭空数字，但漏网仍有，不能替代人工核对。`);
+      } else {
+        L.push(`    · 本轮对账判别力 ${pct}%（真值 ${qc.truthSize} 个）：凭空数字基本跑不掉。`);
+      }
+    }
     for (const it of qc.numbersUnmatched.slice(0, 12)) {
       const times = it.count > 1 ? `（全文 ${it.count} 处）` : "";
       L.push(`      - ${it.value}${times} — …${it.context}…`);
