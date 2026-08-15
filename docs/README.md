@@ -42,6 +42,7 @@
 **进度记录（progress）**
 - [2026-06-04 自动 runner + 全项目审计修复](progress/2026-06-04-runner-automation-and-audit.md)
 - [2026-06-09 股票查重（不重复调研）+ 提交侧安全加固](progress/2026-06-09-dedup-and-intake-hardening.md)
+- [2026-08-16 机器质检补第二条腿：联网数字回链核验](progress/2026-08-16-web-number-verification.md) — 挂了外链的数字回到那页搜一遍；不是闸，只出待质证清单喂给 Step 5.5
 
 **待办（backlog）**
 - [2026-07-04 全项目审查 · 优化建议待办](backlog/2026-07-04-audit-suggestions.md) — 31 条建议 + 3 UI 实测，三档分级，已全部完成，存档
