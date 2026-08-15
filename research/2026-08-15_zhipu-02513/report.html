@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>智谱（02513.HK） · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>智谱（02513.HK）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-08-15（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>关联板块</b> 算力 · AI应用</span>
+      <span><b>来源</b> 35 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    智谱是中国最早一批研发大模型的公司，自研的 GLM 模型按用量卖给企业和程序员——有点像自来水公司：管道自己铺，客户开多少水龙头就付多少钱。它 2026 年 1 月在香港上市，股价从发行价一路涨了近十倍、又从最高点跌掉一半多。但它去年整年只卖出 7.2 亿元，同时亏掉 47 亿元，所以今天五千亿元的身价买的不是眼前的生意，而是「将来能长多大」这个预期。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来 13 周方向偏震荡，且是高波动的双向震荡：估值已完全脱离当期财务数据，价格由模型迭代节奏、筹码供给与叙事共同定价，任何单边方向判断都缺乏可核实的证据支撑。关键在于验证窗口极近——按港交所规则首份中期业绩最迟 8 月 31 日必须披露，它会第一次用一手数据检验「年化收入已达 10 亿美元」这个撑起整个估值体系的市场假设，尚未建仓者宜等这份数据，已持有者按仓位能否承受单日两位数波动来决定去留。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      
+      <li><b>核心驱动一 · 收入曲线确实陡峭</b>：2025 年收入 7.24 亿元、同比增长 131.9%，
+        <a href="https://pdf.dfcfw.com/pdf/H2_AN202603311820917317_1.pdf">经审计年度业绩公告</a>可核；
+        媒体另称 2026 年 7 月年化经常性收入（ARR）已达 10 亿美元
+        <small class="src-note">（36 氪独家报道口径，未见公司公告证实）</small>。</li>
+      <li><b>核心驱动二 · A 股通道已打通到门口</b>：上交所已于 2026-06-17 发布
+        <a href="https://www.sse.com.cn/lawandrules/sselawsrules2025/stocks/review/firstepisode/c/c_20260617_10822578.shtml">大模型企业适用科创板第五套上市标准的审核指引</a>；
+        公司科创板发行方案经 2026-06-22 股东会批准，拟募资 150 亿元，
+        并在 <a href="https://pdf.dfcfw.com/pdf/H2_AN202607071826766880_1.pdf">7 月 7 日澄清公告</a>中确认辅导工作已完成。
+        <small class="src-note">（截至 2026-08-15 未见上交所受理的公开披露，递表时点不可预判）</small></li>
+      <li><b>核心驱动三 · 被动配置已建立底仓，但南向已转为流出</b>：2026-06-08 起进入恒生科技指数与港股通，
+        7 月 28 日南向持股 2283.83 万股<small class="src-note">（约占 H 股 9.5%）</small>；
+        但基准日前一交易日（08-13）南向对该股净流出约 10.38 亿港元——底仓在，承接力待观察。</li>
+      <li><b>核心风险一 · 估值没有锚</b>：基准日总市值 5913 亿港元，对 2025 年收入约 <b>701 倍</b>市销率；
+        即便用未经证实的 ARR 口径也约 <b>75 倍</b>。任何一个倍数都无法用同业比价校准。</li>
+      <li><b>核心风险二 · 供给随时可加</b>：一般授权还剩约 6939 万股未用<small class="src-note">（授权上限按配售前股本设定，余额占现有总股本 14.9%）</small>，
+        公司自身 60 天禁售承诺 2026-09-11 到期；2027-01-08 另有约四成股本集中解禁。
+        7 月那次配售摊薄了扩大后总股本的 4.25%<small class="src-note">（占扩大后 H 股约 8.2%）</small>。</li>
+      <li><b>核心风险三 · 领先优势以周为单位被挑战</b>：7 月 16 日晚 Kimi K3 发布、次日该股跌 28.49%，
+        8 月 13 日晚 DeepSeek-V4-Pro 转正式版，8 月 14 日公司发布 GLM-5.3 当天仍收跌 3.57%。</li>
+      <li><b>关键验证窗口就在两周内</b>：按港交所主板上市规则第 13.49(6) 条，
+        首份中期业绩最迟 <b>2026-08-31</b> 必须刊发；截至基准日公司尚未公告具体日期。</li>
+      <li><b>整体置信度：中</b>。方向判断本身（高波动震荡）由一手行情与筹码结构支撑，证据扎实；
+        但"业务基本面到底走到哪一步"目前只有 2025 年年报这一份一手数据，中期业绩披露前存在实质信息缺口。</li>
+
+    </ul>
+  </div>
+
+  <main>
+    
+<h2>公司快照</h2>
+<p><b>小结</b>：一家收入体量还只有 7 亿元级、却被给到 5000 亿元级市值的大模型公司，
+估值锚完全建立在未来预期上，而非当期财务。</p>
+
+<h3>它到底做什么、靠什么收钱</h3>
+<p>智谱全称北京智谱华章科技股份有限公司，2019 年 6 月成立，脱胎于清华大学的知识工程实验室，
+2026 年 1 月 8 日在香港交易所主板上市，是全球第一家上市的独立通用大模型公司
+<small class="src-note">（发行价 116.20 港元，见招股与上市报道）</small>。
+公司 2026 年 7 月把英文名从 Knowledge Atlas Technology 改为
+<a href="https://pdf.dfcfw.com/pdf/H2_AN202606011823136793_1.pdf">Z.AI Co., Ltd.</a>。</p>
+<p>它自研的模型系列叫 <b>GLM</b>（General Language Model，通用语言模型——就是那种你打字提问、它写文章写代码的人工智能大脑）。
+赚钱方式按 2025 年年报拆成四块：</p>
+<ul>
+  <li><b>企业级通用大模型</b> 3.66 亿元，占 50.4%——把整套模型能力交付给企业客户，像把净水设备整套卖给一栋大楼。</li>
+  <li><b>开放平台及 API</b> 1.90 亿元，占 26.3%——开发者在网上调用一次付一次钱，
+    这是最像"自来水按吨计费"的那部分，也是增长最快的一块<small class="src-note">（同比从 4848 万元增至 1.90 亿元）</small>。</li>
+  <li><b>企业级智能体</b> 1.66 亿元，占 22.9%——不只回答问题，还能自己一步步把活干完的"数字员工"。</li>
+  <li><b>技术服务及其他</b> 254 万元，占 0.4%。</li>
+</ul>
+<p><small class="src-note">口径提醒：上面是按<b>产品线</b>分的四块。年报另有一套按<b>交付方式</b>分的口径——云端部署 1.90 亿元、本地化部署 5.34 亿元。
+两套口径各自加总都等于 7.243 亿元，但彼此不是同一个集合，不要交叉引用。</small></p>
+
+<h3>基准日行情（2026-08-14 收盘）</h3>
+<p>港股与美股不在本机行情库覆盖范围内，以下数据取自新浪财经与东方财富两个独立接口，
+两边的收盘价、成交量、成交额逐项一致后才采用。<small class="src-note">（接口拉取日 2026-08-15，均为 2026-08-14 收盘口径）</small></p>
+<table>
+  <thead><tr><th>项目</th><th>数值</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td>收盘价</td><td>1270.00 港元</td><td>当日 −3.57%</td></tr>
+    <tr><td>当日区间</td><td>1199.00 – 1435.00 港元</td><td>单日振幅 17.92%</td></tr>
+    <tr><td>成交额 / 成交量</td><td>149.91 亿港元 / 1138.96 万股</td><td>换手率 4.72%</td></tr>
+    <tr><td>总股本</td><td>4.6562 亿股</td><td>H 股 2.4109 亿 + 未上市内资股 2.2453 亿</td></tr>
+    <tr><td>总市值</td><td>5913.4 亿港元</td><td>约合 5080.8 亿元人民币<small class="src-note">（港元兑人民币 0.8592，2026-08-15）</small></td></tr>
+    <tr><td>上市以来最高 / 最低</td><td>2980.00（06-22）/ 116.10（01-08）</td><td>距最高点回撤 57.4%</td></tr>
+    <tr><td>较发行价</td><td>+992.9%</td><td>发行价 116.20 港元</td></tr>
+  </tbody>
+</table>
+<p>近 90 个自然日（62 个交易日）区间最高 2980.00 港元、最低 840.00 港元，
+日均振幅 17.0%、日均换手 2.05%、日均成交额 66.1 亿港元；近 20 个交易日日均成交额升至 81.9 亿港元、
+日均换手 3.05%。上市至今 147 个交易日里，有 <b>49 天单日涨跌幅超过 10%</b>——
+也就是每三个交易日就有一天在两位数波动<small class="src-note">（据东方财富日线复算，其中跌超 10% 共 17 天、涨超 10% 共 32 天）</small>。</p>
+
+<h3>估值：三个倍数，没有一个能当锚</h3>
+<p><b>市盈率（PE，股价相当于每年净利润的多少倍）不适用</b>——公司仍在亏损。
+<b>市净率（PB）也不适用</b>——2025 年末账面权益为负 81.11 亿元，但这不是资不抵债，
+而是上市前发给投资人的优先股按会计准则先记成负债，上市后转成普通股就会翻正，属于所有上市前融资公司的通病。</p>
+<p>能算的只有<b>市销率（PS，市值相当于一年收入的多少倍）</b>：</p>
+<div class="callout">
+  <p><b>按已审计的一手数据</b>：5080.8 亿元人民币市值 ÷ 2025 年收入 7.243 亿元 ≈ <b>701 倍</b>。</p>
+  <p><b>按市场实际在用的口径</b>：若媒体所称 2026 年 7 月年化经常性收入 10 亿美元成立
+    <small class="src-note">（约 67.5 亿元人民币，美元兑人民币 6.7463）</small>，则约 <b>75 倍</b>。</p>
+  <p>两个数字差了近十倍，而后者<b>目前只有媒体报道、没有公司公告或财报确认</b>。
+    这就是整个标的最关键的一处信息落差——它决定了你买的是 700 倍还是 75 倍。</p>
+</div>
+<p><b>这个落差有多大，可以自己掂量一遍。</b>该报道称这笔年化收入全部来自应用程序接口调用与编程套餐；
+而经审计的 2025 年，对应的"开放平台及 API"收入是 <b>1.90 亿元</b>。要让它变成 67.5 亿元，
+等于这条线在一年内放大约 35 倍，并且公司的收入结构要从"企业交付占一半"整个翻转成"线上调用为主"。
+这不是不可能——年报确实披露 2026 年 2 月起提价、调用量仍在涨——但它是一个<b>需要被财报证实的极端假设</b>，
+而不是一个可以直接代入估值的既成事实。中期业绩是第一次能验证它的机会。</p>
+<p>作为参照，另一家已在港股上市的大模型公司 MiniMax（稀宇科技，00100.HK）
+基准日收盘 329.00 港元、总市值约 1149 亿港元，当天跌 12.69%。智谱市值约为其 5.1 倍。</p>
+
+<h3>下一期财报窗口：只剩十几天</h3>
+<p>按港交所主板上市规则第 13.49(6) 条，<b>中期业绩公告须在半年期末后两个月内刊发</b>，
+即 <b>2026-08-31 之前</b>必须出<small class="src-note">（另一条规则要求中期报告在三个月内寄发，是两回事，不要混）</small>。
+截至 2026-08-15，公司尚未刊发确定日期的董事会会议通知
+<small class="src-note">（据东方财富公告库检索，最新一条公告为 2026-08-04 的月度股份变动报表）</small>。
+参照年报节奏（3 月 18 日发会议通知、3 月 31 日发业绩，均贴近截止日），中报大概率落在 8 月最后一周。</p>
+<div class="callout">
+  <p><b>这意味着本报告全部结论的验证窗口，不是三个月，而是不到两周。</b>
+  下面所有"等中报验证"的表述，都请按这个时间尺度理解。</p>
+</div>
+
+<h2>财务健康</h2>
+<p><b>小结</b>：收入翻倍增长是真的，毛利率下滑与亏损扩大也是真的；
+最大的隐患不是账上没钱，而是钱烧得比原计划快得多。</p>
+
+<table>
+  <thead><tr><th>字段（人民币）</th><th>2023（T−2）</th><th>2024（T−1）</th><th>2025（T）</th></tr></thead>
+  <tbody>
+    <tr><td>营业收入</td><td>1.25 亿元</td><td>3.124 亿元</td><td>7.243 亿元（+131.9%）</td></tr>
+    <tr><td>毛利率</td><td>64.6%</td><td>56.3%</td><td>41.0%</td></tr>
+    <tr><td>净亏损</td><td>7.88 亿元</td><td>29.58 亿元</td><td>47.18 亿元</td></tr>
+    <tr><td>经调整净亏损<small class="src-note">（剔除股份酬金等非现金项）</small></td><td>信息缺口</td><td>24.66 亿元</td><td>31.82 亿元</td></tr>
+    <tr><td>研发开支</td><td>5.29 亿元</td><td>21.95 亿元</td><td>31.80 亿元（+44.9%）</td></tr>
+    <tr><td>经营活动所用现金净额</td><td>信息缺口</td><td>−22.45 亿元</td><td>−22.46 亿元</td></tr>
+    <tr><td>自由现金流 FCF<small class="src-note">（经营净额减去购置物业设备与无形资产的现金支付）</small></td><td>信息缺口</td><td>−23.78 亿元</td><td>−22.69 亿元</td></tr>
+    <tr><td>融资活动所得现金净额</td><td>信息缺口</td><td>33.12 亿元</td><td>26.14 亿元</td></tr>
+    <tr><td>资本开支<small class="src-note">（管理层讨论口径，含租赁购置）</small></td><td>信息缺口</td><td>4.623 亿元</td><td>0.747 亿元（−83.8%）</td></tr>
+    <tr><td>现金及等价物（年末）</td><td>信息缺口</td><td>22.69 亿元</td><td>22.59 亿元</td></tr>
+    <tr><td>借款总额</td><td>信息缺口</td><td>1.372 亿元</td><td>6.895 亿元</td></tr>
+  </tbody>
+</table>
+<p><small class="src-note">2024 / 2025 两列取自
+<a href="https://pdf.dfcfw.com/pdf/H2_AN202603311820917317_1.pdf">2025 年度业绩公告</a>与
+<a href="https://pdf.dfcfw.com/pdf/H2_AN202604191821322214_1.pdf">2025 年年度报告</a>（均经审计，现金流量表取自后者）；
+2023 一列取自招股书数据的<a href="https://finance.eastmoney.com/a/202512193597245050.html">媒体转述</a>，未回到招股书原文逐项复核，置信度中。</small></p>
+
+<h3>必答四问</h3>
+<ul>
+  <li><b>收入与利润趋势的主因</b>：收入靠云端调用量放大（开放平台及 API 收入同比增长约 2.9 倍）；
+    亏损扩大主因是研发开支从 21.95 亿元增至 31.80 亿元。
+    另有三项不花现金的调节项——发给投资人的金融工具账面价值变动 9.37 亿元、股份酬金 5.58 亿元、上市开支 0.41 亿元，
+    剔除后经调整亏损 31.82 亿元。<small class="src-note">（置信度：高，一手年报）</small></li>
+  <li><b>毛利率为什么从 56.3% 掉到 41.0%</b>：低毛利的云端部署业务占比上升所致。
+    值得注意的是云端部署自身的毛利率其实在改善（3.3% → 18.9%），
+    真正拖累的是本地化部署毛利率从 66.0% 降到 48.8%，年报解释为"为满足客户需求投入了更多交付资源"。
+    <small class="src-note">（置信度：高）</small></li>
+  <li><b>现金流跟不跟得上利润</b>：<b>跟不上，但恶化程度比亏损数字看起来轻</b>。
+    经营活动所用现金净额 2025 年为 −22.46 亿元、2024 年为 −22.45 亿元，<b>两年几乎持平</b>——
+    也就是说净亏损从 29.58 亿扩大到 47.18 亿，扩大的部分几乎全来自上面那三项不花钱的科目，
+    真实的现金消耗速度并没有跟着翻倍。缺口靠融资填平：2025 年融资活动净流入 26.14 亿元。
+    <small class="src-note">（一手，2025 年年度报告综合现金流量表）</small></li>
+  <li><b>自由现金流覆不覆盖资本开支</b>：<b>不覆盖，而且差得远</b>。2025 年自由现金流约 −22.69 亿元。
+    值得注意的是资本开支本身很小（现金流量表口径下购置物业设备与无形资产合计仅 0.23 亿元）——
+    钱不是花在买设备上，而是花在<b>按服务采购的算力与人</b>上，这些直接进成本费用，不形成资产。</li>
+  <li><b>最大财务风险点</b>：<b>烧钱速度快于募资计划</b>。
+    IPO 募资净额 48.96 亿港元，到 <b>2026-06-30 已动用逾 93%</b>——不到六个月用掉逾九成，
+    这是公司自己在<a href="https://pdf.dfcfw.com/pdf/H2_AN202607091826830180_1.pdf">配售公告</a>里写明的，
+    也是它紧接着再融资 314 亿港元的直接原因。第二个风险是<b>对第三方算力的依赖</b>，
+    年报把它列为主要风险之一：算力供应中断或涨价会直接打击业务。</li>
+</ul>
+<div class="callout">
+  <p><b>把钱的事说清楚</b>：IPO 拿了约 49 亿港元、半年动用逾九成<small class="src-note">（公告口径"逾 93%"）</small>；7 月配售又拿了 313.75 亿港元（净额），
+  公司称预计<b>到 2027 年底前全部用完</b>。也就是说这笔钱按计划要在约 18 个月里花完，
+  月均约 17 亿港元。现金安全垫在 13 周内是充足的，但"充足"的前提是不再加速。</p>
+</div>
+
+<h2>行业地位与护城河</h2>
+<p><b>小结</b>：在"开源权重 + 编程场景"这条窄赛道上它确实排在前列，但这条护城河的宽度以周为单位被重新测量。</p>
+<h3>护城河检测</h3>
+<ul>
+  <li><b>技术与工程（较强，但易被追平）</b>：证据——2025 年年报披露的自研架构优化（稀疏注意力把长文本推理部署成本降到原来的一半、
+    异步强化学习框架 Slime 等），以及国产芯片的适配调优。
+    反证——同类优化在开源社区扩散极快，7 月 Kimi K3、8 月 DeepSeek-V4-Pro 相继发布即是明证。</li>
+  <li><b>生态与客户黏性（中等）</b>：证据——年报称 GLM-5 发布 24 小时内获字节、阿里、腾讯等接入，
+    中国前十大互联网公司中 9 家深度集成；截至 2026 年 3 月平台注册用户超 400 万；
+    付费开发者规模突破 24.2 万。反证——开发者切换模型的成本极低，换一行接口地址即可，
+    黏性主要来自性价比而非锁定。</li>
+  <li><b>定价权（近期在增强，需继续观察）</b>：证据——年报称 2026 年 2 月主动上调编程套餐价格 30% 并取消首购优惠，
+    应用程序接口调用定价较上年底提升 83%，量价齐升。
+    反证——2026 年 7 月 31 日公司又推出新版订阅方案并给出 7 折/8 折限时优惠，
+    <a href="https://finance.sina.com.cn/tech/digi/2026-07-31/doc-iniksait1404603.shtml">调整为透明积分制</a>，
+    这更像是竞争压力下的重新定价而非单纯提价。</li>
+  <li><b>先发的资本市场地位（真实但会稀释）</b>：全球首家上市的独立大模型公司，且已进港股通；
+    但 MiniMax 已同在港股，月之暗面据报道也在推进港股上市，"唯一性"溢价在收窄。</li>
+</ul>
+<h3>竞争对手对比</h3>
+<table>
+  <thead><tr><th>公司</th><th>可比性</th><th>近期动作</th><th>对智谱的影响</th></tr></thead>
+  <tbody>
+    <tr><td>MiniMax（00100.HK）</td><td>高：同为港股上市独立大模型公司</td>
+      <td>2026-01-09 上市；基准日总市值约 1149 亿港元，当日跌 12.69%</td>
+      <td>板块估值的直接参照物，它跌智谱难独善其身</td></tr>
+    <tr><td>月之暗面 Kimi</td><td>高：同为开源权重路线，直接争夺开发者</td>
+      <td>2026-07-16 晚发布 Kimi K3<small class="src-note">（另有来源记为 7-17 凌晨）</small>；据报道正推进港股上市与新一轮融资，截至基准日尚未上市</td>
+      <td>发布次日（7-17）智谱跌 28.49%，为上市以来最大单日跌幅，是本轮回撤的触发点之一</td></tr>
+    <tr><td>DeepSeek</td><td>中高：成本领先者，压制全行业定价</td>
+      <td><a href="https://www.caixin.com/2026-08-13/102473888.html">2026-08-13 晚 V4 Pro 转正式版</a>并大幅涨价、改行峰谷定价<small class="src-note">（新价 8-17 起生效，生效日见其调价公告，所引财新一文未载该日期）</small></td>
+      <td>短期利空（能力追近）、中期偏利好（价格战松动）</td></tr>
+  </tbody>
+</table>
+<p><b>未来 3 个月谁更可能赢得预期差</b>：智谱的优势在于它是三家里<b>唯一必须定期向公众交财务作业</b>的那一个<small class="src-note">（港交所主板强制年报与中期报告，不强制季报）</small>——
+中期业绩若能把媒体口径的收入跃升坐实，它拿到的是可验证的领先；反之，未上市对手的"估值"只是私募轮报价，无从证伪。
+这既是它的机会也是它的风险。<small class="src-note">（置信度：中）</small></p>
+
+<h2>政策与宏观</h2>
+<p><b>小结</b>：政策面明显顺风，且顺风是具体的——监管专门为这类未盈利的大模型公司开了 A 股上市的口子。</p>
+<ul>
+  <li><b>科创板第五套上市标准适用指引（2026-06-17）</b>：上交所发布
+    <a href="https://www.sse.com.cn/lawandrules/sselawsrules2025/stocks/review/firstepisode/c/c_20260617_10822578.shtml">《发行上市审核规则适用指引第 10 号——人工智能大模型企业适用科创板第五套上市标准》</a>，
+    共十五条，把主营业务界定为"人工智能大模型的自主研发、模型服务或者模型应用等"，
+    并要求申报时<b>至少有一个大模型产品已完成上线发布并实现规模化应用</b>、且已制定明确的商业化安排。
+    这是把未盈利大模型公司登陆 A 股的门槛写成了明文<small class="src-note">（一手，上交所官网；置信度高）</small>。
+    传导路径：<b>如果</b>该指引落地为实际受理，<b>那么</b>智谱的 A 股发行从"计划"变成"进程"，对估值构成新的定价参照。属长期红利。</li>
+  <li><b>但指引里有一处值得对照读</b>：它明确要求发行人有"明确的商业化安排"，
+    而公司创始人 7 月的内部信强调未来两年聚焦通用人工智能研究、不追求短期商业变现。
+    两者不必然冲突（长期投入不等于没有商业化安排），但在审核语境下，这两套表述需要被一致地解释。
+    <small class="src-note">（本段为分析推断，非监管或公司表态）</small></li>
+  <li><b>A 股发行方案本身</b>：公司拟发行占发行后总股本 2%–8% 的 A 股，即 909.88 万至 3876.9 万股
+    <small class="src-note">（该股数以公告日 4.45843 亿股为基数；7 月配售后总股本已增至 4.65623 亿股，同样比例对应约 950 万–4049 万股）</small>；
+    <a href="https://pdf.dfcfw.com/pdf/H2_AN202606011823136793_1.pdf">同一份公告</a>的募投项目表明列拟募资合计 150 亿元
+    ——基座大模型 120 亿元、模型即服务平台 20 亿元、补充流动资金 10 亿元。<small class="src-note">（一手披露，置信度高）</small></li>
+  <li><b>境外上市备案要求</b>：7 月配售完成后公司须向中国证监会补交备案报告——这意味着<b>后续每一次港股增发都有一道备案程序</b>，
+    是节奏上的摩擦，不是障碍。</li>
+  <li><b>宏观窗口</b>：13 周内美联储有两次议息。港股对美元利率路径敏感，
+    高估值成长股尤甚——这是外生的、与公司无关的波动源。</li>
+</ul>
+
+<h2>产业链与基本面</h2>
+<p><b>小结</b>：卡脖子的不是需求，是算力供给；公司自己在年报里承认 2026 年 2 月以来算力供不应求。</p>
+<ul>
+  <li><b>上游（算力）</b>：年报明确 2026 年 2 月以来面临算力缺口，策略是深耕国产芯片适配。
+    2025 年公司把采购模式从"租设备"改成"买服务"，资本开支因此从 4.62 亿元降到 0.75 亿元——
+    <b>这是理解财报的一个关键点</b>：开支没有消失，只是从资产负债表挪到了成本费用里，会直接压毛利。</li>
+  <li><b>下游（需求）</b>：年报称业务覆盖 218 个国家和地区、与超 400 万中小企业及开发者共建生态，
+    并称截至 2026 年 3 月平台注册用户突破 400 万<small class="src-note">（这是年报里两处不同口径的表述，恰好都是 400 万，不要当成同一个数）</small>；
+    需求侧的驱动来自 2026 年上半年智能体应用的爆发式增长带动的调用量增长。</li>
+  <li><b>技术节点（13 周内已发生一次）</b>：2026-08-14 发布 GLM-5.3，
+    <a href="https://finance.sina.com.cn/stock/hkstock/ggscyd/2026-08-14/doc-ininhhrn4176747.shtml">据报道</a>基座未变、
+    靠后训练提升智能上界，编程能力在<b>公司内部自建评测</b>中较 GLM-5.2 提升 50%，
+    并在 Terminal Bench 3.0 等公开基准上取得开源第一<small class="src-note">（50% 是内部评测口径，公开基准对应的是名次而非该幅度，两者不要混）</small>。
+    值得注意的是：GLM-5.2 发布时公司发了<a href="https://pdf.dfcfw.com/pdf/H2_AN202606151823562330_1.pdf">自愿公告</a>，
+    GLM-5.3 至今<b>没有对应公告</b>——这不必然说明什么，但从信息披露一致性角度值得记一笔。</li>
+  <li><b>季节性</b>：软件与模型服务无显著自然季节性；真正的节奏由模型发布周期与财报窗口决定。</li>
+</ul>
+
+<h2>人工智能方向关联性</h2>
+<p><b>小结</b>：真业务，不是概念关联——它的收入 100% 来自大模型本身。</p>
+<ul>
+  <li><b>产业链位置</b>：模型层（基座模型 + 模型即服务平台），向上采购算力，向下服务开发者与企业。
+    这是产业链里最"纯粹"也最没有缓冲的位置：模型能力一旦落后，没有硬件资产或渠道可以兜底。</li>
+  <li><b>与国产算力的绑定</b>：年报把国产芯片的软硬协同调优列为重点方向。传导路径：
+    <b>如果</b>国产算力供给继续放量，<b>那么</b>它的推理成本下行、毛利率修复；
+    反之若算力持续紧缺，扩张要靠更贵的采购来支撑。</li>
+  <li><b>关联板块</b>：算力（作为算力的大客户与国产芯片适配方）、AI 应用（智能体与编程助手是其主要收入场景）。
+    与光模块、机器人、航天无直接业务关联，不硬挂。</li>
+</ul>
+
+<h2>消息面与预期差</h2>
+<p><b>小结</b>：当前市场预期<b>偏高且高度不稳定</b>——它建立在一个尚未被财报验证的收入数字上。</p>
+<h3>近三个月重大事件（时间倒序）</h3>
+<ul>
+  <li><b>2026-08-14</b> 发布 GLM-5.3，编程能力较上代提升约 50%。当日高开冲高 1435 后收跌 3.57%，典型利好兑现。<small class="src-note">（媒体）</small></li>
+  <li><b>2026-08-13 晚</b> DeepSeek-V4-Pro 转正式版，同时宣布 API 大幅涨价并改行峰谷定价。利空/利好参半。<small class="src-note">（媒体·财新）</small></li>
+  <li><b>2026-07-16 晚</b> Kimi K3 发布；<b>次日 7-17</b> 智谱单日跌 28.49%，为上市以来最大单日跌幅
+    <small class="src-note">（发布当日 7-16 该股已跌 9.31%；另有来源把发布记为 7-17 凌晨）</small>。利空。<small class="src-note">（行情为接口复算，事件为媒体）</small></li>
+  <li><b>2026-07-13</b> 完成配售 1978 万股新 H 股、每股 1588.00 港元，募资净额 313.75 亿港元。
+    <a href="https://pdf.dfcfw.com/pdf/H2_AN202607131826932778_1.pdf">公告</a>确认承配人不少于 6 名、均为独立第三方。中性偏空（摊薄）。<small class="src-note">（披露）</small></li>
+  <li><b>2026-07-11</b> 创始人唐杰发内部信，启动两年期"摸高计划"，
+    <a href="https://news.qq.com/rain/a/20260713A02UG900">称未来两年将做战略性投入、继续聚焦通用人工智能研究而不是短期商业变现</a>。利空短期盈利预期。
+    <small class="src-note">（媒体依公开信息整理的二手稿，非内部信原文，作为战略转向的论据偏弱）</small></li>
+  <li><b>2026-07-07 / 07-08</b> 基石投资者六个月禁售期于 7 月 7 日届满、<b>7 月 8 日起可流通</b>
+    （11 家基石合计约 2568.16 万股，占当时总股本 5.76%）；当日成交额由前一交易日的 48.6 亿港元跳升至 169.6 亿港元。
+    7 月 7 日另发<a href="https://pdf.dfcfw.com/pdf/H2_AN202607071826766880_1.pdf">澄清公告</a>否认"撤回 A 股辅导备案"报道，并确认辅导工作已完成。<small class="src-note">（披露 + 媒体）</small></li>
+  <li><b>2026-06-22</b> 年度股东会通过 A 股发行方案与英文改名；同日股价触及历史最高 2980.00 港元。</li>
+  <li><b>2026-06-15</b> 自愿公告发布 GLM-5.2，1M 长上下文、遵循 MIT 协议开源。利好。<small class="src-note">（披露）</small></li>
+  <li><b>2026-06-08</b> 正式纳入恒生科技指数并进入港股通。重大利好。<small class="src-note">（媒体，指数公司公告口径）</small></li>
+  <li><b>2026-04-14</b> 须予披露交易：收购目标公司 100% 股权，
+    <a href="https://pdf.dfcfw.com/pdf/H2_AN202604141821199847_1.pdf">总代价不超过 3.605 亿元</a>
+    （股权对价约 8162 万元 + 承接债务约 2.789 亿元），资金来自自有资源与银行融资、不动用 IPO 募集款。<small class="src-note">（披露）</small></li>
+</ul>
+
+<h3>市场最担心的三件事</h3>
+<ul>
+  <li><b>担心一：收入跃升是不是真的。</b>"年化经常性收入达 10 亿美元、半年增长 15 倍"这条来自
+    <a href="https://36kr.com/p/3898662052693894">36 氪的独家报道</a>，被广泛引用为估值基础，
+    但<b>至今没有公司公告或财报数据支撑</b>，该报道自己也写明截至发稿公司未作回应。
+    若中期业绩收入远低于此推算，估值体系会被直接改写。</li>
+  <li><b>担心二：还要不要再融资。</b>公司在 7 月 9 日的配售理由里写着"支持商业化的规模化落地"，
+    两天后创始人内部信却说"未来两年不追求短期变现"。这两句话不构成事实冲突（融资是为长期投入），
+    但它们指向<b>不同的投资者预期</b>，而市场按前者定价、按后者失望。</li>
+  <li><b>担心三：筹码。</b>基石解禁已在 7 月落地；公司自身 60 天禁售承诺 2026-09-11 到期；
+    一般授权还剩约 6939 万股；2027-01-08 约四成股本解禁。供给端的每一格都是明牌，只是时点未定。</li>
+</ul>
+<h3>卖方预期分歧之大，本身就是信息</h3>
+<div class="case">
+  <p>可溯源的卖方目标价本身就横跨很宽的区间：中金"跑赢行业"、688 港元
+  <small class="src-note">（<a href="https://finance.sina.com.cn/stock/hkstock/hkgg/2026-02-16/doc-inhmyquq0271528.shtml">2026-02-16</a>，卖方预期）</small>；
+  瑞银"买入"、1160 港元
+  <small class="src-note">（<a href="https://finance.sina.com.cn/stock/hkstock/hkgg/2026-04-21/doc-inhvfyta6183706.shtml">2026-04-21</a>，卖方预期）</small>；
+  招银国际"买入"、1503.9 港元<small class="src-note">（<a href="https://m.10jqka.com.cn/20260612/c677412560.shtml">2026-06-12</a>，卖方预期）</small>。
+  另有媒体转述摩根大通"增持"、目标价 2000 港元，<b>未见原研报，本报告不采信</b>。</p>
+  <p>需要说明的是，这四个数字发布于不同月份、对应的股价环境相差极大（2 月股价在数百港元、6 月一度冲上两千），
+  所以它们不是同一时点的分歧，横向比较要打折扣。即便如此，<b>可溯源的三家之间仍相差 2.2 倍</b>，
+  且最高的一家（6 月）与最低的一家（2 月）之间隔着一轮完整的暴涨暴跌。</p>
+  <p>本报告不采用任何目标价、也不给买卖评级。列出这组数字只为说明一件事：
+  <b>现阶段的定价不存在共识基准。</b>在这种状态下，价格对消息的敏感度远高于对基本面的敏感度。</p>
+</div>
+
+<h2>未来 13 周关键事件日历</h2>
+<p><b>小结</b>：13 周内权重最高的一件事在<b>头两周之内</b>——首份中期业绩最迟 8 月 31 日必须出；其次是 <b>A 股递表</b>（时点未定）。</p>
+<table>
+  <thead><tr><th>时点（北京时间）</th><th>事件</th><th>方向</th><th>看什么</th></tr></thead>
+  <tbody>
+    <tr><td>2026-08-15</td><td>公司新版编程套餐限时 7 折 / 8 折结束<small class="src-note">（基准日次日）</small></td><td>中性</td><td>折扣退坡后订阅与调用量是否回落</td></tr>
+    <tr><td>2026-08-17</td><td>DeepSeek API 新价格生效</td><td>中性偏多</td><td>行业是否集体退出价格战</td></tr>
+    <tr><td><b>最迟 2026-08-31</b></td><td><b>2026 年中期业绩（法定截止日）</b></td><td><b>双向，权重最高</b></td><td>上半年收入、分部毛利率、经营现金流</td></tr>
+    <tr><td>2026-08-31</td><td>公司 ZCode 限时额度加成结束</td><td>中性</td><td>同上，促销退坡后的真实需求</td></tr>
+    <tr><td>2026-09-11</td><td>公司配售 60 天禁售承诺届满</td><td>偏空</td><td>此后可再度动用一般授权增发</td></tr>
+    <tr><td>时点未定</td><td>向上交所递交科创板申请 / 获受理</td><td>偏多</td><td>是否被受理、发行比例落在 2%–8% 何处</td></tr>
+    <tr><td>13 周内两次</td><td>美联储议息</td><td>双向</td><td>美元利率路径对港股成长股估值的压制或释放</td></tr>
+    <tr><td>随时</td><td>竞品模型迭代（月之暗面 / DeepSeek / 大厂）</td><td>双向</td><td>开源榜单位次与实际调用量迁移</td></tr>
+    <tr><td>2027-01-08<small class="src-note">（窗口外）</small></td><td>约四成股本集中解禁</td><td>偏空</td><td>Q4 起市场会提前定价</td></tr>
+  </tbody>
+</table>
+<p><small class="src-note">中期业绩截止日为港交所主板上市规则第 13.49(6) 条的法定要求（半年期末后两个月内刊发业绩公告）；
+截至 2026-08-15 公司未刊发相关董事会会议通知，具体日期仍未知。ZCode 额度加成的结束日见公司产品公告，未列入本报告来源清单。</small></p>
+
+<h2>逻辑链推导</h2>
+<p><b>小结</b>：八条推导逐条数下来是<b>五条指向下行、两条指向上行、一条指向震荡</b>——单看条数是偏空的。
+之所以仍把方向定为高波动双向震荡，是因为这五条下行条目<b>没有一条已经发生</b>，全部是条件触发型（中报不及、增发、竞品反超、加息），
+而两条上行条目（中报验证、A 股受理）同样是条件触发型，且触发窗口重叠在同样的两周内。
+换句话说：偏空的是<b>条数</b>，不是<b>已实现的事实</b>；在触发之前，价格更可能在消息之间来回摆动，而不是单边下行。
+如果读者不接受这个推理，那么这份报告的方向判断就应该读作"偏跌"——这一点必须讲明，而不是用"多数指向震荡"糊过去。</p>
+<ul>
+  <li><b>如果</b>中期业绩收入验证了媒体所称的年化十亿美元量级，<b>那么</b>市销率从 700 倍降到几十倍，
+    估值叙事从"纯预期"转为"高增长可验证"。<b>方向 ↑，置信度中。</b>需核验：中报收入口径是否与 ARR 口径可比。</li>
+  <li><b>如果</b>中报收入显著低于市场按 ARR 推算的水平，<b>那么</b>支撑当前市值的核心假设失效。
+    <b>方向 ↓，置信度中。</b>需核验：ARR 里有多少是年付预收、多少能确认为当期收入。</li>
+  <li><b>如果</b>毛利率延续 2025 年的下滑趋势，<b>那么</b>"规模扩张自动改善盈利"的逻辑被证伪。
+    <b>方向 ↓，置信度中。</b>需核验：中报云端与本地化两块的分部毛利率。</li>
+  <li><b>如果</b> A 股科创板申请获受理，<b>那么</b>形成新的定价参照与资金入口。
+    <b>方向 ↑，置信度中。</b>需核验：上交所受理公告。</li>
+  <li><b>如果</b> 9 月 11 日后公司动用剩余一般授权再增发，<b>那么</b>短期筹码压力叠加"缺钱"信号。
+    <b>方向 ↓，置信度中。</b>需核验：新的配售公告与翌日披露报表。</li>
+  <li><b>如果</b>竞品发布新一代模型并在关键榜单反超，<b>那么</b>按 7 月 17 日的经验会触发单日两位数下跌。
+    <b>方向 ↓，置信度高</b>（已有直接先例）。需核验：主要评测榜单位次变动。</li>
+  <li><b>如果</b>被动指数配置形成的底仓稳定、且南向资金从当前的净流出重新转为净买入，<b>那么</b>回调时有承接、下行有缓冲。
+    <b>方向 震荡，置信度中低</b><small class="src-note">（前提未成立：基准日前一交易日南向净流出约 10.38 亿港元，故此条目前是待观察而非已实现）</small>。
+    需核验：港股通每日持股变动。</li>
+  <li><b>如果</b>美联储维持偏紧路径、港股风险偏好收缩，<b>那么</b>高市销率标的首当其冲。
+    <b>方向 ↓，置信度中。</b>需核验：恒生科技指数相对走势——基准日该指数报 4707.62、当日跌 1.77%，8 月以来整体走弱。</li>
+</ul>
+
+<h2>三情景走势</h2>
+<p><b>小结</b>：基准情景是宽幅震荡，三种情景的分水岭几乎都落在同一件事上——最迟 8 月 31 日的中期业绩。</p>
+<table>
+  <thead><tr><th>情景</th><th>触发因素</th><th>走势特征</th><th>最该盯的验证信号</th></tr></thead>
+  <tbody>
+    <tr><td><b>乐观</b><small class="src-note">（可能性次之）</small></td>
+      <td>中报上半年收入达到 2025 年全年收入的两倍以上，且毛利率未继续下滑；A 股申请获受理；竞品无重大突破</td>
+      <td>向上突破近月区间上沿，波动依旧剧烈</td>
+      <td>中报收入绝对额与 2025 全年收入的倍数关系</td></tr>
+    <tr><td><b>基准</b><small class="src-note">（最可能）</small></td>
+      <td>中报收入高增但绝对额与所引年化收入口径仍差一个数量级；模型迭代你追我赶；无新增发</td>
+      <td>在 7 月低点与 8 月高点之间宽幅震荡，单日两位数波动常态化</td>
+      <td>日均成交额能否维持在近 20 日水平</td></tr>
+    <tr><td><b>悲观</b><small class="src-note">（可能性与乐观相当）</small></td>
+      <td>中报毛利率继续下滑、经营现金流出较 2025 年上半年扩大；9 月 11 日后再度增发；竞品在编程场景明确反超</td>
+      <td>跌破 7 月阶段低点后不能快速收复，且成交额同步萎缩到近 20 日均值以下</td>
+      <td>是否出现新的配售公告或翌日披露报表</td></tr>
+  </tbody>
+</table>
+<p><small class="src-note">三种情景不给具体概率数字：本报告没有可用于校准概率的历史样本（该股上市仅 147 个交易日、且尚无一次中期业绩可供参照），
+硬给一个百分比会让读者以为背后有推导。序数关系（基准最可能、两端相当）来自上一节八条推导的触发条件分布，可以核对。</small></p>
+<h3>重点盯的三个指标</h3>
+<ul>
+  <li><b>中期业绩的收入与毛利率</b>：上行意味着"高增长可验证"、估值分母被做实；
+    下行意味着当前市值缺乏财务支撑。核验时点：最迟 2026-08-31 的中期业绩公告。</li>
+  <li><b>股本变动月报表与翌日披露报表</b>：这是<b>最快能确认增发是否已发生的一手渠道</b>
+    <small class="src-note">（两者都是事后披露：月报表每月初刊发、翌日披露报表在发行次日刊发；真正的提前信号只有配售公告本身）</small>。
+    股本不变为利多，股本增加为利空。核验时点：每月首周，以及任何一次公告发布的次日。</li>
+  <li><b>南向资金持股变动</b>：上行意味着内地资金在承接；下行且与股价同向意味着缺乏承接力量。
+    核验时点：每交易日。<small class="src-note">（口径注意：媒体常混用"占已发行普通股"与"占 H 股"，两者差约一倍，比较时须统一口径）</small></li>
+</ul>
+
+<h2>决策与风控</h2>
+<p><b>小结</b>：在首份中期业绩落地之前，这是一个"信息缺口大于信息量"的标的；
+本报告不给目标价、不给买卖评级，只给可核验的条件。</p>
+<div class="callout">
+  <p><b>试仓（小仓位试探）</b>：<b>如果</b>中期业绩披露后，上半年收入年化<small class="src-note">（简单乘二）</small>
+  与市场所引用的年化收入口径的差距收窄到三倍以内，<b>且</b>毛利率未低于 2025 年全年的 41.0%，
+  <b>那么</b>可视为"高增长被一手数据部分验证"，具备小仓位试探的事实基础。
+  在此之前，任何参与买的都是未经验证的假设。<small class="src-note">（写成"三倍以内"而非"对上"，是因为年化经常性收入与会计收入口径本就不可直接相等，见名词小抄）</small></p>
+  <p><b>加仓</b>：<b>如果</b>上述验证成立，<b>且</b> A 股科创板申请获上交所受理，
+  <b>且</b>期间未出现新的配售公告，<b>那么</b>三项条件同时满足才谈得上加。缺任何一项都不构成加仓依据。</p>
+  <p><b>退出（止损 / 止盈）</b>：<b>如果</b>出现下列任一项——中报毛利率低于 2025 年全年水平、
+  中报经营活动现金流出较 2025 年上半年扩大<small class="src-note">（2025 全年为 −22.46 亿元，中期基准届时首次可得）</small>、
+  9 月 11 日后再度动用一般授权增发、竞品在编程场景明确且持续反超——
+  <b>那么</b>支撑当前定价的支柱各断一根，应按事先设定的仓位纪律减记。</p>
+  <p><b>无论哪种情形</b>：该股上市以来三分之一的交易日单日波动超过 10%。
+  仓位规模应当由"能否承受单日两位数波动而不改变决策"来倒推，而不是由对方向的判断来倒推。</p>
+</div>
+
+<h2>逻辑自查</h2>
+<p><b>小结</b>：本报告最可能错在把"没有公告证实"当成了"数字不成立"，也可能错在低估了叙事驱动行情的持续性。</p>
+<ul>
+  <li><b>漏洞一 · 对 ARR 的处理可能过严也可能过松。</b>本报告把年化收入 10 亿美元定性为"未经一手证实"。
+    若该数字属实且中报坐实，则本报告对估值的描述（701 倍）显著高估了实际水平；
+    反之若它是含年付预收的口径，则 75 倍这个"安慰性"倍数同样失真。两个方向都可能错。</li>
+  <li><b>漏洞二 · 把历史波动率当成未来波动率（已做补充检验，结论反而更稳）。</b>
+    "三分之一交易日波动超 10%"是上市至今的统计，其中包含了上市初期自由流通盘仅约 2.67% 的极端阶段，
+    且全样本 49 天里 32 天是<b>上涨</b>超 10%——用一段单边上行的历史去论证"双向"波动，本身是有偏的。
+    为此复算了近期：<b>近 60 个交易日 20 天超 10%（涨 11 / 跌 9），近 20 个交易日 6 天（涨 3 / 跌 3）</b>，
+    频率与全样本持平而方向已接近对称。所以高波动假设成立，且"双向"在近期数据上比在全样本上更站得住。
+    <small class="src-note">（据东方财富日线复算；口径为涨跌幅绝对值 ≥10%，其中 2026-03-26 恰为 −10.00%，若按严格大于则全样本为 48 天）</small></li>
+  <li><b>漏洞三 · 事件与股价的因果被简化。</b>"Kimi K3 发布导致跌 28.49%"是时间上的吻合，
+    同日还有解禁与配售的筹码因素，把跌幅完全归因于竞品发布是相关当因果。</li>
+  <li><b>漏洞四 · 一处公司自己的口径矛盾，本报告选择了其中一种。</b>7 月 13 日完成配售公告写"配售股份约占扩大后
+    <b>已发行 H 股总数</b>的 4.25%"，但按股本算，4.25% 对应的是<b>扩大后总股本</b>（1978 万 ÷ 4.6562 亿），
+    占 H 股实为约 8.2%；7 月 9 日的配售公告用的正是"已发行股份数目"口径。
+    本报告按算术正确的口径写，但读者若拿完成公告原文对照会看到不一致——这是公司披露的问题，不是笔误性引用。</li>
+  <li><b>最可能的数据滞后点</b>：全部一手财务数据截止于 2025-12-31，距基准日已逾七个半月，
+    而这家公司的业务规模在这七个月里按各方说法变化了数倍。<b>本报告的财务部分描述的是一家已经不存在的公司。</b>
+    这是所有结论中最需要警惕的一点，而它最迟在 8 月 31 日就会被中期业绩纠正。</li>
+  <li><b>还需补充的五条信息</b>（按重要性）：① 2026 年中期业绩全文（收入、分部毛利率、经营现金流）；
+    ② 年化经常性收入这一数字的公司口径确认；③ 招股书中禁售安排的原文条款（本报告的解禁结构部分依赖媒体转述）；
+    ④ 港交所权益披露平台上主要股东的持股变动记录；⑤ 4 月那笔收购的标的公司名称与业务
+    <small class="src-note">（公告全程以"目标公司"指代，未披露名称）</small>。</li>
+</ul>
+
+    
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      
+      <li><b>估值缺乏可校准的锚</b>：对 2025 年已审计收入的市销率约 701 倍；即便按未经证实的年化收入口径也约 75 倍。同业无可比对象，可溯源的三家卖方目标价相差 2.2 倍且发布于差异极大的股价环境。</li>
+      <li><b>核心估值假设未经一手证实</b>："年化收入 10 亿美元"来自媒体独家报道，无公司公告或财报支撑，却是当前定价的基础；若成立，等于线上调用收入一年放大约 35 倍且收入结构整体翻转。</li>
+      <li><b>筹码供给是明牌</b>：一般授权余额约 6939 万股（占现总股本 14.9%）；公司 60 天禁售承诺 2026-09-11 到期；2027-01-08 约四成股本解禁。</li>
+      <li><b>烧钱速度快于原计划</b>：IPO 募资净额 48.96 亿港元至 2026-06-30 已动用逾 93%，随即再融资 313.75 亿港元，公司称预计 2027 年底前用完；2025 年经营活动现金净流出 22.46 亿元，靠 26.14 亿元融资净流入填平。</li>
+      <li><b>技术领先以周为单位被重测</b>：竞品发布可在单日引发两位数跌幅（Kimi K3 发布次日跌 28.49% 为直接先例）。</li>
+      <li><b>财务数据严重滞后</b>：全部一手财务止于 2025-12-31，距今逾七个半月，期间业务规模按各方说法已变化数倍。</li>
+      <li><b>本报告自身的逻辑漏洞</b>：八条逻辑链里五条指向下行，方向仍定为震荡靠的是"这些条件尚未触发"这一层推理，读者不接受该推理则应读作偏跌；把单日跌幅完全归因于竞品发布属相关当因果。</li>
+
+    </ul>
+  </section>
+
+  
+  <section class="glossary">
+    <h2>名词小抄</h2>
+    <dl>
+      <dt>大模型 / 基座模型</dt><dd>用海量文本训练出来的通用人工智能"大脑"，能写字、写代码、回答问题。"基座"指它是底座，别人在上面盖应用。</dd>
+      <dt>GLM</dt><dd>智谱自研的模型系列名（通用语言模型）。GLM-5.2、GLM-5.3 是它不同代的版本，数字越大越新。</dd>
+      <dt>Token（词元）</dt><dd>模型处理文字的最小计费单位，大致相当于半个到一个汉字。"用了多少 Token"就等于"用了多少水"。</dd>
+      <dt>MaaS（模型即服务）</dt><dd>不把模型卖给你，而是放在云上按次收费——像不卖你净水器，只卖你自来水。</dd>
+      <dt>API（应用程序接口）</dt><dd>程序之间对话的插口。开发者通过它调用模型，一次调用付一次钱。</dd>
+      <dt>ARR（年化经常性收入）</dt><dd>把最近的订阅收入乘以 12 推算出的"一年能收多少"，是订阅制公司常用的快照指标。它不是财报科目，不能直接和会计收入划等号——所以本报告不用它下硬结论。</dd>
+      <dt>自由现金流（FCF）</dt><dd>经营活动实际收到的钱，减去买设备等必要开支后剩下的。它比"净利润"更难粉饰，负数意味着公司在净消耗现金。</dd>
+      <dt>市销率的"倍"是什么意思</dt><dd>701 倍的字面含义是：按 2025 年的收入水平，公司要不吃不喝卖 701 年才够回本这个市值。现实中没人这么算，它只用来说明"当前价格里有多少是对未来的预支"。</dd>
+      <dt>市销率（PS）</dt><dd>市值 ÷ 一年收入。公司还在亏损、算不出市盈率时用它。倍数越高，说明买的越是预期而非现状。</dd>
+      <dt>毛利率</dt><dd>收入里扣掉直接成本（这里主要是算力开销）后还剩多少比例。它反映的是"每做一笔生意本身赚不赚钱"。</dd>
+      <dt>经调整净亏损</dt><dd>把股权激励、优先股账面变动这类不真花现金的项目剔除后的亏损，更接近实际烧掉的钱。</dd>
+      <dt>H 股 / 内资股</dt><dd>同一家内地公司，在香港上市交易的那部分股票叫 H 股；留在内地、暂不能在港交易的那部分叫内资股。后者未来若获准流通，会增加供给。</dd>
+      <dt>基石投资者</dt><dd>上市前就承诺认购一大笔的机构，代价是要锁定一段时间（本例六个月）不许卖。</dd>
+      <dt>禁售期 / 解禁</dt><dd>股票被约定在某日之前不能卖，到期叫解禁。解禁本身不等于减持，但会让"可以卖的量"变多。</dd>
+      <dt>一般授权</dt><dd>股东会一次性授权董事会可以增发不超过 20% 股本的额度，用不用、什么时候用由董事会定，不必再开股东会。</dd>
+      <dt>配售</dt><dd>公司直接把新股卖给少数机构投资者，通常有折价。好处是拿钱快，代价是老股东被摊薄。</dd>
+      <dt>港股通</dt><dd>内地投资者买港股的官方通道。一只港股被纳入，等于向内地资金开门。</dd>
+      <dt>科创板第五套上市标准</dt><dd>A 股为尚未盈利但技术突出的公司留的上市门槛，不看利润看市值与技术。</dd>
+      <dt>开源权重</dt><dd>把训练好的模型参数公开让人免费下载自用。好处是生态扩散快，代价是别人可以不付钱就用上你的能力。</dd>
+      <dt>智能体（Agent）</dt><dd>不只回答问题，还能自己拆解任务、一步步执行完的人工智能程序，相当于从"顾问"升级成"员工"。</dd>
+    </dl>
+  </section>
+
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.sse.com.cn/lawandrules/sselawsrules2025/stocks/review/firstepisode/c/c_20260617_10822578.shtml">上交所《发行上市审核规则适用指引第 10 号——人工智能大模型企业适用科创板第五套上市标准》</a> <em>2026-06-17</em> — 共十五条，界定适用主营业务范围，要求申报时至少一个大模型产品已上线发布并实现规模化应用、且有明确商业化安排。</li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://cn-rules.hkex.com.hk/%E8%A6%8F%E5%89%87%E6%89%8B%E5%86%8A/1349">港交所主板上市规则第 13.49 条</a> <em>规则文本</em> — 第 13.49(6) 条要求中期业绩公告于半年期末后两个月内刊发，即本例最迟 2026-08-31；本报告 13 周事件日历的法定锚点。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://pdf.dfcfw.com/pdf/H2_AN202603311820917317_1.pdf">截至 2025 年 12 月 31 日止年度的年度业绩公告</a> <em>2026-03-31</em> — 经审计年报：收入 7.243 亿元、毛利率 41.0%、净亏损 47.18 亿元、研发 31.80 亿元、年末现金 22.59 亿元及分部收入构成。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://pdf.dfcfw.com/pdf/H2_AN202604191821322214_1.pdf">2025 年年度报告</a> <em>2026-04-19</em> — 综合现金流量表：经营活动所用现金净额 2025 年 −22.46 亿元 / 2024 年 −22.45 亿元，融资活动所得现金净额 26.14 亿元 / 33.12 亿元，购置物业设备与无形资产现金支付 0.23 亿元。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://pdf.dfcfw.com/pdf/H2_AN202607091826830180_1.pdf">根据一般授权配售新 H 股</a> <em>2026-07-09</em> — 配售价 1588.00 港元、募资净额 313.75 亿港元、IPO 款项至 2026-06-30 已动用逾 93%、一般授权上限 89,168,618 股、公司 60 日禁售承诺。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://pdf.dfcfw.com/pdf/H2_AN202607131826932778_1.pdf">完成根据一般授权配售新 H 股</a> <em>2026-07-13</em> — 确认配发 19,780,000 股新 H 股、承配人不少于 6 名且为独立第三方；该公告称占"扩大后已发行 H 股总数"4.25%，但按股本计 4.25% 对应扩大后总股本（占 H 股约 8.2%），本报告采用算术正确的口径。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://pdf.dfcfw.com/pdf/H2_AN202608041827621565_1.pdf">截至 2026 年 7 月 31 日止月份之证券变动月报表</a> <em>2026-08-04</em> — 一手股本口径：H 股 241,094,605 股、未上市股份 224,528,485 股、总股本 465,623,090 股。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://pdf.dfcfw.com/pdf/H2_AN202606011823136793_1.pdf">建议 A 股发行并在科创板上市及变更英文名称</a> <em>2026-06-01</em> — A 股发行占发行后总股本 2%–8%（909.88 万–3876.9 万股）、英文名改为 Z.AI Co., Ltd.。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://pdf.dfcfw.com/pdf/H2_AN202607071826766880_1.pdf">澄清公告</a> <em>2026-07-07</em> — 否认"撤回 A 股辅导备案"报道，确认发行方案已获 6 月 22 日股东会批准、辅导工作已完成。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://pdf.dfcfw.com/pdf/H2_AN202606151823562330_1.pdf">自愿公告：推出 GLM-5.2</a> <em>2026-06-15</em> — 1M 长上下文、遵循 MIT 协议开源。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://pdf.dfcfw.com/pdf/H2_AN202604141821199847_1.pdf">须予披露交易：收购目标公司 100% 股权</a> <em>2026-04-14</em> — 总代价不超过 3.6052 亿元，不动用 IPO 募集款。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/hkstock/ggscyd/2026-08-14/doc-ininhhrn4176747.shtml">智谱正式发布 GLM-5.3 编程能力稳居开源榜首</a> <em>2026-08-14</em> — 基准日当天的模型发布，编程能力较 GLM-5.2 提升约 50%。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.caixin.com/2026-08-13/102473888.html">DeepSeek-V4-Pro 正式版上线 调用价格大幅上涨</a> <em>2026-08-13</em> — 原文载"8 月 13 日晚"发布并大幅涨价、改行峰谷定价；新价 8 月 17 日生效一事不在该文，另见其调价公告。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.tmtpost.com/8076787.html">Kimi K3 有多火，月之暗面的算力和资本就有多急</a> <em>2026-07-23</em> — 原文载 Kimi K3 于 7 月 16 日晚上线；另有来源记为 7 月 17 日凌晨。含月之暗面融资与上市推进情况。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/hkstock/hkgg/2026-02-16/doc-inhmyquq0271528.shtml">中金：给予智谱跑赢行业评级 目标价 688 港元</a> <em>2026-02-16</em> — 卖方预期区间的下端；本报告不采用目标价，仅用于说明分歧。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260713A02UG900">智谱唐杰发内部信：开启"摸高计划"，聚焦 AGI 而非短期商业变现</a> <em>2026-07-13</em> — 两年战略投入计划的内容与表述。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.stcn.com/article/detail/4005372.html">智谱今日迎来首次限售股解禁</a> <em>2026-07-08</em> — 原文载 7 月 8 日 11 家基石投资者约 2568.16 万股解除限售、按 7 月 7 日收盘价计解禁市值超 400 亿港元。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cnr.cn/jingji/cjgs/20260707/t20260707_527696355.shtml">智谱：解禁窗口临近之际获近七成基石投资者表态长期持有</a> <em>2026-07-07</em> — 表态机构合计持股占本次解禁基石股数近七成（原文点名 4 家，"11 家"之说见证券时报那条）。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/hkstock/marketalerts/2026-06-08/doc-iniasfps8831280.shtml">智谱今日起正式加入恒生科技指数且同步进入港股通</a> <em>2026-06-08</em> — 指数纳入与港股通开通时点。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.hstong.com/news/detail/26052220452715571">智谱获纳入恒生综合指数 有望成为港股通标的</a> <em>2026-05-22</em> — 恒生综合指数季检结果与生效安排。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/hkstock/hkzmt/2026-06-17/doc-inictnum6993389.shtml">证监会主席表态之际，智谱 A 股上市辅导完成</a> <em>2026-06-17</em> — 证监会官网披露辅导状态变更为"辅导验收"、辅导机构国泰海通证券；吴清在陆家嘴论坛表示支持符合条件的港股上市公司在 A 股上市。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.21jingji.com/article/20260622/herald/dded2f6efc378a87d16bed2cba40da79.html">智谱科创板 IPO 拟募资 150 亿</a> <em>2026-06-22</em> — 科创板募资规模与投向拆分的媒体交叉印证（该拆分亦见于 6 月 1 日公告的募投项目表）。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/jjxw/2026-03-31/doc-inhswttw2054466.shtml">智谱 2025 年营收 7.24 亿元</a> <em>2026-03-31</em> — 年度业绩的媒体交叉印证。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.eastmoney.com/a/202512193597245050.html">智谱正式披露招股书：2024 年营收 3.12 亿元、净亏损 29.58 亿元、毛利率 56.3%</a> <em>2025-12-19</em> — 2023 / 2024 年历史财务数据来源（招股书转述）。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.caixin.com/m/2026-01-08/102401574.html">智谱 AI 港股上市首日高开 3.27%</a> <em>2026-01-08</em> — 上市首日交易情况与发行价确认。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.guancha.cn/economy/2025_12_30_802200.shtml">大模型第一股智谱今起招股，IPO 市值预计超 500 亿港元</a> <em>2025-12-30</em> — 发行规模与招股安排。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/tech/roll/2026-07-20/doc-iniimqsn4963858.shtml">智谱市值跌破 5000 亿港元，一个月从万亿巅峰跌落</a> <em>2026-07-20</em> — 7 月回撤过程的媒体记录。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.eastmoney.com/a/202608133840579821.html">南向资金追踪：净买入超 36 亿港元，减持智谱</a> <em>2026-08-13</em> — 基准日前一交易日的南向资金流向。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://stock.stockstar.com/RB2026072900002495.shtml">智谱：7 月 28 日南向资金增持 19.1 万股</a> <em>2026-07-29</em> — 南向持股 2283.83 万股的口径来源。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/tech/digi/2026-07-31/doc-iniksait1404603.shtml">智谱 GLM Coding Plan 订阅回归：透明积分制，每月 118 元起</a> <em>2026-07-31</em> — 编程套餐定价方式调整与限时折扣。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/hkstock/hkgg/2026-04-21/doc-inhvfyta6183706.shtml">瑞银：首予智谱"买入"评级 目标价 1160 港元</a> <em>2026-04-21</em> — 卖方预期（本报告不采用目标价，仅用于说明分歧）。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.10jqka.com.cn/20260612/c677412560.shtml">招银国际：首予智谱"买入"评级 目标价 1503.9 港元</a> <em>2026-06-12</em> — 卖方预期（同上）。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://stock.finance.sina.com.cn/hkstock/quotes/02513.html">新浪财经 02513 港股行情</a> <em>2026-08-15 拉取</em> — 基准日收盘价、成交量额、上市以来高低点的独立核对源（与东方财富接口逐项一致）。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.tmtpost.com/8039646.html">万亿智谱，建立在 2.67% 流通盘上的资本幻觉</a> <em>2026-06-25</em> — 早期自由流通盘仅 1173.79 万股（占总股本 2.67%）及 2027-01-08 约四成解禁的分析。</li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://36kr.com/p/3898662052693894">独家：智谱 ARR 达到 10 亿美元，半年增长 15 倍</a> <em>2026-07-17</em> — 当前估值叙事的核心数字来源，原文载 2026 年 1 月至 7 月 ARR 增长 15 倍、并注明"截至发稿前智谱未回复"；<b>未经公司公告或财报证实</b>，本报告全程按未证实处理、不用于支撑任何硬结论。</li>
+
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-08-15 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
