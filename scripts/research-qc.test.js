@@ -200,6 +200,49 @@ test("券商目标价是别人的观点 → 只列「需判断」，不挡上线
   expect(r.review.join()).toContain("目标价");
 });
 
+test("大宗商品价不是股价：同句有价格主语 → 不报（2026-08-16 导入存量时标定）", () => {
+  for (const s of [
+    "国庆后飞天散瓶批价跌破 1369 元则减仓",
+    "现货金站稳 4300 美元上方",
+    "若面板价跌破 30 美元则重估",
+    // 主语与触发词隔着好几个从句——山东黄金那篇的真实写法
+    "2026-08-06 现货金收 4308 美元、单日 +4.20% 突破 4300 美元",
+  ]) {
+    // 变异验证：删掉 COMMODITY_SUBJ_RE 这一判据，四条全变红
+    expect(checkFormat({ reportHtml: stockHtml(s), type: "股票" }).blocking).toEqual([]);
+  }
+});
+
+test("时间状语落在动词后面的行情陈述不算红线（当前 / 现价）", () => {
+  const r = checkFormat({ reportHtml: stockHtml("股价从年内高点 65.55 元回落至当前 30.48 元"), type: "股票" });
+  expect(r.blocking).toEqual([]);
+});
+
+test("否定式隐私免责不是泄露（每篇都写，误报会让清单失信）", () => {
+  const r = checkFormat({ reportHtml: stockHtml("本报告不含任何用户持仓 / 自选 / 账户信息"), type: "股票" });
+  expect(r.blocking).toEqual([]);
+});
+
+test("否定守卫不越界：真的写了个人持仓照样报", () => {
+  const r = checkFormat({ reportHtml: stockHtml("这只票没有大涨，按我的持仓成本价计算仍浮亏"), type: "股票" });
+  expect(r.blocking.join()).toContain("私人信息");
+});
+
+test("大宗商品价不是股价：带每单位后缀 → 不报", () => {
+  const r = checkFormat({ reportHtml: stockHtml("若碳酸锂跌破 6.5 万元/吨则成本端改善"), type: "股票" });
+  expect(r.blocking).toEqual([]);
+});
+
+test("「元/股」不算商品单位——它就是股价，必须照报", () => {
+  const r = checkFormat({ reportHtml: stockHtml("若股价回落至 60 元/股以下则回购恢复"), type: "股票" });
+  expect(r.blocking.join()).toContain("60 元");
+});
+
+test("商品语境判据不越界：普通触发价位照样报", () => {
+  const r = checkFormat({ reportHtml: stockHtml("金价上行背景下，若股价跌破 14 元转防御"), type: "股票" });
+  expect(r.blocking.join()).toContain("跌破 14 元");
+});
+
 test("客观披露价不带触发语境时不报（基准日收盘是必含项）", () => {
   expect(checkFormat({ reportHtml: stockHtml("基准日收盘 212.75 元"), type: "股票" }).blocking)
     .toEqual([]);

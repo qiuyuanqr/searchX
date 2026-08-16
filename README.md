@@ -24,7 +24,8 @@ searchX/
 ├── services/                ← 半自动流水线后端
 │   ├── intake-worker/      Cloudflare Worker：站内提交 → 建 GitHub pending Issue（详见其 README）
 │   ├── runner/             常驻机脚本：取 approved Issue → 跑 /research → 上线 → 发信（详见其 README）
-│   └── check-runner/       常驻机脚本：取核查任务 → 跑 /factcheck → 笔记落本机 Obsidian（详见其 README）
+│   ├── check-runner/       常驻机脚本：取核查任务 → 跑 /factcheck → 笔记落本机 Obsidian（详见其 README）
+│   └── stocks-import/      每日把 Stocks 项目的个股深度调研搬进 research/ 并上线（过滤系统参数，详见其 README）
 ├── scripts/                 ← 生产脚本（各带单测，计入 bun test）
 │   ├── report-to-obsidian.js   把 report.html 全文转成 Obsidian 笔记（中文文件名、带双链）
 │   ├── backfill-obsidian.js    一次性全量回填（带演练与备份；日常刷新用上面那个）
@@ -106,6 +107,7 @@ bun test            # 全部单测（web 构建 + 三个服务，离线可测）
 bun run build       # 本地构建站点到 web/dist（= CI 所跑）
 bun run serve       # 构建并本地预览 http://localhost:8080
 bun run runner      # 跑一轮 runner（需配 .env，见 services/runner/README.md）
+bun run stocks-import --dry-run   # 看 Stocks 那边有没有新报告可搬（不落盘）
 ```
 
 ## 已知局限（重要）

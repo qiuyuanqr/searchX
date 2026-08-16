@@ -58,6 +58,11 @@ test("normalizeUrl：协议/结尾斜杠/#锚点/大小写/www 前缀都不影�
   expect(keys.size).toBe(1);
 });
 
+test("normalizeUrl：HTML 转义的 &amp; 与原样 & 是同一个 URL", () => {
+  // report.html 里是 &amp;、sources.md 里是 &——不解转义就会把每条多参数来源报成缺失
+  expect(normalizeUrl("https://a.example/p?x=1&amp;y=2")).toBe(normalizeUrl("https://a.example/p?x=1&y=2"));
+});
+
 test("normalizeUrl：查询参数保留（不同参数是不同页面）", () => {
   expect(normalizeUrl("https://a.example/p?id=1")).not.toBe(normalizeUrl("https://a.example/p?id=2"));
 });

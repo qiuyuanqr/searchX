@@ -23,6 +23,7 @@
 | research runner | `services/runner/` | Mac mini launchd 每 300s（`com.searchx.runner`），或 `bun run runner:now` | 取 approved Issue → 查重 → spawn `claude -p "/research …"` → 贴 done → 探活 → 发信；附带探活报警、新链接自检 |
 | check-runner | `services/check-runner/` | Mac mini launchd 每 300s（`com.searchx.check-runner`） | 轮询 `/check/pending` → 下载附图 → spawn `claude -p "/factcheck …"` → 读结论/整篇信号文件 → markDone 回传 |
 | worker 自动部署 | `services/intake-worker/deploy-cron.sh` + plist | Mac mini launchd 每 300s | 检测 HEAD 里 worker 源码变化 → `wrangler deploy`（worker 不随 CI 部署） |
+| Stocks 报告同步 | `services/stocks-import/` | Mac mini launchd 每天 09:30（`com.searchx.stocks-import`） | 只读查 Stocks 活库 → 过滤系统参数（取数函数名 / SQL / 主机名 / 运行时故障叙述）→ 产出三件套 + INDEX 行 → 逐篇机器质检（不过就写 `.parked` 搁置）→ 构建自检 → 精准提交推送 |
 | CI 部署 | `.github/workflows/deploy.yml` | push 动到 `research/**`、`web/**`、`package.json`、`bun.lock` | `bun test` → `bun run build` → Pages 部署 → 冒烟探测 |
 | 部署自动补跑 | `.github/workflows/deploy-retry.yml` | Deploy site 失败时 | 自动 rerun --failed ≤2 次；有更晚的部署（成功**或进行中**）时放弃（防旧产物回滚）；失败提交已被后续提交取代时改在 HEAD 上发起新部署（防「修复提交不在 deploy paths 里→站点静默滞留」） |
 | 海外探活 | `.github/workflows/probe.yml` + `.github/scripts/site-probe.sh` | 每半小时 cron | 首页可达 + 注入配置一致 + Worker 可达；挂了 GitHub 发失败邮件 |

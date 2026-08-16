@@ -34,7 +34,10 @@ export function extractUrls(text) {
 // 缺失里有 4 条纯属这种形式差异。
 export function normalizeUrl(u) {
   try {
-    const x = new URL(String(u));
+    // report.html 里的 href 是转义过的（`&` 写成 `&amp;`），sources.md 里是原样的 `&`。
+    // 不解这一层，任何带两个以上查询参数的来源都会被报成「报告引了但清单缺」——
+    // 2026-08-16 导入 Stocks 存量时，2 条缺失全部是这个假象（茅台、胜宏各一条）。
+    const x = new URL(String(u).replace(/&amp;/g, "&"));
     x.protocol = "https:";
     x.hash = "";
     const path = x.pathname.replace(/\/+$/, "");

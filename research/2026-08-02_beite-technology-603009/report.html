@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>北特科技（603009.SH） · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>北特科技（603009.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-08-02（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>关联板块</b> 机器人</span>
+      <span><b>来源</b> 20 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    北特科技（603009）主要做的是汽车转向器零部件与减震器零部件的研发、生产与销售。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——股价按「机器人丝杠放量」定价，财报还只有汽车零部件的样子。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：股价按「机器人丝杠放量」定价，财报还只有汽车零部件的样子。支撑在于8月19-23日机器人大会为最强催化；Q1净利同比+17.86%快于营收+8.04%；昆山泰国丝杠产能大额在建。主要风险是PE109.5倍达行业中位3.84倍；丝杠业务库内零营收佐证；7/31涨停开板9次封单仅0.1亿。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>8月19-23日机器人大会为最强催化</li>
+      <li>Q1净利同比+17.86%快于营收+8.04%</li>
+      <li>昆山泰国丝杠产能大额在建</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据时点：库内行情数据时点 = <strong>2026-07-31 收盘</strong>；估值库内估值交易日 = <strong>20260731</strong>；财务库内财务最新期 = <strong>2026Q1（20260331，公告日 20260429）</strong>。报告生成日：2026-08-02。 本报告全部库内数字来自库内取数，库外信息一律标注来源与日期。</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：股价按「机器人丝杠放量」定价，财报还只有汽车零部件的样子。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>人形机器人产业催化在未来 5 周高度密集</strong>——库内事件日历命中 3 条均由「人形机器人」概念（886069.TI）匹配，含 9 月 1 日两条特斯拉 Optimus 供应链节点（重要性 8 / 7）；库外 2026 世界机器人大会已定档 8 月 19–23 日北京（置信度：高，两源交叉）。</li>
+<li><strong>主业在温和改善</strong>——2026Q1 营收 5.86 亿元、同比 +8.04%，归母净利 0.27 亿元、同比 +17.86%，净利增速快于营收增速，毛利率 18.84%、净利率 4.73%（置信度：高，库内财务）。</li>
+<li><strong>丝杠产能是实打实在砸钱建的</strong>——昆山基地（拟投 18.5 亿元）与泰国基地（一期约 3.5 亿元，定增募资 3 亿元已于 2026 年 1 月完成）均在推进（置信度：中，库外多源；库内无产能数据可佐证）。</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>估值已在高位</strong>——PE(TTM) 109.49 倍，行业（汽车配件）PE 中位数 28.53 倍，在 267 只同行业在市票中由便宜到贵排第 203 位；PB 6.586 倍，股息率 0.2124%（置信度：高，库内估值）。溢价约为行业中位的 3.8 倍，意味着<strong>丝杠预期已被计价</strong>。</li>
+<li><strong>丝杠迄今未见「已定点 / 已放量」的硬证据</strong>——库内财务无分业务拆分、无相关营收；库外公开口径长期停留在「样件研发 / 小批量 / 客户存在不确定性、对业绩不形成影响」（置信度：中，多源但均为转述）。同赛道对照：贝斯特披露 2026 上半年人形机器人用行星滚柱丝杠样品营收仅 22.30 万元（来源：新浪财经 2026-07-05）——<strong>整个赛道当下的真实收入体量极小</strong>。</li>
+<li><strong>7 月 31 日那个涨停封得很弱</strong>——库内涨停记录记录：首次涨停 13:04:59、最后封板 14:19:29、<strong>全天开板 9 次</strong>、封单金额仅 0.1 亿元、1 连板（置信度：高，库内硬数据）。开板 9 次配 0.1 亿封单，是典型的<strong>分歧巨大、承接不牢</strong>形态。</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ul>
+<li>① <strong>2026 年中报（法定截止 8 月 31 日）里有没有丝杠/机器人相关的营收或订单披露</strong> ——这是把「概念」转成「业务」的唯一硬凭证，核验时点：W1–W5（8/3–9/6）。</li>
+<li>② <strong>8 月 19–23 日世界机器人大会期间及之后 5 个交易日，成交额与封板质量是否较 7 月 31 日（4.5 亿元成交、9 次开板）改善</strong>——核验时点：W3–W4。</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong>：库内财务 <strong>只有 2026Q1 一期数据</strong>（见 M 节缺口 1），我看不到 2025 全年与 2026Q2 的真实趋势；如果中报里丝杠业务突然出现实质营收或客户定点公告，本报告「预期已计价、兑现未验证」的核心矛盾会立刻失效，方向应上修。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>名称 / 代码</strong>：北特科技 · 603009（库内基础资料 / 库内公司档案一致）</li>
+<li><strong>上市状态</strong>：上市状态 'L'（正常在市，非退市）</li>
+<li><strong>行业</strong>：汽车配件（库内基础资料口径）。注：库内涨停记录返回的行业字段为「汽车零部件」，两者是不同数据源的行业口径，本报告的行业对比一律采用库内估值的「汽车配件」口径。</li>
+<li><strong>上市时间</strong>：2014-07-18（上市日期），至今约 12 年。</li>
+<li><strong>市场板块</strong>：主板（上交所）。</li>
+<li><strong>员工人数</strong>：1,254 人；注册资本 34,638.98 万元。</li>
+<li><strong>主营（库内原文）</strong>：汽车转向器零部件与减震器零部件的研发、生产与销售。</li>
+<li><strong>公司简介（库内原文摘要）</strong>：成立于 2002 年，从事汽车转向器齿条、减震器活塞杆等高精度保安杆件研发生产；控股子公司上海北特汽车零部件，全资子公司长春北特、天津北特；总部上海嘉定；拥有发明专利 1 项、实用新型专利 23 项；具备 5 万余吨转向器、减震器等零部件产能；产品配套一汽大众、上汽大众、比亚迪、吉利、长城等整车厂。</li>
+<li><strong>经营范围（库内原文摘要）</strong>：金属制品加工制造、进出口、新材料技术开发、<strong>汽车空调和压缩机、汽车空调系统及配件</strong>、汽车零部件研发销售；分支机构经营汽车转向系统零部件、<strong>电机轴、输入轴、输出轴、高精度汽车转向零部件</strong>的生产。</li>
+</ul>
+<div class="callout">⚠️ 注意一处<strong>库内信息滞后</strong>（置信度：高）：库内公司档案的公司简介字段仍写「注册资本 10667 万元」「拥有一家控股子公司和两家全资子公司」，与同一返回值里的注册资本（万元） 34638.98 自相矛盾——说明简介文本是上市初期版本、未随年报更新。<strong>本报告只采信结构化字段（注册资本 34,638.98 万元、员工 1,254 人），简介文本仅作定性参考。</strong> 库内简介里也<strong>完全没有提到丝杠 / 人形机器人</strong>，这本身就是「库内无法佐证机器人业务」的直接证据。</div>
+<p><strong>当前行情（唯一行情事实源库内行情）</strong></p>
+<ul>
+<li>价格：<strong>39.09 元</strong>｜当日涨跌幅：<strong>+9.99%</strong>（涨停）｜成交额：<strong>4.5 亿元</strong></li>
+<li>数据时点：<strong>2026-07-31 收盘</strong>｜取数通道：日 K</li>
+<li>换手率 3.4021%（库内估值，20260731）</li>
+</ul>
+<p><strong>估值（库内估值，交易日 = 20260731）</strong></p>
+<ul>
+<li>PE(TTM) <strong>109.4908</strong> 倍｜PB <strong>6.586</strong> 倍｜股息率 <strong>0.2124%</strong></li>
+<li>总市值 <strong>135.4 亿元</strong></li>
+<li>同行业（汽车配件）在市票 <strong>267</strong> 只；行业 PE 中位数 <strong>28.5345</strong> 倍；本票 PE 在正 PE 同行中由低到高排 <strong>第 203 位</strong></li>
+</ul>
+<p><strong>一句话定位</strong>：一家上市 12 年、市值 135 亿的汽车底盘/转向零部件厂，被市场按人形机器人核心部件（行星滚柱丝杠）标的定价（置信度：高）。</p>
+<h2>C. 财务健康</h2>
+<div class="callout">⚠️ <strong>信息缺口（严重，影响本节全部结论）</strong>：库中库内财务表对本票<strong>只有 2026Q1（20260331）一期</strong>。全表期次分布显示：20260331 共 5,794 家、20260630 仅 81 家——即中报刚开始入库，本票尚未入库。<strong>本节无法做多期趋势判断</strong>，只能做单期截面 + 同比。补法：中报入库后（预计 8 月下旬–9 月初，见 I 节 W4/W5）重跑本调研。</div>
+<p><strong>2026Q1 单期（公告日 2026-04-29）</strong></p>
+<ul>
+<li>营业收入：<strong>5.86 亿元</strong>（营收（亿元）），同比 <strong>+8.04%</strong></li>
+<li>归母净利润：<strong>0.27 亿元</strong>（归母净利（亿元）），同比 <strong>+17.86%</strong></li>
+<li>EPS：<strong>0.0791 元</strong></li>
+<li>ROE（单季）：<strong>1.4307%</strong></li>
+<li>毛利率：<strong>18.838%</strong></li>
+<li>净利率：<strong>4.7333%</strong></li>
+<li>资产负债率：<strong>46.5553%</strong></li>
+</ul>
+<p><strong>读法（每条标置信度）</strong></p>
+<ol>
+<li><strong>利润增速快于收入增速（17.86% vs 8.04%），是本期最正面的一项</strong>（置信度：高）。净利率 4.73% 对应约 2.13 个百分点的利润增速溢出，说明本期存在费用率下降或结构改善——但<strong>单期无法区分是经营性改善还是一次性因素</strong>（如政府补助、汇兑），因为库内无扣非数据、无现金流数据。</li>
+<li><strong>毛利率 18.84% 属于汽车零部件行业的中低水平</strong>（置信度：中——横向比较依赖库内同业对比，本次未返回，见 D 节缺口）。这与「保安杆件 + 空调压缩机」这类偏加工制造的产品结构相符。</li>
+<li><strong>资产负债率 46.56% 处于健康区间，尚有加杠杆空间</strong>（置信度：高）。考虑到昆山 18.5 亿元 + 泰国约 3.5 亿元的在建投入（库外信息），这个负债率意味着<strong>后续大概率还有融资需求</strong>（置信度：中）——2026 年 1 月刚完成的 3 亿元定增即是佐证。</li>
+<li><strong>单季 ROE 仅 1.43%，年化约 5.7%（本报告由单季数简单年化推导，非库内取数）</strong>，与 PB 6.586 倍并列看，<strong>估值与净资产回报能力之间存在明显张力</strong>（置信度：中）。</li>
+</ol>
+<p><strong>估值口径的贵贱判断（仅估值口径，不等于好坏结论）</strong>： 按库内估值的 PE(TTM) 109.49 与总市值 135.4 亿元<strong>反推</strong>，隐含 TTM 归母净利约 <strong>1.24 亿元</strong>（本数由库内两个字段推导得出，非直接取数，置信度：中）。这与 2026Q1 单季 0.27 亿元 × 4 ≈ 1.08 亿元的量级基本自洽。<strong>结论：当前股价对应的盈利基数是「现有汽车零部件主业」的盈利，而 109 倍 PE 里的绝大部分溢价，买的是尚未在财报中出现的丝杠业务</strong>（置信度：高）。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p><strong>本节因此缺少 3 只具体对标票的市值/PE/PB/营收/净利/ROE 横向数字。</strong> 影响：无法逐票对比，只能用库内估值提供的行业分位做相对定位。</p>
+<p><strong>能确定的相对位置（全部来自库内估值，置信度：高）</strong></p>
+<ul>
+<li>所属行业「汽车配件」在市票共 <strong>267</strong> 只</li>
+<li>行业 PE(TTM) 中位数 <strong>28.5345</strong> 倍</li>
+<li>本票 PE(TTM) <strong>109.4908</strong> 倍 ≈ 行业中位的 <strong>3.84 倍</strong></li>
+<li>在正 PE（即盈利）的同行中，本票由便宜到贵排 <strong>第 203 位</strong>——<strong>有 202 家盈利同行比它便宜</strong></li>
+<li>本票 PB <strong>6.586</strong> 倍、股息率 <strong>0.2124%</strong>、总市值 <strong>135.4 亿元</strong></li>
+</ul>
+<p><strong>判断</strong></p>
+<ol>
+<li><strong>在汽车配件这个 267 只票的大行业里，北特科技属于「小市值 + 高估值」组合</strong>（置信度：高）。135 亿市值在汽车零部件行业里算中小盘，但 PE 排到第 203 位，说明市场给它的<strong>不是汽车零部件的估值，而是机器人零部件的估值</strong>。</li>
+<li><strong>这个溢价的合理性完全取决于丝杠业务能否兑现</strong>（置信度：高）。如果按行业中位 28.53 倍 PE 给现有主业定价，隐含市值约 35 亿元（由 1.24 亿元隐含 TTM 净利 × 28.53 推导，置信度：中）——<strong>当前 135.4 亿市值中约四分之三是对未落地业务的定价</strong>。这个推导有两个弱点：一是隐含净利是我从 PE 和市值反推的、二是行业中位 PE 未必适用于成长期公司，因此只作量级参考，不作精确结论。</li>
+<li><strong>丝杠赛道的竞争者名单里，北特并非公认第一梯队</strong>（置信度：低，单源未交叉验证）。库外信息显示，行星滚柱丝杠高端市场长期由 SKF（瑞典）、Ewellix（瑞士）、Schaeffler（德国）合计占七成以上；国内布局者中，恒立液压子公司丝杠产线 2024 年即投产、五洲新春产品线最全（来源：东方财富财富号「SPX 投研」2026-07-04；21 经济网 2025-03-04）。这些说法来自自媒体与行业转述，<strong>未经公司公告交叉验证，置信度低</strong>。</li>
+</ol>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式（基于库内公司档案库内字段，置信度：高）</strong>：典型的<strong>汽车 Tier-1/Tier-2 零部件制造</strong>——按整车厂/系统厂的图纸与标准，批量生产转向器齿条、减震器活塞杆等高精度金属杆件，以及空调压缩机与铝合金轻量化件。收入依赖整车厂订单，议价能力在下游。</p>
+<p><strong>护城河分级（诚实分级）</strong></p>
+<ul>
+<li><strong>结构性护城河：未见</strong>（置信度：中）。库内记录的知识产权是<strong>发明专利 1 项、实用新型专利 23 项</strong>——对一家做了 24 年精密件的公司来说，这个专利结构偏薄，且实用新型的排他性有限。无牌照、无网络效应；5 万余吨的产能规模在 267 只同行业票里也谈不上规模垄断。</li>
+<li><strong>阶段性优势：有，且是这家公司的真实底子</strong>（置信度：中）。① <strong>客户绑定</strong>：库内简介列出的配套客户覆盖一汽大众、上汽大众、比亚迪、吉利、长城等主流整车厂——汽车零部件的定点周期长、切换成本高，这层关系是真实壁垒，只是<strong>壁垒属于现有杆件业务，不自动传导到丝杠</strong>。② <strong>工艺同源</strong>：经营范围明确写有「电机轴、输入轴、输出轴、高精度汽车转向零部件」——<strong>转向齿条与行星滚柱丝杠在磨削、热处理、螺纹加工上确实同源</strong>，这是它切丝杠赛道的技术逻辑（置信度：中，逻辑推理 + 库外行业报告佐证）。</li>
+<li><strong>丝杠业务的护城河：目前无法评估</strong>（置信度：低）。既无库内营收佐证，也无经过公告确认的客户定点，护城河讨论无从落地。</li>
+</ul>
+<p><strong>关键判断</strong>：<strong>这家公司现在的护城河是「汽车杆件的客户关系 + 精密加工工艺」，不是「机器人丝杠的技术领先」</strong>（置信度：中）。市场买的是后者，账上有的是前者——这条错位是全篇的核心矛盾。</p>
+<h2>F. 政策与监管</h2>
+<div class="callout">本节全部为库外联网信息（库内无政策数据），每条标来源与日期。</div>
+<p><strong>利好方向 · 人形机器人产业政策（传导：政策 → 行业需求 → 丝杠订单 → 公司营收）</strong></p>
+<ol>
+<li><strong>工信部与国资委联合启动 2026 年度人形机器人与具身智能实景实训专项行动</strong>，推动产品在真实生产生活环境常态化部署（来源：中国教育和科研计算机网转两部门消息，2026-06-09；界面新闻，日期见原文）。传导方向：<strong>利好</strong>，但属需求侧引导，<strong>对单一零部件厂的短期营收无直接量化传导</strong>（置信度：中，两源）。</li>
+<li><strong>《人形机器人与具身智能标准体系（2026 版）》发布</strong>，为我国首个覆盖全产业链、全生命周期的标准顶层设计（来源：新华网 2026-03-02；国家科技传播中心 ncsti.gov.cn 2026-03-02）。传导方向：<strong>中性偏利好</strong>——标准统一利于零部件规模化，但也意味着<strong>准入门槛与检验检测要求提高</strong>（置信度：高，两源含官媒）。</li>
+<li><strong>具身智能被 2026 年全国两会政府工作报告纳入国家重点培育未来产业</strong>，与量子科技、6G、生物制造并列（来源：新浪财经 2026-01-30 及两会报道转述）。传导方向：<strong>利好（估值层面）</strong>，主要作用于板块风险偏好而非公司报表（置信度：中，单源转述为主）。</li>
+</ol>
+<p><strong>中性/利空方向 · 汽车主业与海外产能</strong></p>
+<ol>
+<li><strong>2026 年国内汽车内需承压</strong>：受新能源购置税征收 5% 影响，机构预测 2026 年总内需销量约 2,200 万辆、同比 -3.5%，外需 641 万辆、同比 +12.0%（来源：东吴证券《汽车零部件 2026 年策略报告》PDF，2025-12-26）。传导方向：<strong>对公司底盘/压缩机主业偏利空，对出口/海外配套偏利好</strong>（置信度：中，单一券商测算，属预测非事实）。</li>
+<li><strong>泰国基地面临的关税与政策不确定性</strong>：美国对汽车及零部件适用 232 条款税率，叠加 301 与其他加征后综合税率可达 70%，且美方对「经东南亚绕道」的原产地认定趋严；泰国政府补贴政策亦有变动史（2026 年 2 月调整新能源车补贴）（来源：中伦律师事务所研究文章；催全球外贸资讯 2026 年泰国市场风险文；均为分析性文章）。传导方向：<strong>对泰国丝杠基地的出口经济性构成不确定性</strong>（置信度：低——多为分析性内容，未见针对本公司的具体税则认定）。</li>
+</ol>
+<p><strong>结论</strong>：政策面对「人形机器人」这个主题是明确顺风的（置信度：高），但<strong>顺风吹的是行业叙事，不是这家公司的订单</strong>；而汽车主业所在的国内需求端，2026 年是逆风（置信度：中）。</p>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 8 个同花顺概念标签，<strong>逐个分级</strong>：</p>
+<ul>
+<li><strong>人形机器人（886069.TI）</strong>——<strong>仅概念标签，未见营收佐证</strong>。库内财务无分业务拆分、无相关营收；库内公司档案的主营与经营范围<strong>只字未提丝杠或机器人</strong>。库外公开口径亦停留在「配合客户样件研发 / 小批量」（来源：财联社投资者关系报道；公司投资者关系活动记录表 PDF）。⚠️ <strong>这是全篇最需要读者警惕的一条标签</strong>（置信度：高——「未见佐证」这个判断本身是硬的）。</li>
+<li><strong>特斯拉概念（885467.TI）</strong>——<strong>仅概念标签，未见营收佐证</strong>。库内主营与客户名单中<strong>没有特斯拉</strong>（简介列出的是一汽大众、上汽大众、比亚迪、吉利、长城等）。库外有报道称 Optimus V3 量产审核已定七家中国一级核心供应商（蓝思科技、三花智控、拓普集团、恒立液压等）——<strong>该名单中未见北特科技</strong>（来源：东方财富股吧转述、gudaobang.com 等，<strong>均为自媒体，单源未交叉验证，置信度：低</strong>；此条以「未证实」计，不作为负面结论的主要依据）。</li>
+<li><strong>新能源汽车（885431.TI）</strong>——<strong>真有业务</strong>（置信度：高）。库内简介明确列出比亚迪、吉利等新能源整车客户，底盘杆件与压缩机均为整车通用件。</li>
+<li><strong>比亚迪概念（885997.TI）</strong>——<strong>真有业务</strong>（置信度：高）。比亚迪在库内简介的配套客户名单中被逐字列出。</li>
+<li><strong>汽车热管理（885999.TI）</strong>——<strong>真有业务</strong>（置信度：中）。库内经营范围明确含「汽车空调和压缩机」「汽车空调系统及其配件」，属热管理链条；但<strong>库内无该业务的营收占比</strong>，无法判断权重。</li>
+<li><strong>2025 年报预增（886107.TI）</strong>——<strong>属事件型标签</strong>，指向 2025 年度业绩预增，非业务属性（置信度：高）。⚠️ 该标签所指的 2025 年报数据<strong>库内没有</strong>（见 C 节缺口），本报告不引用其数字。</li>
+<li><strong>沪股通（885520.TI）</strong>——交易属性标签，非业务（置信度：高）。含义：外资可经沪股通交易，边际上增加资金来源与波动来源。</li>
+<li><strong>融资融券（885338.TI）</strong>——交易属性标签，非业务（置信度：高）。含义：可融资加杠杆、可融券做空，<strong>在高估值票上会放大双向波动</strong>——与 H 节「涨停日开板 9 次」的高分歧形态互相呼应。</li>
+</ul>
+<p><strong>产业链位置</strong></p>
+<ul>
+<li><strong>现有主业（占绝大部分实际收入）</strong>：上游是<strong>特钢 / 铝锭 / 精密加工设备</strong>（钢价与铝价直接影响毛利），下游是<strong>整车厂与一级系统集成商</strong>（博世、采埃孚式的转向/减震系统厂）。<strong>议价能力在下游</strong>——整车厂年降是行业惯例，这解释了 18.84% 的毛利率水平（置信度：中）。</li>
+<li><strong>拟切入的丝杠业务</strong>：上游同为特钢与磨削/热处理设备（<strong>磨床精度是行业公认卡脖子环节</strong>），下游是<strong>人形机器人整机厂与线性执行器总成厂</strong>。⚠️ 关键结构：<strong>丝杠通常不直接卖给整机厂，而是卖给执行器总成厂</strong>（如 Optimus 的线性执行器供应商），意味着北特即使切入，也<strong>大概率处在二级供应位置，议价能力更弱、且被总成厂的定点决定生死</strong>（置信度：中，逻辑推理 + 库外行业报告）。</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<h3>新闻（库内新闻，近 60 日，limit=20）</h3>
+<div class="callout">⚠️ <strong>信息缺口</strong>：近 60 日库内<strong>仅返回 1 条</strong>新闻。对一只当日涨停、成交 4.5 亿元的票来说，这个覆盖度<strong>明显偏稀疏</strong>——意味着本节的消息面判断建立在极窄的样本上（置信度：低）。</div>
+<ul>
+<li><strong>2026-07-20 16:45:57 · eastmoney</strong>：「北特科技：798.08 万股向特定对象发行限售股 7 月 27 日上市流通」
+<ul>
+<li>库内标注：情感 <strong>-0.3</strong>（偏负面）、相关性 100.0、事件类别 other、严重度「噪音其他」。</li>
+<li><strong>是什么事</strong>：2025 年度以简易程序向特定对象发行的股份解禁上市流通。</li>
+<li><strong>对基本面有无实质影响</strong>：<strong>无直接基本面影响，但有筹码面影响</strong>（置信度：中）。库外补充：该次发行 7,980,845 股、发行价 <strong>37.59 元/股</strong>、11 名发行对象、募资约 3 亿元，2026-01-27 完成登记、锁定 6 个月（来源：中经互联 ipo123.com.cn；中国银河证券上市保荐书 PDF，2026-01-06；上海证券报 2026-07-21）。</li>
+<li><strong>一个可核验的参考锚点</strong>：定增发行价 37.59 元 vs 库内行情当前价 <strong>39.09 元（2026-07-31 收盘）</strong>，当前价高于发行价约 <strong>4.0%</strong>（本比值由库内价格与库外发行价计算，发行价属库外信息，置信度：中）。<strong>含义</strong>：解禁方目前处于小幅浮盈、非深度套牢状态，减持意愿的约束较弱——<strong>7 月 27 日解禁、7 月 31 日弱封涨停，两件事在时间上紧邻，值得盯</strong>。</li>
+</ul></li>
+</ul>
+<h3>涨停史（库内涨停记录，近 180 日）</h3>
+<p><strong>近 180 日仅 1 次涨停，即 2026-07-31</strong>（置信度：高）：</p>
+<ul>
+<li>涨跌幅 <strong>+9.99%</strong>｜连板数 <strong>1</strong>（首板，非连板）</li>
+<li>首次封板 <strong>13:04:59</strong>｜最后封板 <strong>14:19:29</strong></li>
+<li><strong>全天开板 9 次</strong></li>
+<li>封单金额 <strong>0.1 亿元</strong></li>
+<li>涨停统计 = <strong>1/1</strong>（近期 1 次涨停、1 次成功）</li>
+<li>行业（涨停板口径）：汽车零部件</li>
+</ul>
+<p><strong>读法（置信度：高，全部为库内硬数据）</strong></p>
+<ol>
+<li><strong>这是一个「下午才封、反复开、封单极薄」的弱势涨停</strong>。首封时间在 13:04（下午开盘后），到 14:19 才最后一次封上，中间开板 9 次；封单仅 0.1 亿元，相对当日 4.5 亿元成交额，<strong>封单/成交额比约 2.2%</strong>——健康的强封通常远高于此。</li>
+<li><strong>含义：分歧极大、承接不牢</strong>。这种形态意味着<strong>有大量资金在涨停价附近出货，同时有资金在接</strong>——次日方向高度取决于隔夜消息与开盘竞价，<strong>不构成「趋势启动」的可靠证据</strong>（置信度：中）。</li>
+<li><strong>近 180 日仅此一次涨停</strong>，说明此前半年该票<strong>没有持续的情绪面炒作</strong>，7 月 31 日这次是<strong>孤立事件</strong>而非升势中的一环（置信度：高）。</li>
+<li>⚠️ <strong>本次涨停的直接触发原因，库内与库外均未查到</strong>（置信度：高——「查不到」本身是确定的）。库内新闻近 60 日无 7 月 31 日相关新闻；联网检索「北特科技 2026 年 7 月涨停消息」亦未返回具体催化。<strong>在没有找到基本面催化的前提下，把这个涨停当作「消息驱动」来解读是没有依据的</strong>——它更可能是板块联动或资金行为。这是本节最重要的一条「不知道」。</li>
+</ol>
+<h3>情绪面综合</h3>
+<ul>
+<li>库外可见的中性/负面参照：有报道记录该票在 2026 年内多个交易日出现主力资金净流出与单日下跌（如 7 月 6 日、7 月 17 日相关报道，来源：证券之星、新浪财经）——⚠️ <strong>这些报道中的涨跌幅与成交额均为发稿时点的旧快照，与库内行情的 2026-07-31 收盘值口径不同，本报告不引用其数字，仅记录「年内存在明显波动与资金流出的时段」这一定性事实</strong>（置信度：低，单源转述）。</li>
+</ul>
+<h2>I. 未来 13 周事件日历（2026-08-03 起）</h2>
+<div class="callout">来源标注：〔库〕= 库内事件日历返回；〔网〕= 联网信息（带来源日期）；〔规〕= 法定披露规则。</div>
+<ul>
+<li><strong>W1（2026-08-03 起）</strong>：中报披露窗口进行中（法定区间 7/1–8/31）· 财报 · 重要性高 · 影响：验证 C 节盈利趋势与丝杠营收有无〔规〕。<strong>本票具体预约披露日未查到——见 M 节缺口 5</strong>。本周无其他已知事件。</li>
+<li><strong>W2（2026-08-10 起）</strong>：<strong>8/12 荣耀 Robot Phone（机器人手机）正式发布</strong> · 公司事件 · 重要性 7 〔库〕· 影响：主打「具身智能」的新形态终端上市，可能带动 A 股机器人/AI 终端概念热度——<strong>对本票为情绪传导，无基本面关联</strong>（置信度：中）。</li>
+<li><strong>W3（2026-08-17 起）</strong>：<strong>8/19–8/23 2026 世界机器人大会（北京经开区北人亦创国际会展中心）</strong> · 行业 · 重要性高〔网：新浪财经 2026-07-07、21 财经 2026-07-07，两源交叉〕· 影响：主题「人机共生，产需共融」，参展企业 300 余家、首发新品 150 余件；<strong>是本 13 周内板块情绪的最大单点催化</strong>，也是核验 A 节信号②的窗口。</li>
+<li><strong>W4（2026-08-24 起）</strong>：中报披露高峰周（法定截止 8/31 落在下周一）· 财报 · 重要性高〔规〕· 影响：A 股绝大多数公司集中在本周披露中报，本票中报大概率落在本周或 W5 首日。</li>
+<li><strong>W5（2026-08-31 起）</strong>：<strong>8/31 中报法定披露截止日</strong> 〔规〕；<strong>9/1 特斯拉要求供应商达到 Optimus 机器人周产 1000 台产能目标</strong> · 公司事件 · 重要性 <strong>8</strong>〔库〕；<strong>9/1 特斯拉 Optimus 人形机器人供应链开始批量供货</strong> · 公司事件 · 重要性 7 〔库〕· 影响：<strong>本 13 周内重要性最高的一周</strong>——中报兑现验证与产业链放量信号同周落地，两个方向的答案可能同时揭晓。</li>
+<li><strong>W6（2026-09-07 起）</strong>：本周无已知事件。观察点：中报披露后的机构调研纪要与投资者关系活动记录表（若有丝杠问答，是最直接的信息补充口）。</li>
+<li><strong>W7（2026-09-14 起）</strong>：本周无已知事件。</li>
+<li><strong>W8（2026-09-21 起）</strong>：本周无已知事件。观察点：Q3 过半，若泰国基地有投产进展，公开渠道通常在此前后出现（库外称泰国项目建设周期两年、2025 年 9 月增资 1.5 亿元建线，来源：新浪财经 2026-04-07、群益证券 2025-09-24；<strong>具体投产时点无确定信息，置信度：低</strong>）。</li>
+<li><strong>W9（2026-09-28 起）</strong>：三季度收官周 + 国庆长假前最后交易日；本周无公司层面已知事件。观察点：季末资金面与假期前风险偏好。</li>
+<li><strong>W10（2026-10-05 起）</strong>：国庆假期休市期（按惯例含 10/1 起的长假，具体休市安排以交易所公告为准，置信度：中）；三季报披露窗口 10/1–10/31 开启〔规〕。本周无公司层面已知事件。</li>
+<li><strong>W11（2026-10-12 起）</strong>：三季报披露窗口进行中〔规〕。本周无已知具体事件。</li>
+<li><strong>W12（2026-10-19 起）</strong>：<strong>特斯拉 2026 年 Q3 财报电话会（按其历年 10 月中下旬惯例推断，具体日期未确认，置信度：低）</strong>〔网：futunn/moomoo 财报日历页，未查到确切日期〕· 影响：Optimus 量产进度的官方口径更新，是丝杠链条最权威的外部验证点。</li>
+<li><strong>W13（2026-10-26 起）</strong>：<strong>10/31 三季报法定披露截止日</strong> 〔规〕· 财报 · 重要性高 · 影响：本报告 K 节三情景的最终裁决点——Q3 单季数据将首次覆盖「机器人大会 + 特斯拉 9 月节点」之后的经营期。</li>
+</ul>
+<h2>J. 逻辑链（可证伪）</h2>
+<p><strong>主链</strong></p>
+<div class="callout">因为 ① 库内 2026Q1 显示主业营收 5.86 亿元、同比 +8.04%，净利 0.27 亿元、同比 +17.86%（置信度：高）； 且 ② 库内估值显示 PE(TTM) 109.49 倍、为行业中位 28.53 倍的 3.84 倍、在盈利同行中排第 203/267（置信度：高）； 且 ③ 库内主营描述、经营范围、财务数据<strong>均无任何丝杠或机器人业务的痕迹</strong>（置信度：高）； 且 ④ 库外公开口径中，公司丝杠业务长期表述为「样件研发 / 小批量 / 客户存在不确定性、对业绩不形成影响」，同赛道对照公司贝斯特 2026 上半年该类样品营收仅 22.30 万元（置信度：中，库外多源）； <strong>→ 所以</strong> 当前 135.4 亿市值中的绝大部分，是对<strong>尚未产生营收的未来业务</strong>的定价（置信度：中——推论依赖 C 节的隐含净利反推）； <strong>→ 如果这个推论成立，应该能观察到</strong>：(a) 股价对<strong>产业事件</strong>（机器人大会、特斯拉节点）的敏感度，<strong>显著高于</strong>对公司自身财报的敏感度；(b) 中报里丝杠相关营收<strong>仍然接近于零或不单独披露</strong>；(c) 涨停/大涨日呈现<strong>高分歧、弱封板</strong>特征而非趋势性放量——<strong>(c) 已在 7 月 31 日被观察到</strong>（开板 9 次、封单 0.1 亿元，置信度：高）。</div>
+<p><strong>副链（反向，同样需要检验）</strong></p>
+<div class="callout">因为 ① 公司经营范围含「电机轴、输入轴、输出轴、高精度汽车转向零部件」，与行星滚柱丝杠工艺同源（置信度：中）； 且 ② 公司连续大额投入产能（昆山拟投 18.5 亿元、泰国一期约 3.5 亿元，其中 3 亿元定增已于 2026 年 1 月落地，置信度：中，库外多源）； 且 ③ 2026 年 1 月定增以 37.59 元/股引入 11 名发行对象且资金全部投向泰国丝杠基地（置信度：中，库外）； <strong>→ 所以</strong> 公司自身与参与定增的机构，对丝杠业务的兑现是<strong>用真金白银下注的</strong>，不是纯讲故事（置信度：中）； <strong>→ 如果成立，应该能观察到</strong>：中报或三季报中出现<strong>在建工程/固定资产的显著增长</strong>，以及<strong>丝杠相关的客户定点或订单公告</strong>。</div>
+<p><strong>最弱的一环（整条链的命门）</strong></p>
+<p>⚠️ <strong>是「C 节的隐含 TTM 净利 1.24 亿元」这个反推数</strong>。它由 PE(TTM) 与总市值两个库内字段相除得到，而非直接取自财报。如果行情库的 PE(TTM) 口径与我理解的归母净利 TTM 不一致（例如用的是扣非或含少数股东损益），那么「四分之三市值是预期定价」这个量级结论会失真。<strong>读者若要复核，最直接的办法是等中报入库后用库内财务的真实 TTM 数据重算。</strong></p>
+<p><strong>第二弱的一环</strong>：H 节整节建立在<strong>近 60 日仅 1 条新闻</strong>的样本上，且 7 月 31 日涨停的原因至今未知——<strong>在不知道涨停原因的情况下谈情绪面，本身就是脆弱的</strong>（置信度：低）。</p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜<strong>触发</strong>：2026 中报（W4–W5，8/24–9/6）中出现丝杠/机器人相关营收的单独披露，或公司公告获得客户定点/批量订单；或 W5（9/1）特斯拉供应链批量供货节点后 20 个交易日内，公司发布相关合作公告。｜<strong>路径</strong>：估值从「预期定价」切换为「兑现初期定价」，109 倍 PE 获得盈利端的分母支撑，成交额较 7/31 的 4.5 亿元台阶式放大且涨停封板质量改善（封单/成交额比显著高于 2.2%）。</li>
+</ul>
+<ul>
+<li><strong>中性（50%）</strong>｜<strong>触发</strong>：中报延续 Q1 节奏（营收同比在 5%–15% 区间、净利同比在 10%–25% 区间），丝杠仍无单独营收披露；W3 机器人大会（8/19–8/23）带来脉冲式行情但无公司层面实质公告。｜<strong>路径</strong>：股价在产业事件驱动下反复脉冲，回落后又被下一个催化点接住，<strong>围绕产业事件日历震荡</strong>；估值维持高位但不再扩张，成交额与换手率（当前 3.40%）在事件周放大、非事件周萎缩。</li>
+</ul>
+<ul>
+<li><strong>悲观（25%）</strong>｜<strong>触发</strong>：中报营收同比低于 5% 或净利同比转负；或出现商誉减值（库外提示公司 2025 年因并购上海光裕计提减值 1,251.65 万元、期末商誉账面价值 4,873.32 万元，来源：证券之星财报快递 2026-04-23，<strong>置信度：低，单源且为库外</strong>）；或 W5（9/1）特斯拉产业链节点落空/延期；或 7 月 27 日解禁的 798.08 万股在当前高于发行价约 4.0% 的位置集中减持。｜<strong>路径</strong>：预期定价的部分被系统性回吐，PE 向行业中位（28.53 倍）方向修复，<strong>修复幅度取决于市场愿意为「产能已建、订单未至」保留多少期权价值</strong>。</li>
+</ul>
+<div class="callout">三情景概率合计 100%。⚠️ 概率分配是我的主观判断（置信度：低）——依据是「催化密集（支持乐观）」与「兑现证据缺失 + 估值高位 + 弱封涨停（支持悲观）」两股力量当前大致均衡，因此中性给到一半权重。</div>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong></p>
+<ol>
+<li><strong>如果</strong> 2026 中报（W4–W5 内披露）中，丝杠/机器人相关业务<strong>首次出现单独营收披露</strong>、或公司发布客户定点/批量订单公告，<strong>那么</strong> 可将本票从「观望」上调为「轻仓试仓」——因为这是 J 节主链被证伪的唯一硬证据，届时 109 倍 PE 才开始有分母。</li>
+<li><strong>如果</strong> 2026 中报披露后，丝杠仍无营收披露、且营收同比落在 Q1 的 8.04% 附近或以下，<strong>那么</strong> 维持<strong>观望</strong>、不参与事件驱动的脉冲——因为 K 节中性情景被确认，而 PE 109.49 倍相对行业中位 28.53 倍的 3.84 倍溢价没有任何新的支撑。</li>
+<li><strong>如果</strong> 出现下列任一情形，<strong>那么</strong> <strong>回避 / 减仓</strong>：① 中报净利同比转负；② 公司公告新的商誉减值；③ 7 月 27 日解禁的 798.08 万股出现集中减持公告；④ 在 W3 世界机器人大会（8/19–8/23）这一本 13 周最强催化窗口期内，成交额<strong>未能超过</strong> 7 月 31 日的 4.5 亿元——最后这条最关键：<strong>最强催化都放不出量，说明增量资金已经不认这个故事了</strong>。</li>
+</ol>
+<p><strong>风控要点（本判断在什么情况下应当被推翻）</strong></p>
+<ul>
+<li><strong>推翻条件 A（方向上修）</strong>：出现经<strong>公司公告确认</strong>（非自媒体转述）的丝杠客户定点或批量订单，且金额对营收有实质意义——此时 G 节「仅概念标签」的定性失效，A 节「震荡」应改判。</li>
+<li><strong>推翻条件 B（方向下修）</strong>：中报显示 2026Q2 单季营收或净利同比转负，或经营性现金流大幅恶化——此时 C 节「利润增速快于收入增速」这条唯一正面依据失效。</li>
+<li><strong>推翻条件 C（估值前提失效）</strong>：中报入库后，用库内财务的真实数据重算 PE，若与库内估值的 109.49 倍出现显著偏离，则 J 节「命门」被触发，D/K 两节的估值推导需全部重做。</li>
+</ul>
+<p><strong>仓位思路</strong>：在丝杠业务出现第一份可核验的营收/订单证据之前，<strong>属于「不参与或极轻仓的题材观察位」</strong>——理由是：估值溢价（3.84 倍行业中位）已把乐观情景计入，而验证证据的最早到达时点是 W4–W5（还有 3–5 周），<strong>风险与收益在时间上不对称</strong>（置信度：中）。⚠️ 仅讲相对概念，不涉及任何具体金额或股数。</p>
+<h2>M. 逻辑自查</h2>
+<p><strong>这份判断最依赖的假设是哪一条？错了会怎样？</strong></p>
+<p>最依赖的是：<strong>「库内公司档案与库内财务里查不到丝杠业务 = 该业务尚未产生实质营收」</strong>。 这个推断有一个未经验证的跳跃：<strong>库里没有，未必等于公司没有</strong>——库内公司档案的简介文本已被证实是上市初期版本（注册资本字段自相矛盾，见 B 节），而库内财务本来就不提供分业务拆分。如果丝杠已经产生了几千万级营收但被合并在「底盘零部件」科目里，那么 A 节的核心矛盾、D 节的估值推导、K 节的概率分配<strong>会同时失真</strong>，方向应从「震荡」上修。<strong>但即便如此，109 倍 PE 相对行业 28.53 倍中位的溢价仍需要相当规模的丝杠营收才能支撑</strong>——所以这个假设错了会削弱结论，不会完全推翻它（置信度：中）。</p>
+<p><strong>有没有为了让逻辑好看而忽略的反面证据？</strong></p>
+<p>有三条，在此明确列出：</p>
+<ol>
+<li><strong>公司在真金白银投产能</strong>（昆山拟投 18.5 亿元、泰国一期约 3.5 亿元、3 亿元定增已落地并全部投向泰国丝杠基地）。一家 135 亿市值的公司拿出这个量级投一个「不确定的业务」，本身是强信号——<strong>我在 J 节把它列为副链，但在 A 节的核心驱动里只给了第 3 位，这个权重分配偏保守</strong>（置信度：中）。</li>
+<li><strong>定增有 11 家机构在 37.59 元/股接了盘</strong>（2026 年 1 月），这些是做过尽调的专业资金。我把解禁主要当作筹码面风险处理，<strong>没有充分对待「机构曾在此价位下注」这个正面含义</strong>。</li>
+<li><strong>工艺同源的逻辑是成立的</strong>：转向齿条/电机轴与行星滚柱丝杠在磨削、热处理、螺纹加工上确有共性，这不是纯蹭概念——<strong>G 节把「人形机器人」判为「仅概念标签」是就营收佐证而言，不否认技术路径的合理性</strong>，这一层区分我在 G 节写了，但 A 节的措辞偏负面。</li>
+</ol>
+<p><strong>信息缺口清单（缺什么 · 影响多大 · 怎么补）</strong></p>
+<ol>
+<li><strong>库中库内财务对本票只有 2026Q1 一期</strong>（全表仅 20260331 与 20260630 两个期次，本票无后者）。<strong>影响：大</strong>——C 节无法做趋势判断，J 节的隐含净利只能靠 PE 反推。<strong>补法</strong>：中报入库后（预计 W4–W5，8/24–9/6）重跑本调研。</li>
+</ol>
+<p><strong>影响：中</strong>——D 节缺 3 只具体对标票的横向数字，但库内估值的行业分位（267 只、中位 28.53、排名 203）已支撑核心相对定位。<strong>补法</strong>：函数性能修复后重跑 D 节；</p>
+<ol>
+<li><strong>库内新闻近 60 日仅返回 1 条</strong>，且 <strong>7 月 31 日涨停的触发原因库内库外均未查到</strong>。<strong>影响：大</strong>——H 节整节样本极窄，「弱封涨停」的解读只能就形态论形态，无法归因。<strong>补法</strong>：查阅当日龙虎榜与板块联动数据（本次调研工具不覆盖）；或等下一次异动时对照观察。</li>
+<li><strong>库内无分业务营收拆分</strong>，无法从库内验证丝杠/底盘/压缩机的收入结构。<strong>影响：中</strong>——G 节的概念分级只能靠主营描述与经营范围间接判断。<strong>补法</strong>：中报披露后读分部报告（属库外，需人工核对）。</li>
+<li><strong>本票 2026 中报的具体预约披露日期未查到</strong>（联网检索未返回，仅确认法定窗口 7/1–8/31）。<strong>影响：小</strong>——I 节 W1/W4/W5 已按法定窗口与行业惯例覆盖。<strong>补法</strong>：查上交所信息披露预约时间表。</li>
+<li><strong>所有涉及丝杠进展、产能规划、供应链名单的库外信息，绝大多数来自自媒体与转述，而非公司公告原文</strong>。<strong>影响：中</strong>——F/G/J 节多条结论因此只能标「中」或「低」置信度。<strong>补法</strong>：直接调取公司在上交所披露的公告与投资者关系活动记录表原文核对。</li>
+</ol>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-08-02），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>PE109.5倍达行业中位3.84倍</li>
+      <li>丝杠业务库内零营收佐证</li>
+      <li>7/31涨停开板9次封单仅0.1亿</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>商誉</dt><dd>收购时溢价支付的部分记在账上的资产。被收购方业绩不达预期时要计提减值、直接冲减利润。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-07-05 <em>2026-07-05</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富财富号「SPX 投研」2026-07-04 <em>2026-07-04</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 21 经济网 2025-03-04 <em>2025-03-04</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 中国教育和科研计算机网转两部门消息，2026-06-09 <em>2026-06-09</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 界面新闻，日期见原文 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新华网 2026-03-02 <em>2026-03-02</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 国家科技传播中心 ncsti.gov.cn 2026-03-02 <em>2026-03-02</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-01-30 及两会报道转述 <em>2026-01-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东吴证券《汽车零部件 2026 年策略报告》PDF，2025-12-26 <em>2025-12-26</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 中伦律师事务所研究文章 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 催全球外贸资讯 2026 年泰国市场风险文 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 均为分析性文章 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社投资者关系报道 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 公司投资者关系活动记录表 PDF — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富股吧转述、gudaobang.com 等，均为自媒体，单源未交叉验证，置信度：低 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 此条以「未证实」计，不作为负面结论的主要依据 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 中经互联 ipo123.com.cn — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 中国银河证券上市保荐书 PDF，2026-01-06 <em>2026-01-06</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 上海证券报 2026-07-21 <em>2026-07-21</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公告日 2026-04-29 <em>2026-04-29</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-08-02 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Stocks → searchX 每日同步（仅在常驻不关机、且装着 Stocks 活库的 Mac mini 上加载）。
+  安装：cp 本文件到 ~/Library/LaunchAgents/ 后 launchctl bootstrap，详见 ../README.md。
+
+  为什么用 StartCalendarInterval 而不是 StartInterval：Stocks 的自动调研窗是 20:30–06:00，
+  一天的产出在早上一次性上线就够了，没必要整天轮询一个大概率没变化的库。
+  09:30 是夜批全部结束之后、又赶在开盘后不久——报告当天还有参考价值。
+  机器在触发时刻睡着/关机时 launchd 会在下次唤醒后补跑一次（这正是要的行为）。
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.searchx.stocks-import</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/yangqiuyuan/Coding/searchX/services/stocks-import/scheduled-run.sh</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/yangqiuyuan/Coding/searchX</string>
+
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>9</integer>
+    <key>Minute</key>
+    <integer>30</integer>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <false/>
+
+  <key>ProcessType</key>
+  <string>Background</string>
+
+  <key>StandardOutPath</key>
+  <string>/Users/yangqiuyuan/Library/Logs/searchx-stocks-import/launchd.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/yangqiuyuan/Library/Logs/searchx-stocks-import/launchd.err.log</string>
+</dict>
+</plist>

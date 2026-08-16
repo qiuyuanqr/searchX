@@ -311,11 +311,33 @@ const BAND_PRICE_RE =
 const PAST_TENSE_NEAR_RE =
   /(现在|目前|当前|已经|截至|收于|收盘|近期|上周|昨日|今年至今|一路|随后|此后|触及|年初)[^。；\n]{0,20}$/;
 
+// 大宗商品 / 产品售价**不是股价**。「批价跌破 1369 元」（茅台飞天散瓶）、「现货金站稳
+// 4,300 美元」（山东黄金）这类句子是行业事实与宏观条件，写进触发条件天经地义，
+// 跟「给标的一个目标价」是两回事。2026-08-16 导入 Stocks 存量时实测：不排除它们，
+// 茅台与山东黄金两篇会被硬红线整篇挡下，而挡的全是误报。
+// 两条独立判据，命中任一即放行：
+//   ① 价格主语紧邻在前（批价 / 金价 / 现货金 / 面板价 …）；
+//   ② 数值带「每单位」后缀（元/瓶、美元/盎司）。⚠️ 单位表里**绝不能放「股」**——
+//      「60 元/股」正是股价，放进去等于把这条红线整条废掉。
+// 判据①按**整句**找价格主语（商品价的主语常隔着好几个从句，如「2026-08-06 现货金收
+// 4,308 美元、单日 +4.20% 突破 4,300 美元」），但必须配一道守卫：紧挨触发词前 12 字
+// 内出现「股」就不放行。否则「金价上行背景下，若股价跌破 14 元转防御」这条真红线
+// 会被同句的「金价」遮掉——一句话里商品价与股价同时出现是常态。
+// 这正是「加一层保护先问是不是拆了另一层」，守卫见测试。
+const COMMODITY_SUBJ_RE =
+  /批价|出厂价|零售价|售价|单价|吨价|报价|金价|银价|铜价|油价|煤价|电价|气价|面板价|材料价|原料价|现货金|现货黄金|现货白银|期货|价格指数|均价/;
+const COMMODITY_UNIT_RE =
+  /(?:元|港元|美元|港币)\s*\/\s*(?:瓶|吨|克|盎司|千克|公斤|升|桶|片|只|个|支|件|平方米|立方米|磅|平米|台)/;
+
 // 「基准日收盘价」是 §4.9 第 5 条的**必含项**，「发行价」是客观披露，两者都不是触发价。
 // ⚠️ 只放这两个。别顺手把「历史高点 / 授予价」也加进来——存量里
 // 「突破 5 月 19 日历史高点 303.55 元后…」「回踩激励授予价 20.36 元附近」都是**真红线**，
 // 加进来会把它们一起放过（客观披露价一旦当触发条件用，就不再是客观披露）。
-const BASELINE_PRICE_RE = /基准日|发行价/;
+// ⚠️ 只放这两个 + 现状词。别顺手把「历史高点 / 授予价」也加进来（见上方那条注释）。
+// 现状词（当前 / 现价 / 最新）出现在**匹配文本内部**时是行情陈述而非前瞻触发：
+// 「股价从年内高点 65.55 元回落至当前 30.48 元」——PAST_TENSE_NEAR_RE 只看动词前面，
+// 这种"时间状语落在动词后面"的写法它够不着（2026-08-16 导入山东黄金那篇时标定）。
+const BASELINE_PRICE_RE = /基准日|发行价|当前|现价|最新价/;
 
 // 券商目标价：**不是**违规，是〔卖方预期〕模板里「别人的观点」。单列一档「需判断」，
 // 措辞不许写「请删除」——照搬 Stocks 8-15 的教训：一律命令删除，会让模型把券商评级
@@ -347,6 +369,13 @@ const PRIVACY_RES = [
   { name: "个人负债/还款", re: /(?:我|本人|自己)的?(?:负债|贷款|还款|房贷)/g },
 ];
 
+// 「不含 / 不涉及 / 无任何 …用户持仓」这类**否定式免责**不是泄露。窗口取 14 字：
+// 「本报告不含任何用户持仓」里否定词与命中之间隔着「任何」。
+// ⚠️ 别把裸「没有」放进来：它太常见，「这只票没有大涨，按我的持仓成本价…」会被它吞掉
+// （守卫见测试）。只收明确指向"本文不写这类信息"的措辞。
+const PRIVACY_NEGATION_RE =
+  /(?:不含|未含|不包含|不涉及|不写入|不记录|绝不|无任何|不得出现|不会出现|不披露)[^。；\n]{0,14}$/;
+
 // 返回 {blocking, review}：blocking = 硬红线（--strict 下挡 push）；
 // review = 需人判断的，列出来但不阻断（避免清单失信——Stocks 的核心误报治理经验）。
 export function checkFormat({ reportHtml, notesMd, type, dir }) {
@@ -373,12 +402,31 @@ export function checkFormat({ reportHtml, notesMd, type, dir }) {
     const at = (m) => `…${ctxAround(scanned, m.index, m[0].length)}…`;
 
     if (isStock) {
+      // 商品价语境：整句里有价格主语（金价/批价…）且触发词前 12 字没有「股」，
+      // 或数值直接带每单位后缀（元/盎司）。
+      const sentenceAt = (i) => {
+        let start = 0;
+        for (const p of ["。", "；", "\n"]) start = Math.max(start, scanned.lastIndexOf(p, i) + 1);
+        let end = scanned.length;
+        for (const p of ["。", "；", "\n"]) {
+          const j = scanned.indexOf(p, i);
+          if (j !== -1 && j < end) end = j;
+        }
+        return scanned.slice(start, end);
+      };
+      const isCommodity = (m) =>
+        COMMODITY_UNIT_RE.test(scanned.slice(m.index, m.index + m[0].length + 6)) ||
+        (COMMODITY_SUBJ_RE.test(sentenceAt(m.index)) &&
+          !scanned.slice(Math.max(0, m.index - 12), m.index).includes("股"));
+
       for (const m of scanned.matchAll(TRIGGER_PRICE_RE)) {
         if (PAST_TENSE_NEAR_RE.test(scanned.slice(Math.max(0, m.index - 30), m.index))) continue;
         if (BASELINE_PRICE_RE.test(m[0])) continue;
+        if (isCommodity(m)) continue;
         blocking.push(`【${label}】具体触发价位「${m[0].trim()}」（§4.9 价位红线：操作触发条件不得用具体价位，改写成相对/条件表述）——上下文：${at(m)}`);
       }
       for (const m of scanned.matchAll(BAND_PRICE_RE)) {
+        if (isCommodity(m)) continue;
         blocking.push(`【${label}】预测性价格区间「${m[0].trim()}」（§4.9 价位红线：三情景走势不得给具体价位区间，等于给了目标价）——上下文：${at(m)}`);
       }
       const targets = [...scanned.matchAll(BROKER_TARGET_RE)];
@@ -406,6 +454,10 @@ export function checkFormat({ reportHtml, notesMd, type, dir }) {
 
     for (const { name, re } of PRIVACY_RES) {
       for (const m of scanned.matchAll(re)) {
+        // 「本报告**不含**任何用户持仓 / 自选 / 账户信息」——这是**声明没有**，不是泄露。
+        // 存量里几乎每篇股票报告都写了这句免责，不排除的话它会把每一篇都点亮成红线，
+        // 清单一失信，真正的泄露就会淹在里面（2026-08-16 导入时标定）。
+        if (PRIVACY_NEGATION_RE.test(scanned.slice(Math.max(0, m.index - 14), m.index))) continue;
         blocking.push(`【${label}】疑似用户私人信息（${name}）：${at(m)}（CLAUDE.md 绝对红线）`);
       }
     }

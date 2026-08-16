@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>拓荆科技（688072.SH） · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>拓荆科技（688072.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-08-11（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>关联板块</b> 算力</span>
+      <span><b>来源</b> 37 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    拓荆科技（688072）主要做的是高端半导体专用设备的研发、生产、销售和技术服务。核心产品为三大薄膜沉积设备系列——PECVD（等离子体增强化学气相沉积）、ALD（原子层沉积）、SACVD（次常压化学气相沉积）。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——基本面在真好转，但估值和利润质量同时在扣分。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：基本面在真好转，但估值和利润质量同时在扣分。支撑在于毛利率四期连升至41.69%；营收Q1同比+56.97%高增未失速；存储扩产叠加设备国产替代。主要风险是Q1净利5.71亿超推算毛利4.64亿；PB29.2为可比设备票最高；特大单20日净流出5.9亿背离。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>毛利率四期连升至41.69%</li>
+      <li>营收Q1同比+56.97%高增未失速</li>
+      <li>存储扩产叠加设备国产替代</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据基准：库内取数各函数返回值（估值口径交易日 2026-08-10，行情口径 2026-08-11 11:30 盘中实时）。联网信息仅用于政策 / 产业链 / 预期差 / 事件时点四类，均标注来源与日期。</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：基本面在真好转，但估值和利润质量同时在扣分。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>毛利率连续四期单调回升</strong>：2025H1 31.96% → 2025Q3 33.28% → 2025 年报 34.95% → 2026Q1 41.69%，是库内四期数据里最干净的一条向上趋势（置信度：高，来自库内财务）。</li>
+<li><strong>营收高增未失速</strong>：2026Q1 营收 11.12 亿元、同比 +56.97%，承接 2025 年全年 65.19 亿元、同比 +58.87% 的增速（置信度：高，来自库内财务）。</li>
+<li><strong>下游存储扩产 + 国产替代双轮</strong>：2026 年二季度长鑫存储与长江存储同步启动设备招标，全年设备招标量同比增幅超 35%（来源：ZAKER 转载产业梳理、新浪财经《长存长鑫新一轮扩产相关产业链信息》2026-02-08；置信度：中，两源方向一致但均为二手汇总）。</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>2026Q1 的利润不是主营挣来的</strong>：营收 11.12 亿 × 毛利率 41.69% ≈ 毛利润 4.64 亿元，而当期净利润 5.71 亿元——<strong>净利润高于毛利润</strong>，意味着利润的主要来源在主营之外（置信度：高，纯由库内财务两个字段推导，不依赖任何外部信息）。</li>
+<li><strong>估值在同业里以 PB 口径最贵</strong>：PB 29.20，对比库内同业北方华创 14.04 / 中微公司 15.37 / 华海清科 16.94 / 盛美上海 10.67（均为 2026-08-10 口径，来自库内估值）（置信度：高）。</li>
+<li><strong>大资金在减、小资金在接</strong>：近 20 个交易日（2026-07-14 ~ 2026-08-10）全口径资金净流入合计 +51.4 亿元、净流入为正 15/20 天，但同期<strong>特大单（主力口径）净额为 −5.9 亿元</strong>（来自库内资金筹码）（置信度：中——这是盘面现象，不是基本面证据）。</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ul>
+<li><strong>2026-08-21 中报</strong>（库内事件日历标注为交易所官方披露计划）：看两件事——① 毛利率是否守住 40% 一线；② 剔除投资类损益后的主营利润规模。</li>
+<li><strong>2026-08-13 中芯国际 / 华虹宏力 2026Q2 业绩</strong>（库内事件，重要性 7 / 6）：代工龙头的资本开支与产能指引，是国产设备订单的领先变量。</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong>：我把 2026Q1 的净利润质量当成了主要减分项，但若中报显示 Q2 主营利润独立放量、毛利率站稳 40%+，那么 Q1 的非主营收益就只是噪音而非隐患，&quot;震荡&quot;的判断会偏保守（置信度：中）。此外库内 60 天新闻为 0 条，我对该票的消息面感知<strong>完全依赖联网补充</strong>，这是本报告最大的结构性盲区（详见 M 节）。</p>
+<h2>B. 公司快照</h2>
+<p><strong>基本信息</strong>（来源：库内公司档案）</p>
+<ul>
+<li>名称：拓荆科技 · 代码：688072 · 上市板：科创板 · 上市日期：2022-04-20（至今约 4 年 4 个月）</li>
+<li>上市状态：上市状态 'L'（正常在市，非退市）</li>
+<li>行业（库内分类）：半导体</li>
+<li>员工人数：1,695 人 · 注册资本：28,269.3012 万元</li>
+<li>主营：高端半导体专用设备的研发、生产、销售和技术服务。核心产品为三大薄膜沉积设备系列——PECVD（等离子体增强化学气相沉积）、ALD（原子层沉积）、SACVD（次常压化学气相沉积）。</li>
+<li>库内公司简介明确记载：产品已应用于国内晶圆厂 14nm 及以上制程产线，并已展开 10nm 及以下制程产品验证测试；是&quot;国内唯一一家产业化应用的集成电路 PECVD、SACVD 设备厂商&quot;；客户包括中芯国际、华虹集团、长江存储、长鑫存储、厦门联芯、燕东微电子。</li>
+</ul>
+<p>⚠️ <strong>一处必须点明的库内异常</strong>：库内公司档案返回的库内经营范围（经营范围）写的是&quot;企业总部管理 / 企业管理咨询 / 自有资金投资的资产管理服务 / 财务咨询&quot;等<strong>投资控股类</strong>表述，与主营业务（薄膜沉积设备）完全不同口径。这多半是工商登记口径与业务口径的差异，但<strong>它与 C 节&quot;净利润主要来自主营之外&quot;这一发现方向一致</strong>，值得在读中报时留意公司的投资类资产规模（置信度：中——库内无法判定成因）。</p>
+<p><strong>当前行情</strong>（来源：库内行情，唯一行情事实源）</p>
+<ul>
+<li>现价 <strong>721.46 元</strong> · 涨跌 <strong>−0.90%</strong> · 成交额 26.6 亿元</li>
+<li>数据时点 = <strong>11:30</strong>（盘中实时，非收盘价）</li>
+<li>当日振幅区间：最高 +0.06% / 最低 −4.79%（当日一度深跌近 5%，午盘收窄）</li>
+</ul>
+<p><strong>估值</strong>（来源：库内估值，交易日 2026-08-10 收盘口径）</p>
+<ul>
+<li>总市值 <strong>2,116.14 亿元</strong> · PE(TTM) <strong>128.70</strong> · PB <strong>29.20</strong> · 股息率 0.0355% · 换手率 2.57%</li>
+<li>行业 PE 中位数 119.29，本票 PE 在库内半导体行业中<strong>由小到大排第 81 位</strong>。</li>
+</ul>
+<p>⚠️ 口径说明：行业在市票共 196 只，但排名分母只统计 PE 为正的票（亏损票不参与），因此 <strong>&quot;81&quot; 不能直接除以 196 当分位数</strong>。可确定的结论只有一条：该票 PE 略高于行业中位数（置信度：高）。</p>
+<p><strong>A/H 溢价</strong>：库内 A/H 对照返回 None——该票非 A+H 两地上市，无跨市场估值参照系。</p>
+<h2>C. 财务健康</h2>
+<p>数据来源：库内财务（近 4 期），近四期（新 → 旧），金额单位亿元。</p>
+<ul>
+<li><strong>2026Q1（截止 20260331，公告 20260428）</strong>：营收 11.12（同比 +56.97%）· 净利润 5.71（同比 <strong>+488.29%</strong>）· 毛利率 41.69% · 净利率 50.54% · ROE 8.24% · 资产负债率 60.99% · EPS 2.03</li>
+<li><strong>2025 年报（截止 20251231，公告 20260428）</strong>：营收 65.19（同比 +58.87%）· 净利润 9.27（同比 +34.67%）· 毛利率 34.95% · 净利率 14.03% · ROE 15.59% · 资产负债率 64.11% · EPS 3.32</li>
+<li><strong>2025Q1–Q3（截止 20250930，公告 20251031）</strong>：营收 42.20（同比 +85.27%）· 净利润 5.57（同比 +105.14%）· 毛利率 33.28% · 净利率 12.69% · ROE 9.78% · 资产负债率 67.72% · EPS 2.00</li>
+<li><strong>2025H1（截止 20250630，公告 20250826）</strong>：营收 19.54（同比 +54.25%）· 净利润 0.94（同比 <strong>−26.96%</strong>）· 毛利率 31.96% · 净利率 4.21% · ROE 1.76% · 资产负债率 69.09% · EPS 0.34</li>
+</ul>
+<p><strong>趋势判读（三条，逐条标置信度）</strong></p>
+<ol>
+<li><strong>毛利率是明确的向上拐点，且已走了四期</strong>：31.96 → 33.28 → 34.95 → 41.69，单调、无回撤，四期累计抬升近 10 个百分点。这是本报告里最扎实的一条正面证据（置信度：高）。</li>
+<li><strong>资产负债率同步单调下行</strong>：69.09 → 67.72 → 64.11 → 60.99，四期降 8 个百分点，杠杆压力在缓解（置信度：高）。</li>
+<li><strong>⚠️ 2026Q1 的净利率 50.54% 高于毛利率 41.69%，这在制造业里是反常的</strong>。用库内两个字段直接推：营收 11.12 亿 × 41.69% ≈ <strong>毛利润 4.64 亿元</strong>，而当期净利润 <strong>5.71 亿元</strong>——净利润比毛利润还多约 1.07 亿元。这只能有一个解释：<strong>当期利润的主体来自主营业务以外</strong>（投资收益 / 公允价值变动 / 政府补助之类）。因此&quot;净利润同比 +488.29%&quot;这个数字，<strong>不能被读作主营盈利能力增长了近 5 倍</strong>（置信度：高——纯库内推导，不依赖任何外部信息）。</li>
+</ol>
+<div class="callout"><strong>库外定性佐证（不引用其数字）</strong>：多家财经媒体在 2026-04-28 对该季报的解读中，把净利润大增归因于对外投资的公允价值变动损益，并提到当期经营活动现金流为负（来源：新浪财经《拓荆科技 2026 年一季报解读》2026-04-28；网易财经同日报道）。<strong>置信度：中</strong>——两源同日、可能同源；且库内财务不含扣非口径与现金流字段，<strong>无法用库内数据交叉验证</strong>，故此处只作定性提示，具体金额一律不引用（见 M 节信息缺口）。</div>
+<p><strong>一条容易被误读的基数陷阱（很重要）</strong></p>
+<p>2025H1 净利润仅 0.94 亿元、同比 −26.96%，是近四期里的<strong>绝对低点</strong>。这意味着 2026 年中报（8-21 披露）的净利润同比增速<strong>几乎必然是一个极其夸张的数字</strong>，但那主要是低基数的算术结果，不是经营质变的证据。读中报时，<strong>同比增速这个指标基本没有信息量，该看的是毛利率的环比与扣非后的主营利润绝对额</strong>（置信度：高）。</p>
+<p><strong>仅估值口径的判断</strong>：PE(TTM) 128.70 略高于行业中位 119.29，PB 29.20 在库内可比设备票中最高。<strong>这只是&quot;贵不贵&quot;，不等于&quot;好不好&quot;</strong>——高 PB 通常反映市场对未来资产盈利能力的强预期，能否兑现要靠 I 节的事件来验证（置信度：高）。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>为不让本节留空，我改用同样属于库内取数的库内基础资料 + 库内估值 + 库内财务 <strong>逐只取数</strong>——<strong>所有数字仍全部来自库内取数返回值</strong>，唯一变化是&quot;同业名单由我按半导体设备可比性挑选&quot;，而非由函数按市值自动取前三。这一点如实披露（见 M 节）。</p>
+<p><strong>同业横向对比</strong>（估值口径 2026-08-10，财务为各家库内最新一期）</p>
+<ul>
+<li><strong>拓荆科技（688072）</strong>｜市值 2,116.14 亿 · PE(TTM) 128.70 · PB <strong>29.20</strong> · 行业 PE 名次 81｜最新期 2026Q1：营收 11.12 亿 · 净利 5.71 亿 · ROE 8.24% · 毛利率 41.69%</li>
+<li><strong>北方华创（002371）</strong>｜市值 5,515.24 亿 · PE(TTM) 98.91 · PB 14.04 · 行业 PE 名次 63｜最新期 2026Q1：营收 103.23 亿 · 净利 16.35 亿 · ROE 4.25% · 毛利率 40.77% · 营收同比 +25.80% · 净利同比 +3.42%</li>
+<li><strong>中微公司（688012）</strong>｜市值 3,735.49 亿 · PE(TTM) 136.89 · PB 15.37 · 行业 PE 名次 87｜最新期 2026Q1：营收 29.15 亿 · 净利 9.30 亿 · ROE 3.96% · 毛利率 39.89% · 营收同比 +34.13% · 净利同比 +197.20%</li>
+<li><strong>盛美上海（688082）</strong>｜市值 1,558.88 亿 · PE(TTM) 92.29 · PB 10.67 · 行业 PE 名次 58｜<strong>最新期已是 2026H1</strong>（公告 20260808）：营收 37.18 亿 · 净利 9.89 亿 · ROE 7.04% · 毛利率 46.86% · 营收同比 +13.87% · 净利同比 +42.14%</li>
+<li><strong>华海清科（688120）</strong>｜市值 1,307.85 亿 · PE(TTM) 119.15 · PB 16.94 · 行业 PE 名次 73｜最新期 2026Q1：营收 12.01 亿 · 净利 2.47 亿 · ROE 3.26% · 毛利率 42.31% · 营收同比 +31.66% · 净利同比 +5.95%</li>
+<li><strong>芯源微（688037）</strong>｜市值 650.09 亿 · PE(TTM) 921.41 · PB 23.21｜最新期 2026Q1：营收 3.31 亿 · 净利 0.04 亿 · 毛利率 46.69% · 净利同比 −24.70%</li>
+<li><strong>中科飞测（688361）</strong>｜市值 1,276.01 亿 · PE(TTM) 22,580.25（近乎无盈利，该 PE 无参考意义）· PB 25.16｜最新期 2026Q1：营收 3.96 亿 · <strong>净利 −0.68 亿</strong> · 毛利率 47.77%</li>
+</ul>
+<p><strong>位置判读</strong></p>
+<ol>
+<li><strong>规模上是第三梯队、估值上是第一梯队</strong>：营收体量（Q1 11.12 亿）不到北方华创的 1/9、约为中微公司的 38%，但 PB 29.20 是全组最高，接近北方华创的两倍多（置信度：高）。</li>
+<li><strong>单季 ROE 反而是同期最高</strong>（8.24% vs 北方华创 4.25% / 中微 3.96% / 华海清科 3.26%）——<strong>但这个领先直接建立在 C 节那笔非主营利润上</strong>，把它当经营效率的证据是错的（置信度：高）。</li>
+<li><strong>毛利率已追平第一梯队</strong>：41.69% 高于北方华创 40.77%、中微 39.89%，低于盛美上海 46.86% 与两家量检测/涂胶显影票。考虑到该公司四期前还只有 31.96%，这个追赶速度是同业里最快的（置信度：高）。</li>
+<li><strong>一个可用的行业读数</strong>：盛美上海已于 2026-08-08 披露中报，营收同比 +13.87%、净利同比 +42.14%——<strong>营收增速明显低于拓荆 Q1 的 +56.97%</strong>。若这是行业性的增速台阶下移，那么 8-21 中报是关键验证点；若只是盛美自身节奏，则不构成对拓荆的负面读数（置信度：中——单一同业样本不足以推断行业）。</li>
+</ol>
+<p><strong>竞争格局的产业侧信息（联网补充）</strong>：全球 CVD 薄膜沉积设备高度集中，应用材料约 30%、泛林约 21%、东京电子约 19%，CR3 约 70%（来源：东方财富财富号《2026 年全球电子薄膜行业现状与国产化替代投资图谱》2026-03-12；报告大厅《2026 年半导体薄膜沉积设备竞争格局分析：全球 CR3 超 75%》）。两源在 CR3 落在 70%–75% 区间上一致，但具体数字有出入（置信度：中）。</p>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>分级结论：阶段性优势为主，结构性护城河证据不足（置信度：中）</strong></p>
+<p><strong>支持&quot;阶段性优势&quot;的库内证据</strong>（均出自库内公司档案，属公司自述口径）：</p>
+<ul>
+<li>&quot;国内唯一一家产业化应用的集成电路 PECVD、SACVD 设备厂商&quot;——若属实，是<strong>细分环节的先发独占</strong>；但这是公司简介的自我表述，库内无第三方验证（置信度：中）。</li>
+<li>四次承担国家重大科技专项 / 课题；三次获评&quot;中国半导体设备五强企业&quot;（2016 / 2017 / 2019 年度）——<strong>注意最近一次是 2019 年度</strong>，简介本身未更新更近的荣誉（置信度：高，属库内原文）。</li>
+<li>客户名单覆盖中芯国际、华虹集团、长江存储、长鑫存储、厦门联芯、燕东微电子——<strong>晶圆厂设备一旦通过验证进入产线，切换成本极高</strong>，这是本行业最真实的一层壁垒（置信度：中，客户名单来自库内、切换成本机理属行业常识）。</li>
+<li>1,695 名员工支撑 2025 年 65.19 亿元营收（库内财务），人均创收约 385 万元——设备行业里属正常偏高水平（置信度：中）。</li>
+</ul>
+<p><strong>为什么不判为&quot;结构性护城河&quot;</strong>：</p>
+<ul>
+<li>薄膜沉积的全球格局由应用材料 / 泛林 / 东京电子三家主导（见 D 节联网信息），<strong>该公司的份额来源主要是&quot;国产替代&quot;这一外生变量，而不是技术代际领先</strong>。国产化推进节奏一旦变化，护城河的水位会跟着变（置信度：中）。</li>
+<li>库内无研发费用率、专利数、客户集中度等字段，<strong>无法量化验证技术壁垒</strong>（信息缺口，见 M 节）。</li>
+</ul>
+<p><strong>商业模式</strong>：单台设备价值量高、验证周期长（数季度）、收入确认滞后于订单，因此<strong>在手订单是比当期营收更早的领先指标</strong>。公司在 2026-07-08 业绩说明会上表示截至 2025-12-31 在手订单约 110 亿元（来源：21 财经《直击拓荆科技业绩会：先进产品已量产》2026-07-09；财联社《直击拓荆科技业绩会：先进产品已规模化量产后续毛利率预计趋于平稳》；两源独立报道同一场会议、口径一致，置信度：中）。<strong>对照库内 2025 年全年营收 65.19 亿元，110 亿在手订单约相当于 1.7 倍年收入</strong>——这个比值本身是正面的（置信度：中，分子为库外、分母为库内，属混合口径，故不标高）。</p>
+<h2>F. 政策与监管</h2>
+<p>库内无政策数据，本节全部为联网信息，逐条标来源与日期。</p>
+<ol>
+<li><strong>美国对华半导体设备出口管制在 2026 年出现&quot;结构性收紧 + 局部松动&quot;并存</strong>：
+<ul>
+<li>2026-01-01 起，台积电、三星、SK 海力士的中国工厂须<strong>逐年申请</strong>美国商务部出口许可，从此前的自动豁免改为年度续期（来源：East Asia Forum《US chip export controls have cooled down》2026-03-11；Congress.gov CRS 报告 R48642）。</li>
+<li>2026-02-12，应用材料因向中国非法出口离子注入设备被罚 2.52 亿美元（来源：同上两源转述 BIS 处罚）。</li>
+<li>2026 年 2 月，8 名美国国会议员联名致函商务部长，要求对<strong>所有</strong>输华半导体制造设备实施全面禁令（来源：同上）。</li>
+<li><strong>传导方向：对拓荆科技整体偏利好（置信度：中）</strong>。链条是：外资设备进入中国越受限 → 国内晶圆厂被迫加速验证国产设备 → 薄膜沉积环节的国产替代空间打开 → 直接对应该公司主营。</li>
+<li><strong>但同一政策也是双刃</strong>：若管制扩大到零部件与耗材层面，国产设备厂自身的供应链会受冲击（置信度：低——目前无证据显示已发生，属推演）。</li>
+</ul></li>
+</ol>
+<ol>
+<li><strong>国内下游扩产的政策/资本驱动</strong>：长鑫存储科创板 IPO 募资中约 200 亿元直接投向设备采购，产能目标由约 30 万片/月提升至 2026 年底 40 万片；长江存储武汉三期国产设备采购比例目标设定在 50% 以上（来源：ZAKER 转载《长鑫长江存储扩产设备采购超 200 亿》；腾讯新闻《中国内存一哥扩产：长鑫存储年底产能将追平美光》2026-07-14）。
+<ul>
+<li><strong>传导方向：明确利好（置信度：中）</strong>——两源均为二手汇总，未见一手招标文件，故不标高。</li>
+</ul></li>
+</ol>
+<ol>
+<li><strong>国产化率的现状读数存在口径冲突，必须点明</strong>：一份来源称 2025 年薄膜沉积环节国产化率约 27%、整体晶圆制造设备国产化率约 21%（来源：麦姆斯咨询 / 知乎《中国大陆半导体设备产业—2026 版》）；另一份来源称&quot;2025 年全球薄膜沉积设备国产化率提升至 61%&quot;（来源：东方财富财富号 2026-03-12）。<strong>两者相差一倍以上，口径显然不同（很可能一个是全设备口径、一个是特定客户/特定环节口径）</strong>。
+<ul>
+<li><strong>处理方式：两个数字我都不采信为事实</strong>，只保留&quot;国产化率在快速提升、但绝对水平仍显著低于 50%&quot;这一方向性判断（置信度：低——单源不可交叉验证）。</li>
+</ul></li>
+</ol>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 8 个同花顺概念标签，逐个分级：</p>
+<p><strong>（1）真有业务（有库内主营/简介佐证）</strong></p>
+<ul>
+<li><strong>芯片概念（885756.TI）</strong>：公司主营即集成电路薄膜沉积设备，库内主营业务直接佐证（置信度：高）。</li>
+<li><strong>存储芯片（886042.TI）</strong>：⚠️ <strong>需要精确表述</strong>——公司<strong>不生产存储芯片</strong>，它是卖设备给存储厂的上游。库内公司简介明确点名客户含&quot;长江存储、长鑫存储&quot;，因此该标签的实质是<strong>下游需求联动</strong>而非同业属性（置信度：高）。这一区分很重要：存储芯片价格涨跌不直接影响它，存储厂的<strong>资本开支</strong>才影响它。</li>
+</ul>
+<p><strong>（2）仅概念标签，未见营收佐证</strong></p>
+<ul>
+<li><strong>先进封装（886009.TI）</strong>：库内主营业务与公司简介通篇只写 PECVD / ALD / SACVD 三大薄膜沉积产品系列，<strong>未出现混合键合、三维集成、先进封装等表述</strong>，也无任何该业务的营收数据。
+<ul>
+<li>库外确有相关进展描述：公司在 2026 年披露 WtoW 混合键合设备获复购订单并量产、WtoW 熔融键合完成先进逻辑客户验证、DtoW 相关产品在验证中（来源：九方智投《拓荆科技：半导体薄膜设备领军者混合键合开启第二成长曲线》；21 财经业绩会报道 2026-07-09）。</li>
+<li><strong>定性：这块业务大概率真实存在，但库内与公开渠道均无独立的收入拆分</strong>，因此<strong>必须按&quot;仅概念标签、未见营收佐证&quot;处理</strong>（置信度：中——业务存在为中，营收贡献为无证据）。</li>
+</ul></li>
+<li><strong>国家大基金持股（885893.TI）</strong>：库内无股东数据可佐证。库外信息：国家集成电路产业投资基金于 2026-01-13 至 01-22 通过大宗交易减持 297.7639 万股，持股比例由 17.92% 降至 16.86%（来源：财联社 2026-01；<strong>单源未交叉验证，置信度：低</strong>）。若属实，则&quot;大基金持股&quot;标签成立，但持股方向是<strong>减持</strong>。</li>
+</ul>
+<p><strong>（3）非业务标签（指数成份与交易机制）</strong></p>
+<ul>
+<li>上证 180 成份股（883302.TI）、沪深 300 样本股（883300.TI）、沪股通（885520.TI）、融资融券（885338.TI）——这四个只反映该票的指数纳入与交易资格，<strong>与业务无关</strong>，但有一个实际含义：<strong>被动指数资金与融资盘的存在会放大波动</strong>（置信度：高）。</li>
+</ul>
+<p><strong>产业链位置</strong></p>
+<ul>
+<li><strong>上游</strong>：真空腔体、射频电源、质量流量计、密封件等精密零部件（其中高端件仍较依赖进口）——该公司对上游议价能力一般（置信度：低，库内无采购数据，属行业常识推断）。</li>
+<li><strong>本环节</strong>：薄膜沉积设备（PECVD / ALD / SACVD），全球由应用材料、泛林、东京电子主导（见 D 节）。</li>
+<li><strong>下游</strong>：晶圆厂——中芯国际、华虹、长江存储、长鑫存储等（库内简介点名）。</li>
+<li><strong>议价权在下游</strong>：晶圆厂客户高度集中、验证周期由客户掌控、付款节奏由客户决定。<strong>这解释了为什么在营收高增的同时公司现金流承压</strong>（置信度：中，现金流为库外定性信息，见 C 节）。</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<p><strong>（1）库内新闻：0 条 —— 这本身是最重要的一条信息</strong></p>
+<p>库内新闻（近 60 日）返回<strong>空列表</strong>。<strong>同期公开渠道明确存在重大事件</strong>（重组停牌复牌、业绩说明会——见下），因此这不是&quot;这票没消息&quot;，而是<strong>库内新闻链的别名表未覆盖该票</strong>（置信度：高）。补法见 M 节。</p>
+<p><strong>（2）联网补充的关键事件（按时间顺序，均带来源）</strong></p>
+<ul>
+<li><strong>2026-06-26 晚</strong>：公告筹划以发行股份及支付现金方式购买无锡尚积半导体控股权并募集配套资金；<strong>股票自 06-29 开市起停牌</strong>（来源：财联社《2300 多亿市值拓荆科技拟购尚积半导体控股权》；新浪财经 2026-06-27；两源独立，置信度：中）。</li>
+<li><strong>2026-07-08</strong>：召开 2025 年报及 2026 一季报业绩说明会，管理层表示先进产品已规模化量产、<strong>后续毛利率预计趋于平稳</strong>，并披露截至 2025-12-31 在手订单约 110 亿元（来源：21 财经 2026-07-09、财联社 2026-07-09、证券时报网 2026-07-09；三源独立，置信度：中）。</li>
+</ul>
+<p>⚠️ <strong>&quot;毛利率预计趋于平稳&quot;这句话值得单独划出来</strong>：它与 C 节&quot;毛利率四期连续上行&quot;的趋势并不矛盾，但它是管理层亲口给的<strong>降速指引</strong>——若照此理解，把 41.69% 的 Q1 毛利率线性外推到未来几个季度是危险的（置信度：中）。</p>
+<ul>
+<li><strong>2026-07-10 晚</strong>：正式披露重组预案，拟购买无锡尚积 82.97% 股份、上海泰纳微 100% 股权、无锡宽行 100% 股权，交易完成后直接及间接持有无锡尚积 100%；同时向不超过 35 名特定投资者发行股份募集配套资金。<strong>初步测算不构成重大资产重组、不构成关联交易、不构成重组上市</strong>；<strong>审计及评估工作尚未完成，标的资产估值及定价尚未确定</strong>。<strong>股票自 07-13 开市起复牌</strong>（来源：上海证券报刊登的《预案（摘要）》2026-07-11；21 财经 2026-07-10；东方财富公告库；三源一致，置信度：高）。
+<ul>
+<li>战略含义：补齐 PVD 产品线与刻蚀短板，形成&quot;薄膜沉积 + 刻蚀 + 键合 + 检测&quot;的成套三维集成设备线（来源：电子工程专辑《补齐 PVD 与刻蚀短板》；新浪财经《谋求&quot;沉积+刻蚀&quot;双主线布局》2026-07-04；两源独立，置信度：中）。</li>
+<li><strong>后续程序尚待</strong>：董事会再次审议 → 股东会审议 → 上交所审核 → 中国证监会同意注册（来源：上海证券报预案摘要 2026-07-11，置信度：高）。</li>
+</ul></li>
+</ul>
+<p><strong>（3）涨停记录</strong>（来源：库内涨停记录（近 180 日））</p>
+<p>近 180 个交易日内<strong>仅 1 次涨停</strong>：</p>
+<ul>
+<li><strong>2026-07-21</strong>：涨幅 <strong>+20.00%</strong>（科创板涨停），首次封板时间 14:37:25、最后封板时间同为 14:37:25，<strong>开板 0 次</strong>、连板数 1、封单金额 0.58 亿元、涨停统计。</li>
+<li>判读：<strong>尾盘 14:37 才封板、封单仅 0.58 亿元</strong>——对一只 2000 亿市值的票来说封单极薄，属于&quot;当天冲上去了但共识不牢&quot;的形态，不是资金坚决抢筹的一字板（置信度：中）。</li>
+<li>时间上它落在 07-13 复牌之后第 7 个交易日，与重组题材发酵的时间窗吻合（置信度：中，属时间相关性推断，非因果证据）。</li>
+</ul>
+<p>⚠️ 该 +20.00% 是 <strong>2026-07-21 当天</strong>的涨幅，是历史时点快照。当前状态以库内行情为准：<strong>2026-08-11 11:30 现价 721.46 元、−0.90%</strong>。</p>
+<p><strong>（4）资金与筹码</strong>（来源：库内资金筹码）</p>
+<ul>
+<li><strong>资金流</strong>（窗口 2026-07-14 ~ 2026-08-10，共 20 个交易日）：
+<ul>
+<li>全口径净流入合计 <strong>+51.4 亿元</strong>，其中净流入为正 <strong>15 天</strong> / 为负 5 天；</li>
+<li><strong>特大单（主力口径）净额 −5.9 亿元</strong>。</li>
+<li>判读：<strong>方向背离</strong>——全口径在流入而主力在流出，说明这段时间的买盘更多来自中小单，大单是净减持方（置信度：中）。</li>
+</ul></li>
+<li><strong>筹码分布</strong>：筹码分布返回 None ——<strong>筹码数据库内仅覆盖关注票，该票暂无</strong>（这是数据囤货范围问题，不是&quot;该票无筹码结构&quot;）。因此本报告<strong>无法给出获利盘比例（获利盘比例）与成本分布</strong>的任何读数。</li>
+<li><strong>股东户数</strong>：股东户数返回 None ——库内无该票股东户数序列，无法判断筹码集中/趋散（季度披露本身也天然滞后）。</li>
+</ul>
+<div class="callout">⚠️ <strong>纪律声明</strong>：本节的资金流数据是盘面现象，不是基本面证据。它在 J 节逻辑链中<strong>不作为任何一环的决定性论据</strong>，也不单独支撑 L 节的任何操作倾向。</div>
+<h2>I. 未来 13 周事件日历</h2>
+<p>来源：库内事件日历（近 120 日）（库内，已滤除 speculative 猜测项）+ 联网补充（逐条标注）。周起始日按自然周一。</p>
+<ul>
+<li><strong>W1（2026-08-10 起）</strong>：
+<ul>
+<li>2026-08-13 · <strong>中芯国际公布 2026 年第二季度业绩并召开业绩说明会</strong> · 公司事件 · 重要性 7（库内）· 影响：国内代工龙头的资本开支与产能指引是国产设备订单的领先变量，直接验证 F 节的下游扩产假设。</li>
+<li>2026-08-13 · <strong>华虹宏力公布 2026 年第二季度业绩</strong> · 公司事件 · 重要性 6（库内）· 影响：与中芯同日，两家一起看可分辨&quot;个体节奏&quot;还是&quot;行业景气&quot;。</li>
+</ul></li>
+<li><strong>W2（2026-08-17 起）</strong>：
+<ul>
+<li>2026-08-21 · <strong>拓荆科技 2026 年中报披露</strong>（交易所官方披露计划，库内注明&quot;改期会自动跟随更新&quot;）· 公司事件 · 重要性 7 · 影响：<strong>本报告最关键的单一验证点</strong>，直接决定 C 节结论存废。</li>
+</ul></li>
+<li><strong>W3（2026-08-24 起）</strong>：
+<ul>
+<li>2026-08-26 · <strong>英伟达公布 2026 财年第二季度财报（美股盘后）</strong> · 公司事件 · 重要性 9（库内）· 影响：全球算力资本开支情绪的总闸，间接影响 A 股半导体板块 beta，与该公司主营（存储/逻辑扩产）关联为间接。</li>
+</ul></li>
+<li><strong>W4（2026-08-31 起）</strong>：
+<ul>
+<li>2026-08-31 · <strong>第十四届半导体设备材料及核心部件展（CSEAC 2026）无锡开幕</strong> · 行业会议 · 重要性 7（库内）· 影响：国产设备厂商集中亮相，是观察产品进展与订单口风的窗口。</li>
+<li>2026-09-02 · <strong>博通公布 2026 财年第三季度财报</strong> · 公司事件 · 重要性 8（库内）· 影响：北美 AI 资本开支景气度读数，对该票为间接影响。</li>
+</ul></li>
+<li><strong>W5（2026-09-07 起）</strong>：本周无已知事件。</li>
+<li><strong>W6（2026-09-14 起）</strong>：本周无已知事件。</li>
+<li><strong>W7（2026-09-21 起）</strong>：本周无已知事件。</li>
+<li><strong>W8（2026-09-28 起）</strong>：本周无已知事件。</li>
+<li><strong>W9（2026-10-05 起）</strong>：国庆假期 A 股休市（常规安排，具体以交易所公告为准 · 置信度：中）· 无公司层面已知事件。</li>
+<li><strong>W10（2026-10-12 起）</strong>：本周无已知事件。</li>
+<li><strong>W11（2026-10-19 起）</strong>：本周无已知事件。</li>
+<li><strong>W12（2026-10-26 起）</strong>：<strong>2026 年三季报披露窗口</strong>（推断日期 · 依据：库内财务显示上年三季报公告日为 2025-10-31；A 股三季报法定截止为 10 月 31 日 · <strong>非官方日期，置信度：中</strong>）· 影响：验证毛利率是否守住、主营利润是否独立放量。</li>
+<li><strong>W13（2026-11-02 起）</strong>：本周无已知事件（若三季报排在 10-31 之后的顺延交易日，则落在本周）。</li>
+</ul>
+<p><strong>贯穿全期的不定时点事件（无法排进某一周，但随时可能落地）</strong>：</p>
+<ul>
+<li><strong>重组进程的四道关卡</strong>：董事会再次审议 → 股东会审议 → 上交所审核 → 证监会同意注册（来源：上海证券报预案摘要 2026-07-11）。<strong>预案明确&quot;审计及评估工作尚未完成、标的资产估值及定价尚未确定&quot;</strong>，因此<strong>重组草案（含定价与发行股份数量）的披露时点完全不可预知，可能落在 W1–W13 任意一周</strong>（置信度：高——不确定性本身是确定的）。这是本季度最大的单一不可预知变量。</li>
+</ul>
+<h2>J. 逻辑链</h2>
+<p>把 B–I 串成一条可证伪的链，每环标置信度，最弱一环单独点名。</p>
+<p><strong>环 1</strong>｜因为<strong>美国对华设备管制在 2026 年整体趋紧</strong>（F 节，多源，置信度：中），且<strong>长鑫/长江存储启动大规模设备招标、长江存储三期国产化目标设在 50% 以上</strong>（F 节，两源，置信度：中）→ <strong>所以国内薄膜沉积环节的国产设备需求在放量</strong>。 → *可观察现象*：8-13 中芯国际/华虹 Q2 业绩会上的资本开支与产能指引上修；CSEAC 展会（8-31）上设备厂商的订单口风。</p>
+<p><strong>环 2</strong>｜因为<strong>该公司是库内简介所称&quot;国内唯一产业化应用的 PECVD/SACVD 厂商&quot;、客户覆盖长江存储与长鑫存储</strong>（B/E 节，库内，置信度：中）→ <strong>所以环 1 的需求会较大比例落到它头上</strong>。 → *可观察现象*：在手订单继续增长（上一披露值约 110 亿元 / 2025-12-31，置信度：中）。</p>
+<p><strong>环 3</strong>｜因为<strong>毛利率四期单调回升 31.96% → 41.69%</strong>（C 节，库内，置信度：<strong>高</strong>）→ <strong>所以产品结构在改善、早期新品验证成本的拖累已过去</strong>。 → *可观察现象*：8-21 中报毛利率不低于 40%，且这一水平不依赖单季偶然因素。</p>
+<p><strong>环 4（⚠️ 最弱一环，整条链的命门）</strong>｜<strong>当期利润与主营脱节</strong>：2026Q1 净利润 5.71 亿元 &gt; 推算毛利润约 4.64 亿元（C 节，库内推导，置信度：<strong>高</strong>）→ <strong>所以&quot;净利润 +488.29%&quot;无法证明主营盈利能力，环 3 的毛利率改善到底转化了多少真实主营利润，目前是空白</strong>。 → *证伪方式*：若 8-21 中报显示剔除投资类损益后的主营利润规模仍然很小（相对 2000 亿市值），则整条链在&quot;景气 → 订单 → 毛利 → <strong>利润</strong>&quot;的最后一跳上断裂，<strong>前三环再成立也支撑不起当前的 PB 29.20</strong>（置信度：高）。</p>
+<p><strong>环 5（估值约束）</strong>｜因为<strong>PB 29.20 为库内可比设备票最高</strong>（D 节，库内，置信度：高）→ <strong>所以市场已经把上述四环的正面结果大部分计入价格</strong>。 → *可观察现象*：即使中报数据不错，股价也未必上行（&quot;利好兑现&quot;）；反之数据不及预期时下行弹性更大。这解释了为何 A 节方向判为&quot;震荡&quot;而非&quot;偏涨&quot;。</p>
+<p><strong>链条的完整表述</strong>：管制趋紧 + 存储扩产（中）→ 国产薄膜设备需求放量（中）→ 该公司订单与营收高增（高，已验证）→ 毛利率修复（高，已验证）→ <strong>主营利润是否同步兑现（未验证，最弱环）</strong> → 而估值已按&quot;全部兑现&quot;定价（高）。<strong>因此这条链现在缺的不是故事，是最后一跳的证据，而它的到期日就是 2026-08-21。</strong></p>
+<h2>K. 三情景推演（概率合计 100%）</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜<strong>触发</strong>：8-21 中报同时满足两条——① 半年度毛利率 ≥ 40%（对照 2025H1 的 31.96%）；② 剔除投资类损益后的主营利润较 2025 全年（净利润 9.27 亿元，其中含非主营部分未知）呈现实质性放量，且经营性现金流转正｜<strong>路径</strong>：环 4 被证实，逻辑链闭合；叠加 8-13 中芯/华虹给出资本开支上修指引与重组草案顺利推进，市场愿意为&quot;沉积 + 刻蚀 + 键合 + 检测&quot;的平台化叙事继续给溢价，估值高位得到业绩消化，走出震荡区间向上。</li>
+<li><strong>中性（50%）</strong>｜<strong>触发</strong>：8-21 中报营收同比高增（低基数下几乎必然）、毛利率落在 35%–40% 区间（介于 2025 年报的 34.95% 与 Q1 的 41.69% 之间，与管理层&quot;毛利率趋于平稳&quot;的指引一致），主营利润改善但幅度平平｜<strong>路径</strong>：数据既不证伪也不证实环 4，市场在 PE 128.70 / PB 29.20 的高位上继续等待，股价跟随半导体设备板块 beta 宽幅震荡；重组草案披露成为阶段性题材脉冲，但因定价与摊薄比例未定而难以形成趋势。</li>
+<li><strong>悲观（25%）</strong>｜<strong>触发</strong>：出现下列任一——① 8-21 中报毛利率回落至 35% 以下；② 中报显示利润仍以投资类损益为主、主营利润占比未见提升；③ 重组草案披露的配套融资规模造成显著股本摊薄，或交易被终止；④ 出口管制升级到零部件/耗材层面（F 节第 1 条的双刃面）｜<strong>路径</strong>：环 4 被证伪，PB 29.20 失去支撑，从&quot;业绩验证&quot;直接转为&quot;估值消化&quot;，且因该票同时具备融资融券与指数成份属性（G 节第 3 类），下行时波动会被放大。</li>
+</ul>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向（三条，条件全部来自本报告出现过的指标或事件）</strong></p>
+<ol>
+<li><strong>如果</strong> 2026-08-21 披露的中报显示半年度毛利率 ≥ 40%（对照 2025H1 的 31.96%、2026Q1 的 41.69%）<strong>且</strong>该期净利润不再高于&quot;营收 × 毛利率&quot;推算出的毛利润（即利润重新由主营驱动），<strong>那么</strong> 可将该票从&quot;观望&quot;转为<strong>小仓位试仓</strong>，并以后续三季报（W12 前后）作为下一个复核点。</li>
+<li><strong>如果</strong> 2026-08-21 中报的毛利率回落至 35% 以下（跌破 2025 年报的 34.95% 水平），<strong>或者</strong> 该期净利润仍高于推算毛利润（利润继续由主营以外的项目撑起），<strong>那么</strong> <strong>回避</strong>，不因&quot;营收同比高增&quot;这一低基数产物改变判断。</li>
+<li><strong>如果</strong> 重组草案披露的配套融资与发行股份方案导致股本显著摊薄，<strong>或者</strong> 该交易在董事会再次审议 / 股东会 / 上交所审核 / 证监会注册四道关卡中的任一环被否或主动终止（程序来源：上海证券报预案摘要 2026-07-11），<strong>那么</strong> <strong>减仓</strong>至观察仓位——因为 D 节所示的 PB 29.20 溢价里，有一部分正是平台化叙事给的。</li>
+</ol>
+<p><strong>风控要点（写&quot;这笔判断在什么情况下应当被推翻&quot;，不写止损价）</strong></p>
+<ul>
+<li><strong>推翻&quot;震荡&quot;转向偏涨的条件</strong>：环 4 被中报证实（主营利润独立放量）<strong>且</strong> 8-13 中芯国际/华虹 Q2 给出资本开支上修指引——两个条件同时成立时，本报告的偏谨慎基调应当被推翻。</li>
+<li><strong>推翻&quot;震荡&quot;转向偏跌的条件</strong>：中报毛利率跌破 35%，<strong>或</strong>出口管制扩大到设备零部件层面（F 节第 1 条推演的那个双刃面兑现）。</li>
+<li><strong>本判断的失效期限</strong>：<strong>2026-08-21</strong>。中报一旦披露，C 节的四期数据基础即被替换，本报告需重跑（库内财务会新增 2026H1 一期）。</li>
+<li><strong>一条特别提醒</strong>：H 节的资金流背离（全口径 +51.4 亿 vs 特大单 −5.9 亿）<strong>不作为任何操作条件</strong>——它是盘面现象，仅供理解当前分歧程度。</li>
+</ul>
+<p><strong>仓位思路</strong></p>
+<ul>
+<li>当前状态（中报未出、环 4 未验证、PB 为可比同业最高）下，相对概念为 <strong>轻 / 不参与</strong>。</li>
+<li>若条件 1 触发，可从&quot;不参与&quot;上调至 <strong>轻仓</strong>；本报告在任何情形下都不支持&quot;重仓&quot;这一相对档位——理由是单一验证点（中报）尚未通过，且估值不留容错空间。</li>
+<li>不给具体金额、不给股数、不给目标价、不给评级。</li>
+</ul>
+<h2>M. 逻辑自查</h2>
+<p><strong>（1）这份判断最依赖的假设是哪一条？错了会怎样？</strong></p>
+<p>最依赖的是 <strong>&quot;2026Q1 的净利润主要来自主营之外&quot;</strong> 这一推导（净利润 5.71 亿 &gt; 营收 11.12 亿 × 毛利率 41.69% ≈ 4.64 亿）。</p>
+<ul>
+<li>它错的可能性：若库内财务的毛利率字段与营收/归母净利并非同一合并口径（例如毛利率为母公司口径而利润为合并口径），这个不等式就不成立。库内无字段说明可供核对（置信度：中）。</li>
+<li>错了会怎样：<strong>A 节风险 1、C 节判读 3、J 节环 4、K 节三情景的全部触发条件、L 节条件 1 和 2 —— 六处会一起垮掉</strong>，报告结论会从&quot;震荡&quot;整体上移。这是本报告的单点故障，已尽量用&quot;可由中报直接证伪&quot;的方式把它交给数据裁决。</li>
+</ul>
+<p><strong>（2）有没有为了让逻辑好看而忽略的反面证据？</strong></p>
+<p>有三条，主动列出：</p>
+<ul>
+<li><strong>我强调了净利润质量问题，但没有同等篇幅强调营收的含金量</strong>：营收 +56.97%（Q1）、+58.87%（2025 全年）是收入确认口径的真实数字，不受非经常损益影响。<strong>营收这条线是干净的</strong>，我在 A 节把它排在驱动第 2 位而非第 1 位，属于偏保守的排序。</li>
+<li><strong>我用&quot;PB 29.20 最贵&quot;做了减分，但 PB 高也可能因为该公司资产轻、净资产基数小</strong>——库内无净资产绝对额字段，我无法验证这一点（置信度：低，属未解决的对立解释）。</li>
+<li><strong>管理层&quot;毛利率趋于平稳&quot;这句话，我读作降速指引</strong>，但它也可以读作&quot;高位企稳&quot;的正面表述。我选了偏保守的那个读法，此处如实标出（置信度：中）。</li>
+</ul>
+<p><strong>（3）信息缺口清单</strong></p>
+<ol>
+<li><strong>库内无 2026H1 财报</strong>（库内财务最新期为 2026Q1，截止 20260331）。</li>
+</ol>
+<p><strong>影响</strong>：C 节全部趋势判断、J 节环 3/环 4、K 节全部触发条件，均只能基于 Q1。 <strong>补法</strong>：2026-08-21 中报披露后（见 I 节 W2）重跑本调研。</p>
+<ol>
+<li><strong>库内财务不含扣非净利润、经营性现金流、研发费用、净资产绝对额四类字段</strong>。</li>
+</ol>
+<p><strong>影响</strong>：C 节的&quot;利润非主营&quot;只能靠&quot;净利润 vs 推算毛利润&quot;这一间接不等式论证，无法直接量化；E 节无法量化技术壁垒；本条是 M(1) 单点故障的成因。 <strong>补法</strong>：这是数据层字段覆盖问题，需扩充库内财务表字段；短期内只能靠中报原文人工核。</p>
+<ol>
+<li><strong>库内新闻链 60 天 0 条覆盖</strong>（库内新闻返回空）。</li>
+</ol>
+<p><strong>影响</strong>：H 节整节的事件全部依赖联网，<strong>这意味着本报告对该票消息面的感知没有任何库内交叉校验</strong>；若联网检索有遗漏，我不会知道自己漏了。这是本报告第二大结构性盲区。 <strong>补法</strong>：把&quot;拓荆科技&quot;及其别名加入新闻打分链的实体别名表，使新闻事件表能命中 688072。</p>
+<p><strong>影响</strong>：D 节的同业名单由我人工挑选而非函数按市值自动取前三，<strong>存在选样偏差风险</strong>（我选的都是设备票，若函数按市值取则可能取到中芯国际这类非设备公司，对比意义反而更弱——但这是我的判断，读者应知情）。所有数字仍来自库内基础资料 / 库内估值 / 库内财务三个库内取数。 <strong>补法</strong>：属数据层性能问题，与本次调研无关；报告层面的补法是下次复跑时改用同样的逐只取数路径。</p>
+<ol>
+<li><strong>筹码分布（筹码分布）与股东户数（股东户数）均为 None</strong>。</li>
+</ol>
+<p><strong>影响</strong>：H 节无法给出获利盘比例与筹码集中度，对&quot;当前套牢盘/获利盘结构&quot;零判断——这是数据囤货范围所致（筹码数据库内仅覆盖关注票），不是事实缺失。 <strong>补法</strong>：将该票纳入筹码数据囤货范围后可自动补齐。</p>
+<ol>
+<li><strong>F 节的国产化率数据存在一倍以上的口径冲突</strong>（27% 与 61% 两个版本）。</li>
+</ol>
+<p><strong>影响</strong>：无法给出该公司所在环节国产替代空间的量化上限，只能保留方向性判断。 <strong>补法</strong>：以一手来源（SEMI 或中国半导体行业协会口径报告）替代二手汇总。</p>
+<ol>
+<li><strong>在手订单（约 110 亿元 / 截至 2025-12-31）为库外信息</strong>，且已过去半年多。</li>
+</ol>
+<p><strong>影响</strong>：E 节&quot;1.7 倍年收入订单覆盖&quot;这一比值是库外分子配库内分母的混合口径，只标中置信度。 <strong>补法</strong>：8-21 中报若披露最新在手订单，届时以中报数据替换。</p>
+<p><strong>（4）本报告的复盘锚</strong></p>
+<p>三个月后回看，请对着 I 节日历核三件事：① 8-21 中报的毛利率与主营利润，落在 K 节哪个情景的触发区间；② 8-13 中芯/华虹的资本开支指引是否验证了 J 节环 1；③ 重组草案是否在 13 周内披露、定价与摊薄比例如何。这三件事的答案，决定本报告的&quot;震荡（置信度：中）&quot;是对是错。</p>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-08-11），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>Q1净利5.71亿超推算毛利4.64亿</li>
+      <li>PB29.2为可比设备票最高</li>
+      <li>特大单20日净流出5.9亿背离</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>扣非净利</dt><dd>扣除非经常性损益后的净利润。剔除卖资产、政府补助、公允价值变动等一次性项目，更接近主业真实盈利。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> ZAKER 转载产业梳理、新浪财经《长存长鑫新一轮扩产相关产业链信息》2026-02-08 <em>2026-02-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 置信度：中，两源方向一致但均为二手汇总 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内公司档案 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内行情，唯一行情事实源 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内估值，交易日 2026-08-10 收盘口径 <em>2026-08-10</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经《拓荆科技 2026 年一季报解读》2026-04-28 <em>2026-04-28</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 网易财经同日报道 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富财富号《2026 年全球电子薄膜行业现状与国产化替代投资图谱》2026-03-12 <em>2026-03-12</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 报告大厅《2026 年半导体薄膜沉积设备竞争格局分析：全球 CR3 超 75%》 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 21 财经《直击拓荆科技业绩会：先进产品已量产》2026-07-09 <em>2026-07-09</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社《直击拓荆科技业绩会：先进产品已规模化量产后续毛利率预计趋于平稳》 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 两源独立报道同一场会议、口径一致，置信度：中 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> East Asia Forum《US chip export controls have cooled down》2026-03-11 <em>2026-03-11</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> Congress.gov CRS 报告 R48642 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-reg">监管</span> 同上两源转述 BIS 处罚 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> ZAKER 转载《长鑫长江存储扩产设备采购超 200 亿》 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 腾讯新闻《中国内存一哥扩产：长鑫存储年底产能将追平美光》2026-07-14 <em>2026-07-14</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 麦姆斯咨询 / 知乎《中国大陆半导体设备产业—2026 版》 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富财富号 2026-03-12 <em>2026-03-12</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 九方智投《拓荆科技：半导体薄膜设备领军者混合键合开启第二成长曲线》 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 21 财经业绩会报道 2026-07-09 <em>2026-07-09</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社 2026-01 <em>2026-01</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 单源未交叉验证，置信度：低 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社《2300 多亿市值拓荆科技拟购尚积半导体控股权》 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-06-27 <em>2026-06-27</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 两源独立，置信度：中 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 21 财经 2026-07-09、财联社 2026-07-09、证券时报网 2026-07-09 <em>2026-07-09</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 三源独立，置信度：中 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 上海证券报刊登的《预案（摘要 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 电子工程专辑《补齐 PVD 与刻蚀短板》 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经《谋求&quot;沉积+刻蚀&quot;双主线布局》2026-07-04 <em>2026-07-04</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 上海证券报预案摘要 2026-07-11，置信度：高 <em>2026-07-11</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内涨停记录（近 180 日 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内资金筹码 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 上海证券报预案摘要 2026-07-11 <em>2026-07-11</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 推断日期 · 依据：库内财务显示上年三季报公告日为 2025-10-31 <em>2025-10-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> A 股三季报法定截止为 10 月 31 日 · 非官方日期，置信度：中 — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-08-11 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>

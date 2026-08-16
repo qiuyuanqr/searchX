@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>蓝思科技（300433.SZ） · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>蓝思科技（300433.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-07-30（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>关联板块</b> AI应用 · 机器人 · 算力</span>
+      <span><b>来源</b> 27 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    蓝思科技（300433）主要做的是视窗防护玻璃的研发、生产与销售。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——折叠屏叙事很响，但账上已在亏钱。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向偏跌、置信度中：折叠屏叙事很响，但账上已在亏钱。支撑在于苹果折叠屏UTG主供预期；Intel签TGV先进封装备忘录；人形机器人政策与订单提速。主要风险是Q1营收降17%净利转亏1.5亿；卖方预期60亿与实际落差极大；手机出货降14%叠加股东减持窗口。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>苹果折叠屏UTG主供预期</li>
+      <li>Intel签TGV先进封装备忘录</li>
+      <li>人形机器人政策与订单提速</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据时点：库内估值/财务截至 2026-07-30 · 行情库内行情数据时点 16:29（当日收盘）· 报告生成 2026-07-30</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：偏跌（置信度：中） <strong>一句话逻辑</strong>：折叠屏叙事很响，但账上已在亏钱。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>苹果折叠屏 UTG 主供预期</strong>——iPhone Fold 计划 2026 年 9 月发布、7 月起大规模量产，蓝思供超薄玻璃盖板。这是当前股价里最主要的一块预期（置信度：中，多源联网、非库内财务佐证）</li>
+<li><strong>与 Intel 签 TGV 先进封装合作备忘录</strong>（2026-07-24，库内新闻确证）——打开玻璃基板/半导体第二叙事（置信度：高，事件本身；置信度：低，对营收的实际贡献）</li>
+<li><strong>人形机器人/具身智能产业化提速</strong>——工信部专项行动 + 特斯拉 Optimus 供应链批量供货时点临近（置信度：中）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>基本面已经在恶化，不是预期而是事实</strong>：2026Q1 营收 141.4 亿、同比 <strong>-17.13%</strong>，归母净利 <strong>-1.5 亿</strong>、同比 <strong>-134.88%</strong>（库内财务，置信度：高）</li>
+<li><strong>卖方预测与库内实际存在巨大落差</strong>：卖方普遍预期 2026 年归母净利 60-69 亿，而 Q1 实际亏损 1.5 亿——要兑现需后三季合计盈利超 61 亿（置信度：高，落差本身；置信度：低，卖方数字）</li>
+<li><strong>行业逆风 + 股东减持窗口叠加</strong>：2026 年全球手机出货量预计同比 -13.9%（2013 年来新低），三家早期财务投资股东减持窗口 2026-07-13 至 10-12 敞开（置信度：中）</li>
+</ol>
+<p><strong>最该盯的信号</strong>：① 中报实际归母净利是否仍为负（核验时点：2026 年 8 月下旬，见 I 节 W3）；② 9 月苹果发布会后折叠屏是否有可核验的出货/订单披露（核验时点：W6-W8）。</p>
+<p><strong>这份判断最可能错在哪</strong>：如果 Q1 的亏损主因（汇率约 5 亿影响）确属一次性，且折叠屏 Q3 起放量，则中报可能环比大幅改善——本报告的&quot;偏跌&quot;会被证伪。我拿不到 Q2 单季数据，这是最大盲区。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>名称</strong>：蓝思科技 · <strong>代码</strong>：300433 · <strong>市场</strong>：创业板 · <strong>上市状态</strong>：L（正常上市）</li>
+<li><strong>上市日</strong>：2015-03-18（上市逾 11 年）</li>
+<li><strong>行业</strong>（库内口径）：元器件</li>
+<li><strong>主营业务</strong>（库内）：视窗防护玻璃的研发、生产与销售</li>
+<li><strong>业务全貌</strong>（库内简介）：智能手机与电脑、智能汽车与座舱、智能头显与智能穿戴等智能终端的<strong>结构件、功能模组、整机组装</strong>配套服务</li>
+<li><strong>员工数</strong>：145,683 人 · <strong>注册资本</strong>：52.79 亿元</li>
+</ul>
+<p><strong>当前行情</strong>（库内行情，唯一行情事实源，数据时点 16:29 = 当日收盘）：</p>
+<ul>
+<li>现价 <strong>30.83 元</strong> · 当日 <strong>-7.67%</strong> · 成交额 <strong>38.7 亿</strong> · 当日最高 +0.30% · 当日最低 -7.76%</li>
+</ul>
+<p>⚠️ 当日形态值得单独记一笔：全天最高仅 +0.30%，收盘 -7.67% 而最低 -7.76%——<strong>开盘冲高后单边下杀、近乎最低价收盘</strong>（置信度：高，库内行情直接推出）。这是资金明确出逃的形态，不是普通震荡。</p>
+<p><strong>估值</strong>（库内估值，交易日 2026-07-30）：</p>
+<ul>
+<li>PE(TTM) <strong>47.32</strong> · PB <strong>2.98</strong> · 股息率 <strong>1.62%</strong> · 总市值 <strong>1627.44 亿</strong> · 换手率 <strong>2.46%</strong></li>
+<li>行业（元器件）同行 <strong>309</strong> 只 · 行业 PE 中位数 <strong>59.02</strong> · 本股 PE 行业排名 <strong>第 88 便宜</strong></li>
+</ul>
+<p><strong>仅估值口径</strong>：PE 47.32 低于行业中位数 59.02，在 309 只同行里处于偏便宜的约 28% 分位（置信度：高，库内数字）。<strong>但这个&quot;便宜&quot;要打问号</strong>——见 C 节。</p>
+<h2>C. 财务健康</h2>
+<p><strong>⚠️ 信息缺口（本节最重要的一条）</strong>：库内财务（近 4 期）请求近 4 期，<strong>库中只返回 1 期</strong>（2026Q1）。 影响：<strong>无法做趋势判断</strong>——本节的所有结论只能基于单一期次的截面，看不出&quot;在变好还是变坏&quot;的斜率，也无法定位拐点。 补法：待库内财务补齐历史期次后重跑；或等中报披露（见 I 节 W3）后重做本节。</p>
+<p><strong>2026Q1（期末 2026-03-31，公告日 2026-04-16）</strong>——唯一可用期次：</p>
+<ul>
+<li>营业收入 <strong>141.4 亿元</strong> · 同比 <strong>-17.13%</strong></li>
+<li>归母净利润 <strong>-1.5 亿元</strong> · 同比 <strong>-134.88%</strong>（由盈转亏）</li>
+<li>ROE <strong>-0.27%</strong> · 毛利率 <strong>14.55%</strong> · 净利率 <strong>-1.02%</strong> · EPS <strong>-0.0284 元</strong></li>
+<li>资产负债率 <strong>33.90%</strong></li>
+</ul>
+<p><strong>判断</strong>：</p>
+<ol>
+<li><strong>营收与利润双杀，且利润是转亏不是减速</strong>（置信度：高）。营收 -17.13% 说明是<strong>量的收缩</strong>，不是单纯的成本问题；净利率 -1.02%、毛利率仅 14.55%，说明这门生意在当前价格与成本结构下已经不赚钱。</li>
+<li><strong>资产负债率 33.90% 偏低，财务结构是安全的</strong>（置信度：高）。这意味着短期没有债务爆雷风险，公司有时间等周期——亏损是经营性的，不是流动性的。</li>
+<li><strong>PE(TTM) 47.32 是一个正在失效的指标</strong>（置信度：高，推理）。TTM 是滚动 12 个月口径，当前仍包含 2025 年的盈利期。<strong>Q1 已亏损，若后续季度继续为负，TTM 分母将持续缩小，PE 会自动飙升</strong>——所以 B 节那个&quot;低于行业中位数&quot;的便宜，是回望盈利的账面幻觉，不代表前瞻性便宜。这是本报告最容易被误读的一处，特此点明。</li>
+<li><strong>股息率 1.62% 说明公司仍在分红</strong>（置信度：高，库内股息率）——在亏损季度仍维持分红，指向管理层认为亏损是阶段性的（置信度：低，属动机推测）。</li>
+</ol>
+<p>〔联网补充·亏损归因〕来源：新浪财经（2026-04-16）、央广财经（2026-04-16）· 观点：Q1 转亏主因为汇率大幅波动（粗估影响约 5 亿元）、消费级存储缺货涨价、部分消费电子客户需求下修；上年同期为盈利 4.29 亿 · 置信度：中（多源一致，且&quot;4.29 亿 → -1.5 亿&quot;与库内净利同比 -134.88% 交叉验算吻合）。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>影响：<strong>拿不到具体同行个股的市值/PE/PB/营收/净利/ROE 横向明细</strong>，本节无法做个股点对点对比。 补法：优化库内取数的取数写法（改为先取全表最大交易日再等值过滤）后重跑；</p>
+<p><strong>仍可用的行业维度</strong>（来自库内估值，合法库内返回值）：</p>
+<ul>
+<li>所属行业「元器件」共 <strong>309</strong> 只在市票</li>
+<li>行业 PE 中位数 <strong>59.02</strong> · 蓝思 PE(TTM) <strong>47.32</strong> · 蓝思 PE 行业排名 <strong>第 88 便宜</strong></li>
+</ul>
+<p><strong>判断</strong>：</p>
+<ol>
+<li><strong>蓝思估值低于行业中位数，在 309 只同行中处于偏便宜的约 28% 分位</strong>（置信度：高，库内数字直接推出）。</li>
+<li><strong>但这个相对便宜不能作为买贵买贱的依据</strong>（置信度：高）——理由同 C 节第 3 条：分子是当前价、分母是含 2025 年盈利的 TTM 利润。当同行大多仍在盈利、而蓝思已单季转亏时，用同一把 PE 尺子横比是<strong>失真的</strong>。</li>
+<li><strong>总市值 1627.44 亿 + 员工 14.57 万人</strong>，说明这是一家重资产、重人力的制造平台型公司（置信度：高，库内）。这类公司的特征是：<strong>营收下滑时利润的下滑是放大的</strong>（固定成本刚性）——Q1 营收 -17% 对应利润 -135%，正是这个杠杆的实证（置信度：中）。</li>
+</ol>
+<h2>E. 护城河与商业模式</h2>
+<p>基于库内主营/经营范围 + 联网产业信息，诚实分级：</p>
+<p><strong>阶段性优势（可识别，但非结构性）</strong>（置信度：中）</p>
+<ol>
+<li><strong>大客户深度绑定 + 精密玻璃加工工艺积累</strong>。库内经营范围覆盖光学玻璃制造、技术玻璃制品、真空镀膜加工、电镀/淬火/喷涂/金属切削等全链条工序——这套重资产工序组合本身构成中等门槛（新进入者要复制产线与良率需要数年）。</li>
+<li><strong>规模成本优势</strong>。14.57 万员工 + 1627 亿市值的体量，在结构件代工这个行业里属于头部规模，具备接大客户整机级订单的产能资格。</li>
+</ol>
+<p><strong>无明显结构性护城河</strong>（置信度：中）</p>
+<ul>
+<li>库内主营描述&quot;视窗防护玻璃的研发、生产与销售&quot;本质是<strong>消费电子结构件代工</strong>：定价权在下游品牌客户手里，不在蓝思手里。Q1 毛利率仅 14.55%（库内）就是这一议价地位的直接证据——<strong>14.55% 的毛利率不支持&quot;有护城河&quot;的叙事</strong>（置信度：高）。</li>
+<li>没有看到牌照壁垒、专利垄断或网络效应。工艺积累属于&quot;追赶需要时间&quot;而非&quot;追赶不可能&quot;。</li>
+</ul>
+<p><strong>商业模式的核心矛盾</strong>（置信度：中）：这是一家<strong>用制造业毛利率、承担科技股估值预期</strong>的公司。折叠屏/机器人/TGV 三条叙事线如果不能实质提升毛利率结构，那么营收增长只是在低毛利上做规模，利润弹性有限。这是判断这只票的关键框架。</p>
+<h2>F. 政策与监管</h2>
+<p>（库内无政策数据，本节全部为联网信息，每条带来源与日期）</p>
+<p><strong>1. 人形机器人与具身智能专项行动</strong>（传导方向：<strong>利好</strong>）</p>
+<p>〔来源〕新华网 2026-06-12、中新网 2026-06-10、中国工业新闻网 2026-06-09（三个独立来源交叉，置信度：中高） 〔内容〕工信部、国资委联合启动《2026 年度人形机器人与具身智能实景实训专项行动》，推动人形机器人在生产制造、仓储物流、医疗康养等重点场景常态化部署；目标到 2026 年底凝练百个以上高价值应用场景、<strong>带动形成万台级规模落地能力</strong>。 〔传导链条〕政策推动整机厂扩产 → 关节模组/灵巧手/整机组装等零部件订单增加 → 蓝思机器人子公司订单。 ⚠️ <strong>传导强度存疑</strong>：万台级规模对应的零部件市场，相对蓝思百亿级营收体量而言仍偏小（置信度：中）。</p>
+<p><strong>2. 2026 年消费品以旧换新（&quot;国补&quot;）</strong>（传导方向：<strong>温和利好</strong>）</p>
+<p>〔来源〕国家发改委官网《关于 2026 年实施大规模设备更新和消费品以旧换新政策的通知》（发改环资〔2025〕1745 号，2025-12-30）、新华网 2026-01-05（两个独立来源，置信度：高） 〔内容〕个人购买单价不超 6000 元的手机、平板等 4 类数码智能产品，可享成交价 15% 补贴、每件不超 500 元；2026 年在手机/平板/智能手表基础上<strong>进一步扩展至智能眼镜产品</strong>。 〔传导链条〕补贴 → 终端换机需求 → 结构件订单。 ⚠️ <strong>注意方向冲突</strong>：即便有国补，2026 年手机出货量预期仍是同比 -13.9%（见 J 节）——<strong>说明补贴力度不足以对冲存储涨价带来的终端提价压力</strong>（置信度：中）。智能眼镜纳入补贴，与蓝思「AI 眼镜」概念标签方向一致，是本条里最实质的一点。</p>
+<p><strong>信息缺口</strong>：未检索到 2026 年针对消费电子结构件行业的直接监管变化（出口管制、关税、环保限产等）。影响：F 节可能遗漏对海外产能（越南/泰国基地）有影响的贸易政策。补法：需针对性检索中美/东南亚贸易政策专项。</p>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 <strong>45 个</strong>同花顺概念标签。<strong>逐个分级如下</strong>（分级依据 = 库内主营/经营范围是否有对应描述、或财报是否有营收佐证）：</p>
+<p><strong>第一档 · 真有业务（库内经营范围或主营直接佐证）</strong></p>
+<ul>
+<li><strong>消费电子概念 / 苹果概念 / 华为概念 / 小米概念</strong> — 库内主营&quot;视窗防护玻璃&quot;+ 经营范围&quot;移动终端设备制造&quot;直接佐证。苹果为大客户有多源联网佐证（置信度：高）</li>
+<li><strong>柔性屏（折叠屏）</strong> — 经营范围含&quot;功能玻璃和新型光学材料&quot;，UTG 供货有多源联网佐证（置信度：中高）</li>
+<li><strong>智能穿戴 / 无线耳机 / 虚拟现实 / 元宇宙 / AI 眼镜</strong> — 库内简介明确&quot;智能头显与智能穿戴&quot;配套服务；经营范围含&quot;可穿戴智能设备制造&quot;&quot;虚拟现实设备制造&quot;（置信度：高）</li>
+<li><strong>智能座舱 / 汽车电子 / 新能源汽车</strong> — 库内简介明确&quot;智能汽车与座舱&quot;；经营范围含&quot;智能车载设备制造&quot;&quot;汽车零部件及配件制造&quot;（置信度：高）</li>
+<li><strong>玻璃基板 / 先进封装</strong> — 经营范围含&quot;光学玻璃制造&quot;&quot;技术玻璃制品制造&quot;；Intel TGV 合作备忘录有<strong>库内新闻</strong>直接佐证（置信度：中高，但⚠️ <strong>备忘录 ≠ 订单 ≠ 营收</strong>）</li>
+<li><strong>人形机器人 / 机器人概念</strong> — 经营范围含&quot;智能装备&quot;相关制造项；机器人子公司营收有联网佐证（置信度：中）</li>
+<li><strong>AI 手机</strong> — 同消费电子链（置信度：中）</li>
+<li><strong>传感器 / 智能家居 / 物联网相关</strong> — 经营范围含&quot;物联网设备制造&quot;&quot;物联网技术研发&quot;（置信度：中）</li>
+</ul>
+<p><strong>第二档 · 仅概念标签，未见营收佐证</strong>（⚠️ 这些不应计入基本面）</p>
+<ul>
+<li><strong>3D 打印 / TOPCON 电池 / 光伏概念 / 光纤概念 / 减速器 / 充电桩 / 商业航天 / 液冷服务器 / 新型烟草（电子烟）/ 智能物流 / 工业互联网 / 新型工业化 / OLED / 特斯拉概念 / 比亚迪概念 / 宁德时代概念 / 小米汽车 / 蚂蚁集团概念 / 3D 打印</strong></li>
+</ul>
+<p>→ 库内主营与经营范围<strong>均无对应营收描述</strong>，财务数据也无分部佐证。<strong>仅概念标签，未见营收佐证</strong>（置信度：高，即&quot;标签为真、业务未证&quot;）。 ⚠️ 特别提示：<strong>「特斯拉概念」虽有联网信息称机器人订单八成来自特斯拉与智元，但那是媒体口径、非库内财务佐证</strong>，故仍归第二档。</p>
+<p><strong>第三档 · 非业务类标签（指数/交易属性，无基本面含义）</strong></p>
+<ul>
+<li>沪深 300 样本股 / 同花顺漂亮 100 / 同花顺果指数 / 深股通 / 融资融券 / 回购增持再贷款概念 / 人民币贬值受益</li>
+</ul>
+<p>⚠️ <strong>「人民币贬值受益」这个标签在 2026 年是反讽</strong>：库外信息显示 Q1 亏损主因之一正是<strong>汇率波动造成约 5 亿元负面影响</strong>（新浪财经 2026-04-16）。标签方向与实际财务影响相反，是典型的&quot;标签不等于业务&quot;案例（置信度：中）。</p>
+<p><strong>产业链位置</strong></p>
+<ul>
+<li><strong>上游</strong>：玻璃原材料（康宁等基材供应商）、金属材料、加工设备 → 上游对蓝思有一定议价权，特殊基材（如 UTG 母材）依赖度更高</li>
+<li><strong>蓝思位置</strong>：中游<strong>精密结构件与功能模组制造 + 整机组装</strong></li>
+<li><strong>下游</strong>：苹果、华为、小米等终端品牌，以及特斯拉等机器人整机厂 → <strong>下游议价权显著强于蓝思</strong></li>
+</ul>
+<p><strong>议价能力结论</strong>：蓝思处在&quot;两头受挤&quot;的中游位置——上游存储/材料涨价传导不下去，下游品牌客户压价。<strong>14.55% 的毛利率（库内 Q1）就是这个位置的定价</strong>（置信度：高）。任何看多逻辑都必须回答&quot;什么让这个位置变好&quot;。</p>
+<h2>H. 消息面与市场情绪</h2>
+<p><strong>涨停史</strong>（库内涨停记录，近 180 日）：<strong>返回为空 —— 近 180 日无涨停记录</strong>（置信度：高）。</p>
+<p>这条&quot;没有&quot;本身是信息：这只票在过去半年里<strong>没有进入过游资情绪主升的状态</strong>，尽管它挂着折叠屏、机器人、先进封装等多个热门标签。说明市场对它的定价主要走<strong>机构基本面框架</strong>而非题材情绪框架——这意味着中报的实际数字对股价的权重会很高（置信度：中）。</p>
+<p><strong>近 60 日新闻</strong>（库内新闻，共 20 条；⚠️ 其中绝大多数为&quot;噪音其他&quot;，公司级实质公告偏少）。按重要性挑选：</p>
+<ol>
+<li><strong>2026-07-24 · 蓝思科技：与 Intel 签署合作备忘录，重点关注 TGV（玻璃通孔）先进封装</strong>（财联社，库内两条并列）</li>
+</ol>
+<p>→ <strong>对基本面：中期有实质潜力，短期无营收影响</strong>。备忘录属意向性文件，双方仅&quot;讨论和评估&quot;潜在合作（联网佐证：新浪科技 2026-07-24、证券时报 stcn）。这是目前公司最硬的新叙事，但离收入还很远（置信度：中）。</p>
+<ol>
+<li><strong>2026-07-26 · 时隔两月，又有两家行业龙头宣布达成玻璃基板合作，机构看好产业链四大方向</strong>（东方财富）</li>
+</ol>
+<p>→ <strong>对基本面：无直接影响，属板块情绪催化</strong>。可佐证玻璃基板赛道当前有资金关注度（置信度：中）。</p>
+<ol>
+<li><strong>2026-07-18 · 蓝思科技子公司与上纬新材达成战略合作</strong>（东方财富）</li>
+</ol>
+<p>→ <strong>对基本面：影响待观察</strong>。库内未见合作金额或标的披露，无法评估（置信度：低）。</p>
+<ol>
+<li><strong>2026-07-07 · 苹果折叠机量产在即：蓝思科技供 UTG，富士康高价招募临时工</strong>（东方财富 = product，是本批新闻中唯一被标为产品类的）</li>
+</ol>
+<p>→ <strong>对基本面：这是最关键的一条</strong>。若属实，对应 Q3 起的订单放量（置信度：中，媒体口径未经公司确认；库外补充：公司对是否已批量供货回应&quot;涉保密协议不披露客户信息&quot;，新浪财经 2026-07-03）。</p>
+<ol>
+<li><strong>2026-07-10 · &quot;果链&quot;三巨头会师港股，&quot;A+H&quot;转型赛跑</strong>（东方财富）</li>
+</ol>
+<p>→ <strong>对基本面：无直接影响</strong>，属资本运作层面报道。</p>
+<ol>
+<li><strong>2026-07-21 · 上半年我国人形机器人整机产品达 400 款超全球半数</strong>（东方财富）</li>
+</ol>
+<p>→ <strong>对基本面：行业层面利好，对蓝思的传导需订单佐证</strong>（置信度：低）。</p>
+<p><strong>⚠️ 新闻中的行情数字说明</strong>：本批新闻含多条&quot;主力资金监控&quot;&quot;特大单净流入&quot;类标题，其中的涨跌与资金数字<strong>均为发稿时点的盘中旧快照</strong>，不代表当前状态。本报告一律不引用其中数字；当前行情以库内行情（30.83 元 / -7.67% / 数据时点 16:29）为准。</p>
+<p><strong>情绪面综合判断</strong>（置信度：中）：<strong>消息面偏正面（Intel 合作、折叠屏量产），但股价当日大跌 7.67% 且近乎最低收盘、近 180 日无涨停</strong>——<strong>利好出而股价不涨反跌，是典型的&quot;利好兑现不了业绩&quot;信号</strong>。市场在用脚投票表达对中报的担忧，而不是对题材的否定。</p>
+<p>⚠️ <strong>信息缺口</strong>：本次调研<strong>未能定位 2026-07-30 当日下跌 7.67% 的直接触发事件</strong>（库内新闻最新为 07-28，联网检索未找到当日公告）。影响：无法判断这是中报预告落地、减持公告、还是板块性调整。<strong>这是本报告的重要盲区</strong>，不做猜测。补法：查阅公司 2026-07-29/30 巨潮公告与当日龙虎榜。</p>
+<h2>I. 未来 13 周事件日历</h2>
+<p>（库内事件日历返回 3 条，<strong>且全部为概念 886069.TI「人形机器人」匹配的行业事件，无一条是公司自身事件</strong>——这本身说明库内缺公司级事件源。其余为联网补充，标注来源）</p>
+<ul>
+<li><strong>W1（2026-08-03 起）</strong>：特斯拉 Optimus 人形机器人供应链开始批量供货（08-01）· 行业 · 重要性高（库内 importance 7）· 影响：验证 G 节机器人业务是否有实质订单落地｜同期：荣耀 Robot Phone 正式发布（08-01）· 行业 · 重要性高（库内 importance 7）· 影响：AI 终端新形态，可能带动消费电子情绪</li>
+<li><strong>W2（2026-08-10 起）</strong>：本周无已知事件（可关注中报预约披露日变更公告）</li>
+<li><strong>W3（2026-08-17 起）</strong>：<strong>2026 年半年报披露</strong>（〔联网·单源未交叉验证〕来源：新浪财经引述，称 8 月 22 日披露 · 置信度：低）· 财报 · 重要性 <strong>最高</strong> · 影响：<strong>本报告的核心验证点</strong>——验证 C 节&quot;是否持续亏损&quot;、A 节方向判断的成败全在此</li>
+<li><strong>W4（2026-08-24 起）</strong>：中报后市场消化窗口 · 无已知具体事件 · 影响：观察中报后机构盈利预测是否下修（对照 J 节的预期差）</li>
+<li><strong>W5（2026-08-31 起）</strong>：特斯拉要求供应商达到 Optimus 周产 1000 台产能目标（09-01）· 行业 · 重要性高（库内 importance 8，为三条中最高）· 影响：机器人零部件订单能否放量的关键节点</li>
+<li><strong>W6（2026-09-07 起）</strong>：苹果秋季发布会窗口期（〔联网〕来源：新浪科技 2026-04-08、中关村在线，称 iPhone Fold 于 9 月发布 · 置信度：中）· 行业 · 重要性高 · 影响：折叠屏 UTG 叙事兑现或证伪的第一时点</li>
+<li><strong>W7（2026-09-14 起）</strong>：苹果新机上市/首销窗口 · 行业 · 重要性中 · 影响：折叠屏实际销量反馈开始出现</li>
+<li><strong>W8（2026-09-21 起）</strong>：本周无已知事件 · 可关注产业链月度出货数据</li>
+<li><strong>W9（2026-09-28 起）</strong>：国庆假期前后 · 本周无已知公司事件 · 影响：假期消费电子销售数据是需求侧参考</li>
+<li><strong>W10（2026-10-05 起）</strong>：国庆假期 · 本周无已知事件</li>
+<li><strong>W11（2026-10-12 起）</strong>：<strong>三家早期财务投资股东减持窗口期届满</strong>（〔联网·单源未交叉验证〕来源：经济观察网 2026-07-15，称珠海铧创等三家股东减持窗口为 2026-07-13 至 10-12 · 置信度：低）· 公司 · 重要性中高 · 影响：若期间实际减持，构成持续供给压力；窗口届满则压力解除</li>
+<li><strong>W12（2026-10-19 起）</strong>：三季报披露窗口开启（创业板惯例 10 月下旬）· 财报 · 重要性高 · 影响：验证 Q3 折叠屏放量是否体现在收入端</li>
+<li><strong>W13（2026-10-26 起）</strong>：<strong>2026 年三季报披露</strong>（预计）· 财报 · 重要性 <strong>最高</strong> · 影响：本报告 K 节三情景的最终裁决点</li>
+</ul>
+<p>⚠️ <strong>日历信息缺口</strong>：库内事件日历无任何公司自身事件（股东大会、解禁、业绩预告日等），W2/W8/W9/W10 的&quot;无已知事件&quot;是<strong>库内确实没有</strong>，不代表现实中没有。补法：接入交易所公告日历与限售解禁数据源。</p>
+<h2>J. 逻辑链</h2>
+<p><strong>主链（可证伪）</strong>：</p>
+<div class="callout"><strong>因为</strong>〔事实 1〕2026 年全球智能手机出货量预计降至 10.8 亿部、同比 <strong>-13.9%</strong>，为 2013 年以来年度新低，下半年同比 -16%（联网·多源：国际电子商情、新浪财经 2026-06-10，置信度：中高）； <strong>且</strong>〔事实 2〕存储芯片大幅涨价（花旗预计 2026 年 DRAM/NAND 均价分别涨 88%/74%，联网·置信度：中），挤压整机厂成本，而结构件供应商难以向下游转嫁； <strong>且</strong>〔事实 3〕蓝思 2026Q1 营收同比 <strong>-17.13%</strong>、净利 <strong>-1.5 亿</strong>、毛利率仅 <strong>14.55%</strong>（库内财务，置信度：<strong>高</strong>）； <strong>所以</strong>〔推论〕蓝思的营收下滑不是公司个体经营失误，而是<strong>行业周期性下行在中游代工环节的放大</strong>（置信度：中高）； <strong>如果</strong>该推论成立，<strong>应该能观察到</strong>：① 中报营收仍为同比负增长；② 毛利率维持在 15% 附近或更低；③ 同业结构件公司出现同向下滑。</div>
+<p><strong>副链（题材侧，与主链方向相反）</strong>：</p>
+<div class="callout"><strong>因为</strong>〔事实 4〕苹果 iPhone Fold 计划 2026 年 9 月发布、7 月起量产，蓝思为 UTG 供应商（联网·多源，置信度：中）； <strong>且</strong>〔事实 5〕蓝思与 Intel 签署 TGV 先进封装合作备忘录（<strong>库内新闻确证</strong> + 联网多源，置信度：高）； <strong>所以</strong>〔推论〕蓝思存在 2026H2 起的单机价值量提升与新赛道增量（置信度：<strong>低到中</strong>）； <strong>如果</strong>该推论成立，<strong>应该能观察到</strong>：① 三季报营收同比转正；② 毛利率环比抬升（说明是高价值量订单而非低价走量）；③ Intel 合作从备忘录推进到实质订单公告。</div>
+<p><strong>⚠️ 整条链最弱的一环（命门）</strong>：</p>
+<p><strong>副链的&quot;备忘录/传闻 → 营收&quot;这一跳完全没有库内财务佐证</strong>。具体地：</p>
+<ul>
+<li>Intel 合作是<strong>备忘录</strong>，措辞为&quot;讨论和评估潜在合作&quot;——法律上不构成订单承诺；</li>
+<li>折叠屏&quot;70% UTG 订单份额&quot;是媒体传闻口径，公司明确以&quot;涉保密协议&quot;拒绝确认（新浪财经 2026-07-03）；</li>
+<li>机器人子公司 2025 年营收 10.3 亿（联网，置信度：中低），相对公司体量（Q1 单季营收即 141.4 亿）占比仍在个位数百分比量级。</li>
+</ul>
+<p><strong>换句话说</strong>：主链有库内硬数据支撑（置信度高），副链只有联网传闻支撑（置信度低）。<strong>当一条链有硬数据、另一条只有故事时，权重不应该对等。</strong> 这是本报告判断&quot;偏跌&quot;的核心依据。</p>
+<p><strong>〔卖方预期〕</strong>（单列，不与库内事实混述）</p>
+<ul>
+<li>〔卖方预期〕来源：信达证券（经中金在线 2026-05-13 引述）· 日期：2026-05 · 观点：预计 2026 年归母净利润 60.81 亿元 · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：机构一致预测（经同花顺 F10 汇总口径引述）· 日期：2026 年内 · 观点：预计 2026E 营收 1123.13 亿元（同比 +22%）、归母净利润 69.13 亿元（同比 +32%）· 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：东吴证券公司深度研究 · 日期：2026-06-26 · 观点：短期受益苹果折叠屏带来的单机价值量提升，中长期靠机器人、液冷、UTG 打开成长空间 · 置信度：低（卖方预期非事实）</li>
+<li>〔卖方预期〕来源：东吴证券 · 日期：2026-07（Intel 合作后）· 观点：携手 Intel 布局 TGV 先进封装，打开半导体成长空间 · 置信度：低（卖方预期非事实）</li>
+<li>〔卖方预期〕来源：华鑫证券 · 日期：2026-05-14 · 观点：业绩有望逐步修复，折叠屏大年叠加新兴产业共振，下半年业绩有望修复 · 置信度：低（卖方预期非事实）</li>
+</ul>
+<p><strong>⚠️ 预期差是本报告最值得记下的一点</strong>（置信度：<strong>高</strong>，因为落差本身由库内数字与卖方公开数字直接相减得出）：</p>
+<p>卖方一致预期 2026 年归母净利 <strong>60-69 亿</strong>，而库内 Q1 实际为 <strong>-1.5 亿</strong>。若要兑现 60 亿的低端预测，<strong>后三个季度需合计盈利约 61.5 亿元，即季均超 20 亿</strong>。作为参照，库内 Q1 单季营收 141.4 亿、净利率 -1.02%——<strong>要从 -1.02% 的净利率跳到季均 20 亿利润，需要净利率修复到 12% 以上量级</strong>。这在毛利率仅 14.55% 的结构下是极高的门槛。</p>
+<p><strong>结论</strong>：卖方预期与库内现实之间存在数量级上的张力。<strong>要么中报开始出现剧烈反转，要么这些预测会在中报后被下修</strong>——W3、W4 就是裁决点。</p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（20%）</strong>｜<strong>触发</strong>：中报（W3）归母净利转正，<strong>且</strong>毛利率环比回升至 17% 以上，<strong>且</strong> 9 月苹果发布会后有折叠屏订单/出货的实质披露｜<strong>路径</strong>：Q1 亏损被确认为汇率一次性冲击，市场重新接受卖方的 H2 修复叙事，估值向行业中位数（PE 59.02）方向修复，折叠屏+TGV 双叙事重获定价权</li>
+</ul>
+<ul>
+<li><strong>中性（45%）</strong>｜<strong>触发</strong>：中报（W3）小幅亏损或微利（归母净利在 -3 亿至 +3 亿区间），营收同比降幅收窄至 -10% 以内｜<strong>路径</strong>：基本面&quot;不好也不更坏&quot;，股价跟随消费电子板块 beta 区间震荡；市场把定价权交给 9 月折叠屏与 W13 三季报，在此之前缺乏方向；卖方预测被温和下修</li>
+</ul>
+<ul>
+<li><strong>悲观（35%）</strong>｜<strong>触发</strong>：中报（W3）亏损扩大（归母净利差于 -3 亿），<strong>或</strong>营收同比降幅仍大于 -15%，<strong>或</strong> W11 前出现实际减持公告｜<strong>路径</strong>：PE(TTM) 因分母恶化而被动抬升，&quot;低于行业中位数&quot;的估值支撑失效，卖方集中下修盈利预测触发戴维斯双杀；叠加 2026 年手机出货 -13.9% 的行业逆风与减持窗口供给压力，估值继续下探</li>
+</ul>
+<p>（20% + 45% + 35% = 100%）</p>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong></p>
+<ol>
+<li><strong>如果</strong>中报（见 I 节 W3）披露的归母净利仍为负值，<strong>或</strong>营收同比降幅仍大于 -15%（对照库内 Q1 的 -17.13%），<strong>那么回避</strong>——主链（行业周期下行）被证实，副链（折叠屏/TGV）尚未进入报表，此时任何仓位都是在为故事付费。</li>
+<li><strong>如果</strong>中报归母净利转正<strong>且</strong>毛利率环比回升至 17% 以上（对照库内 Q1 的 14.55%），<strong>那么可小仓位试仓</strong>——两个条件同时满足才说明&quot;是高价值量订单带来的修复&quot;而非&quot;低价走量&quot;；只满足其一不构成条件成立。</li>
+<li><strong>如果</strong>已持有，<strong>且</strong> W11（2026-10-12）前出现实际减持公告，<strong>或</strong>三季报（W13）营收同比仍未转正，<strong>那么减仓</strong>——这两个信号分别对应供给压力兑现与副链证伪。</li>
+<li><strong>如果</strong>当前无仓位且上述条件均未触发，<strong>那么观望至 W3 中报</strong>——本报告的核心不确定性（Q2 数据缺失）会在那一天被消除，在此之前判断的信息基础不足。</li>
+</ol>
+<p><strong>风控要点 · 这笔判断在什么情况下应当被推翻</strong></p>
+<ul>
+<li><strong>推翻条件 1</strong>：中报证实 Q1 的 -1.5 亿亏损中，汇率影响确为一次性且已反转，扣除后经营性利润为正 → 则 C 节&quot;经营性亏损&quot;的定性错误，A 节&quot;偏跌&quot;应推翻。</li>
+<li><strong>推翻条件 2</strong>：出现 Intel TGV 合作从备忘录升级为<strong>带金额的正式订单公告</strong> → 则 J 节&quot;最弱一环&quot;被补强，副链权重应大幅上调。</li>
+<li><strong>推翻条件 3</strong>：库内财务补齐历史 4 期后，若显示 2025 年各季度毛利率显著高于 14.55%，说明 Q1 是异常值而非新常态 → 则 E 节&quot;无结构性护城河&quot;的论证需重做。</li>
+<li><strong>推翻条件 4</strong>：2026 年全球手机出货量预测被上修至同比转正 → 则 J 节主链的行业前提失效。</li>
+</ul>
+<p><strong>仓位思路</strong>（只讲相对概念）</p>
+<ul>
+<li>在中报（W3）落地前：<strong>不参与或极轻</strong>。理由不是看空，而是<strong>信息不足</strong>——本报告最关键的 Q2 数据是缺的，此时下重注等于赌一个自己没看到的数字。</li>
+<li>中报落地后按 L 节条件 1/2 重新评估：条件 2 满足则<strong>轻仓</strong>，条件 1 满足则<strong>不参与</strong>。</li>
+<li>任何情况下<strong>不重仓</strong>：一家毛利率 14.55%、身处出货量同比 -13.9% 行业的中游代工厂，其利润的波动幅度（Q1 利润同比 -134.88% vs 营收同比 -17.13%，约 7.9 倍放大）不支持重仓的风险预算。</li>
+</ul>
+<h2>M. 逻辑自查</h2>
+<p><strong>1. 这份判断最依赖的假设是哪一条？它错了会怎样？</strong></p>
+<p>最依赖的假设：<strong>2026Q1 的亏损代表趋势，而非一次性冲击</strong>。</p>
+<p>这条假设承担了 A 节&quot;偏跌&quot;、K 节 35% 悲观权重、L 节全部四条操作倾向的重量。</p>
+<p><strong>它错了会怎样</strong>：如果亏损主因（联网口径称汇率影响约 5 亿）确属一次性且 Q2 已反转，那么中报可能直接盈利，本报告的方向判断会被完整证伪，L 节的&quot;回避/观望&quot;会错过修复行情的起点。<strong>我给这条假设的置信度只有&quot;中&quot;，不是&quot;高&quot;</strong>——因为我没有 Q2 数据，也没有历史 4 期数据来判断 14.55% 的毛利率是常态还是低谷。这个软肋已在 A 节主动写明。</p>
+<p><strong>2. 有没有我为了让逻辑好看而忽略的反面证据？</strong></p>
+<p>自查后确认有三条反面证据，我在此明确列出，不藏在角落：</p>
+<ul>
+<li><strong>反面证据 1</strong>：公司在亏损季度仍维持分红（库内股息率 1.62%），且 2025 年度分红比例达 46%（联网）。这与&quot;经营持续恶化&quot;的叙事有张力——真正认为困难长期化的管理层通常收缩分红。我在 C 节列了这一条但归因为&quot;动机推测（置信度：低）&quot;，可能低估了它。</li>
+<li><strong>反面证据 2</strong>：资产负债率仅 33.90%（库内）。这是一张相当干净的资产负债表，意味着公司有充足的资源熬过周期、也有能力投入 TGV/机器人等新赛道。我的&quot;偏跌&quot;判断是<strong>周期性的、非生存性的</strong>——这个区别很重要，L 节的&quot;回避&quot;不等于&quot;这家公司有问题&quot;。</li>
+<li><strong>反面证据 3</strong>：消息面在近 60 日内是<strong>净正面</strong>的（Intel 合作、折叠屏量产、玻璃基板板块催化），没有一条实质利空。我把股价的负面反应解读为&quot;利好兑现不了业绩&quot;，但另一种同样成立的解读是&quot;利好尚未被定价&quot;。我选择前者的依据是库内 Q1 硬数据，但<strong>这是一个判断，不是事实</strong>。</li>
+</ul>
+<p><strong>3. 信息缺口清单</strong>（按对结论的影响排序）</p>
+<ul>
+<li><strong>缺口 1（影响：极大）</strong>：库内财务（近 4 期）只返回 1 期（2026Q1），<strong>缺 2025 全年及各季度数据</strong>。影响：无法判断趋势斜率、无法确认 14.55% 毛利率是否为异常低点、无法验证季节性。这是本报告最大的结构性弱点，C/D/E/J 四节都因此降级。<strong>补法</strong>：核查库内财务表对 300433 的历史期次覆盖，补齐后重跑本调研。</li>
+<li><strong>缺口 2（影响：大）</strong>：<strong>2026Q2 / 中报数据完全缺失</strong>（尚未披露）。影响：K 节三情景无法收敛，L 节所有操作倾向都只能挂在&quot;等中报&quot;上。<strong>补法</strong>：中报披露后（I 节 W3，预计 8 月下旬）重跑本调研。</li>
+<li><strong>缺口 3（影响：大）</strong>：库内同业对比查询超时未返回，<strong>D 节无同行个股横向对比</strong>。影响：无法判断蓝思的下滑是行业普遍还是个体掉队——这直接关系到 J 节主链&quot;周期性而非个体失误&quot;推论的强度。</li>
+<li><strong>缺口 4（影响：中）</strong>：<strong>未定位 2026-07-30 当日 -7.67% 的直接触发事件</strong>。影响：无法判断当日大跌是中报预警落地（则悲观情景权重应上调）还是板块性调整（则权重不变）。<strong>补法</strong>：查阅 07-29/30 巨潮公告与当日龙虎榜数据。</li>
+<li><strong>缺口 5（影响：中）</strong>：库内事件日历 <strong>无任何公司自身事件</strong>（三条全为人形机器人概念匹配的行业事件），I 节的公司级时点（中报日、减持窗口）全靠单一联网来源，置信度低。<strong>补法</strong>：接入交易所公告日历、限售解禁与业绩预约披露数据源。</li>
+<li><strong>缺口 6（影响：小）</strong>：未检索到针对结构件行业的贸易/出口管制政策，而公司有越南/泰国海外产能布局（联网）。影响：F 节可能遗漏地缘政策风险。<strong>补法</strong>：专项检索东南亚产能相关贸易政策。</li>
+</ul>
+<p><strong>来源清单</strong>（联网部分）</p>
+<p><a href="https://www.news.cn/tech/20260612/a069b3a9948b4e0aaaa94cf3d618e545/c.html" target="_blank" rel="noopener">新华网·工信部国资委启动 2026 年度人形机器人与具身智能实景实训专项行动</a> · <a href="https://www.chinanews.com.cn/gn/2026/06-10/10637689.shtml" target="_blank" rel="noopener">中新网·同上</a> · <a href="https://www.ndrc.gov.cn/xxgk/zcfb/tz/202512/t20251230_1402851.html" target="_blank" rel="noopener">国家发改委·关于 2026 年实施大规模设备更新和消费品以旧换新政策的通知</a> · <a href="https://www.news.cn/fashion/20260105/8897315d5dff4a9eb6b6059a0a47b1b5/c.html" target="_blank" rel="noopener">新华网·2026&quot;国补&quot;新变化</a> · <a href="https://www.esmchina.com/news/14228.html" target="_blank" rel="noopener">国际电子商情·2026 年全球智能手机出货量将暴跌近 14%</a> · <a href="https://finance.sina.com.cn/roll/2026-06-10/doc-iniaxqxr1266446.shtml" target="_blank" rel="noopener">新浪财经·存储价格持续攀升 2026 年手机产量或双位数下滑</a> · <a href="https://www.stcn.com/article/detail/4041325.html" target="_blank" rel="noopener">证券时报·蓝思科技牵手英特尔聚焦玻璃通孔先进封装</a> · <a href="https://finance.sina.com.cn/tech/digi/2026-07-24/doc-iniixnfz4878266.shtml" target="_blank" rel="noopener">新浪科技·蓝思科技与英特尔签署合作备忘录</a> · <a href="https://m.cls.cn/detail/2436544" target="_blank" rel="noopener">财联社·蓝思科技与 Intel 签署合作备忘录</a> · <a href="https://www.ithome.com/0/830/493.htm" target="_blank" rel="noopener">IT之家·苹果为折叠屏 iPhone 寻找超薄玻璃供应商</a> · <a href="https://finance.sina.com.cn/jjxw/2026-07-03/doc-inifpcuw5555401.shtml" target="_blank" rel="noopener">新浪财经·公司针对苹果的折叠屏手机是否已经开始批量供货？蓝思科技回应</a> · <a href="https://finance.sina.com.cn/tech/roll/2026-04-08/doc-inhtttah2969916.shtml" target="_blank" rel="noopener">新浪科技·iPhone Fold 不会延期依然 9 月发布</a> · <a href="https://finance.sina.com.cn/stock/marketresearch/2026-04-16/doc-inhusviy2786489.shtml" target="_blank" rel="noopener">新浪财经·蓝思科技业绩爆雷</a> · <a href="https://finance.cnr.cn/ycbd/20260416/t20260416_527587378.shtml" target="_blank" rel="noopener">央广财经·业绩变脸股价暴跌蓝思科技紧急回应</a> · <a href="https://www.eeo.com.cn/2026/0715/958408.shtml" target="_blank" rel="noopener">经济观察网·蓝思科技将披露半年报预告三家股东开启减持窗口期</a> · <a href="https://www.21jingji.com/article/20250630/herald/2c641bfaa27e8587b059fa4d9a93d188.html" target="_blank" rel="noopener">21 经济网·蓝思科技港股预募资 45 亿</a> · <a href="https://finance.sina.com.cn/wm/2026-06-04/doc-iniahtff2154303.shtml" target="_blank" rel="noopener">新浪财经·营收超 10 亿出货过万台蓝思科技具身智能</a> · <a href="http://sc.stock.cnfol.com/gushiyaowen/20260513/32220849.shtml" target="_blank" rel="noopener">中金在线·信达证券评级</a> · <a href="https://finance.sina.com.cn/stock/bxjj/2026-05-14/doc-inhxvyek8767435.shtml" target="_blank" rel="noopener">新浪财经·华鑫证券研报</a> · <a href="https://pdf.dfcfw.com/pdf/H3_AP202606271825339007_1.pdf" target="_blank" rel="noopener">东吴证券·蓝思科技公司深度研究</a></p>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-07-30），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>Q1营收降17%净利转亏1.5亿</li>
+      <li>卖方预期60亿与实际落差极大</li>
+      <li>手机出货降14%叠加股东减持窗口</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>限售解禁</dt><dd>首发或定增取得的股份锁定期届满、可以上市流通。解禁本身不等于减持，但增加了潜在供给。</dd><dt>业绩预告</dt><dd>上市公司在正式财报前发布的盈利区间预告，达到规定变动幅度时强制披露。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>一致预期</dt><dd>多家券商盈利预测的平均值。是别人的观点，不是事实。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.news.cn/tech/20260612/a069b3a9948b4e0aaaa94cf3d618e545/c.html" target="_blank" rel="noopener">新华网·工信部国资委启动 2026 年度人形机器人与具身智能实景实训专项行动</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.chinanews.com.cn/gn/2026/06-10/10637689.shtml" target="_blank" rel="noopener">中新网·同上</a></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.ndrc.gov.cn/xxgk/zcfb/tz/202512/t20251230_1402851.html" target="_blank" rel="noopener">国家发改委·关于 2026 年实施大规模设备更新和消费品以旧换新政策的通知</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.news.cn/fashion/20260105/8897315d5dff4a9eb6b6059a0a47b1b5/c.html" target="_blank" rel="noopener">新华网·2026&quot;国补&quot;新变化</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.esmchina.com/news/14228.html" target="_blank" rel="noopener">国际电子商情·2026 年全球智能手机出货量将暴跌近 14%</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/roll/2026-06-10/doc-iniaxqxr1266446.shtml" target="_blank" rel="noopener">新浪财经·存储价格持续攀升 2026 年手机产量或双位数下滑</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.stcn.com/article/detail/4041325.html" target="_blank" rel="noopener">证券时报·蓝思科技牵手英特尔聚焦玻璃通孔先进封装</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/tech/digi/2026-07-24/doc-iniixnfz4878266.shtml" target="_blank" rel="noopener">新浪科技·蓝思科技与英特尔签署合作备忘录</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.cls.cn/detail/2436544" target="_blank" rel="noopener">财联社·蓝思科技与 Intel 签署合作备忘录</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.ithome.com/0/830/493.htm" target="_blank" rel="noopener">IT之家·苹果为折叠屏 iPhone 寻找超薄玻璃供应商</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/jjxw/2026-07-03/doc-inifpcuw5555401.shtml" target="_blank" rel="noopener">新浪财经·公司针对苹果的折叠屏手机是否已经开始批量供货？蓝思科技回应</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/tech/roll/2026-04-08/doc-inhtttah2969916.shtml" target="_blank" rel="noopener">新浪科技·iPhone Fold 不会延期依然 9 月发布</a></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://finance.sina.com.cn/stock/marketresearch/2026-04-16/doc-inhusviy2786489.shtml" target="_blank" rel="noopener">新浪财经·蓝思科技业绩爆雷</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.cnr.cn/ycbd/20260416/t20260416_527587378.shtml" target="_blank" rel="noopener">央广财经·业绩变脸股价暴跌蓝思科技紧急回应</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.eeo.com.cn/2026/0715/958408.shtml" target="_blank" rel="noopener">经济观察网·蓝思科技将披露半年报预告三家股东开启减持窗口期</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.21jingji.com/article/20250630/herald/2c641bfaa27e8587b059fa4d9a93d188.html" target="_blank" rel="noopener">21 经济网·蓝思科技港股预募资 45 亿</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/wm/2026-06-04/doc-iniahtff2154303.shtml" target="_blank" rel="noopener">新浪财经·营收超 10 亿出货过万台蓝思科技具身智能</a></li>
+      <li><span class="src-tag src-research">研究</span> <a href="http://sc.stock.cnfol.com/gushiyaowen/20260513/32220849.shtml" target="_blank" rel="noopener">中金在线·信达证券评级</a></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://finance.sina.com.cn/stock/bxjj/2026-05-14/doc-inhxvyek8767435.shtml" target="_blank" rel="noopener">新浪财经·华鑫证券研报</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://pdf.dfcfw.com/pdf/H3_AP202606271825339007_1.pdf" target="_blank" rel="noopener">东吴证券·蓝思科技公司深度研究</a></li>
+      <li><span class="src-tag src-disc">披露</span> 期末 2026-03-31，公告日 2026-04-16 <em>2026-03-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-04-16 <em>2026-04-16</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 联网佐证：新浪科技 2026-07-24、证券时报 stcn <em>2026-07-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 置信度：中，媒体口径未经公司确认 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 库外补充：公司对是否已批量供货回应&quot;涉保密协议不披露客户信息&quot;，新浪财经 2026-07-03 <em>2026-07-03</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 联网·多源：国际电子商情、新浪财经 2026-06-10，置信度：中高 <em>2026-06-10</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-07-03 <em>2026-07-03</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-07-30 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>

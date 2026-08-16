@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>朗特智能（300916.SZ） · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>朗特智能（300916.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-08-09（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>关联板块</b> 算力</span>
+      <span><b>来源</b> 6 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    朗特智能（300916）主要做的是智能控制器及智能产品的研发、设计、生产和销售。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——题材（液冷算力＋非洲储能）在拉，基本面（净利同比降九成）在拽，估值的&quot;便宜&quot;锚在中报落地时会消失。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：题材（液冷算力＋非洲储能）在拉，基本面（净利同比降九成）在拽，估值的&quot;便宜&quot;锚在中报落地时会消失。支撑在于子公司朗擎数科切入液冷算力；非洲离网储能出口有真实营收；8月7日20%涨停显示题材资金介入。主要风险是中报预告净利同比降约九成；汇率升值致上半年汇兑损失3900万；中报后PE或被动升破行业中位71.69。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>子公司朗擎数科切入液冷算力</li>
+      <li>非洲离网储能出口有真实营收</li>
+      <li>8月7日20%涨停显示题材资金介入</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据基准：库内行情截至 <strong>2026-08-07 收盘</strong>（库内行情），估值截至 <strong>20260807</strong>（库内估值），财务最新期 <strong>2026Q1</strong>（库内财务）。报告生成日 2026-08-09。 本报告为全局共享档案，不含任何账户 / 持仓 / 自选信息。</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：题材（液冷算力＋非洲储能）在拉，基本面（净利同比降九成）在拽，估值的&quot;便宜&quot;锚在中报落地时会消失。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>控股子公司朗擎数科切入液冷算力赛道</strong>——浸没式＋冷板式双路线，已有小批量正式订单落地（置信度：中，两源交叉，但公司自述&quot;对整体财务影响较小&quot;）</li>
+<li><strong>非洲离网储能是真有营收的差异化出口业务</strong>，公司口径预计年约 20% 增长（置信度：中，源自公司投资者关系记录）</li>
+<li><strong>2026-08-07 单日 +20.00% 涨停</strong>（库内涨停记录：首板、封板 13:28:03、成交额 4.2 亿、换手率 18.15%），题材资金确已介入（置信度：高，库内数据）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>盈利塌方是既成事实</strong>：库内 2026Q1 归母净利 <strong>119.74 万元、同比 −96.04%</strong>，毛利率跌至 <strong>13.80%</strong>（库内财务）（置信度：高）</li>
+<li><strong>估值的&quot;便宜&quot;是时滞造成的假象</strong>：当前 PE(TTM) 51.92 仍含 2025 年上半年的高利润；中报正式并表后 TTM 利润将大幅下修，PE 会被动抬升（推演见 C 节，置信度：中）</li>
+<li><strong>汇率是结构性而非一次性拖累</strong>：外销占比过半，人民币升值直接吃掉利润（置信度：高，库内毛利率数字与联网口径互相印证）</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ul>
+<li><strong>2026 年 8 月下旬中报正式披露</strong>（依据：库内 2025 中报公告日 20250822）——核对归母净利是否落在预告的 480–720 万区间、毛利率能否回到 15% 以上。</li>
+<li><strong>中报披露后重跑库内估值</strong>——核对 PE(TTM) 是否升破行业 PE 中位数 71.69。</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong> 我把&quot;基本面决定 13 周方向&quot;当成了默认前提。但本票业绩预告已于 7 月中旬公告、市场已消化三周，8-07 仍能封 20cm 涨停——说明当前定价主体是<strong>题材资金而非盈利</strong>。若液冷算力板块景气延续，基本面这条线在一个季度内可能完全不起作用，我的&quot;震荡&quot;会显得过于保守。</p>
+<h2>B. 公司快照</h2>
+<p><strong>基础信息</strong>（全部来自库内公司档案 / 库内估值 / 库内行情）</p>
+<ul>
+<li>名称 <strong>朗特智能</strong>·代码 300916·板块 <strong>创业板</strong>·库内行业分类 <strong>元器件</strong></li>
+<li>上市日 <strong>2020-12-02</strong>（至今约 5 年 8 个月）·上市状态 'L'（<strong>在市正常交易</strong>）</li>
+<li>注册资本 <strong>14464.4007 万元</strong>·员工 <strong>1996 人</strong></li>
+<li>主营：<strong>智能控制器及智能产品的研发、设计、生产和销售</strong></li>
+<li>公司简介（库内原文要点）：深圳朗特智能控制股份有限公司成立于 <strong>2003 年 8 月</strong>，为智能家居及家电、汽车电子等领域提供各类智能控制器专业解决方案，国家级高新技术企业；拥有 SMT 贴片车间、十余条 DIP 生产线与成品组装线；<strong>产品大部分出口欧美、非洲、东南亚等地区，终端客户多为全球知名品牌</strong>。</li>
+<li>经营范围（库内原文，节选）：电子智能控制器、通讯电源、动力电池产品、汽车电子产品、LED 产品、家用电器、智能家居、健康及美容护理电子产品、照明电器的研发生产销售；<strong>新能源汽车充电桩</strong>研发生产销售安装；<strong>第二类医疗器械销售及进出口</strong>；光伏设备及元器件制造销售；变压器、整流器和电感器制造；人工智能硬件销售 / 系统集成 / 软件开发等。</li>
+</ul>
+<p><strong>当前行情</strong>（库内行情，唯一行情事实源）</p>
+<ul>
+<li>收盘价 <strong>26.40 元</strong>·当日涨跌幅 <strong>+20.00%</strong>·成交额 <strong>4.2 亿元</strong></li>
+<li>数据时点 = <strong>2026-08-07 收盘</strong>（source=daily）</li>
+</ul>
+<p><strong>估值</strong>（库内估值，交易日 20260807）</p>
+<ul>
+<li>总市值 <strong>38.19 亿元</strong>·<strong>PE(TTM) 51.92</strong>·<strong>PB 2.79</strong>·股息率 <strong>1.5152%</strong>·换手率 <strong>18.1536%</strong></li>
+<li>同行业（元器件，库内在市 <strong>311 只</strong>）<strong>PE 中位数 71.69</strong>，本票按 PE 由低到高排 <strong>第 80 位</strong>——即库内口径下<strong>处于行业估值偏低的约四分之一区间</strong>（置信度：高，库内直读）</li>
+</ul>
+<div class="callout">库内 A/H 对照返回 None——非 A+H 两地上市票，本节不涉及跨市场溢价参照。</div>
+<p><strong>一句话解读</strong>：这是一家上市不到 6 年、市值不到 40 亿的<strong>出口导向型智能控制器制造商</strong>，规模上属于元器件行业的小市值一端；当前估值在行业内看着偏低，但这个&quot;偏低&quot;能不能站住，C 节会拆开算。</p>
+<h2>C. 财务健康</h2>
+<p><strong>近 4 期核心数据</strong>（库内财务（近 4 期），金额单位亿元，比率单位 %）</p>
+<ul>
+<li><strong>2026Q1</strong>（报告期 20260331·公告日 20260424）｜营收 <strong>3.53</strong>（同比 <strong>−10.47%</strong>）｜归母净利 <strong>0.01</strong>（119.74 万元·同比 <strong>−96.04%</strong>）｜ROE <strong>0.087</strong>｜毛利率 <strong>13.7994</strong>｜净利率 <strong>0.0659</strong>｜EPS <strong>0.01</strong>｜资产负债率 <strong>44.142</strong></li>
+<li><strong>2025 年报</strong>（报告期 20251231·公告日 20260424）｜营收 <strong>16.04</strong>（同比 <strong>+0.75%</strong>）｜归母净利 <strong>1.03</strong>（同比 <strong>−33.45%</strong>）｜ROE <strong>7.5428</strong>｜毛利率 <strong>15.8799</strong>｜净利率 <strong>6.3217</strong>｜EPS <strong>0.71</strong>｜资产负债率 <strong>40.6636</strong></li>
+<li><strong>2025Q3 累计</strong>（报告期 20250930·公告日 20251024）｜营收 <strong>12.25</strong>（同比 <strong>+0.11%</strong>）｜归母净利 <strong>0.86</strong>（同比 <strong>−17.05%</strong>）｜ROE <strong>6.3882</strong>｜毛利率 <strong>15.6825</strong>｜净利率 <strong>7.0178</strong>｜EPS <strong>0.60</strong>｜资产负债率 <strong>38.6696</strong></li>
+<li><strong>2025H1</strong>（报告期 20250630·公告日 20250822）｜营收 <strong>8.06</strong>（同比 <strong>−10.40%</strong>）｜归母净利 <strong>0.58</strong>（5750.95 万元·同比 <strong>−30.74%</strong>）｜ROE <strong>4.2959</strong>｜毛利率 <strong>15.282</strong>｜净利率 <strong>7.1281</strong>｜EPS <strong>0.40</strong>｜资产负债率 <strong>36.7856</strong></li>
+</ul>
+<p><strong>趋势判读（不是罗列，是找拐点）</strong></p>
+<ol>
+<li><strong>营收：停滞，不是崩塌</strong>。2025 全年 16.04 亿仅同比 +0.75%，2026Q1 转为 −10.47%。营收端是&quot;失速&quot;而非&quot;失血&quot;（置信度：高）。</li>
+<li><strong>毛利率：2026Q1 是断崖，不是滑坡</strong>。15.28 → 15.68 → 15.88 → <strong>13.80</strong>，前三期在 15% 上下窄幅波动，Q1 一次性掉 2 个百分点以上。<strong>这是本轮盈利恶化的第一个真拐点</strong>（置信度：高）。</li>
+<li><strong>净利率：从 7.13% 到 0.07%，四期内几乎归零</strong>。归母净利 0.58 亿 → 全年 1.03 亿 → 单季 119.74 万。用库内数字反推：2025 下半年净利 = 1.03 − 0.58 ≈ <strong>0.45 亿</strong>，已明显低于上半年——<strong>盈利下滑在 2025Q4 就开始了，2026Q1 只是加速</strong>（置信度：高，纯库内加减）。</li>
+<li><strong>资产负债率：单向上行</strong>。36.79 → 38.67 → 40.66 → <strong>44.14</strong>，四期累计 +7.4 个百分点。在营收不增长的背景下负债率抬升，是需要在中报核对&quot;是短期借款/应付增加还是产能投入&quot;的项（置信度：高数字、中解释）。</li>
+<li><strong>ROE：7.54%（2025 全年）→ 0.087%（单季）</strong>，股东回报能力当期基本消失（置信度：高）。</li>
+</ol>
+<h3>⚠️ 本报告最重要的一条推演：当前 PE 的&quot;便宜&quot;含时滞</h3>
+<p>库内估值的 PE(TTM) 51.92 对应的 TTM 净利约 38.19 ÷ 51.92 ≈ <strong>0.74 亿</strong>——这个 TTM 窗口里仍然装着<strong>2025 年上半年那 0.58 亿的高利润</strong>。</p>
+<p>用库内数字＋已公告的中报预告区间（见下方联网部分）滚一次：</p>
+<ul>
+<li>2025 下半年净利（库内加减）≈ <strong>0.45 亿</strong></li>
+<li>2026 上半年净利（预告区间）≈ <strong>0.048–0.072 亿</strong></li>
+<li>滚动后 TTM ≈ <strong>0.50–0.52 亿</strong></li>
+<li>若市值不变（38.19 亿），PE(TTM) 将变为约 <strong>74–76 倍</strong></li>
+</ul>
+<p><strong>推论：中报正式披露、TTM 窗口滚过 2025H1 之后，本票 PE 会从 51.92 被动抬升到行业 PE 中位数（71.69）之上。B 节那个&quot;估值偏低&quot;的结论会自动失效。</strong>（置信度：中——算式基于库内硬数字，但 2026H1 净利用的是公司预告区间、尚未审计）</p>
+<p><strong>估值口径声明</strong>：以上只是<strong>仅估值口径</strong>的贵贱推演，不等于&quot;公司好坏&quot;的结论。</p>
+<p><strong>信息缺口</strong>：库中库内财务最新期为 <strong>2026Q1</strong>，无 2026H1 正式财报。影响：C 节全部盈利趋势判断只能基于 Q1＋预告，若中报实际数与预告偏离，本节推演失效。补法：中报披露后（预计 8 月下旬，见 I 节 W3–W4）重跑本调研。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比（取 3 家）返回的是库内&quot;元器件&quot;行业<strong>市值最大的三只在市票</strong>（不是同业务竞品，这点要先说清）。财务列均为报告期 20260331 同期口径：</p>
+<ul>
+<li><strong>002475 立讯精密</strong>｜市值 <strong>4402.64 亿</strong>·PE 25.57·PB 4.98·营收 <strong>838.88 亿</strong>·净利 <strong>36.60 亿</strong>·ROE <strong>4.2116%</strong></li>
+<li><strong>002384 东山精密</strong>｜市值 <strong>3576.58 亿</strong>·PE 175.31·PB 15.80·营收 <strong>131.38 亿</strong>·净利 <strong>11.10 亿</strong>·ROE <strong>5.0337%</strong></li>
+<li><strong>600183 生益科技</strong>｜市值 <strong>3400.12 亿</strong>·PE 86.55·PB 18.97·营收 <strong>81.41 亿</strong>·净利 <strong>11.58 亿</strong>·ROE <strong>6.6845%</strong></li>
+<li><strong>300916 朗特智能</strong>（本票）｜市值 <strong>38.19 亿</strong>·PE 51.92·PB 2.79·营收 <strong>3.53 亿</strong>·净利 <strong>0.01 亿</strong>·ROE <strong>0.087%</strong></li>
+</ul>
+<p><strong>位置判读</strong></p>
+<ol>
+<li><strong>量级差两个数量级</strong>：市值约为立讯精密的 <strong>1/115</strong>，单季营收约为其 <strong>1/238</strong>。这三家不是同一竞争层级的对手，只是共享库内同一个行业标签（置信度：高）。</li>
+<li><strong>PB 是本票最&quot;便宜&quot;的一项</strong>：2.79 vs 三家的 4.98 / 15.80 / 18.97。在净利几乎归零、ROE 仅 0.087% 的当下，低 PB 更像是&quot;市场对资产盈利能力打了折&quot;，而非单纯低估（置信度：中）。</li>
+<li><strong>PE 看着不贵，但分子分母都不干净</strong>：本票 51.92 低于东山精密 175.31 与生益科技 86.55，但那两家的高 PE 对应的是<strong>正在扩张的 AI 硬件景气</strong>；本票的 51.92 对应的是<strong>正在塌方且尚未在 TTM 中体现完的利润</strong>。C 节已算出这个数字会被动上修（置信度：中）。</li>
+<li><strong>ROE 是最刺眼的一栏</strong>：本票 0.087% 对同期三家的 4.21% / 5.03% / 6.68%——<strong>同一季度、同一行业标签下低了一到两个数量级</strong>（置信度：高，库内同期口径直比）。</li>
+</ol>
+<p><strong>信息缺口</strong>：库内行业分类粒度只到&quot;元器件&quot;，无法给出<strong>智能控制器细分赛道</strong>（拓邦股份、和而泰、朗科智能等）的可比数据。影响：D 节只能做&quot;行业地位&quot;判断，做不了&quot;细分赛道份额/毛利率对标&quot;。补法：需要在库内建立细分赛道映射表后重跑，当前只能靠 F 节的行业层面联网信息旁证。</p>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>（基于库内公司档案库内主营与经营范围）：为下游品牌商提供智能控制器及整机解决方案，属于<strong>设计＋制造一体的 ODM/EMS 型供应商</strong>——客户是&quot;全球知名品牌&quot;，公司赚的是研发工程与制造转换的钱。</p>
+<p><strong>分级判断</strong></p>
+<ul>
+<li><strong>结构性护城河：未见</strong>（置信度：中）</li>
+</ul>
+<p>库内可见信息中，没有牌照、没有网络效应、没有专利壁垒的直接佐证；毛利率长期在 15% 上下（库内财务四期实测 15.28/15.68/15.88/13.80），这个水平本身就说明<strong>议价能力有限</strong>。联网侧的行业信息也指向同一结论：智能控制器行业企业注册数持续增长（2024 年已超 4 万家）、低端产能过剩、价格战压缩毛利（来源：观研报告网《中国智能控制器行业发展深度分析与投资前景研究报告（2025-2032）》；中研普华《控制元件行业现状与发展趋势分析（2026）》2026-05-29）。</p>
+<ul>
+<li><strong>阶段性优势：有，两条</strong>（置信度：中）
+<ol>
+<li><strong>非洲离网储能的渠道先发</strong>——公司已在肯尼亚、尼日利亚、坦桑尼亚等国有市场开拓成果，是差异化而非红海的出口方向（来源：公司投资者关系活动记录表，经上海有色网 SMM 转述；库内概念标签含&quot;储能&quot;标签佐证）。</li>
+<li><strong>20 余年制造积累与规模</strong>——库内员工人数 1996、成立于 2003 年、具备完整研发体系与百万台级组装能力（库内公司档案原文）。这是切换成本，不是壁垒。</li>
+</ol></li>
+</ul>
+<ul>
+<li><strong>模式的结构性弱点：汇率暴露</strong>（置信度：高）</li>
+</ul>
+<p>库内简介明确&quot;大部分出口&quot;，联网口径显示 2026Q1 外销占营收 <strong>53.25%</strong>、单季汇兑损失 <strong>2119.45 万元</strong>（来源：经济观察网 2026-05-09《朗特智能一季报业绩下滑》）。<strong>一家净利率只有个位数的公司，把过半营收敞口暴露在汇率上，本身就是模式层面的脆弱性</strong>——这不是一次性事件。</p>
+<h2>F. 政策与监管</h2>
+<p>库内无政策数据，本节全部为联网信息，每条标来源与日期。</p>
+<p><strong>F-1｜液冷数据中心：强制性能效约束正在造需求（传导方向：利好·置信度：中）</strong> 2026 年初液冷行业获国家、地方、国际多层级政策密集支持；枢纽节点新建大型数据中心要求 <strong>PUE ≤ 1.2 且 70% 采用液冷</strong>；东部地区 PUE &lt; 1.25、西部 &lt; 1.2 的刚性约束已落地，绿色数据中心评价标准将液冷纳入评分项。 来源：智研咨询《2026 年全球及中国液冷数据中心行业政策、产业链、投资规模、竞争格局及趋势研判》；NEPCON China《千亿液冷元年已至！2026 年液冷行业厂建项目新进展》2026-01。 <strong>传导链</strong>：PUE 强制约束 → 新建数据中心必须上液冷 → 液冷一体机与算力服务需求扩容 → 若朗擎数科订单能放量则贡献新营收。<strong>注意：链条最后一环目前尚未兑现，见 G/J 节。</strong></p>
+<p><strong>F-2｜电池消费税新政（传导方向：轻度利空·置信度：中）</strong> 自 <strong>2026-09-01</strong> 起对锂离子蓄电池、镍氢电池等按 <strong>2%</strong> 税率征收消费税（此前免税）。 来源：库内事件日历事件条目（事件类型=policy，importance=7，2026-09-01）。 <strong>传导链</strong>：电池及储能企业成本小幅增加 → 可能短期压制电池/储能板块估值。对本票而言，储能是<strong>真有营收</strong>的业务线（见 G 节），故属实质而非纯情绪影响，但 2% 的量级不构成主要矛盾。</p>
+<p><strong>F-3｜汇率环境（传导方向：上半年利空、下半年方向存变·置信度：中）</strong> 2026 年上半年人民币对美元升值约 <strong>3%</strong>（2 月末收 6.8559、较上年末升 1.94%）。对下半年，卖方研究普遍认为<strong>人民币单边升值趋势或已结束</strong>，基准情景区间 <strong>6.85–7.05</strong>、年末收于 <strong>6.90–6.95</strong>。 来源：新浪财经/中国金融信息网《2026 年上半年人民币汇率走势回顾与下半年展望》2026-07-31；新浪财经《【汇率研究半年报】2026 年下半年汇率市场展望》2026-06-29。 <strong>传导链</strong>：人民币升值 → 外销占比 53.25% 的公司结汇时人民币收入缩水 → 汇兑损失直接冲减净利。<strong>若下半年确实进入区间震荡，这条 2026H1 吃掉约 3900 万利润的拖累项将边际缓解</strong>——这是本报告最可核验的正向变量之一（见 I 节持续跟踪、K 节乐观情景触发条件）。</p>
+<p><strong>F-4｜智能控制器行业竞争格局（传导方向：利空·置信度：中）</strong> 企业数量持续增长、低端产能过剩、开工率长期低位、价格战成为主要竞争手段、毛利率被大幅压缩；上游电子元器件/IC/PCB 成本波动直接传导至控制器企业成本结构。 来源：观研报告网（2025-2032 报告）；中研普华《控制元件行业现状与发展趋势分析（2026 年）》2026-05-29。</p>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 <strong>19 个同花顺概念标签</strong>。逐个分级——<strong>标签沾边 ≠ 有营收</strong>：</p>
+<p><strong>真有业务（有库内主营/经营范围或联网佐证）</strong></p>
+<ul>
+<li><strong>智能家居</strong>｜库内主营业务明确&quot;智能家居及家电…智能控制器&quot;（置信度：高）</li>
+<li><strong>家用电器</strong>｜同上，库内简介点名&quot;家用电器…智能控制终端产品&quot;（置信度：高）</li>
+<li><strong>汽车电子</strong>｜库内主营业务明确&quot;汽车电子等领域中各类智能控制器&quot;（置信度：高）</li>
+<li><strong>消费电子概念</strong>｜库内简介&quot;消费类电子&quot;；库内涨停记录的 8-07 涨停行业标签也标为&quot;消费电子&quot;（置信度：高）</li>
+<li><strong>储能</strong>｜联网佐证充分：离网储能出口非洲、聚焦小储能、已开拓肯尼亚/尼日利亚/坦桑尼亚（来源：公司投资者关系活动记录表经上海有色网 SMM、新浪财经转述）。联网口径称 2026Q1 低毛利储能＋消费类电子控制器营收占比合计 <strong>68.65%</strong>（来源：经济观察网 2026-05-09，单源）（置信度：中）</li>
+</ul>
+<p><strong>有资质/经营范围佐证，但未见营收拆分</strong></p>
+<ul>
+<li><strong>新能源汽车 / 充电桩</strong>｜库内经营范围含&quot;新能源汽车充电桩研发、生产、销售、安装&quot;——<strong>有资质，未见营收佐证</strong>（置信度：中）</li>
+<li><strong>医疗器械概念</strong>｜库内经营范围含&quot;第二类医疗器械销售及进出口&quot;——<strong>仅销售资质，非制造，未见营收佐证</strong>（置信度：中）</li>
+</ul>
+<p><strong>有业务落地但营收贡献未见佐证——本节最需要划清的一格</strong></p>
+<ul>
+<li><strong>液冷服务器</strong>｜控股子公司<strong>朗擎数科</strong>专注液冷算力一体机及算力服务，采用浸没式与冷板式双技术路线，冷板方案单机柜部署密度可达 100kW、浸没式支持 2 小时模块化快速部署。<strong>但公司自述该液冷业务已有小批量正式订单落地、仍处初期阶段、对公司整体财务影响较小。</strong></li>
+</ul>
+<p>来源（两源交叉）：证券时报网 stcn.com《朗特智能：控股子公司朗擎数科专注于液冷算力一体机及算力服务》（互动平台 2026-06-15）；新浪财经/网易《英伟达 Rubin 全面液冷方案官宣，朗特智能控股子公司朗擎数科卡位液冷算力新赛道》2026-06-24。 ⚠️ 库内经营范围 <strong>无&quot;液冷&quot;字样</strong>，库内财务也无分部数据可佐证——<strong>这条是本票当前最热的题材，也是营收佐证最薄的一条</strong>（置信度：中——业务存在为高，营收贡献为低）</p>
+<p><strong>仅概念标签，未见营收佐证</strong></p>
+<ul>
+<li><strong>机器人概念</strong>｜库内经营范围与主营均无机器人相关表述（置信度：高——高置信地判定为&quot;仅标签&quot;）</li>
+<li><strong>比亚迪概念</strong>｜未见任何客户关系佐证</li>
+<li><strong>无线耳机</strong>｜库内仅&quot;消费类电子&quot;泛指，未点名耳机</li>
+<li><strong>新型烟草（电子烟）</strong>｜未见佐证</li>
+<li><strong>净水概念</strong>｜未见佐证</li>
+<li><strong>露营经济</strong>｜未见佐证（离网储能/照明或有间接沾边，但库内无据）</li>
+<li><strong>物联网</strong>｜智能控制器天然沾边，但库内无营收佐证</li>
+</ul>
+<p><strong>非业务属性标签</strong>（属交易或地域，不构成业务判断）</p>
+<ul>
+<li><strong>深股通</strong>·<strong>融资融券</strong>（交易属性）·<strong>粤港澳大湾区</strong>（注册地深圳，属实但非业务）</li>
+</ul>
+<p><strong>产业链位置</strong></p>
+<div class="callout">上游：电子元器件 / IC 芯片 / 传感器 / 分立器件 / PCB（<strong>议价能力在上游</strong>——联网行业信息明示上游核心原材料涨价直接压缩控制器企业毛利） <strong>本票：中游 · 智能控制器与整机方案的 ODM/EMS 供应商</strong> 下游：家电 / 汽车 / 消费电子 / 非洲离网储能终端品牌商（<strong>议价能力在下游</strong>——终端为&quot;全球知名品牌&quot;，规模远大于本票）</div>
+<p><strong>结论：两头受挤是这门生意的结构位置，不是周期波动。</strong>（置信度：中）中游制造商在上游涨价与下游品牌压价之间，毛利率长期锁死在 15% 附近——这正是 C 节看到的实况。</p>
+<h2>H. 消息面与市场情绪</h2>
+<h3>新闻（库内新闻（近 60 日））</h3>
+<p><strong>信息缺口</strong>：库内新闻对 300916 近 60 天返回 <strong>空列表</strong>。影响：无法从库内做消息面强度与情绪打分的定量判断，H 节的事件线索只能来自联网，可信度低于库内结构化数据。补法：该票未进入库内新闻抓取的关注范围（新闻链按持仓∪自选口径过滤），若需要持续跟踪需先纳入关注池后重跑。</p>
+<p>联网侧检索到的、对基本面有实质影响的两条（均已在前文用于交叉验证）：</p>
+<ol>
+<li><strong>2026-07-15｜2026 年半年度业绩预告（自愿性披露）</strong>——预计营收约 7.44 亿（同比 −7.74%）、归母净利 <strong>480 万–720 万元</strong>（同比 <strong>−87.48% ~ −91.65%</strong>）。归因三条：汇兑损失约 3900 万元、行业竞争加剧＋上游核心原材料涨价、新增控股子公司优咖智能科技处于业务起步阶段研发与市场开拓费用较高。</li>
+</ol>
+<p>来源（两源交叉）：同花顺 10jqka《朗特智能上半年归母净利润预计同比下降 87.48% 至 91.65%》2026-07-15；搜狐/中财网《朗特智能：本次半年度业绩预告系自愿性披露》2026-07-15。 <strong>对基本面：有实质且确定的负面影响。</strong> 交叉校验：用库内 2025H1 净利 5750.95 万元反算，480 万 → −91.65%、720 万 → −87.48%，与联网口径<strong>分毫吻合</strong>；营收 7.44 亿对库内 2025H1 的 8.06 亿 → −7.7%，同样吻合。<strong>这三个数字互洽，可信度显著高于一般联网信息</strong>（置信度：中高）。</p>
+<ol>
+<li><strong>2026-06-15 / 2026-06-24｜朗擎数科液冷算力业务披露</strong>——见 G 节，业务真实存在但<strong>尚处小批量阶段、对整体财务影响较小</strong>（公司自述）。</li>
+</ol>
+<p><strong>对基本面：当期无实质影响，属预期驱动。</strong></p>
+<p>联网侧另有一条<strong>单源未交叉验证</strong>的涨停归因，仅作情绪面参考，<strong>不作为判断依据</strong>：</p>
+<div class="callout">8-07 涨停被归因为&quot;股权激励＋储能业务＋液冷新业务&quot;，并称股权激励设有年均 15%–25% 的营收/净利增长目标。 来源：新浪财经《朗特智能 2026 年 8 月 7 日涨停分析》2026-08-07（<strong>AI 辅助生成的行情解读，单一来源，未经交叉验证·置信度：低</strong>）。其中&quot;15%–25% 考核目标&quot;我未能找到第二个独立来源，<strong>不予采信为事实</strong>。</div>
+<h3>涨停史（库内涨停记录（近 180 日））</h3>
+<p>近 180 日<strong>仅 1 次涨停记录</strong>：</p>
+<ul>
+<li><strong>2026-08-07</strong>｜涨幅 <strong>+20.00%</strong>·连板数 <strong>1</strong>（首板）·首次触板 <strong>13:28:03</strong>·最后封板 <strong>14:33:30</strong>·<strong>开板 3 次</strong>·封单金额 <strong>0.05 亿元</strong>·涨停统计 <strong>1/1</strong>·涨停行业标签 <strong>消费电子</strong></li>
+</ul>
+<p><strong>封板质量判读（置信度：高，全库内数据）</strong>：</p>
+<ul>
+<li><strong>午后才首次触板</strong>（13:28）而非早盘——不是强势资金主导的开盘抢筹形态</li>
+<li><strong>开板 3 次</strong>——盘中分歧显著</li>
+<li><strong>封单仅 500 万元，对应当日成交额 4.2 亿元，占比约 1.2%</strong>——封板极薄</li>
+<li><strong>换手率 18.15%</strong>（库内估值）——单日近两成流通盘换手</li>
+</ul>
+<p><strong>综合：这是一个&quot;高换手、弱封板、多次开板&quot;的首板，情绪强度远不如封单厚实的强势板。</strong> 这类形态次日方向不确定性大。</p>
+<h3>资金与筹码（库内资金筹码）</h3>
+<div class="callout">⚠️ <strong>纪律声明：以下是盘面与筹码现象，不是基本面证据。</strong> 仅作 H 节情绪面佐证，不进 J 节逻辑链、不单独用于推导操作结论。</div>
+<p><strong>资金流</strong>（近 20 个交易日，窗口 <strong>20260713 – 20260807</strong>）：</p>
+<ul>
+<li>全口径净流入合计 <strong>−0.65 亿元</strong>（即净流出 0.65 亿）</li>
+<li><strong>特大单（主力口径）净流入合计 +0.45 亿元</strong></li>
+<li>净流入天数 <strong>9 / 20</strong></li>
+</ul>
+<p><strong>读法</strong>：主力口径净流入为正、全口径为负，说明<strong>大单在承接、大单以下的资金在离场</strong>；净流入天数不足半数（9/20）说明这不是持续单向流入。两个口径背离本身就是分歧信号（置信度：中——数据为库内硬数据，&quot;承接/离场&quot;的解释属推断）。</p>
+<p><strong>筹码</strong>：筹码分布返回 None——<strong>库内筹码数据仅覆盖关注票，该票暂无</strong>。这是数据覆盖范围问题，不是&quot;该票筹码无异常&quot;。因此 <strong>获利盘比例（获利盘比例）本报告无法给出</strong>，其两面性（高=上方套牢盘少但短线获利抛压大；低=深套盘密集反弹有阻力）在本票上均无法判定。</p>
+<p><strong>股东户数</strong>：股东户数返回 None——库内无该票股东户数记录。股东户数为季度披露、天然滞后，此处缺失使&quot;筹码集中还是趋散&quot;无法判断。</p>
+<h2>I. 未来 13 周事件日历</h2>
+<p>事件来源两类：库内事件日历（近 120 日）（<strong>注意：返回的 5 条全部是&quot;概念&quot;匹配，即板块级事件，不是公司级事件</strong>）＋联网与库内财报公告节奏推算。</p>
+<ul>
+<li><strong>W1（2026-08-10 起）</strong>：宇树科技科创板 IPO 网上网下申购 · 公司事件（板块级）· 重要性高（库内 importance=7）· 影响：机器人板块情绪标杆定价，对本票&quot;机器人概念&quot;标签有情绪外溢，但 G 节已判定该标签<strong>仅概念、无营收佐证</strong>，影响限于情绪</li>
+<li><strong>W1（2026-08-10 起）· 补充观察点</strong>：8-07 首板后的次日走势 —— 核对库内涨停记录是否出现连板，或封板失败回落。依据：H 节封板质量偏弱（开板 3 次、封单 0.05 亿）· 重要性中 · 影响：验证题材资金的持续性</li>
+<li><strong>W2（2026-08-17 起）</strong>：2026 世界机器人大会在北京开幕（8/19–23）· 会议（板块级）· 重要性高（库内 importance=8）· 影响：同 W1，情绪外溢为主</li>
+<li><strong>W3（2026-08-24 起）</strong>：<strong>2026 年中报正式披露（推定窗口）</strong> · 财报 · 重要性 <strong>最高</strong> · 依据：库内 2025 中报公告日 20250822，按去年同期节奏推算 · 影响：<strong>本报告最关键的验证节点</strong>——核对归母净利是否落在 480–720 万预告区间、毛利率能否回到 15% 以上、资产负债率是否继续突破 44.14%、以及中报中液冷业务是否首次给出可量化营收</li>
+<li><strong>W4（2026-08-31 起）</strong>：电池消费税新政生效（9-01，锂离子蓄电池等按 2% 征收）· 政策 · 重要性高（库内 importance=7）· 影响：储能业务成本端小幅抬升，对本票是真实业务线的实质影响；同周特斯拉储能业务年底产能达标要求（库内 importance=6）· 影响：储能产业链需求侧情绪</li>
+<li><strong>W5（2026-09-07 起）</strong>：苹果秋季新品发布会（9-09，iPhone 18 系列与首款折叠屏）· 公司事件（板块级）· 重要性高（库内 importance=8）· 影响：消费电子板块年度炒作窗口；本票&quot;消费电子概念&quot;为<strong>真有业务</strong>标签，情绪相关度高于机器人标签</li>
+<li><strong>W6（2026-09-14 起）</strong>：本周无已知事件 · 观察点：中报披露后重跑库内估值，核对 PE(TTM) 是否已升破行业中位 71.69（C 节推演的验证）</li>
+<li><strong>W7（2026-09-21 起）</strong>：本周无已知事件 · 观察点：三季度末汇率位置 —— 核对美元兑人民币是否守住 F-3 所述 6.85–7.05 基准区间</li>
+<li><strong>W8（2026-09-28 起）</strong>：本周无已知事件（含国庆假期前最后交易周）</li>
+<li><strong>W9（2026-10-05 起）</strong>：本周无已知事件（国庆假期）</li>
+<li><strong>W10（2026-10-12 起）</strong>：本周无已知事件 · 观察点：三季报业绩预告窗口开启，留意是否再次自愿性披露</li>
+<li><strong>W11（2026-10-19 起）</strong>：<strong>2026 年三季报披露（推定窗口）</strong> · 财报 · 重要性高 · 依据：库内 2025 三季报公告日 20251024 · 影响：验证 H1 的汇兑拖累是否如 F-3 预期边际缓解、毛利率是否修复</li>
+<li><strong>W12（2026-10-26 起）</strong>：本周无已知事件 · 观察点：若三季报未落在 W11，此周为备用窗口</li>
+<li><strong>W13（2026-11-02 起）</strong>：本周无已知事件 · 观察点：13 周复盘节点 —— 对照本日历逐条核&quot;当时说的事发生了没、A 节判断对了没&quot;</li>
+</ul>
+<p><strong>信息缺口</strong>：库内事件日历 <strong>零条公司级事件</strong>（5 条全是概念匹配的板块事件），无本票的中报预约披露日、股东会日期、限售解禁时点。影响：I 节 W3/W11 的财报窗口是<strong>按去年公告日推算的估计值，不是官方预约日</strong>，可能偏移 1–2 周。补法：以深交所披露的业绩预约披露时间表为准，或在事件库接入公司级公告日历后重跑。</p>
+<h2>J. 逻辑链</h2>
+<div class="callout">⚠️ 按纪律，H 节的资金流数据<strong>不进入本链条</strong>。</div>
+<p><strong>主链（下行方向）</strong></p>
+<ol>
+<li>因为 <strong>库内 2026Q1 毛利率 13.7994%、较前三期 15% 上下的中枢一次性下移</strong>（置信度：高·库内财务），</li>
+<li>且 <strong>外销占营收 53.25%、2026Q1 单季汇兑损失 2119.45 万元</strong>（置信度：中·联网单源，但与库内毛利率同比降幅 2.05pct 的口径一致），</li>
+<li>且 <strong>上游电子元器件涨价与行业价格战同时挤压中游</strong>（置信度：中·两源行业报告，G 节产业链位置佐证），</li>
+<li>→ <strong>所以本票的盈利恶化是&quot;结构位置＋汇率敞口&quot;的复合结果，不是单一季度的偶发事件</strong>（推论·置信度：中高）。</li>
+<li>→ <strong>如果该推论成立，应该能观察到</strong>：2026 中报净利落在预告的 480–720 万区间（而非超预期修复）、毛利率仍显著低于 15%、且资产负债率延续 36.79→44.14 的上行轨迹。<strong>这三条都可在 W3 用财报核对。</strong></li>
+</ol>
+<p><strong>副链（上行方向）</strong></p>
+<ol>
+<li>因为 <strong>液冷数据中心受 PUE ≤ 1.2 与 70% 液冷率的刚性政策约束驱动</strong>（置信度：中·F-1 两源），</li>
+<li>且 <strong>控股子公司朗擎数科已有小批量液冷算力一体机正式订单落地</strong>（置信度：中·G 节两源交叉），</li>
+<li>→ <strong>所以本票具备一条与现有主业无关的第二增长曲线的可能性</strong>（推论·置信度：<strong>低</strong>）。</li>
+<li>→ <strong>如果该推论成立，应该能观察到</strong>：中报或三季报中液冷/算力业务首次出现<strong>可量化的营收披露</strong>（而非仅在互动平台定性描述），或出现披露金额的正式合同公告。<strong>这可在 W3 / W11 核对。</strong></li>
+</ol>
+<h3>🔴 整条链最弱的一环（命门）</h3>
+<p><strong>副链的第 3 步。</strong></p>
+<p>理由：公司自己说这块业务&quot;<strong>对公司整体财务影响较小</strong>&quot;。也就是说，<strong>液冷算力目前是一个由公司自述、被政策叙事放大、但没有任何营收数字支撑的预期</strong>。它撑起了 8-07 的 20% 涨停，却撑不起任何一行财报。</p>
+<p><strong>这意味着：如果 13 周内液冷业务始终拿不出可量化营收，本票的定价就只剩下主链——而主链指向的是净利同比降九成、PE 被动升破行业中位。</strong> 副链一旦证伪，估值支撑会同时失去题材和数字两条腿。</p>
+<p><strong>反过来的自我警告</strong>：这也是我最可能判错的地方。题材股的定价周期常常长于验证周期——<strong>&quot;没有营收&quot;在一个季度内未必会被市场惩罚</strong>。</p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（20%）</strong>｜<strong>触发</strong>：W3 中报归母净利<strong>超出预告上限 720 万</strong>，或毛利率回到 <strong>15% 以上</strong>（对比 2026Q1 的 13.7994%）；<strong>且</strong> W3/W11 财报或公告中液冷/算力业务出现<strong>首次可量化营收披露</strong>；<strong>且</strong> 美元兑人民币守住 6.85–7.05 区间（F-3 基准情景）使汇兑拖累边际缓解｜<strong>路径</strong>：主链的&quot;结构性恶化&quot;被证伪、副链的&quot;第二曲线&quot;被证实，市场愿意给液冷业务单独估值，PE 被动抬升被成长预期覆盖，估值向行业中位（71.69）之上重估</li>
+</ul>
+<ul>
+<li><strong>中性（45%）</strong>｜<strong>触发</strong>：W3 中报归母净利<strong>落在 480–720 万预告区间内</strong>、毛利率仍在 <strong>15% 以下</strong>；液冷业务维持&quot;小批量、无可量化营收&quot;的定性描述｜<strong>路径</strong>：业绩利空因已于 7-15 预告而被部分消化，定价主体继续是题材而非盈利；PE(TTM) 被动升至约 74–76 倍（C 节推演）但市场以&quot;扭亏/新业务&quot;叙事忽略之；股价跟随液冷与消费电子板块 beta 宽幅震荡，8-07 涨停形成的高换手区间成为反复争夺的筹码带</li>
+</ul>
+<ul>
+<li><strong>悲观（35%）</strong>｜<strong>触发</strong>：W3 中报归母净利<strong>低于 480 万预告下限</strong>（预告为未审计初步测算，存在下修可能）；<strong>或</strong> 毛利率跌破 2026Q1 的 13.7994%；<strong>或</strong> 资产负债率突破 44.142% 且伴随短期借款显著抬升；<strong>或</strong> W1 首板次日即封板失败、后续 20 日全口径资金延续净流出｜<strong>路径</strong>：C 节推演兑现——PE(TTM) 升破行业中位 71.69，&quot;估值偏低&quot;这个唯一的量化支撑失效；同时副链因缺乏营收佐证而降温，题材与估值两条腿同时松动，估值向下寻找 PB 支撑</li>
+</ul>
+<p>*三情景概率合计 100%。所有触发条件均可用财报数字、库内取数返回值或公开公告核对。*</p>
+<h2>L. 决策与风控</h2>
+<h3>条件式操作倾向</h3>
+<ol>
+<li><strong>如果</strong> W3（约 2026-08-24 当周）中报归母净利落在 480–720 万预告区间内、<strong>且</strong> 毛利率仍低于 15%、<strong>且</strong> 液冷业务在中报中仍无可量化营收披露，<strong>那么回避</strong>——此时主链被证实、副链未被证实，J 节的命门指向下行，且 C 节推演的 PE 被动抬升同步兑现。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> W3/W11 财报或期间公告中，液冷/算力业务<strong>首次给出可量化营收数字或披露金额的正式合同</strong>，<strong>且</strong> 该数字对应的营收占比达到可影响整体毛利率的量级（可用中报毛利率是否回到 15% 以上交叉验证），<strong>那么轻仓试仓</strong>——此时副链从&quot;公司自述定性&quot;升级为&quot;财报可核验事实&quot;，J 节最弱的一环被补强。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> 8-07 首板在 W1 内封板失败回落、<strong>且</strong> 库内资金筹码的 20 日全口径净流入持续为负、净流入天数低于 9/20，<strong>那么观望</strong>——题材资金的持续性未获验证，在中报（W3）落地前不具备新的可核验信息增量。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> 已持有且 W3 中报归母净利<strong>低于 480 万预告下限</strong>、<strong>或</strong> 毛利率跌破 13.7994%，<strong>那么减仓</strong>——这意味着连公司自己 7-15 给出的悲观预告都未能守住，C 节的估值推演会以更差的分母兑现。</li>
+</ol>
+<h3>这笔判断在什么情况下应当被推翻</h3>
+<ul>
+<li><strong>推翻&quot;震荡&quot;转向明确偏涨的条件</strong>：液冷业务出现可量化营收（不是订单意向、不是互动平台答复），<strong>且</strong> 中报毛利率回升至 15% 以上。满足这两条，J 节副链成立、主链动摇，A 节结论作废，需重跑本调研。</li>
+<li><strong>推翻&quot;震荡&quot;转向明确偏跌的条件</strong>：中报实际净利低于预告下限，<strong>或</strong> 中报后库内估值的 PE(TTM) 升破 71.69 而股价未同步回落（意味着估值溢价完全依赖题材、无任何数字支撑）。</li>
+<li><strong>本报告整体失效的条件</strong>：出现库内数据无法覆盖的重大事项（重大资产重组、控制权变更、监管问询、商誉减值计提）。库内新闻对本票为空，<strong>本报告对此类事件是盲的</strong>——这是必须写明的结构性局限。</li>
+</ul>
+<h3>仓位思路</h3>
+<p>仅讲相对概念，不涉及任何金额与股数：</p>
+<ul>
+<li><strong>在 W3 中报落地前</strong>：本票同时具备&quot;业绩确定性利空已公告&quot;与&quot;题材催化尚未证伪&quot;两种相反属性，且 H 节显示封板质量弱、资金两口径背离——<strong>属于信息未出清阶段，相对仓位应为不参与或极轻</strong>。</li>
+<li><strong>W3 之后</strong>：按上述条件 1/2/4 的验证结果决定方向。<strong>在 C 节的 PE 被动抬升推演被财报证实或证伪之前，不具备中等以上仓位的依据。</strong></li>
+<li>本票市值 38.19 亿、换手率 18.15%，属<strong>小市值高换手</strong>品种，波动幅度与流动性风险显著高于 D 节三家可比公司，<strong>同等看多程度下相对仓位应低于大市值品种</strong>。</li>
+</ul>
+<h2>M. 逻辑自查</h2>
+<h3>这份判断最依赖的假设是哪一条？</h3>
+<p><strong>「13 周内，中报（W3）会成为定价的主导变量。」</strong></p>
+<p>如果它错了会怎样：本票 8-07 的涨停发生在业绩预告公告 <strong>23 天之后</strong>——市场在明知净利将同比降九成的情况下仍给出 20cm 涨停。这是<strong>市场已经不按盈利定价</strong>的直接证据。若这个状态延续，我 K 节给悲观情景 35% 的权重就偏高，中性情景会向上偏移，甚至可能滑向乐观情景而与基本面无关。<strong>我把这条列为本报告的头号软肋。</strong></p>
+<h3>有没有我为了让逻辑好看而忽略的反面证据？</h3>
+<p>有三条，我逐条摆出来：</p>
+<ol>
+<li><strong>PB 2.79 是全篇最&quot;便宜&quot;的数字，我用&quot;资产盈利能力被打折&quot;一句带过了。</strong> 但对比 D 节三家（4.98 / 15.80 / 18.97），本票 PB 低了 44%–85%。如果盈利只是周期性低谷（汇率＋原材料两条都是可逆变量），低 PB 就是真实的安全边际，而我的报告整体是按&quot;结构性恶化&quot;来写的。<strong>这是我可能系统性偏空的地方。</strong></li>
+<li><strong>主力口径资金 20 日净流入 +0.45 亿。</strong> 我在 H 节把它和全口径 −0.65 亿并列成&quot;背离/分歧&quot;，但也可以读成&quot;大资金在低位吸筹&quot;。我选择了偏谨慎的读法，且按纪律未让它进入 J 节——<strong>读者若更看重资金面，会得出比我更积极的结论。</strong></li>
+<li><strong>汇兑损失本质是非经营性损益。</strong> 2026H1 约 3900 万的汇兑损失，对应预告净利仅 480–720 万——<strong>换句话说，若剔除汇兑影响，经营层面的利润并没有塌到&quot;降九成&quot;那么难看。</strong> 我在 C 节强调了净利率从 7.13% 到 0.07%，但没有充分展开&quot;剔汇后经营利润&quot;这个视角，<strong>因为库内财务不提供财务费用拆分，我无法给出剔汇后的准确数字</strong>。这是一个诚实的表述局限，而不是刻意的选择——但效果上让报告显得更空。</li>
+</ol>
+<h3>信息缺口清单</h3>
+<ol>
+<li><strong>库中无 2026H1 正式财报</strong>（库内财务最新期 = 2026Q1）。影响：<strong>大</strong>——C 节盈利趋势、J 节主链验证、C 节 PE 推演全部依赖尚未审计的预告区间。补法：中报披露后（I 节 W3）重跑本调研。</li>
+<li><strong>库中库内新闻（近 60 日）对本票返回空</strong>。影响：<strong>大</strong>——本报告对该票近两个月的公告、监管动态、突发事项完全不可见，L 节已将其列为整体失效条件之一。补法：将该票纳入库内新闻抓取的关注口径后重跑。</li>
+<li><strong>库中库内研报返回 None</strong>（近 90 天无研报覆盖）。影响：<strong>中</strong>——本报告全篇<strong>没有任何一条券商评级或盈利预测可引用</strong>，J 节缺少卖方视角的对照。这本身也是一条信息：<strong>38 亿市值的小票，当前处于卖方研究的覆盖真空</strong>。补法：库内研报表按日更新，若后续出现覆盖将自动可用。</li>
+</ol>
+<div class="callout">说明：本报告<strong>未引用任何〔卖方预期〕</strong>——库内无研报，联网检索到的券商评级页面均未返回可核实的具体研报内容与日期，按红线 5 的要求，宁可留空也不引用来源不明的预测。</div>
+<ol>
+<li><strong>库中筹码分布（筹码）与股东户数（股东户数）均为 None</strong>。影响：<strong>中</strong>——获利盘比例（获利盘比例）与股东户数环比均无法给出，H 节的筹码分析整块缺失，无法判断 8-07 涨停后的套牢盘结构。补法：该票未在库内筹码数据的覆盖范围（仅关注票），需扩大覆盖后重跑。</li>
+<li><strong>库中库内事件日历零条公司级事件</strong>（5 条全为概念匹配的板块事件）。影响：<strong>中</strong>——I 节的 W3/W11 财报窗口是按去年公告日推算，非官方预约日，可能偏移 1–2 周；限售解禁、股东会等公司级时点完全缺失。补法：接入公司级公告日历后重跑。</li>
+<li><strong>库内行业分类粒度只到&quot;元器件&quot;（311 只）</strong>，无智能控制器细分赛道映射。影响：<strong>中</strong>——D 节只能与市值最大的三家跨量级公司对比，无法做同赛道对标。补法：建立细分赛道映射表。</li>
+<li><strong>无历史价格序列函数</strong>。影响：<strong>小</strong>——无法量化 8-07 涨停前的回撤幅度与相对位置，H 节的涨停形态分析只能就单日论单日。</li>
+</ol>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-08-09），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>中报预告净利同比降约九成</li>
+      <li>汇率升值致上半年汇兑损失3900万</li>
+      <li>中报后PE或被动升破行业中位71.69</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>商誉</dt><dd>收购时溢价支付的部分记在账上的资产。被收购方业绩不达预期时要计提减值、直接冲减利润。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>限售解禁</dt><dd>首发或定增取得的股份锁定期届满、可以上市流通。解禁本身不等于减持，但增加了潜在供给。</dd><dt>业绩预告</dt><dd>上市公司在正式财报前发布的盈利区间预告，达到规定变动幅度时强制披露。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-research">研究</span> 观研报告网《中国智能控制器行业发展深度分析与投资前景研究报告（2025-2032 <em>2025-20</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 公司投资者关系活动记录表，经上海有色网 SMM 转述 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内概念标签含&quot;储能&quot;标签佐证 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 经济观察网 2026-05-09《朗特智能一季报业绩下滑》 <em>2026-05-09</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 公司投资者关系活动记录表经上海有色网 SMM、新浪财经转述 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 经济观察网 2026-05-09，单源 <em>2026-05-09</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-08-09 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>

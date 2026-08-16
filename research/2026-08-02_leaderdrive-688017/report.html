@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>绿的谐波（688017.SH） · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>绿的谐波（688017.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-08-02（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>关联板块</b> 机器人</span>
+      <span><b>来源</b> 20 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    绿的谐波（688017）主要做的是精密传动装置研发、设计、生产和销售。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——407 倍 PE 的估值，锚在别人的量产计划上，不在自己的报表上。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：407 倍 PE 的估值，锚在别人的量产计划上，不在自己的报表上。支撑在于8-9月主题催化密集(宇树IPO/特斯拉产能)；2026Q1营收+42.96%净利+61.17%；谐波减速器国产替代窗口打开。主要风险是PE_TTM 407倍为行业中位8.8倍；库内仅2026Q1一期财报无趋势；毛利率33.62%同行倒数第二。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>8-9月主题催化密集(宇树IPO/特斯拉产能)</li>
+      <li>2026Q1营收+42.96%净利+61.17%</li>
+      <li>谐波减速器国产替代窗口打开</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据时点：2026-07-31 收盘（库内行情）｜报告生成：2026-08-02 数据层：库内取数库内直查 + 联网补政策/产业链/预期差/事件时点四类</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：407 倍 PE 的估值，锚在别人的量产计划上，不在自己的报表上。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>人形机器人主题催化在未来 5 周高度密集</strong>——8/10 宇树科技（688836）申购、8/12 荣耀 Robot Phone 发布、9/1 特斯拉 Optimus 供应链两个节点，其中特斯拉产能节点在库内事件日历标 importance 8（本报告最高）。（置信度：高｜依据：库内事件日历三条 + 新浪财经/杭州新闻 2026-07-31 双源）</li>
+<li><strong>2026Q1 是真增长，不是纯故事</strong>——营收 1.40 亿元同比 +42.96%，净利 0.33 亿元同比 +61.17%，利润增速快于营收增速，资产负债率仅 9.44%，账面极干净。（置信度：高｜依据：库内财务）</li>
+<li><strong>国产替代的窗口在客观打开</strong>——哈默纳科核心专利自 2025 年前后陆续到期，技术壁垒松动。（置信度：低｜两源均为二级转述，见 F/E 节）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>估值已经脱锚</strong>——PE_TTM 407.07 倍，是行业中位 46.36 倍的 <strong>8.8 倍</strong>，在 139 只同行里 PE 排第 112 便宜（即第 28 贵）；PB 15.60 倍。以 2026Q1 净利简单年化推算，动态 PE 仍在 420 倍量级。（置信度：高｜依据：库内估值 + 库内数字推算）</li>
+<li><strong>本报告的财务底座只有一期数据</strong>——库内财务（近 4 期）只返回 2026Q1 一期，无法判断毛利率/营收的季度趋势。C 节所有趋势判断因此被封在&quot;单点&quot;上。（置信度：高｜这是确定的缺口，不是推测）</li>
+<li><strong>驱动力全在公司外部</strong>——近 60 日 20 条新闻里，属于公司自身实质行为的只有 2 条（SKF 合资、精密轴承公司成立），其余 18 条全是板块/主题/ETF 类。股价对财报的敏感度远低于对主题事件的敏感度。（置信度：高｜依据：库内新闻全量清点）</li>
+</ol>
+<p><strong>最该盯的信号</strong> ① <strong>2026 年半年报</strong>（法定截止 8-31，见 I 节 W4/W5）：营收同比能否守住 2026Q1 的 +42.96% 量级、毛利率能否守住 33.62%——这是唯一能把 407 倍 PE 往回拉的硬证据。 ② <strong>9 月 1 日前后特斯拉 Optimus 周产 1000 台目标是否被公开确认</strong>（库内事件日历 importance 8）——这是整条主题逻辑的兑现检查点。</p>
+<p><strong>这份判断最可能错在哪</strong> 错在&quot;用估值高低推方向&quot;。407 倍 PE 在一个由产业叙事定价的板块里，历史上既可以压缩也可以继续扩张——估值贵能解释<strong>波动会很大</strong>，但解释不了<strong>往哪边走</strong>。如果特斯拉与宇树的量产节奏在 Q3 被兑现，市场完全可能继续按&quot;渗透率&quot;而非&quot;市盈率&quot;定价，本报告的&quot;震荡&quot;判断就会显得过于保守。</p>
+<h2>B. 公司快照</h2>
+<p><strong>基本信息</strong>（库内公司档案）</p>
+<ul>
+<li>名称：绿的谐波｜代码：688017｜市场：科创板｜行业分类：机械基件</li>
+<li>上市日期：2020-08-28（至今约 5 年 11 个月）｜上市状态：<strong>L（正常上市）</strong></li>
+<li>员工：1087 人｜注册资本：18333.0125 万元</li>
+<li>主营：精密传动装置研发、设计、生产和销售</li>
+<li>公司自述：专业从事精密传动装置的高新技术企业，产品包括<strong>谐波减速器、机电一体化执行器及精密零部件</strong>，应用于工业机器人、服务机器人、数控机床、航空航天、医疗器械、半导体生产设备、新能源装备；自称&quot;在国内率先实现谐波减速器的工业化生产和规模化应用，打破了国际品牌在国内机器人谐波减速器领域的垄断&quot;</li>
+</ul>
+<p><strong>当前行情</strong>（库内行情，唯一行情事实源）</p>
+<ul>
+<li>收盘价：<strong>303.65 元</strong>｜当日涨跌：<strong>+16.34%</strong>｜成交额：<strong>45.2 亿元</strong></li>
+<li>数据时点：<strong>2026-07-31 收盘</strong>（source=daily）</li>
+</ul>
+<p><strong>估值</strong>（库内估值，交易日=20260731）</p>
+<ul>
+<li>总市值：<strong>556.68 亿元</strong>｜PE_TTM：<strong>407.07 倍</strong>｜PB：<strong>15.60 倍</strong></li>
+<li>股息率（股息率）：0.0329%｜换手率：8.22%</li>
+<li>同行业（机械基件，共 <strong>139</strong> 只）PE 中位数：<strong>46.36 倍</strong>｜本股 PE 排名：<strong>第 112 便宜</strong></li>
+</ul>
+<p><strong>两点推算</strong>（基于库内数字，非直接字段）</p>
+<ul>
+<li>556.68 亿市值 ÷ 约 1.83 亿股（注册资本 18333.0125 万元推算）≈ 303.6 元，与库内行情收盘价一致——市值与股价口径自洽（置信度：高）。</li>
+<li>成交额 45.2 亿 ÷ 总市值 556.68 亿 ≈ <strong>8.12%</strong>，与库内换手率 8.22%（按流通股计）接近 → 流通盘已接近全流通，<strong>未见明显待解禁压制的间接证据</strong>（置信度：中｜这是推算，库内无解禁数据表，见 M 节缺口清单）。</li>
+</ul>
+<h2>C. 财务健康</h2>
+<p>⚠️ <strong>本节最大的问题不是数字难看，是数字太少。</strong></p>
+<p><strong>信息缺口</strong>：库内财务（近 4 期）只返回 <strong>1 期</strong>（2026Q1）复测同样只返回 1 期，确认库内财务表对本票只有一期记录。 <strong>影响</strong>：本节无法给出&quot;在变好还是变坏&quot;的趋势判断——而趋势恰恰是 C 节的全部价值。所有涉及&quot;环比/连续几个季度&quot;的结论在本报告中一律不成立。 <strong>补法</strong>：半年报披露后（见 I 节 W4/W5）库内应新增 2026H1 一期，届时重跑本调研可首次形成两点连线。</p>
+<p><strong>2026Q1（报告期=20260331，公告日=20260423）唯一一期实数</strong></p>
+<ul>
+<li>营业收入：<strong>1.40 亿元</strong>（140,134,456.30 元）｜同比 <strong>+42.96%</strong></li>
+<li>净利润：<strong>0.33 亿元</strong>（32,634,147.52 元）｜同比 <strong>+61.17%</strong></li>
+<li>毛利率：<strong>33.62%</strong>｜净利率：<strong>23.54%</strong>｜EPS：0.178 元</li>
+<li>ROE（单季）：<strong>0.92%</strong>｜资产负债率：<strong>9.44%</strong></li>
+</ul>
+<p><strong>能从这一期读出的三件事</strong></p>
+<ol>
+<li><strong>利润增速（+61.17%）显著快于营收增速（+42.96%）</strong>——存在经营杠杆或费用摊薄效应。（置信度：高｜库内硬数据）</li>
+<li><strong>净利率 23.54% 与毛利率 33.62% 之间只差约 10 个百分点</strong>。对一家科创板高研发投入企业而言，&quot;期间费用 + 税&quot;合计只吃掉 10 个点是偏低的，通常意味着<strong>存在非经营性收益贡献</strong>（政府补助、理财/投资收益等）。库内无利润表明细科目，<strong>无法证实也无法证伪</strong>——这是判断增长质量时必须自己去财报里核的一条。（置信度：中｜基于库内两个数字的结构推断，非直接证据）</li>
+<li><strong>资产负债率 9.44%，几乎不用杠杆</strong>——账面风险极低，这一条是确定的正面。（置信度：高）</li>
+</ol>
+<p><strong>估值口径的单独判断（不等于好坏结论）</strong>：ROE 单季 0.92%（简单年化约 3.7%）对应 PB 15.60 倍；以 2026Q1 净利简单年化 1.32 亿元推算，动态 PE 约 <strong>420 倍</strong>，与库内 PE_TTM 407.07 倍量级一致——说明<strong>当前价格并未反映近 12 个月的实际盈利，而是在为未来定价</strong>。（置信度：高｜纯库内数字推算）</p>
+<p><strong>主动排除的一类信息</strong>：多个库外来源转述了 2025 年年报的营收/净利数字，但<strong>这些来源之间互相打架</strong>（同一指标出现两个以上不同值），且财务数字按纪律不许联网取。本报告<strong>一律不采信</strong>，只用库内 2026Q1。（详见 M 节）</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>本节改为：<strong>用市值排序只做选样</strong>，所有引用数字逐票重新调用库内估值 / 库内公司档案 / 库内财务 / 库内行情取得——数字仍全部来自库内取数返回值。</p>
+<p><strong>同行业（机械基件）市值前三对照</strong>（估值交易日=20260731，财务期次均为 2026Q1）</p>
+<ul>
+<li><strong>绿的谐波（688017）</strong>｜市值 556.68 亿 · PE_TTM 407.07 · PB 15.60 · 营收 1.40 亿（+42.96%） · 净利 0.33 亿（+61.17%） · 毛利率 33.62% · 净利率 23.54% · ROE 0.92% · 负债率 9.44% · 当日 +16.34% · 成交 45.2 亿</li>
+<li><strong>鼎泰高科（301377）</strong>｜市值 1484.58 亿 · PE_TTM 238.82 · PB 51.16 · 营收 8.14 亿（+92.33%） · 净利 2.61 亿（+259.00%） · 毛利率 53.25% · 净利率 31.96% · ROE 9.39% · 负债率 45.54% · 当日 +5.14% · 成交 17.6 亿｜主营：工具、材料、装备一体的精密制造综合解决方案</li>
+<li><strong>纽威股份（603699）</strong>｜市值 353.37 亿 · PE_TTM 20.99 · PB 7.07 · 营收 18.13 亿（+16.53%） · 净利 3.45 亿（+31.40%） · 毛利率 39.16% · 净利率 19.05% · ROE 7.16% · 负债率 52.22% · 当日 +2.38% · 成交 4.7 亿｜主营：工业阀门</li>
+<li><strong>应流股份（603308）</strong>｜市值 290.97 亿 · PE_TTM 77.23 · PB 5.72 · 营收 8.89 亿（+34.13%） · 净利 1.20 亿（+30.55%） · 毛利率 33.72% · 净利率 12.64% · ROE 2.35% · 负债率 59.82% · 当日 +3.28% · 成交 10.7 亿｜主营：专用设备高端零部件</li>
+</ul>
+<p><strong>额外加测一只业务更可比的（非市值前三，按相关性选入）</strong></p>
+<ul>
+<li><strong>埃斯顿（002747）</strong>｜市值 287.82 亿 · PE_TTM 221.10 · PB 8.89 · 营收 12.17 亿（<strong>−2.22%</strong>） · 净利 0.98 亿（+674.64%） · 毛利率 30.39% · 净利率 7.96% · ROE 3.76% · 负债率 69.18% · 当日 +6.40% · 成交 28.6 亿｜主营：高端智能机械装备及核心控制/功能部件——是绿的谐波下游的工业机器人本体厂</li>
+</ul>
+<p><strong>这家在同行里的位置</strong></p>
+<ol>
+<li><strong>贵，而且贵得独一档</strong>：407.07 倍 PE 是这组里最高的，是第二高的鼎泰高科（238.82 倍）的 1.7 倍，是纽威股份（20.99 倍）的 19 倍。（置信度：高）</li>
+<li><strong>体量最小</strong>：单季营收 1.40 亿元，是这组里唯一低于 8 亿的——只有纽威股份的 7.7%、埃斯顿的 11.5%。<strong>用最小的收入体量撑起 556.68 亿市值</strong>，本身就是本报告最需要解释的事实。（置信度：高）</li>
+<li><strong>毛利率并不突出</strong>：33.62% 在这组里排倒数第二，低于鼎泰高科 53.25% 和纽威 39.16%，与应流 33.72% 基本持平。对一家自称&quot;打破国际品牌垄断&quot;的技术型公司，<strong>这个毛利率不支持&quot;强定价权&quot;的叙事</strong>——这是本报告认为最值得留意的一处反差。（置信度：中｜单期数据，无法排除季节性或产品结构扰动）</li>
+<li><strong>资产表最干净</strong>：负债率 9.44%，远低于其余四家的 45.54%–69.18%。这是实实在在的优势。（置信度：高）</li>
+<li><strong>当日弹性最大</strong>：+16.34% 领先全组，成交额 45.2 亿也是全组最高——说明它是这个行业分类里<strong>被主题资金选中的那一只</strong>。（置信度：高）</li>
+</ol>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>：卖零部件（谐波减速器、机电一体化执行器、精密零部件），下游是机器人本体厂与高端装备厂——典型的 <strong>B 端零部件供应商</strong>，营收弹性取决于下游客户的产能爬坡节奏，自身不掌握终端需求。（置信度：高｜依据库内公司档案主营与经营范围）</p>
+<p><strong>分级判断</strong></p>
+<ul>
+<li><strong>结构性护城河：证据不足（置信度：中）</strong></li>
+</ul>
+<p>公司自述&quot;国内率先实现工业化生产、打破国际品牌垄断&quot;（库内公司档案）确实指向先发优势，但库内能验证的只有一个反向信号：<strong>毛利率 33.62% 在同行里排倒数第二</strong>（D 节）。真正的结构性护城河通常会体现在超额毛利上，这里没有。</p>
+<ul>
+<li><strong>阶段性优势：成立（置信度：中）</strong></li>
+</ul>
+<p>① 先发 + 规模化制造经验；② 客户绑定——2026-07-02 与 SKF 成立合资公司（SKF 官网公告），2026-07-24 参与成立机器人精密轴承公司（东方财富 2026-07-24），说明公司在被产业链上下游主动选择；③ 成本优势——有来源称国产谐波减速器价格约为哈默纳科的 40%–60%（报告大厅 chinabgao，转述二级来源，<strong>单源未交叉验证·置信度低</strong>）。</p>
+<ul>
+<li><strong>壁垒正在松动的证据（置信度：低）</strong></li>
+</ul>
+<p>多个来源提到哈默纳科核心专利自 2025 年前后陆续到期、技术准入门槛下降（报告大厅 chinabgao；东方财富财富号 2026-07-16）。两条来源均为二级转述、无一手专利数据库佐证，<strong>按低置信度对待</strong>。方向上这对绿的谐波是<strong>双刃</strong>：既降低了它追赶日系的成本，也降低了后来者追赶它的成本。</p>
+<p><strong>一处必须点出的结构风险</strong>：SKF 官网 2026-07-02 公告明确 <strong>SKF 持有该合资公司 60% 股份</strong>。也就是说，这条被市场当作重大利好的合作里，<strong>绿的谐波是少数股东</strong>，合资公司的多数经济利益与控制权在 SKF 一方。合资公司预计 2026 年底开始运营。（置信度：中｜SKF 官方一手公告，但对绿的谐波报表的具体影响未见公司侧披露）</p>
+<h2>F. 政策与监管</h2>
+<p>库内无政策数据，本节全部来自联网，每条带来源与日期。</p>
+<ol>
+<li><strong>工信部 + 国资委：2026 年度人形机器人与具身智能实景实训专项行动</strong>（置信度：中｜双源）
+<ul>
+<li>来源：新华网 2026-06-12；国家科技管理信息系统公开通知 2026-06-09</li>
+<li>内容：到 2026 年底，人形机器人等具身智能重点产品在一批代表性场景完成应用验证和常态部署，凝练<strong>百个以上高价值应用场景</strong>，带动形成<strong>万台级规模落地能力</strong>；部署 6 项重点任务；对成效突出的区域与企业在政策、标准、项目上倾斜支持。</li>
+<li>传导方向：<strong>利好</strong>。传导链：政策推动整机落地 → 整机需求增加 → 关节模组需求 → 谐波减速器需求。</li>
+<li>⚠️ 传导量级判断（置信度：低）：政策目标是&quot;万台级&quot;。以人形机器人单机谐波减速器用量的量级估计，万台级对应的减速器需求相对公司现有单季 1.40 亿元营收<strong>是否构成实质增量，无法从公开信息确定</strong>——不要把&quot;政策利好&quot;直接等同于&quot;业绩利好&quot;。</li>
+</ul></li>
+</ol>
+<ol>
+<li><strong>首个人形机器人与具身智能标准体系发布</strong>（置信度：中｜单一权威源）
+<ul>
+<li>来源：新华网 2026-03-02</li>
+<li>传导方向：中性偏利好。标准统一有利于零部件规模化与互换性，利好上游标准件供应商；但同时也<strong>降低了定制化零部件的溢价空间</strong>。</li>
+</ul></li>
+</ol>
+<ol>
+<li><strong>针对本公司的专项政策或监管处罚</strong>：库内新闻近 60 日无相关记录，联网亦未见。<strong>信息缺口：无消息 ≠ 无事件</strong>，本报告未做全量公告检索。</li>
+</ol>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 <strong>12 个同花顺概念标签</strong>，逐个分级如下：</p>
+<p><strong>真有业务（有主营/经营范围佐证）</strong></p>
+<ul>
+<li><strong>减速器（886008.TI）</strong>——经营范围逐字写明&quot;精密谐波减速机&quot;，主营即此。（置信度：高）</li>
+<li><strong>机器人概念（885517.TI）</strong>——公司自述产品&quot;广泛应用于工业机器人、服务机器人&quot;。（置信度：高）</li>
+</ul>
+<p><strong>仅概念标签，未见库内营收佐证</strong></p>
+<ul>
+<li><strong>人形机器人（886069.TI）</strong>——⚠️ <strong>这是全场最需要说清楚的一条</strong>。库内公司档案的主营与经营范围里，机器人相关表述只有&quot;<strong>工业机器人、服务机器人</strong>&quot;，<strong>没有出现&quot;人形机器人&quot;</strong>；库内财务无分产品营收拆分。库外确有 SKF 合资公告提及面向人形机器人（SKF 官网 2026-07-02），但那是<strong>合资公司的未来方向，不是当期营收</strong>。结论：<strong>标签成立，营收佐证缺失</strong>。（置信度：高｜这是&quot;查不到&quot;这件事本身的高置信度，不是对公司的判断）</li>
+</ul>
+<p>而本票近 60 日的<strong>全部</strong>股价催化，恰恰来自这个未见营收佐证的标签。</p>
+<ul>
+<li><strong>中国 AI 50（886102.TI）</strong>——主营描述无任何 AI/算法业务。仅标签。（置信度：高）</li>
+<li><strong>专精特新（885929.TI）</strong>——快照称&quot;高新技术企业&quot;，与专精特新是不同认定口径，库内无该认定记录。仅标签。（置信度：中）</li>
+<li><strong>新型工业化（886057.TI）／同花顺新质 50（886096.TI）</strong>——主题归类标签，无营收对应。（置信度：高）</li>
+<li><strong>2025 年报预增（886107.TI）</strong>——⚠️ 库内财务无 2025 年任何期次数据，<strong>本报告无法用库内数据核验这个标签</strong>。（信息缺口，见 M 节）</li>
+</ul>
+<p><strong>交易属性标签（非业务）</strong></p>
+<ul>
+<li>上证 380 成份股（883303.TI）／中证 500 成份股（883304.TI）／沪股通（885520.TI）／融资融券（885338.TI）——指数成份与交易资格，属实但与业务无关。其中<strong>融资融券资格意味着存在杠杆资金参与</strong>，在 407 倍 PE 的标的上会放大双向波动（置信度：中｜标签属实为高，波动放大为推断）。</li>
+</ul>
+<p><strong>产业链位置</strong></p>
+<ul>
+<li><strong>上游</strong>：特种钢材、精密轴承、精密加工设备。本环节对上游的议价能力<strong>中等偏弱</strong>——公司需要与 SKF 合资才能补齐轴承环节，且在合资中只占 40%（E 节）。</li>
+<li><strong>本环节</strong>：谐波减速器 = 机器人关节核心传动件。有来源称谐波减速器占人形机器人成本 35% 以上（报告大厅 chinabgao／东方财富财富号 2026-07-16，<strong>二级转述·置信度低</strong>）。</li>
+<li><strong>下游</strong>：工业机器人本体厂（如同行业内的埃斯顿）、人形机器人整机厂（宇树、特斯拉、优必选）、数控机床、航空航天、医疗器械、半导体设备、新能源装备（主营描述）。</li>
+<li><strong>议价能力判断</strong>：<strong>向下游倾斜</strong>（置信度：中）。下游正在快速集中到特斯拉、宇树这类超级客户手上，超级客户天然压价；而 D 节显示公司毛利率 33.62% 在同行里排倒数第二，与&quot;议价权在下游&quot;这个判断相互印证。</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<h3>近 60 日新闻（库内新闻，共 20 条，按重要性挑 8 条）</h3>
+<p>⚠️ 以下标题里的涨跌幅均为<strong>发稿时点的盘中旧快照</strong>，一律用&quot;曾&quot;表述；当前状态以库内行情（2026-07-31 收盘 +16.34%、303.65 元）为准。</p>
+<ol>
+<li><strong>2026-07-07 08:27 · 东方财富</strong>｜&quot;绿的谐波与斯凯孚（SKF）成立合资公司聚焦高精密轴承部件研发与规模化供应&quot;</li>
+</ol>
+<p>→ <strong>近 60 日唯一具备实质基本面含义的公司事件</strong>。对基本面有实质影响：补齐轴承环节、绑定全球一线供应链。但需配合 E 节的&quot;SKF 持股 60%&quot;一起读。（置信度：高｜库内新闻 + SKF 官网 2026-07-02 双源）</p>
+<ol>
+<li><strong>2026-07-24 10:14 · 东方财富</strong>｜&quot;绿的谐波等成立机器人精密轴承公司&quot;</li>
+</ol>
+<p>→ 第二条公司实质行为，与上条同一方向（轴承环节落地）。对基本面<strong>有潜在影响但尚无营收贡献</strong>。（置信度：中）</p>
+<ol>
+<li><strong>2026-07-31 09:47 · 东方财富</strong>｜&quot;绿的谐波、昊志电机涨超 15%！宇树科技 8 月 10 日正式打新&quot;</li>
+</ol>
+<p>→ 当日盘中<strong>曾</strong>涨超 15%（发稿时点 09:47 快照），收盘为 +16.34%。触发因素是<strong>宇树 IPO 日期确定，与公司自身经营无关</strong>。（置信度：高）</p>
+<ol>
+<li><strong>2026-07-31 09:37 · 财联社</strong>｜&quot;人形机器人概念表现活跃奥比中光、绿的谐波、斯菱智驱均涨超 10%&quot;</li>
+</ol>
+<p>→ 同上，板块联动，当日<strong>曾</strong>涨超 10%。</p>
+<ol>
+<li><strong>2026-07-31 13:18 · 财联社</strong>｜&quot;人形机器人概念涨势扩大奥比中光等十余股涨停&quot;</li>
+</ol>
+<p>→ 板块级情绪确认：当日概念内十余股涨停，本票收盘 +16.34% <strong>未涨停</strong>（科创板涨跌幅 20%）——<strong>在最热的一天没能封板</strong>，是情绪强度的一个刻度。（置信度：高）</p>
+<ol>
+<li><strong>2026-07-05 16:00 · 东方财富</strong>｜&quot;绿的谐波：每股派 0.21 元股权登记日为 7 月 9 日&quot;</li>
+</ol>
+<p>→ 分红事件。⚠️ 与库内股息率=0.0329% 口径对不上（见 M 节冲突登记）。对基本面影响：可忽略量级。（置信度：中）</p>
+<ol>
+<li><strong>2026-07-08 09:38 · 财联社</strong>｜&quot;人形机器人概念震荡调整埃斯顿跌停&quot;</li>
+</ol>
+<p>→ <strong>反向证据</strong>，本报告刻意保留：同一板块在 7 月 8 日出现龙头跌停。这个板块是双向的，7-31 的 +16.34% 不代表单边。（置信度：高）</p>
+<ol>
+<li><strong>2026-07-15 10:37 · 东方财富</strong>｜&quot;机器人 V 型拉升！WAIC &amp; 中报季开启，静待具身智能'去伪存真'&quot;</li>
+</ol>
+<p>→ 市场自己已经把&quot;中报季 = 去伪存真&quot;当成了检验点——与本报告 A 节&quot;最该盯的信号①&quot;指向同一件事。（置信度：中）</p>
+<p><strong>消息面的结构性特征（本节最重要的一句）</strong>：20 条新闻里，<strong>属于公司自身行为的只有 2 条</strong>（第 1、2 条），其余 18 条全部是板块/概念/ETF/同行类。（置信度：高｜全量清点，非抽样）</p>
+<h3>涨停史（库内涨停记录，近 180 日）</h3>
+<p>近 180 日<strong>仅 1 次涨停</strong>：</p>
+<ul>
+<li><strong>2026-06-05</strong>｜涨幅 +20.00%｜<strong>首板</strong>（连板=1，涨停统计=1/1）｜首次封板 <strong>13:04:13</strong>、最后封板 <strong>13:07:10</strong>｜<strong>开板 2 次</strong>｜封单金额 <strong>2.81 亿元</strong>｜当时行业标注&quot;自动化设&quot;</li>
+</ul>
+<p><strong>读法</strong>：① 有过情绪面关注，但<strong>近半年只有一次，且没有连板</strong>；② 首封时间在午后 13:04，不是早盘一字，属于<strong>盘中拉升型</strong>而非<strong>预期锁定型</strong>；③ 开板 2 次说明封板不坚决。④ 2026-07-31 涨 16.34%、成交 45.2 亿、换手 8.22%，是<strong>放量大涨但未封板</strong>。</p>
+<p>综合判断：<strong>这只票的情绪面是&quot;高波动、弱持续&quot;</strong>——资金愿意在事件日冲进来，但不愿意锁仓过夜。（置信度：中｜依据 1 次涨停记录 + 1 个交易日行情，样本量小）</p>
+<h2>I. 未来 13 周事件日历</h2>
+<p>（库内事件日历（近 120 日）返回 3 条，均通过<strong>概念 886069.TI（人形机器人）命中</strong>，属板块事件而非公司直接点名；其余由联网补，来源与日期随条标注。）</p>
+<ul>
+<li><strong>W1（2026-08-03 起）</strong>：本周无已知事件</li>
+<li><strong>W2（2026-08-10 起）</strong>：
+<ul>
+<li>08-10 · <strong>宇树科技（688836）网上/网下申购日</strong> · 行业 · 重要性 <strong>高</strong> · 影响：首家人形机器人整机 A 股上市主体出现，板块获得新的定价锚——既可能共振抬估值，也可能分流资金（来源：新浪财经 2026-07-31、杭州新闻网 2026-07-31，双源）</li>
+<li>08-12 · 宇树科技网上/网下缴款截止（T+2） · 行业 · 重要性中（同上双源）</li>
+<li>08-12 · <strong>荣耀 Robot Phone（机器人手机）正式发布</strong> · 公司事件 · 重要性 <strong>中高</strong>（库内 importance 7）· 影响：具身智能消费端热度，对本票为情绪传导而非订单传导</li>
+</ul></li>
+<li><strong>W3（2026-08-17 起）</strong>：本周无已知事件</li>
+</ul>
+<p>⚠️ 绿的谐波 2026 半年报<strong>预约披露日未查到</strong>（联网未获，库内无该字段），可能落在本周——见 M 节缺口</p>
+<ul>
+<li><strong>W4（2026-08-24 起）</strong>：<strong>2026 年半年报披露窗口</strong> · 财报 · 重要性 <strong>高</strong> · 影响：<strong>本报告的头号验证点</strong>——检验 C 节唯一一期数据（营收 +42.96%、毛利率 33.62%）是否延续，并首次让库内形成两期连线</li>
+<li><strong>W5（2026-08-31 起）</strong>：
+<ul>
+<li>08-31 · 半年报法定披露截止日 · 财报 · 重要性 <strong>高</strong></li>
+<li>09-01 · <strong>特斯拉要求供应商达到 Optimus 机器人周产 1000 台产能目标</strong> · 行业 · 重要性 <strong>高</strong>（库内 importance <strong>8</strong>，本报告事件日历最高）· 影响：人形机器人供应链订单能否放量的决定性检查点</li>
+<li>09-01 · <strong>特斯拉 Optimus 供应链开始批量供货</strong> · 行业 · 重要性中高（库内 importance 7）</li>
+</ul></li>
+<li><strong>W6（2026-09-07 起）</strong>：本周无已知事件</li>
+<li><strong>W7（2026-09-14 起）</strong>：本周无已知事件</li>
+<li><strong>W8（2026-09-21 起）</strong>：本周无已知事件</li>
+<li><strong>W9（2026-09-28 起）</strong>：本周无已知事件（09-30 为国庆假期前最后交易日）</li>
+<li><strong>W10（2026-10-05 起）</strong>：国庆假期 A 股休市（常规安排 10-01~10-07，<strong>具体以交易所公告为准</strong>）· 本周无已知公司事件</li>
+<li><strong>W11（2026-10-12 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-10-19 起）</strong>：本周无已知事件</li>
+<li><strong>W13（2026-10-26 起）</strong>：<strong>2026 年三季报披露窗口</strong> · 财报 · 重要性 <strong>高</strong>（法定截止 10-31）· 影响：第二次盈利检验；同期也是特斯拉&quot;年底周产 2000–2500 台&quot;目标的中途观察窗</li>
+</ul>
+<p><strong>窗口外但需登记的两个时点</strong></p>
+<ul>
+<li><strong>2026 年底</strong>：SKF × 绿的谐波合资公司<strong>预计开始运营</strong>（来源：SKF 官网 2026-07-02）</li>
+<li><strong>2026 年底</strong>：工信部专项行动&quot;万台级规模落地能力&quot;目标节点（来源：新华网 2026-06-12）</li>
+</ul>
+<h2>J. 逻辑链</h2>
+<p><strong>主链</strong></p>
+<div class="callout">因为 <strong>①公司主营确为谐波减速器（库内公司档案经营范围逐字，置信度：高）</strong> 且 <strong>②谐波减速器是人形机器人关节的核心传动件、下游正在特斯拉/宇树处集中（产业共识 + 库内事件日历 importance 8，置信度：中）</strong> 且 <strong>③2026Q1 营收 +42.96%、净利 +61.17% 证明增长真实（库内财务，置信度：高）</strong> → <strong>所以</strong> 市场把它定价为&quot;人形机器人量产的国产核心受益标的&quot;，给到 PE_TTM 407.07 倍 = 行业中位 46.36 倍的 8.8 倍（库内估值，置信度：高） → <strong>如果这个定价成立，应该能观察到</strong>：单季营收从 1.40 亿元的基数上持续高速放大，且<strong>毛利率随规模上行</strong>（真壁垒的标志）。</div>
+<p><strong>反链（本报告刻意保留的证伪线索）</strong></p>
+<div class="callout">但是 <strong>④毛利率 33.62% 在同行五家里排倒数第二</strong>，低于鼎泰高科 53.25%、纽威 39.16%（全部 2026Q1 同期，置信度：高） 且 <strong>⑤&quot;人形机器人&quot;概念标签在主营与经营范围里没有营收佐证</strong>（库内概念标签 × 库内公司档案交叉，置信度：高） 且 <strong>⑥近 60 日 20 条新闻里公司自身实质事件只有 2 条</strong>（库内新闻全量清点，置信度：高） → <strong>所以</strong> 存在另一种解释：当前价格反映的是<strong>板块 beta 与主题溢价</strong>，而非公司已兑现的竞争优势。 → <strong>如果这个解释成立，应该能观察到</strong>：股价对主题事件（8/10 宇树申购、9/1 特斯拉节点）的反应幅度，<strong>显著大于</strong>对 8 月底半年报的反应幅度。</div>
+<p><strong>最弱的一环（整条链的命门）</strong>： <strong>C 节只有 2026Q1 一期数据。</strong> 主链的第③环——&quot;增长真实且可持续&quot;——建立在<strong>单个数据点</strong>上。一期同比 +42.96% 既可能是趋势起点，也可能是低基数或订单确认时点造成的单季跳变，本报告<strong>没有任何库内数据可以区分这两者</strong>。这一环塌了，主链就只剩②这个纯外部叙事。（置信度：高——这是对缺口本身的确定判断）</p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（30%）</strong>｜<strong>触发</strong>：2026 半年报营收同比 <strong>≥40%</strong>（延续 2026Q1 的 +42.96% 量级）<strong>且</strong>毛利率 <strong>≥33.62%</strong>（不低于 2026Q1）；同时 9 月 1 日前后特斯拉 Optimus 周产 1000 台目标获公开确认（库内事件日历 importance 8 事项兑现）｜<strong>路径</strong>：主链第③环从&quot;单点&quot;变成&quot;两点连线&quot;，估值溢价获得基本面背书，跟随人形机器人板块继续走强，PE_TTM 在 400 倍以上维持甚至扩张</li>
+<li><strong>中性（45%）</strong>｜<strong>触发</strong>：半年报营收同比落在 <strong>20%–40%</strong> 区间，或毛利率在 30%–33.62% 之间小幅回落；特斯拉产能节点无明确公开验证也无明确证伪｜<strong>路径</strong>：估值既无法证实也无法证伪，股价完全跟随板块 beta 高波动震荡；8/10 宇树申购与其后上市造成板块内资金再配置，本票成交额（对照 7-31 的 45.2 亿）出现明显起落</li>
+<li><strong>悲观（25%）</strong>｜<strong>触发</strong>：半年报营收同比 <strong>&lt;20%</strong>，<strong>或</strong>毛利率跌破 <strong>30%</strong>（低于同组最低的埃斯顿 30.39%），<strong>或</strong>特斯拉 Optimus 产能目标被公开延期｜<strong>路径</strong>：407.07 倍 PE 失去唯一支撑，估值向行业中位 46.36 倍方向压缩；因融资融券资格带来的杠杆资金会放大这一过程</li>
+</ul>
+<p>（三档合计 100%）</p>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong></p>
+<ol>
+<li><strong>如果</strong> 2026 半年报（I 节 W4/W5）营收同比 <strong>&lt;20%</strong>，或毛利率跌破 <strong>30%</strong>（对照 2026Q1 的 33.62%），<strong>那么回避 / 减仓</strong>——主链最弱的一环被证伪，407 倍 PE 失去唯一支撑。</li>
+<li><strong>如果</strong> 半年报营收同比 <strong>≥40%</strong> 且毛利率 <strong>≥33.62%</strong>，<strong>并且</strong>届时 PE_TTM 回落到行业中位（46.36 倍）的 <strong>5 倍以内</strong>（即约 232 倍以下），<strong>那么可考虑轻仓试仓</strong>——两个条件必须同时满足：基本面兑现 + 估值给出安全边际，缺一不可。</li>
+<li><strong>如果</strong> 8 月 10 日宇树科技申购后，板块整体转弱、且本票单日成交额较 7-31 的 <strong>45.2 亿元萎缩过半</strong>而股价未破位，<strong>那么观望</strong>——主题降温但未证伪，此时的横盘不提供任何新信息，等 W4 半年报再判。</li>
+</ol>
+<p><strong>风控要点（什么情况下应当推翻本报告的判断）</strong></p>
+<ul>
+<li><strong>推翻&quot;震荡&quot;判断的向上条件</strong>：半年报兑现乐观情景触发条件 <strong>且</strong> 特斯拉 9/1 产能节点获公开确认——两个独立验证同时通过，说明定价逻辑已从&quot;预期&quot;切换到&quot;兑现&quot;，本报告的谨慎立场应当作废重写。</li>
+<li><strong>推翻&quot;震荡&quot;判断的向下条件</strong>：出现悲观情景任一触发条件，方向应改判为偏跌。</li>
+<li><strong>推翻本报告数据基础的条件</strong>：库内财务补齐 2026H1 及更早期次后，C 节所有&quot;单点&quot;判断必须重算——<strong>本报告在半年报披露后即视为过期</strong>。</li>
+<li><strong>本报告未覆盖、需自行核查的风控项</strong>：限售解禁安排、股东减持计划、大额关联交易、SKF 合资公司对报表的具体并表口径（库内均无数据，见 M 节）。</li>
+</ul>
+<p><strong>仓位思路</strong>：<strong>不参与或轻</strong>（仅估值与数据完备度口径）。理由是两条硬约束叠加：① PE_TTM 407.07 倍处于同行业 139 只中的第 112 便宜位；② 本报告的财务底座只有一期数据，任何重仓判断都缺乏可复核的依据。<strong>本节不给任何金额、股数、价位。</strong></p>
+<h2>M. 逻辑自查</h2>
+<p><strong>1. 这份判断最依赖的假设是哪一条？错了会怎样？</strong></p>
+<p>最依赖：&quot;<strong>2026Q1 的 +42.96% / +61.17% 代表一个可持续的增长趋势</strong>&quot;。 它错了（例如 Q1 是订单确认时点造成的单季跳变、或去年同期低基数），那么：C 节的正面判断整段作废、J 节主链第③环断裂、K 节三档概率需要整体向悲观侧重排、A 节&quot;震荡&quot;应改判为&quot;偏跌&quot;。 <strong>这个假设本报告无法自检</strong>——因为库内只有这一期。这是本报告最大的软肋，已在 A 节公开写明。</p>
+<p><strong>2. 有没有为了让逻辑好看而忽略的反面证据？</strong></p>
+<p>主动检查了三处，全部保留在正文里而非隐去：</p>
+<ul>
+<li><strong>毛利率 33.62% 同行倒数第二</strong>（D/E/J 节）——它直接削弱&quot;技术壁垒/定价权&quot;的叙事，本报告没有用&quot;产品结构差异&quot;之类的说辞把它糊过去。</li>
+<li><strong>7 月 8 日埃斯顿跌停</strong>（H 节第 7 条）——在一份处处是利好催化的消息面里，这是唯一的负面样本，刻意保留。</li>
+<li><strong>SKF 持股 60%、绿的谐波是少数股东</strong>（E 节）——市场普遍把这条当纯利好，本报告点出了它的另一面。</li>
+</ul>
+<p>还有一处需要坦白：<strong>7-31 单日 +16.34% 天然会让报告的语气偏正面</strong>。本报告用&quot;未封板、近 180 日仅 1 次涨停且开板 2 次&quot;（H 节）对这个偏向做了对冲。</p>
+<p><strong>3. 信息缺口清单</strong></p>
+<ul>
+<li><strong>【最严重】库内财报仅 2026Q1 一期</strong>｜库内财务（近 4 期）与均只返回 1 条｜影响：C 节无法做趋势判断，J 节主链最弱环由此产生｜补法：半年报披露后（I 节 W4/W5）重跑本调研</li>
+</ul>
+<ul>
+<li><strong>【数据冲突】股息率口径对不上</strong>｜库内股息率=0.0329%，与 2026-07-05 新闻&quot;每股派 0.21 元&quot;按 303.65 元股价折算（约 0.069%）不一致｜影响：极小，本报告未在任何判断中使用股息｜补法：核对分红公告的税前/税后与每股/每 10 股口径</li>
+<li><strong>【已主动排除】库外 2025 年报数字互相打架</strong>｜多个转述来源对同一年度指标给出不同数值｜处理：按纪律&quot;财务数字不联网取&quot;，<strong>一律不采信</strong>，全文只用库内 2026Q1</li>
+<li><strong>【单源未验证】历史高点</strong>｜有来源称 2026-05-26 曾创 383.88 元历史高点（TradingView 页面转述）｜<strong>本报告数据层无法核验</strong>（库内行情只给单日），故未在正文任何判断中使用</li>
+<li><strong>【多源打架·低置信度】谐波减速器市占率</strong>｜检索到的份额数字全球口径与国内口径混用且互相矛盾（哈默纳科 &gt;80% / 40%，绿的谐波 12% / 18%，来福 21.4% / 10%）｜处理：正文未引用任何具体份额数字</li>
+<li><strong>【多源打架·不采信】产能数据</strong>｜库外来源给出的产能口径彼此冲突（月产能、年产能、2027 年规划三种口径互不兼容）｜处理：正文未引用任何具体产能数字</li>
+<li><strong>【库内无表】解禁与减持</strong>｜库内无限售解禁表、无股东减持数据｜影响：L 节风控缺一个重要维度｜补法：自行核查交易所公告</li>
+<li><strong>【未获取】半年报预约披露日</strong>｜库内无该字段，联网未查到｜影响：I 节 W3/W4 的定位有 ±1 周不确定性｜补法：查交易所预约披露时间表</li>
+<li><strong>【标签无法核验】&quot;2025 年报预增&quot;概念</strong>｜库内概念标签挂有此标签，但库内无 2025 年任何期次财报可供核对</li>
+</ul>
+<p><strong>4. 卖方预期（单列，非事实）</strong></p>
+<ul>
+<li>〔卖方预期〕来源：东方财富研报《汽车行业周报——特斯拉 Optimus 周产节奏明确，机器人最佳布局节点已至》· 日期：2026-07-13 · 观点：特斯拉 Optimus 周产节奏已明确 · 置信度：低（卖方观点非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：国新证券《高端制造行业：特斯拉确认 Optimus 年底量产，人形机器人产业化迎里程碑》· 日期：2026 年（检索结果未给出具体日） · 观点：特斯拉确认 Optimus 年底量产，产业化迎里程碑 · 置信度：低（卖方观点非事实，日期不完整）</li>
+<li>〔卖方预期〕来源：东海证券《机械设备：谐波减速器需求激增，国内企业拥抱国产化机遇》· 日期：检索结果未给出 · 观点：谐波减速器需求激增，国产化存在机遇 · 置信度：低（卖方观点非事实，日期缺失）</li>
+<li>〔卖方预期〕来源：新浪财经转述宇树科技招股材料 · 日期：2026-07-31 · 观点：宇树科技预计 2026 年 1–6 月营收 10.52 亿–11.28 亿元，同比增长 35.62%–45.41% · 置信度：低（<strong>为宇树科技自身的预计数据，非绿的谐波财务数据</strong>，仅作产业链景气侧证，本报告未据此做任何关于绿的谐波的数字判断）</li>
+</ul>
+<p><strong>Sources（联网部分）</strong></p>
+<ul>
+<li><a href="https://hznews.hangzhou.com.cn/jingji/content/2026-07/31/content_9268613.htm" target="_blank" rel="noopener">宇树科技IPO时间定了 8月10日申购 · 杭州新闻网 · 2026-07-31</a></li>
+<li><a href="https://finance.sina.com.cn/jjxw/2026-07-31/doc-inikshrr1366339.shtml" target="_blank" rel="noopener">宇树科技8月10日启动申购人形机器人赛道迎来催化 · 新浪财经 · 2026-07-31</a></li>
+<li><a href="https://www.skf.com/cn/news-and-events/news/2026/2026-Jul-02-skf-and-leaderdrive-form-a-venture-for-precision-components-in-humanoids" target="_blank" rel="noopener">SKF and Leaderdrive form a venture for precision components in humanoids · SKF 官网 · 2026-07-02</a></li>
+<li><a href="https://www.itbear.com.cn/html/2026-07/1425223.html" target="_blank" rel="noopener">斯凯孚携手绿的谐波成立合资公司 · ITBear · 2026-07</a></li>
+<li><a href="https://www.news.cn/tech/20260612/a069b3a9948b4e0aaaa94cf3d618e545/c.html" target="_blank" rel="noopener">工信部、国资委启动2026年度人形机器人与具身智能实景实训专项行动 · 新华网 · 2026-06-12</a></li>
+<li><a href="https://www.ncsti.gov.cn/kjdt/tzgg/202606/t20260609_249248.html" target="_blank" rel="noopener">关于联合开展2026年度人形机器人与具身智能实景实训专项行动的通知 · 国家科技管理信息系统 · 2026-06-09</a></li>
+<li><a href="https://www.news.cn/tech/20260302/3d0ff411d1d94995b4f0277d29e58e19/c.html" target="_blank" rel="noopener">首个人形机器人与具身智能标准体系发布 · 新华网 · 2026-03-02</a></li>
+<li><a href="https://finance.sina.com.cn/roll/2025-09-18/doc-infqwcvv4285291.shtml" target="_blank" rel="noopener">特斯拉Optimus技术验证与量产进程 · 新浪财经</a></li>
+<li><a href="https://pdf.dfcfw.com/pdf/H3_AP202607131826918798_1.pdf" target="_blank" rel="noopener">汽车行业周报：特斯拉 Optimus 周产节奏明确 · 东方财富研报 · 2026-07-13</a></li>
+<li><a href="https://m.chinabgao.com/info/1258545.html" target="_blank" rel="noopener">谐波减速器：技术壁垒松动与人形机器人的国产化机遇 · 报告大厅</a></li>
+<li><a href="https://caifuhao.eastmoney.com/news/20260716120733233859330" target="_blank" rel="noopener">2026人形机器人核心壁垒拆解：谐波减速器国产替代 · 东方财富财富号 · 2026-07-16</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-08-02），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>PE_TTM 407倍为行业中位8.8倍</li>
+      <li>库内仅2026Q1一期财报无趋势</li>
+      <li>毛利率33.62%同行倒数第二</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>限售解禁</dt><dd>首发或定增取得的股份锁定期届满、可以上市流通。解禁本身不等于减持，但增加了潜在供给。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://hznews.hangzhou.com.cn/jingji/content/2026-07/31/content_9268613.htm" target="_blank" rel="noopener">宇树科技IPO时间定了 8月10日申购 · 杭州新闻网 · 2026-07-31</a> <em>2026-07-31</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/jjxw/2026-07-31/doc-inikshrr1366339.shtml" target="_blank" rel="noopener">宇树科技8月10日启动申购人形机器人赛道迎来催化 · 新浪财经 · 2026-07-31</a> <em>2026-07-31</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.skf.com/cn/news-and-events/news/2026/2026-Jul-02-skf-and-leaderdrive-form-a-venture-for-precision-components-in-humanoids" target="_blank" rel="noopener">SKF and Leaderdrive form a venture for precision components in humanoids · SKF 官网 · 2026-07-02</a> <em>2026-07-02</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.itbear.com.cn/html/2026-07/1425223.html" target="_blank" rel="noopener">斯凯孚携手绿的谐波成立合资公司 · ITBear · 2026-07</a> <em>2026-07</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.news.cn/tech/20260612/a069b3a9948b4e0aaaa94cf3d618e545/c.html" target="_blank" rel="noopener">工信部、国资委启动2026年度人形机器人与具身智能实景实训专项行动 · 新华网 · 2026-06-12</a> <em>2026-06-12</em></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.ncsti.gov.cn/kjdt/tzgg/202606/t20260609_249248.html" target="_blank" rel="noopener">关于联合开展2026年度人形机器人与具身智能实景实训专项行动的通知 · 国家科技管理信息系统 · 2026-06-09</a> <em>2026-06-09</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.news.cn/tech/20260302/3d0ff411d1d94995b4f0277d29e58e19/c.html" target="_blank" rel="noopener">首个人形机器人与具身智能标准体系发布 · 新华网 · 2026-03-02</a> <em>2026-03-02</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/roll/2025-09-18/doc-infqwcvv4285291.shtml" target="_blank" rel="noopener">特斯拉Optimus技术验证与量产进程 · 新浪财经</a></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://pdf.dfcfw.com/pdf/H3_AP202607131826918798_1.pdf" target="_blank" rel="noopener">汽车行业周报：特斯拉 Optimus 周产节奏明确 · 东方财富研报 · 2026-07-13</a> <em>2026-07-13</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.chinabgao.com/info/1258545.html" target="_blank" rel="noopener">谐波减速器：技术壁垒松动与人形机器人的国产化机遇 · 报告大厅</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://caifuhao.eastmoney.com/news/20260716120733233859330" target="_blank" rel="noopener">2026人形机器人核心壁垒拆解：谐波减速器国产替代 · 东方财富财富号 · 2026-07-16</a> <em>2026-07-16</em></li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-07-31、杭州新闻网 2026-07-31，双源 <em>2026-07-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> SKF 官网 2026-07-02 <em>2026-07-02</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新华网 2026-06-12 <em>2026-06-12</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 置信度：高｜依据：库内事件日历三条 + 新浪财经/杭州新闻 2026-07-31 双源 <em>2026-07-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富 2026-07-24 <em>2026-07-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 报告大厅 chinabgao — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富财富号 2026-07-16 <em>2026-07-16</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 报告大厅 chinabgao／东方财富财富号 2026-07-16，二级转述·置信度低 <em>2026-07-16</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 置信度：高｜库内新闻 + SKF 官网 2026-07-02 双源 <em>2026-07-02</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-08-02 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
