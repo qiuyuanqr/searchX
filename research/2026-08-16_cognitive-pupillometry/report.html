@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>认知瞳孔测量法（cognitive pupillometry） · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 概念</div>
+    <h1>认知瞳孔测量法（cognitive pupillometry）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-08-16（北京时间）</span>
+      <span><b>类型</b> 概念</span>
+      
+      <span><b>来源</b> 24 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    人一费脑子，瞳孔就会不由自主地胀大一点点——像汽车爬坡时转速表指针往上抬：你没做任何明显动作，仪表却把发动机的吃力程度显示了出来。心理学家把这个现象做成了一套测量手段：让人一边做题、一边用红外相机盯着他的瞳孔，从零点几毫米的胀缩里估算他此刻花了多少脑力。这套方法确实存在，已经用了六十多年；只是它通行的名字叫「瞳孔测量法」，「认知瞳孔测量法」不是圈内的固定叫法。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    概念成立：用瞳孔直径变化推断脑力消耗，是认知心理学 1960 年代确立、今天仍在活跃使用的标准方法，英文写作 pupillometry / cognitive pupillometry，中文通行译名是「瞳孔测量（法）」。但「认知瞳孔测量法」这个六字组合本身不是已确立的中文术语，且这套方法只测「费了多少脑力」这一个笼统维度，测不出「在想什么」。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li><b>概念真实，而且是主流方法，不是历史名词。</b>奠基论文是 1966 年发表于《科学》的 <a href="https://www.science.org/doi/10.1126/science.154.3756.1583">《瞳孔直径与记忆负荷》</a>；2022 年《行为研究方法》还专门为它出了一份方法学指南（第 55 卷第 6 期 3055–3077 页），标题里直接用 <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10556184/">cognitive pupillometry</a> 这个词。</li>
+      <li><b>但中文名字要校正。</b>中文文献通行的写法是「瞳孔测量」，任务相关的那部分叫 <a href="https://journal.psych.ac.cn/xlkxjz/article/2020/1671-3710/1671-3710-28-7-1029.shtml">「任务诱发的瞳孔变化」</a>；精确匹配检索「认知瞳孔测量法」六字，未见任何中文文献把它当作固定术语使用<small class="src-note">（检索范围：全网搜索引擎精确短语匹配，检索日 2026-08-16；只能说明未见公开使用，不等于绝对不存在）</small>。</li>
+      <li><b>信号极小，这是这套方法所有困难的总根源。</b>人的瞳孔直径在 <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6634360/">2–8 毫米</a>之间，光照能让进光量差出约 16 倍；而认知活动引起的变化只有 <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11986704/">零点几毫米</a>。等于要在洪水里量一杯水。</li>
+      <li><b>它只测强度、不测内容。</b>任何提高加工负荷的事——算术、记电话号码、听不清人说话——都会让瞳孔变大，所以从瞳孔倒推「他正在想 X」在方法上不成立。这是理解这个概念最重要的一条边界。</li>
+      <li><b>常被当作机制背书的「蓝斑」链条比通俗说法弱得多。</b>2022 年 eLife 一项在小鼠身上同步记录瞳孔与蓝斑神经元放电的研究，标题就是「瞳孔直径不是蓝斑活动的准确实时读数」；其结论是瞳孔<a href="https://elifesciences.org/articles/70510">「不能准确代表大多数蓝斑放电活动」</a>，只对那不到 10% 的强放电是个好代理。</li>
+      <li><b>三种「瞳孔测量」必须分开，混用是常见误读源。</b>认知型（任务诱发反应）、临床光反射型（神经重症的 <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10381796/">NPi 0–5 分</a>）、生物识别型（<a href="https://support.apple.com/guide/security/optic-id-matching-security-sec4518c1d57/web">Apple Vision Pro 的虹膜识别</a>）用的是同一双眼睛、完全不同的信号与证据强度。</li>
+    </ul>
+  </div>
+
+  <main>
+    <h2>一、先回答问题：这个概念存在，但名字得校正</h2>
+
+<p>结论先给：你听到的这件事本身是真的，而且是心理学里一条正经的、六十年没断过的研究路线。只是它通行的名字不长这个样子。</p>
+
+<p>把这个六字词拆成三层，分别回答会更清楚：</p>
+
+<ul>
+  <li><b>现象存在吗？</b>存在。人在动脑筋时瞳孔会不自觉地胀大，这是可重复观测的生理事实，不是比喻。</li>
+  <li><b>有成型的方法吗？</b>有。它叫<b>瞳孔测量法</b>（英文 pupillometry，指用相机连续记录瞳孔直径、再从它的变化推断心理状态的一整套做法）。专门拿它研究思维过程的那一支，英文文献里确实写作 <b>cognitive pupillometry</b>（可直译为「认知瞳孔测量」）——2022 年那份方法学指南的标题就是 <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10556184/">《认知瞳孔测量方法：设计、预处理与统计分析》</a>。</li>
+  <li><b>「认知瞳孔测量法」是标准中文术语吗？</b>不是。中文学界通行「瞳孔测量」，2020 年《心理科学进展》那篇综述用的就是<a href="https://journal.psych.ac.cn/xlkxjz/article/2020/1671-3710/1671-3710-28-7-1029.shtml">「瞳孔测量」与「任务诱发的瞳孔变化」</a>这两个词。</li>
+</ul>
+
+<div class="callout">换句话说：概念对得上，名字是个直译的组合词。你要检索中文资料，搜「瞳孔测量」「任务诱发的瞳孔变化」会有东西；搜「认知瞳孔测量法」大概率一无所获——这不是因为没有这门学问，而是因为没人这么叫它。</div>
+
+<h3>先把三种「瞳孔测量」分开，否则后面全乱</h3>
+
+<p>同一双眼睛、同一台红外相机，测出来的东西可以完全不是一回事。三者的证据强度和临床地位差很远，混在一起谈是这个话题最常见的误读来源：</p>
+
+<table>
+<thead><tr><th>类型</th><th>测什么</th><th>怎么用</th><th>成熟度</th></tr></thead>
+<tbody>
+<tr><td><b>认知型</b>（本报告主角）</td><td>做任务时瞳孔胀大零点几毫米</td><td>推断脑力消耗、注意、记忆负荷</td><td>研究工具，尚未成为临床标准</td></tr>
+<tr><td><b>临床光反射型</b></td><td>拿光一照，瞳孔缩多快、缩多少</td><td>神经重症床边判断颅内情况</td><td>已有商用设备与量化评分体系</td></tr>
+<tr><td><b>生物识别型</b></td><td>虹膜（瞳孔周围那圈花纹）的结构</td><td>解锁设备、身份认证</td><td>已大规模消费级落地</td></tr>
+</tbody>
+</table>
+
+<p>后两种严格说不叫「认知瞳孔测量」，但它们和第一种共用硬件、共用中文词，很容易被拿来相互背书——比如把神经重症里成熟的量化指标，拿去证明「瞳孔能读心」。下面第四节会各举一例说明它们的差别有多大。</p>
+
+<h2>二、它怎么工作：把瞳孔当成一块「脑力仪表盘」</h2>
+
+<p>最简单的理解方式：瞳孔不是一个受你控制的开关，而是一块被动的仪表盘。它主要显示两件事——环境有多亮，以及你此刻有多「使劲」。</p>
+
+<h3>两块肌肉，两套神经，等于油门和刹车</h3>
+
+<p>控制瞳孔大小的是虹膜（眼球中间那圈有颜色的膜）上的两块肌肉：<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6634360/">瞳孔括约肌</a>负责收缩、由<b>副交感神经</b>支配（可以理解成「刹车」，休息与消化状态下更活跃）；<b>瞳孔开大肌</b>负责扩张、由<b>交感神经</b>支配（「油门」，紧张、兴奋、使劲时更活跃）。人在费脑力时，是「油门」这一路被踩了一脚——但踩得非常轻。</p>
+
+<h3>两个信号叠在一起，一大一小</h3>
+
+<p>同一块仪表盘上叠着两个来源完全不同的信号，这是理解全部技术难点的关键：</p>
+
+<ul>
+  <li><b>瞳孔光反射（PLR）</b>——光一亮就缩、一暗就胀，纯生理反射。<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6634360/">起始潜伏期约 200 毫秒，约 1.5 秒达到最大收缩</a>。幅度可以横跨 2–8 毫米这个整个量程。</li>
+  <li><b>任务诱发的瞳孔反应（TEPR）</b>——因为费脑子而胀大的那一部分。<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11986704/">幅度只有零点几毫米</a>，通常在刺激出现后 <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6634360/">0.5–1 秒</a>冒出一个小峰。</li>
+</ul>
+
+<div class="callout">打个比方：你想用一台家用体重秤称一封信有多重，可这台秤上还站着一个人。想量出那封信，要么让人先下来（严格控制光照），要么先称一次人、再称一次人加信、然后相减（这就是「基线校正」在做的事）。整套方法学的绝大部分篇幅，都在解决这一件事。</div>
+
+<h3>为什么费脑子会让瞳孔变大：蓝斑假说，以及它没那么硬</h3>
+
+<p>流行解释是这样一条链：大脑深处有个叫<b>蓝斑</b>（locus coeruleus，脑干里一小簇分泌去甲肾上腺素的神经元，可粗略理解为大脑的「总增益旋钮」）的核团，它一活跃，一方面提高全脑的警觉与信息处理增益，一方面顺带把瞳孔开大肌拉一把。<a href="https://www.annualreviews.org/content/journals/10.1146/annurev.neuro.28.061604.135709">Aston-Jones 与 Cohen 2005 年提出的「适应性增益理论」</a>进一步区分了两种模式：<b>相位性</b>放电（对着当前任务的短促爆发，对应专注与「深耕」）和<b>紧张性</b>放电（持续的高基线，对应对当前任务失去兴趣、开始「四处张望」找别的事做）。这套框架在中文综述里也被<a href="https://journal.psych.ac.cn/xlkxjz/article/2020/1671-3710/1671-3710-28-7-1029.shtml">完整介绍过</a>。</p>
+
+<p>但这条链子有多结实，要单独说。2022 年发表在 eLife 上的一项研究在小鼠身上同时记录蓝斑神经元放电和瞳孔直径。总体方向是对的——<a href="https://elifesciences.org/articles/70510">19 对同步记录里有 13 对，峰值瞳孔直径与蓝斑放电量的线性回归 R² 大于 0.6</a>，两者确实单调正相关。问题出在细节：不同记录之间的<b>斜率</b>差得很远（0.12 到 0.51，均值 0.24±0.11），也就是「多放一个电对应瞳孔胀多少」这个换算率本身不稳定；而且只有大于 1.5–2 个标准差的大幅胀缩才达到足够的预测力，这类事件占比不到 10%。作者的原话是：瞳孔扩张「不能准确代表大多数蓝斑放电活动，但可以作为那不频繁（不到 10%）的强烈蓝斑活动的良好代理」。论文标题就是结论——「瞳孔直径不是蓝斑活动的准确实时读数」。</p>
+
+<div class="callout">这一条值得记住：日常科普里那句「瞳孔反映蓝斑活动、所以反映大脑唤醒水平」并不算错，但它是一句<b>群体平均意义上的相关</b>，不是一条可以逐秒读数的因果通道。凡是把这条链条当成硬机制来支撑强结论的说法，都要打折。</div>
+
+<h2>三、六十年简史：从「你对什么感兴趣」到「你有多费劲」</h2>
+
+<p><b>1960 年，起点是「兴趣」。</b>Hess 与 Polt 在《科学》上发表<a href="https://www.science.org/doi/10.1126/science.132.3423.349">《瞳孔大小与视觉刺激的兴趣价值》</a>，报告人看到自己感兴趣的图片时瞳孔会变大，并称男女对不同题材的反应存在差异。这篇文章开启了整个领域，但它后来也是被质疑最多的一篇。</p>
+
+<p><b>1966 年，转向「脑力」。</b>Kahneman 与 Beatty 发表 <a href="https://www.science.org/doi/10.1126/science.154.3756.1583">《瞳孔直径与记忆负荷》（《科学》第 154 卷 1583–1585 页）</a>。他们让人记一串数字，发现<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6267528/">要记的数字越多、瞳孔胀得越大</a>，报出答案的过程中又逐步缩回去——瞳孔第一次被当成「当前正在被主动加工的信息量」的刻度尺。这是今天所有认知型瞳孔研究的直接源头。</p>
+
+<p><b>2011 年，被写进畅销书。</b>Kahneman 在《思考，快与慢》里用瞳孔当作「系统 2（需要费力的慢思考）是否被启动」的可视化证据。他在书中那段被广泛转载的描述里说，你心算 17×24 时，<a href="https://www.scientificamerican.com/article/kahneman-excerpt-thinking-fast-and-slow/">旁人凑近看会发现你的瞳孔放大，而在你算出答案或放弃的那一刻缩回常态</a>。中文读者接触到这个概念，多半是从这本书来的。</p>
+
+<p><b>2021 年，回头清算老账。</b>de Winter 等人做了一次大规模复制：<a href="https://research.monash.edu/en/publications/replicating-five-pupillometry-studies-of-eckhard-hess">第一个实验 182 人、第二个预注册实验 147 人</a>，重做 Hess 的五项经典研究。结果是分裂的——「瞳孔随心算难度增加而变大」「唤醒性词汇引起更大瞳孔变化」这两条<b>复制成功</b>；而 Hess 最出名的那几条——兴趣价值上的<b>性别差异</b>、看唤醒性视频的性别差异、「瞳孔模仿」（看到别人瞳孔大自己也跟着大）——<b>没有复制出来</b>。同一篇还报告，瞳孔收缩与被试实际注视位置的亮度强相关，直指老研究亮度控制不严的老问题。</p>
+
+<div class="callout">这次复制的结果形状很值得注意：<b>「费脑力→瞳孔变大」这条主干活下来了，而「瞳孔泄露你的偏好与欲望」那条更抓人的支线塌了。</b>而恰恰是塌掉的那条，在大众传播里被引用得更多。</div>
+
+<h2>四、六个真实案例：从助听器到重症监护室</h2>
+
+<h3>案例一：让助听器知道你「听得多费劲」</h3>
+
+<div class="case">
+<p>听力障碍者最难受的不是听不见，而是在嘈杂环境里<b>听懂一句话要花掉大量脑力</b>——这件事传统听力检查测不出来，因为答对率可能还不错。丹麦助听器厂商 Demant 旗下的 Eriksholm 研究中心为此立了一个专门项目 <a href="https://www.eriksholm.com/projects/pupils-evaluation-of-pupillometry-as-a-diagnostic-tool-for-hearing-aid-fitting/">PUPILS</a>，与丹麦技术大学（DTU）合作，由首席科学家 Dorothea Wendt 主持，目标是「评估瞳孔测量作为个体层面聆听努力可靠标记的可行性」。</p>
+<p>该团队 2023 年发表在《Trends in Hearing》上的信度研究给出了具体数字：<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9947699/">31 名听力正常的被试完成两次测量</a>。做法上，先做基线校正、再在个体内做量程归一化，这一组合下峰值与平均瞳孔扩张「在所有信噪比条件下都获得了很高的组内相关系数」（ICC，衡量同一个人重复测量结果一致程度的指标，越接近 1 越稳），跨次访问的相关也是各种处理方式里最高的一档——<b>R = 0.43 到 0.94</b>。但同一篇也指出，用生长曲线分析提取的形态特征信度明显更低：上升斜率在 5 个信噪比条件里只有 2 个达到 ICC 0.6 以上，其它特征更是只有 1 个。</p>
+<p><b>为什么这个案例重要：</b>它显示这套方法要用到<b>个人</b>身上（而不只是比较两组人的平均值），信度是可以做上去的，但严重依赖预处理方式，且换个提取指标就掉下来。</p>
+</div>
+
+<h3>案例二：中年人的瞳孔，和阿尔茨海默基因风险</h3>
+
+<div class="case">
+<p>加州大学圣迭戈分校 Kremen 团队 2019 年发表于《Neurobiology of Aging》的研究，<a href="https://neurosciencenews.com/eyes-alzheimers-14906/">考察了 1119 名 56–66 岁男性</a>（其中认知正常子样本 539 人）。做法是让他们做数字广度任务（听一串数字后复述，逐步加长），同时记录瞳孔。</p>
+<p>结果：在<b>认知测验成绩相当</b>的前提下，阿尔茨海默病多基因风险评分越高的人，在高负荷条件下瞳孔胀得越大——上四分位对下四分位的效应量 Cohen's d = 0.36；瞳孔反应本身的遗传度估计为 h² = 0.30–0.36。研究者的解释是：蓝斑是阿尔茨海默病最早出现 tau 蛋白病变的脑区之一，风险高的人可能需要动用更多资源才能达到同样成绩。</p>
+<p><b>怎么读这个结果：</b>d=0.36 是个中小效应，群体层面有信号、个体层面远不足以筛查。它的价值在于提示了一个方向——「用同样的成绩，谁花了更多力气」，这是行为测验本身看不见的维度。</p>
+</div>
+
+<h3>案例三：婴儿的瞳孔与孤独症——注意，这不是认知型</h3>
+
+<div class="case">
+<p>2018 年《自然·通讯》上的一项研究跟踪了 <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5938234/">187 名 9–10 个月大的婴儿</a>，其中 29 名在 3 岁时被确诊孤独症谱系障碍。测的是瞳孔<b>对光的相对收缩量</b>：以典型发育组为 1.00（标准差 0.21），高风险未确诊组 1.06（SD 0.23），后来确诊组 <b>1.20</b>（SD 0.24），组间差异 F(2,184)=6.4，p=0.002，ηp²=0.065；且收缩幅度与后来的症状严重度相关（如 ADOS-2 分数 r=0.196，p=0.018）。</p>
+<p><b>关键区分：</b>这测的是<b>光反射</b>，不是任务诱发的认知反应。它被放进这份报告，正是因为中文语境里「瞳孔能查出孤独症」这类说法常被拿去给「瞳孔能测认知」背书——两者证据不通用。另外 ηp²=0.065 意味着组别只解释了约 6.5% 的变异，组间分布大幅重叠，离能用于个体诊断还很远。</p>
+</div>
+
+<h3>案例四：重症监护室里，瞳孔测量已经是成熟工具</h3>
+
+<div class="case">
+<p>与认知研究的谨慎形成对比：在神经重症领域，自动瞳孔测量仪已经是床边常规。<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10381796/">2023 年《Journal of Personalized Medicine》的综述</a>介绍了「神经瞳孔指数」（NPi，把瞳孔对光反射的多项参数——潜伏期、最大收缩幅度、收缩速度、扩张速度——与正常人模型比对后算出的 0–5 分标准分）：NPi 低于 3 与颅内压升高及更差预后相关；收缩速度低于 0.6 毫米/秒可作为提示颅内压升高的参考切点；蛛网膜下腔出血患者中，71% 的迟发性脑缺血能被 NPi 下降提前 8 小时以上发现。</p>
+<p><b>为什么放进来：</b>它说明「用相机量瞳孔」这件事本身在医学上早已量化、标准化、商品化了。但它量的是一条<b>反射弧的完整性</b>（一条固定线路通不通），而不是<b>思维的强度</b>（一个高度多因的心理量）。前者成熟，不能被引用为后者也成熟。</p>
+</div>
+
+<h3>案例五：用手机摄像头测瞳孔——以及为什么它对认知研究还不够</h3>
+
+<div class="case">
+<p>加州大学圣迭戈分校团队在 2022 年 CHI 会议上发表 <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10686294/">《用智能手机人脸识别摄像头做居家瞳孔测量》</a>，思路是借用手机上原本用于面部解锁的近红外摄像头。与临床级 Neuroptics PLR-2000 对比的结果分两档：</p>
+<ul>
+  <li>做<b>瞳孔光反射</b>测试（11 人）：中位绝对误差 <b>0.27 毫米</b>、中位相对误差 3.52%。</li>
+  <li>做<b>数字广度记忆任务</b>（9 人，即认知型测量）：中位绝对误差 <b>0.62 毫米</b>、相对误差 9.37%。</li>
+</ul>
+<p><b>把这两个数字和前面对照着看，结论就很扎眼：</b>认知活动引起的瞳孔变化本身只有<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11986704/">零点几毫米</a>，而手机在认知任务下的中位误差是 <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10686294/">0.62 毫米</a>——<b>误差和要测的信号处于同一量级，甚至更大</b>。所以「手机能测瞳孔」是真的，「手机能测你在想事有多费劲」目前还不是。同一台设备用于光反射（信号量级是毫米）则完全站得住，这又回到了信噪比这个总根源。</p>
+</div>
+
+<h3>案例六：2026 年最新的横向对比——它到底有多准</h3>
+
+<div class="case">
+<p>一份 <a href="https://arxiv.org/html/2602.10614v1">2026 年 2 月的预印本</a>用公开数据集（OpenNeuro 数字广度任务，64 名被试，同时有 64 导脑电和 120 赫兹的 Pupil Labs 瞳孔数据）做了同题对比，试图用机器学习从生理信号判断被试当前的记忆负荷等级：</p>
+<ul>
+  <li>只用瞳孔数据：二分类最高 66.7%（LSTM），XGBoost 61.3%；四分类 52.3%。</li>
+  <li>只用脑电数据：三分类负荷等级 XGBoost 达 99.8%。</li>
+</ul>
+<p>作者的结论是「瞳孔测量单独使用可以与脑电竞争」，理由是便携性优势。<b>但把数字摆出来看，这个说法需要打折：</b>四分类 52.3% 的准确率，在四选一的任务上只比瞎猜（25%）高出一倍出头，离可用于个体判读还很远；脑电那个 99.8% 反而高得不像话，通常提示存在数据泄漏或分割方式问题<small class="src-note">（此为本报告对该预印本数字的解读，非原文表述；该文为未经同行评议的预印本）</small>。</p>
+<p><b>取这个案例的价值：</b>它是目前能找到的最新的、把瞳孔与脑电放在同一数据集上比的公开结果，给出的绝对量级比营销话术里的「精准识别认知状态」低得多。</p>
+</div>
+
+<h2>五、它能回答什么、不能回答什么</h2>
+
+<h3>能</h3>
+<ul>
+  <li><b>同一个人、同一任务、不同难度</b>之间的相对比较——这是它最结实的用法，六十年来反复复制成功的也主要是这一条（<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6267528/">在更新、切换、抑制三类认知控制任务上都成立</a>）。</li>
+  <li><b>组与组之间的平均差异</b>——如听障组 vs 正常听力组、高遗传风险 vs 低风险。</li>
+  <li><b>连续、无干扰、不打断任务</b>地拿到一条时间曲线，这是问卷和按键反应做不到的。被试也无法有意识地伪装瞳孔。</li>
+</ul>
+
+<h3>不能</h3>
+<ul>
+  <li><b>不能反推具体在想什么。</b>凡是提高加工负荷的事都让瞳孔变大——算术、憋住不笑、听不清、看到吓人的东西。从「瞳孔变大了」推出「他对这个产品有兴趣 / 他在说谎 / 他喜欢这个人」，是典型的<b>反向推断谬误</b>（从一个不特异的生理指标倒推特定心理状态）。</li>
+  <li><b>不能做跨个体的绝对比较。</b>瞳孔基线大小的个体差异远大于任务效应，A 的瞳孔比 B 大，不说明 A 更费劲。</li>
+  <li><b>不能靠单次测量下判断。</b>见案例一：即便在实验室条件下，个体级信度也依赖严格的基线校正与归一化，换个提取指标就掉到 ICC 0.6 以下。</li>
+</ul>
+
+<h3>三个必须控住的东西，以及一个新发现的第四个</h3>
+
+<p><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10556184/">2022 年那份方法学指南</a>给的操作建议相当具体：基线瞳孔大小控制在 3–7 毫米区间为宜；环境照度约 30 勒克斯、屏幕亮度约 30 坎德拉/平方米，且两者要匹配——在暗房里用亮屏会造成眩光不适。数据处理上推荐<b>减法式基线校正</b>（用刺激出现前一小段的平均瞳孔大小去减后续每个采样点），中文综述也<a href="https://journal.psych.ac.cn/xlkxjz/article/2020/1671-3710/1671-3710-28-7-1029.shtml">推荐减法而非除法</a>，理由是减法受眨眼噪音影响更小。三个必控变量是：<b>亮度、注视位置、基线</b>。</p>
+
+<p>但 2025 年发表在 eNeuro 上的一项研究给这份清单加了个不好办的第四项：<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12593289/">即使亮度完全配平，刺激的朝向仍然会系统性地改变瞳孔大小</a>——垂直方向的信号引起的瞳孔面积小于水平方向（实验一 n=15，t(14)=−4.26，p=0.0008；实验二 n=39，t(38)=−2.38，p=0.0223），且这个效应在实验后半段变强、依赖于任务相关位置。作者的结论是：「即使亮度完美匹配，未曾预料的认知状态变化仍会调制瞳孔测量结果。」</p>
+
+<div class="callout">这条对判断这门方法的成熟度很有信息量：它说明六十年后，这个领域<b>仍在发现新的混淆变量</b>。任何宣称「已经能从瞳孔准确读出认知状态」的商业说法，都跑在学术共识前面。</div>
+
+<h2>六、为什么现在又热起来</h2>
+
+<p>这套方法在 1970–80 年代冷过一段（设备昂贵、Hess 那批研究的争议、以及功能性磁共振等新技术抢走注意力），2010 年之后重新升温，主要是三件事叠加：</p>
+
+<ul>
+  <li><b>硬件搭便车。</b>眼动追踪已经作为标配进入消费级头显。Apple 官方安全文档写明，Vision Pro 用「时空调制的、对眼睛安全的近红外光照亮眼睛」，由眼动相机采集虹膜图像用于 Optic ID 身份认证；文档中还提到系统会保存不同<b>瞳孔大小</b>下的数学表征以改善后续匹配<small class="src-note">（Apple 该页面下的语境是提升识别成功率，并非把瞳孔大小用作认知测量）</small>。研究者不再需要买专用设备。</li>
+  <li><b>工具与成本下探。</b><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10556184/">方法学指南自己就写道</a>，认知瞳孔测量的流行度在指数增长，直接原因是低成本眼动系统和多个开源软件包的出现。案例五那种手机方案是这条线的极端。</li>
+  <li><b>临床端对蓝斑的兴趣。</b>蓝斑被认为是阿尔茨海默病最早出现病变的脑区之一，而瞳孔是目前唯一无创、便宜、可在诊室外反复测的蓝斑相关指标——即便这条链条本身<a href="https://elifesciences.org/articles/70510">并不牢固</a>，动机依然强烈。</li>
+</ul>
+
+<p>信度问题也在被正面处理。2026 年《Scientific Reports》上有一项研究专门检验 <a href="https://www.nature.com/articles/s41598-026-46731-3">n-back 任务中瞳孔反应的重测信度与行为相关</a><small class="src-note">（该文需登录，本报告未能打开正文，此处仅引用标题层面的信息，未采用其具体数值结论）</small>。</p>
+
+<h2>七、与五大关注板块的关联</h2>
+
+<p>只有一个板块存在实质关联，其余不硬凑。</p>
+
+<p><b>AI 应用</b>：关联点有三处。第一，眼动与瞳孔已经是 VR/AR 人机交互的既有数据通道，「实时估计用户认知负荷、据此调整界面或训练难度」是当前活跃的研究方向；2025 年有研究把它用到大语言模型驱动的虚拟课堂里，<a href="https://arxiv.org/pdf/2505.07377">考察 LLM 交互对学习者注意与认知参与的影响</a><small class="src-note">（该预印本 PDF 未能解析出正文数值，此处仅引用其研究主题）</small>。第二，前述案例六那类工作本质上是「生理信号 + 机器学习分类器」，性能天花板由信号本身的信噪比决定，而不是由模型决定——这对所有想用生理信号做 AI 输入的产品都是个提醒。第三是治理面：眼动数据的隐私风险已被系统性梳理，一份 2023 年发布、2026 年刊于《Proceedings of the IEEE》的综述指出，<a href="https://arxiv.org/abs/2305.14080">眼动数据结合所呈现的刺激信息，会暴露使用者的隐私敏感属性</a>；而瞳孔恰恰是人几乎无法有意识控制的信号。</p>
+
+<p>光模块、机器人、算力、航天四个板块与本对象无实质关联，不列。</p>
+
+<h2>八、下次看什么（监控信号）</h2>
+
+<ul>
+  <li><b>信噪比这道坎有没有被跨过</b>——盯消费级设备（手机、头显）在<b>认知任务</b>下的测量误差能否降到 0.1 毫米量级以下。目前手机方案在认知任务上是 <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10686294/">0.62 毫米</a>，比要测的信号还大；这个数字降下来之前，一切消费级「测认知负荷」的产品宣称都值得怀疑。</li>
+  <li><b>个体级信度的标准化进展</b>——<a href="https://www.eriksholm.com/projects/pupils-evaluation-of-pupillometry-as-a-diagnostic-tool-for-hearing-aid-fitting/">Eriksholm 的 PUPILS 项目</a>明确以「临床可用的标准化测试」为目标。看是否有听力学领域率先出现被采纳的标准化聆听努力测试流程，这会是这套方法从实验室走向临床的第一个真实门槛。</li>
+  <li><b>混淆变量清单还在不在变长</b>——<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12593289/">2025 年新发现的朝向效应</a>之后，是否还有新的「亮度配平也挡不住」的因素被报告。清单持续变长，说明方法学远未收敛。</li>
+  <li><b>头显厂商的眼动数据政策</b>——瞳孔数据是否被明确纳入敏感数据类别、是否允许第三方应用取用原始瞳孔序列。这决定了「消费级认知监测」在合规层面是否可能。</li>
+  <li><b>阿尔茨海默方向的纵向数据</b>——Kremen 那类横断面关联（<a href="https://neurosciencenews.com/eyes-alzheimers-14906/">d=0.36</a>）如果要变成筛查工具，需要的是纵向随访证据：当年瞳孔反应大的人，若干年后是否真的更早发病。看这类随访结果是否出现。</li>
+  <li><b>中文术语会不会被商业用法抢走</b>——目前中文语境里这个概念基本只出现在学术文献。若「认知瞳孔测量」开始出现在测评产品、招聘筛选或教育硬件的宣传里，那通常意味着它已经跑到了证据前面。</li>
+</ul>
+
+<h2>九、信息缺口（本报告没做到的部分）</h2>
+
+<ul>
+  <li><b>两篇奠基论文的原文正文未能打开。</b><a href="https://www.science.org/doi/10.1126/science.154.3756.1583">Kahneman &amp; Beatty 1966</a> 与 <a href="https://www.science.org/doi/10.1126/science.132.3423.349">Hess &amp; Polt 1960</a> 均在《科学》付费墙后（本次抓取返回 403）。本报告对这两篇只引用了题录信息，其实验结论转引自<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6267528/">后续综述</a>与<a href="https://research.monash.edu/en/publications/replicating-five-pupillometry-studies-of-eckhard-hess">复制研究</a>，未从原文核对。</li>
+  <li><b>一篇 2026 年新论文只用了标题层面的信息。</b><a href="https://www.nature.com/articles/s41598-026-46731-3">Scientific Reports 那篇 n-back 重测信度研究</a>需登录，其具体信度数值本报告未采用。</li>
+  <li><b>测谎产品一方的说法未从厂商页面核实。</b>下方「风险与争议」中涉及的商业测谎产品，其厂商官网抓取返回 403，相关宣称转引自批评方页面，已就地标注。</li>
+  <li><b>未检索中文商业场景。</b>本次只检索了中文学术文献，未系统排查国内是否有教育、招聘或心理测评产品在以「认知瞳孔测量」为名销售。因此关于中文术语的判断仅限学术语境。</li>
+</ul>
+    
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li><b>反向推断谬误是这个领域最大的滥用入口。</b>瞳孔对「任何」提高加工负荷的事都有反应，所以它对具体心理内容毫无特异性。凡是宣称「从瞳孔看出兴趣 / 好感 / 谎言 / 购买意愿」的说法，都是在一个不特异的指标上做特异性推断。</li>
+      <li><b>已有商业测谎产品建立在瞳孔信号之上，科学地位存疑。</b>美国公司 Converus 的 EyeDetect 声称通过瞳孔扩张与反应时等眼部指标识别欺骗、准确率约 86%；反测谎倡导网站 AntiPolygraph.org 早在 2018 年就<a href="https://antipolygraph.org/blog/2018/12/05/a-critical-examination-of-converus-inc-s-pseudoscientific-eyedetect-lie-detector/">将其称为「未经科学证明」</a>。本报告未能打开厂商官网（返回 403），<b>厂商侧宣称的数字与指标构成均转引自该批评方页面，未从一手页面核实（未独立核实）</b>。</li>
+      <li><b>隐私风险的性质与其它生物特征不同。</b>瞳孔几乎不受意识控制，无法像表情那样管理；而眼动追踪已成为头显标配、处于常态采集状态。<a href="https://arxiv.org/abs/2305.14080">2023 年那份综述</a>指出，眼动数据结合刺激信息可暴露隐私敏感属性，而现有保护手段受制于功能需求，难以在不损害可用性的前提下彻底脱敏。</li>
+      <li><b>历史遗留的复制性问题集中在最出名的那些结论上。</b><a href="https://research.monash.edu/en/publications/replicating-five-pupillometry-studies-of-eckhard-hess">2021 年的大样本复制</a>中，「费脑力→瞳孔变大」复制成功，而 Hess 关于兴趣价值的性别差异、瞳孔模仿等更具传播力的结论未能复制。传播强度与证据强度在这个领域是<b>反相关</b>的。</li>
+      <li><b>效应小、混淆多，个体级判读风险高。</b>信号只有零点几毫米、个体基线差异大、<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12593289/">连亮度配平之外的新混淆变量仍在被发现</a>。任何面向个人给出结论的应用（招聘筛选、能力评估、学习状态评分），当前证据都不足以支撑。</li>
+      <li><b>三类瞳孔测量之间的证据串用。</b>神经重症的 <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10381796/">NPi 指标</a>、婴儿孤独症的<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5938234/">光反射差异</a>都有相对扎实的量化基础，但它们测的是反射弧而非思维强度。用前者的成熟度为后者背书，是一种不易察觉但影响很大的误导。</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl>
+<dt>瞳孔测量法（pupillometry）</dt><dd>用相机连续记录瞳孔直径，再从它的变化推断心理或生理状态的一整套做法。中文文献通行叫法。</dd>
+<dt>认知瞳孔测量（cognitive pupillometry）</dt><dd>瞳孔测量法中专门用来研究注意、记忆、脑力消耗等思维过程的那一支。英文是固定用法，中文尚无固定译名。</dd>
+<dt>任务诱发的瞳孔反应（TEPR）</dt><dd>因为在做任务、费脑子而产生的那一部分瞳孔胀大，幅度只有零点几毫米。这套方法真正要测的信号。</dd>
+<dt>瞳孔光反射（PLR）</dt><dd>光一亮瞳孔就缩、一暗就胀的纯生理反射。幅度远大于认知信号，是最大的干扰源；同时它自己也是一项独立的临床指标。</dd>
+<dt>认知负荷</dt><dd>大白话就是「此刻脑子里同时扛着多少事」。工作记忆容量有限，扛得越多越费劲。</dd>
+<dt>蓝斑（locus coeruleus）</dt><dd>脑干里一小簇分泌去甲肾上腺素的神经元，可粗略理解为大脑的「总增益旋钮」，被认为同时影响警觉水平和瞳孔大小。</dd>
+<dt>适应性增益理论</dt><dd>蓝斑有两种工作模式的假说：短促爆发对应专注深耕，持续高基线对应对当前任务失去兴趣、开始四处张望。</dd>
+<dt>紧张性 / 相位性</dt><dd>前者指持续的背景水平（瞳孔的基线大小），后者指对某个具体事件的短促反应。两者含义不同，不能混着谈。</dd>
+<dt>基线校正</dt><dd>先量刺激出现前那一小段的瞳孔平均大小，再从后面每个采样点里减掉它——相当于先称人、再称人加信、然后相减。</dd>
+<dt>反向推断谬误</dt><dd>从一个不特异的生理指标倒推特定心理状态。因为几乎所有费脑子的事都让瞳孔变大，「瞳孔变大所以他感兴趣」不成立。</dd>
+<dt>组内相关系数（ICC）</dt><dd>衡量同一个人重复测量结果一致程度的指标，越接近 1 越稳。一般 0.6 以上算可接受。</dd>
+<dt>n-back / 数字广度任务</dt><dd>两种经典的工作记忆测验。前者要求判断当前项目是否和前 n 个一样，后者要求听完一串数字后复述。难度可以逐级调，因此是研究脑力消耗的标准工具。</dd>
+<dt>神经瞳孔指数（NPi）</dt><dd>神经重症床边用的 0–5 分标准分，把瞳孔对光反射的多项参数与正常人模型比对后算出。低于 3 提示异常。属于临床光反射型，不是认知测量。</dd>
+</dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-research">研究</span> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10556184/">Methods in cognitive pupillometry: Design, preprocessing, and statistical analysis（Behavior Research Methods 55(6):3055–3077）</a> <em>2022</em> — 该领域的方法学指南；给出亮度、基线校正、统计分析的具体操作建议，标题即确立 cognitive pupillometry 为固定用法。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6634360/">Pupillometry: Psychology, Physiology, and Function（Journal of Cognition 1(1):16）</a> <em>2018</em> — 综述瞳孔控制的生理通路、光反射时程与瞳孔 2–8 毫米的量程。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6267528/">Pupil dilation as an index of effort in cognitive control tasks: A review（Psychonomic Bulletin &amp; Review 25(6):2005–2015）</a> <em>2018</em> — 综述更新/切换/抑制三类任务中的瞳孔效应，并指出与 Stroop 效应关系上的不一致证据。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://journal.psych.ac.cn/xlkxjz/article/2020/1671-3710/1671-3710-28-7-1029.shtml">瞳孔是心灵的窗口吗？——瞳孔在心理学研究中的应用及测量（心理科学进展 28(7):1029–1041）</a> <em>2020</em> — 中文权威综述；确认中文通行术语为「瞳孔测量」「任务诱发的瞳孔变化」，并给出测量控制建议。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://research.monash.edu/en/publications/replicating-five-pupillometry-studies-of-eckhard-hess">Replicating five pupillometry studies of Eckhard Hess（Int. J. Psychophysiology 165:145–205）</a> <em>2021</em> — 大样本复制（N=182 / N=147）：心算难度与唤醒词效应复制成功，性别差异与瞳孔模仿未复制。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://elifesciences.org/articles/70510">Pupil diameter is not an accurate real-time readout of locus coeruleus activity（eLife）</a> <em>2022</em> — 小鼠同步记录：19 对记录中 13 对线性回归 R²＞0.6，但斜率在 0.12–0.51 间大幅波动；瞳孔只对占比不到 10% 的强蓝斑活动是好代理。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12593289/">Luminance Matching in Cognitive Pupillometry Is Not Enough: The Curious Case of Orientation（eNeuro）</a> <em>2025</em> — 亮度完全配平后刺激朝向仍系统性调制瞳孔，说明混淆变量清单仍在变长。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9947699/">Investigating the Reliability of Pupillometry as a Measure of Individualized Listening Effort（Trends in Hearing 27）</a> <em>2023</em> — 31 人重测；基线校正加量程归一化后跨次相关 R=0.43–0.94 为各处理方式最高，生长曲线特征信度明显更低（斜率仅 2/5 条件达 ICC＞0.6）。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5938234/">Enhanced pupillary light reflex in infancy is associated with autism diagnosis in toddlerhood（Nature Communications）</a> <em>2018</em> — 187 名婴儿；后确诊组相对收缩 1.20 vs 典型发育组 1.00，ηp²=0.065。属光反射型而非认知型。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10381796/">Application of Pupillometry in Neurocritical Patients（Journal of Personalized Medicine 13(7)）</a> <em>2023</em> — 综述神经瞳孔指数 NPi（0–5 分）在颅内压、创伤性脑损伤与迟发性脑缺血中的临床阈值。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10686294/">At-Home Pupillometry using Smartphone Facial Identification Cameras（CHI 2022）</a> <em>2022</em> — 手机近红外摄像头对比临床级设备：光反射任务中位误差 0.27 毫米，数字广度认知任务 0.62 毫米。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11986704/">Pupillometry: A Simple and Automatic Way to Explore Implicit Cognitive Processing（Bio-protocol）</a> <em>2025</em> — 实验方案类文章；明确认知加工引起的瞳孔反应量级为「零点几毫米」。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://arxiv.org/html/2602.10614v1">Pupillometry and Brain Dynamics for Cognitive Load in Working Memory（arXiv:2602.10614）</a> <em>2026-02-11</em> — 64 人公开数据集上瞳孔 vs 脑电对比：瞳孔二分类 66.7%、四分类 52.3%。未经同行评议的预印本。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.annualreviews.org/content/journals/10.1146/annurev.neuro.28.061604.135709">An Integrative Theory of Locus Coeruleus-Norepinephrine Function: Adaptive Gain and Optimal Performance（Annu. Rev. Neurosci. 28:403–450）</a> <em>2005</em> — 适应性增益理论原始文献；提出蓝斑相位性/紧张性两种模式与「深耕—张望」的对应。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.eriksholm.com/projects/pupils-evaluation-of-pupillometry-as-a-diagnostic-tool-for-hearing-aid-fitting/">PUPILS — Evaluation of pupillometry as a diagnostic tool for hearing-aid fitting（Eriksholm Research Centre）</a> <em>2026-08-16 抓取</em> — 助听器厂商研究中心与丹麦技术大学合作项目页；目标为把瞳孔测量做成个体层面聆听努力的可靠标记。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.nature.com/articles/s41598-026-46731-3">Investigating the test–retest reliability and behavioral correlates of pupil responses in the n-back task（Scientific Reports）</a> <em>2026</em> — 专门检验 n-back 任务瞳孔反应重测信度。需登录，本报告仅引用标题层面信息。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://arxiv.org/abs/2305.14080">Eye-tracked Virtual Reality: A Comprehensive Survey on Methods and Privacy Challenges（arXiv:2305.14080 / Proceedings of the IEEE）</a> <em>2023（2026 刊出）</em> — 系统梳理眼动数据的隐私风险：结合刺激信息可暴露隐私敏感属性。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.science.org/doi/10.1126/science.154.3756.1583">Pupil Diameter and Load on Memory（Science 154(3756):1583–1585）</a> <em>1966-12-23</em> — 认知型瞳孔测量的奠基论文。付费墙，本次抓取 403，仅引用题录信息。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.science.org/doi/10.1126/science.132.3423.349">Pupil Size as Related to Interest Value of Visual Stimuli（Science 132(3423):349–350）</a> <em>1960</em> — 现代瞳孔测量学的开篇论文。付费墙，本次抓取 403，仅引用题录信息。</li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://arxiv.org/pdf/2505.07377">Examining the Role of LLM-Driven Interactions on Attention and Cognitive Engagement in Virtual Classrooms（arXiv:2505.07377）</a> <em>2025</em> — 把眼动与瞳孔用于大模型驱动虚拟课堂的认知参与度测量。本报告仅引用其研究主题。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://support.apple.com/guide/security/optic-id-matching-security-sec4518c1d57/web">Optic ID matching security — Apple 平台安全指南</a> <em>2026-08-16 抓取</em> — Apple 官方文档：Vision Pro 用时空调制近红外光照亮眼睛采集虹膜；提及会保存不同瞳孔大小下的表征以改善匹配。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://neurosciencenews.com/eyes-alzheimers-14906/">How the eyes might be windows to the risk of Alzheimer's disease（Neuroscience News，报道 Kremen 等，Neurobiology of Aging）</a> <em>2019</em> — 1119 名 56–66 岁男性；高遗传风险者高负荷下瞳孔更大，Cohen's d=0.36，瞳孔反应遗传度 h²=0.30–0.36。</li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.scientificamerican.com/article/kahneman-excerpt-thinking-fast-and-slow/">Of 2 Minds: How Fast and Slow Thinking Shape Perception and Choice（Scientific American 刊载《思考，快与慢》节选）</a> <em>2011</em> — Kahneman 用心算 17×24 时瞳孔放大、算完缩回，作为「系统 2 被启动」的可视化证据。</li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://antipolygraph.org/blog/2018/12/05/a-critical-examination-of-converus-inc-s-pseudoscientific-eyedetect-lie-detector/">A Critical Examination of Converus Inc.'s Pseudoscientific "EyeDetect" Lie Detector（AntiPolygraph.org）</a> <em>2018-12-05</em> — 反测谎倡导网站对基于瞳孔的商业测谎产品的批评；厂商宣称的 86% 准确率转引自此，未从厂商一手页面核实。</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-08-16 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
