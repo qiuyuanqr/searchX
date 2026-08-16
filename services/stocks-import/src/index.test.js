@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import {
-  splitTime, buildTldr, applyPriceFixes, insertIndexRow, importedIds, buildSources,
+  splitTime, buildTldr, applyPriceFixes, insertIndexRow, hasIndexRow, importedIds, buildSources,
 } from "./index.js";
 import { metaOf, exchangeOf } from "./mapping.js";
 import { extractDirection } from "../../../web/build/extract-direction.js";
@@ -53,6 +53,14 @@ test("INDEX 新行按日期倒序插进表里，同日排在已有同日行之�
   const out = insertIndexRow(idx, "| 2026-08-14 | 新 |", "2026-08-14").split("\n");
   expect(out[3]).toContain("新");
   expect(out[4]).toContain("乙");
+});
+
+test("已有该归档目录的行就不再插一行（重导时会出两张一模一样的卡片）", () => {
+  // 2026-08-16 端到端演练撞到并已被自动推送过一次：删掉目录让它重导，
+  // 目录逐字节重建、git 看不出差异，但 INDEX 多了一行。
+  const idx = "| 日期 |\n|---|\n| 2026-08-11 | `2026-08-11_piotech-688072` |";
+  expect(hasIndexRow(idx, "2026-08-11_piotech-688072")).toBe(true);
+  expect(hasIndexRow(idx, "2026-08-11_other-000001")).toBe(false);
 });
 
 test("INDEX 找不到表格分隔行就抛错（宁可失败，也不把行追到文件末尾）", () => {

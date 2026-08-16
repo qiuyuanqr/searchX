@@ -329,6 +329,13 @@ export function buildPlain({ meta, mainBusiness, oneLiner, direction }) {
 // 新行按日期倒序插进表里。同日期的新行排在已有同日行**之前**（与 INDEX 表头写的
 // 「新行置顶按日期倒序」一致）。找不到表头就抛错——宁可失败也不要把行追到文件末尾，
 // 那样它不在表里、谁也看不见。
+// 已经有这个归档目录的行了吗？重导（删掉目录让它重跑，README 里就是这么教的）时，
+// 目录会被逐字节重建、git 看不出差异，但 INDEX 会**再插一行**——线上就出现两张一模一样的
+// 卡片。2026-08-16 端到端演练当场撞到，且它已经被自动提交推送了一次。
+export function hasIndexRow(indexMd, dir) {
+  return String(indexMd).includes(`\`${dir}\``);
+}
+
 export function insertIndexRow(indexMd, row, date) {
   const lines = String(indexMd).split("\n");
   const sep = lines.findIndex((l) => /^\|\s*---/.test(l));
@@ -401,9 +408,12 @@ export function importOne(row, { template, dryRun }) {
     writeFileSync(join(outDir, "sources.md"), sources);
 
     const indexPath = join(ARCHIVE, "INDEX.md");
-    const shortTldr = tldr.length > 220 ? tldr.slice(0, 218) + "…" : tldr;
-    const row2 = `| ${date} | ${meta.title} | 股票 | ${boards.length ? boards.join(" / ") : "—"} | ${shortTldr.replace(/\|/g, "｜")} | \`${dir}\` |`;
-    writeFileSync(indexPath, insertIndexRow(readFileSync(indexPath, "utf8"), row2, date));
+    const indexMd = readFileSync(indexPath, "utf8");
+    if (!hasIndexRow(indexMd, dir)) {
+      const shortTldr = tldr.length > 220 ? tldr.slice(0, 218) + "…" : tldr;
+      const row2 = `| ${date} | ${meta.title} | 股票 | ${boards.length ? boards.join(" / ") : "—"} | ${shortTldr.replace(/\|/g, "｜")} | \`${dir}\` |`;
+      writeFileSync(indexPath, insertIndexRow(indexMd, row2, date));
+    }
   }
 
   return {
