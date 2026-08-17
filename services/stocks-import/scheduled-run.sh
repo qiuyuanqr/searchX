@@ -1,8 +1,9 @@
 #!/bin/zsh
 # Stocks 深度调研 → searchX 公开站 —— 每日无人值守同步（由 Mac mini 上的 LaunchAgent 调用）。
 #
-# 一天跑一次就够：Stocks 的自动调研窗是 20:30–06:00，每晚最多几篇，白天基本不产出。
-# 定在 09:30 是让夜批的成果在早上一次性上线，而不是半夜推送触发部署。
+# 每 5 分钟跑一次（plist 里的 StartInterval，可随时调）。没有新报告时安静退出，空跑 0.14 秒。
+# 这条通路不出网——读的是同一台机器上的 SQLite 文件，所以频率不受任何 API 配额约束；
+# 真正出网的 push 与 CI 只在确有新报告时发生，次数等于报告篇数。
 #
 # 流程（任一步失败都不会把半成品推上线）：
 #   1) 增量导入 —— 只处理没导过的报告；一篇都没有就安静退出（不发信、不提交）
@@ -63,11 +64,37 @@ if [ "$code" -ne 0 ]; then
   alert stocks-import-failed "Stocks→searchX 每日同步失败（导入阶段退出码 $code），日志：$LOG"
   exit "$code"
 fi
+# —— 1b) 补上「已导入但没走完提交」的目录 ——
+# 导入与提交不是原子的：手工跑过 `bun run stocks-import`（README 列为支持用法）、或上一轮
+# 在质检/构建/推送阶段中断（构建失败那条路径注释里就写着「已导入但未提交」），都会把目录
+# 留在磁盘上。而幂等判据是「扫 research/ 看哪些 id 已落盘」——下一轮它算「已导过」，
+# NEW_DIRS 为空，脚本安静退出，**那批报告从此再也不会上线**，报警也只发过那一次。
+# 所以每轮都要把磁盘上未提交的导入目录一并纳入，让任何原因造成的中断都能自愈。
+#
+# 只认带 `source_system: stocks` 的：research/ 下还可能有 /research、/stock 手工跑出来的
+# 未提交调研，那些不归这条流水线管，替它们提交就是越权。
+ORPHANS=""
+while IFS= read -r p; do
+  [ -z "$p" ] && continue
+  d="${p#research/}"; d="${d%/}"
+  case "$d" in ""|*/*) continue;; esac          # 只要 research/ 下一级的整个未跟踪目录
+  [ -f "research/$d/notes.md" ] || continue
+  grep -q '^source_system: stocks$' "research/$d/notes.md" 2>/dev/null || continue
+  printf '%s\n' "$NEW_DIRS" | grep -qxF "$d" && continue   # 本轮刚导的，别重复
+  ORPHANS="${ORPHANS}${d}
+"
+done <<< "$(git -c core.quotePath=false ls-files --others --exclude-standard --directory research/ 2>/dev/null)"
+
+if [ -n "$(printf '%s' "$ORPHANS" | grep . 2>/dev/null)" ]; then
+  say "发现 $(printf '%s\n' "$ORPHANS" | grep -c .) 篇此前已导入但未提交，本轮一并处理：$(printf '%s\n' "$ORPHANS" | tr '\n' ' ')"
+  NEW_DIRS="$(printf '%s\n%s' "$NEW_DIRS" "$ORPHANS" | grep .)"
+fi
+
 if [ -z "$NEW_DIRS" ]; then
   say "没有新报告，安静退出"
   exit 0
 fi
-say "新导入：$(echo "$NEW_DIRS" | tr '\n' ' ')"
+say "本轮处理：$(printf '%s\n' "$NEW_DIRS" | tr '\n' ' ')"
 
 # —— 2) 逐篇机器质检；不过的就地搁置 ——
 PARKED=""

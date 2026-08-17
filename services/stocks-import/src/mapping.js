@@ -39,6 +39,7 @@ export const STOCK_META = {
   "000725": { slug: "boe-000725", boards: [] },
   "301599": { slug: "liqi-intelligent-301599", boards: [] },
   "603259": { slug: "wuxi-apptec-603259", boards: [] },
+  "688635": { slug: "changjin-photonics-688635", boards: ["光模块", "算力"] },
 };
 
 // A 股代码 → 交易所后缀。沪市：600/601/603/605/688/689；深市：000/001/002/003/300/301。

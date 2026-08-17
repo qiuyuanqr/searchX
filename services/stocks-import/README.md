@@ -78,8 +78,13 @@ bun run stocks-import --porcelain     # 只吐新建的目录名，一行一个�
 
 ## 每日无人值守
 
-`scheduled-run.sh` + `launchd/com.searchx.stocks-import.plist`，每天 09:30 跑一次
-（Stocks 的自动调研窗是 20:30–06:00，夜批成果早上一次性上线）：
+`scheduled-run.sh` + `launchd/com.searchx.stocks-import.plist`，**每 5 分钟**跑一次
+（`StartInterval`，想调快调慢改这一个数字）。Stocks 的自动调研窗是 20:30–06:00，但白天手工
+跑的报告也要能尽快上线——从生成到公开站可见约 2 分钟，其中大头是 CI 部署（实测 38–85 秒）。
+
+频繁轮询不花任何配额：**这条通路整个不出网**，读的是同机的 SQLite 文件，不碰 Cloudflare／KV／
+GitHub API。空跑实测 0.14 秒，288 次/天合计约 40 秒 CPU。出网的 `git push` 与 CI 只在确有新报告
+时发生，次数等于报告篇数、与轮询频率无关。
 
 ```
 增量导入 → 逐篇机器质检 --strict → 构建自检 → 精准 git add → 提交推送 → CI 部署
