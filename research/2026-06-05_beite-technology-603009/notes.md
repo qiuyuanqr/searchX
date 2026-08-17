@@ -4,6 +4,8 @@ created: 2026-06-05T20:40:57+0800
 type: 股票
 tags: [research, 北特科技, 603009, 行星滚柱丝杠, 人形机器人, 汽车零部件, 特斯拉, Optimus]
 related: ["[[机器人]]"]
+sw_industry: "汽车零部件"
+concepts: ["汽车热管理", "特斯拉概念", "人形机器人", "比亚迪概念", "新能源汽车"]
 source_count: 22
 archive: "research/2026-06-05_beite-technology-603009"
 ---

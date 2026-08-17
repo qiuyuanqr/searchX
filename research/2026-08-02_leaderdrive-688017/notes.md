@@ -4,6 +4,8 @@ created: 2026-08-02T02:06:52+0800
 type: 股票
 tags: ["research", "股票", "绿的谐波", "688017", "机器人"]
 related: ["[[机器人]]"]
+sw_industry: "自动化设备"
+concepts: ["减速器", "新型工业化", "人形机器人", "机器人概念"]
 source_count: 20
 archive: "research/2026-08-02_leaderdrive-688017/"
 source_system: stocks

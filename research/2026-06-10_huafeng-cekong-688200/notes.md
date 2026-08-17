@@ -4,6 +4,8 @@ created: 2026-06-10T10:30:00+08:00
 type: 股票
 tags: [research, 华峰测控, 688200, 半导体测试机, ATE, STS8600, 模拟测试机, 国产替代]
 related: ["[[算力]]", "[[AI应用]]"]
+sw_industry: "半导体"
+concepts: ["第三代半导体", "高端装备", "芯片概念", "华为概念"]
 source_count: 22
 archive: "research/2026-06-10_huafeng-cekong-688200/"
 ---

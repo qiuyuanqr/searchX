@@ -4,6 +4,8 @@ created: 2026-08-14T20:42:07+0800
 type: 股票
 tags: ["research", "股票", "国瓷材料", "300285", "AI应用", "算力", "航天", "机器人"]
 related: ["[[AI应用]]", "[[算力]]", "[[航天]]", "[[机器人]]"]
+sw_industry: "电子化学品Ⅱ"
+concepts: ["牙科医疗", "MLCC概念", "3D打印", "共封装光学(CPO)", "卫星导航", "固态电池", "宁德时代概念", "氢能源"]
 source_count: 27
 archive: "research/2026-08-14_guoci-materials-300285/"
 source_system: stocks

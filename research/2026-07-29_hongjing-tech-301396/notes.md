@@ -4,6 +4,8 @@ created: 2026-07-29T10:05:00+08:00
 type: 股票
 tags: [research, 宏景科技, 301396, 算力, 智算中心, 算力租赁, 创业板]
 related: ["[[算力]]", "[[AI应用]]"]
+sw_industry: "IT服务Ⅱ"
+concepts: ["空间计算", "财税数字化", "MR(混合现实)", "职业教育", "ChatGPT概念", "旅游概念", "多模态AI", "安防"]
 source_count: 17
 archive: "research/2026-07-29_hongjing-tech-301396"
 ---

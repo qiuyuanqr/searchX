@@ -4,6 +4,8 @@ created: 2026-08-09T21:14:06+0800
 type: 股票
 tags: ["research", "股票", "百普赛斯", "301080"]
 related: []
+sw_industry: "医疗服务"
+concepts: ["重组蛋白", "细胞免疫治疗", "猴痘概念", "创新药", "智能医疗", "人工智能"]
 source_count: 27
 archive: "research/2026-08-09_acrobiosystems-301080/"
 source_system: stocks

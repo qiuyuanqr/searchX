@@ -4,6 +4,8 @@ created: 2026-08-09T22:02:04+0800
 type: 股票
 tags: ["research", "股票", "朗特智能", "300916", "算力"]
 related: ["[[算力]]"]
+sw_industry: "消费电子"
+concepts: ["新型烟草(电子烟)", "露营经济", "净水概念", "无线耳机", "家用电器", "液冷服务器", "智能家居", "充电桩"]
 source_count: 6
 archive: "research/2026-08-09_lont-electronic-300916/"
 source_system: stocks

@@ -4,6 +4,8 @@ created: 2026-08-02T04:08:10+0800
 type: 股票
 tags: ["research", "股票", "巨轮智能", "002031", "机器人"]
 related: ["[[机器人]]"]
+sw_industry: "专用设备"
+concepts: ["航空发动机", "工业母机", "减速器", "冷链物流", "智能物流", "机器视觉", "高端装备", "人形机器人"]
 source_count: 25
 archive: "research/2026-08-02_greatoo-002031/"
 source_system: stocks

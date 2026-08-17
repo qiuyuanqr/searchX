@@ -4,6 +4,8 @@ created: 2026-06-29T14:30:00+08:00
 type: 股票
 tags: [research, 中巨芯, 688549, 半导体材料, 湿电子化学品, 六氟化钨, 国产替代, 题材股]
 related: ["[[算力]]"]
+sw_industry: "电子化学品Ⅱ"
+concepts: ["氟化工概念", "中芯国际概念", "存储芯片", "先进封装", "芯片概念"]
 source_count: 28
 archive: "2026-06-29_zhongjuxin-688549"
 ---

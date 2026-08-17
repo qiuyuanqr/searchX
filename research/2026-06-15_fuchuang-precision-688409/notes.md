@@ -4,6 +4,8 @@ created: 2026-06-15T11:58:09+0800
 type: 股票
 tags: [research, 富创精密, 688409, 半导体设备零部件, 国产替代, A股]
 related: ["[[算力]]", "[[AI应用]]"]
+sw_industry: "半导体"
+concepts: ["光刻机", "DeepSeek概念", "芯片概念"]
 source_count: 25
 archive: "research/2026-06-15_fuchuang-precision-688409"
 ---

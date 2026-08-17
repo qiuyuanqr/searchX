@@ -4,6 +4,8 @@ created: 2026-06-05T10:04:48+0800
 type: 股票
 tags: [research, 智光电气, 002169, 储能, 独立储能, SST, 固态变压器, 算电协同, 粤芯半导体, 广东]
 related: ["[[算力]]"]
+sw_industry: "电网设备"
+concepts: ["钒电池", "电力物联网", "特高压", "虚拟电厂", "碳中和", "智能电网", "宁德时代概念", "充电桩"]
 source_count: 25
 archive: "2026-06-05_zhiguang-electric-002169"
 ---

@@ -4,6 +4,8 @@ created: 2026-06-09T14:30:00+08:00
 type: 股票
 tags: [research, 京北方, 002987, 银行IT, BPO, 数字人民币, 稳定币, AI应用]
 related: ["[[AI应用]]"]
+sw_industry: "软件开发"
+concepts: ["电子身份证", "知识产权保护", "国产操作系统", "跨境支付(CIPS)", "移动支付", "数字货币", "虚拟数字人", "数据安全"]
 source_count: 18
 archive: "research/2026-06-09_jingbeifang-002987/"
 ---

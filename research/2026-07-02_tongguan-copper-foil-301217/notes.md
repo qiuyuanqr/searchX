@@ -4,6 +4,8 @@ created: 2026-07-02T12:05:00+08:00
 type: 股票
 tags: [research, 股票, 铜冠铜箔, 301217, 铜箔, HVLP, PCB铜箔, AI铜箔, 铜陵有色]
 related: ["[[算力]]"]
+sw_industry: "电池"
+concepts: ["PET铜箔", "PCB概念", "固态电池", "宁德时代概念", "5G", "锂电池概念", "比亚迪概念", "储能"]
 source_count: 25
 archive: "2026-07-02_tongguan-copper-foil-301217"
 ---

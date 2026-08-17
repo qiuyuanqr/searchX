@@ -4,6 +4,8 @@ created: 2026-07-31T21:52:55+0800
 type: 股票
 tags: ["research", "股票", "海光信息", "688041", "算力"]
 related: ["[[算力]]"]
+sw_industry: "半导体"
+concepts: ["量子科技", "抖音概念(字节概念)", "百度概念", "水利", "腾讯概念", "信创", "阿里巴巴概念", "东数西算(算力)"]
 source_count: 38
 archive: "research/2026-07-31_haiguang-xinxi-688041/"
 source_system: stocks

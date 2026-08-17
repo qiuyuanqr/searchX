@@ -4,6 +4,8 @@ created: 2026-08-07T17:21:01+0800
 type: 股票
 tags: ["research", "股票", "山东黄金", "600547"]
 related: []
+sw_industry: "贵金属"
+concepts: ["黄金概念", "数字经济"]
 source_count: 49
 archive: "research/2026-08-07_shandong-gold-600547/"
 source_system: stocks

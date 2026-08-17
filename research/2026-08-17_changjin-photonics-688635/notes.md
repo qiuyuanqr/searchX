@@ -4,6 +4,7 @@ created: 2026-08-17T14:19:45+0800
 type: 股票
 tags: ["research", "股票", "长进光子", "688635", "光模块", "算力"]
 related: ["[[光模块]]", "[[算力]]"]
+concepts: ["光纤概念", "东数西算(算力)", "商业航天", "军工", "数据中心(AIDC)", "华为概念"]
 source_count: 31
 archive: "research/2026-08-17_changjin-photonics-688635/"
 source_system: stocks

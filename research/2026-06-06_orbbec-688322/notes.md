@@ -4,6 +4,8 @@ created: 2026-06-06T02:53:55+08:00
 type: 股票
 tags: [research, 股票, 奥比中光, 688322, 3D视觉, 机器人视觉, 具身智能]
 related: ["[[机器人]]", "[[AI应用]]"]
+sw_industry: "光学光电子"
+concepts: ["MLOps概念", "空间计算", "移动支付", "英伟达概念", "蚂蚁集团概念", "人脸识别", "在线教育", "3D打印"]
 source_count: 22
 archive: "research/2026-06-06_orbbec-688322"
 ---

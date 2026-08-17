@@ -4,6 +4,8 @@ created: 2026-08-15T23:52:00+0800
 type: 股票
 tags: [research, 中际旭创, 300308, 3308HK, 光模块, 1.6T, CPO, 硅光, AI算力, A+H]
 related: ["[[光模块]]", "[[算力]]", "[[AI应用]]"]
+sw_industry: "通信设备"
+concepts: ["F5G概念", "共封装光学(CPO)", "液冷服务器", "汽车电子", "无人驾驶", "5G", "创投", "数据中心(AIDC)"]
 source_count: 12
 archive: "research/2026-08-15_innolight-300308/"
 ---

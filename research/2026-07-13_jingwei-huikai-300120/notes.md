@@ -4,6 +4,8 @@ created: 2026-07-13T10:15:19+08:00
 type: 股票
 tags: [research, 股票, 经纬辉开, 300120, 半导体, 射频滤波器, 专网通信, 显示模组, 商誉减值]
 related: []
+sw_industry: "光学光电子"
+concepts: ["PET铜箔", "智慧灯杆", "柔性直流输电", "柔性屏(折叠屏)", "特高压", "OLED", "安防", "海工装备"]
 source_count: 17
 archive: "research/2026-07-13_jingwei-huikai-300120/"
 ---

@@ -4,6 +4,8 @@ created: 2026-06-23T03:58:22+0800
 type: 股票
 tags: [research, 新易盛, 300502, 光模块, 1.6T, AI算力, 北美云厂, H股]
 related: ["[[光模块]]", "[[算力]]", "[[AI应用]]"]
+sw_industry: "通信设备"
+concepts: ["共封装光学(CPO)", "5G", "数据中心(AIDC)", "芯片概念"]
 source_count: 28
 archive: "research/2026-06-23_eoptolink-300502/"
 ---

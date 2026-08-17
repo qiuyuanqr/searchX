@@ -4,6 +4,8 @@ created: 2026-08-15T14:19:43+0800
 type: 股票
 tags: ["research", "股票", "胜宏科技", "300476", "算力", "AI应用"]
 related: ["[[算力]]", "[[AI应用]]"]
+sw_industry: "元件"
+concepts: ["AI手机", "AI PC", "英伟达概念", "富士康概念", "共封装光学(CPO)", "PCB概念", "特斯拉概念", "智能电网"]
 source_count: 38
 archive: "research/2026-08-15_shenghong-tech-300476/"
 source_system: stocks

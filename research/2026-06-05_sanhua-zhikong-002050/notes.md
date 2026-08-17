@@ -4,6 +4,8 @@ created: 2026-06-05T01:15:47+0800
 type: 股票
 tags: [research, 三花智控, 002050, 制冷, 新能源车热管理, 人形机器人, Optimus, 液冷]
 related: ["[[机器人]]", "[[算力]]"]
+sw_industry: "家电零部件Ⅱ"
+concepts: ["空气能热泵", "汽车热管理", "华为汽车", "家用电器", "燃料电池", "液冷服务器", "长安汽车概念", "特斯拉概念"]
 source_count: 22
 archive: "research/2026-06-05_sanhua-zhikong-002050"
 ---

@@ -4,6 +4,8 @@ created: 2026-07-27T10:27:16+0800
 type: 股票
 tags: [research, 股票, 科瑞思, 301314, 绕线设备, 磁性元件, 人形机器人, 一体成型电感]
 related: ["[[机器人]]", "[[算力]]"]
+sw_industry: "通信设备"
+concepts: ["F5G概念", "WiFi6", "家用电器", "新型工业化", "汽车电子", "5G", "新能源汽车"]
 source_count: 15
 archive: "2026-07-27_keruisi-301314"
 ---

@@ -4,6 +4,8 @@ created: 2026-08-11T11:37:13+0800
 type: 股票
 tags: ["research", "股票", "拓荆科技", "688072", "算力"]
 related: ["[[算力]]"]
+sw_industry: "半导体"
+concepts: ["存储芯片", "先进封装", "芯片概念"]
 source_count: 37
 archive: "research/2026-08-11_piotech-688072/"
 source_system: stocks

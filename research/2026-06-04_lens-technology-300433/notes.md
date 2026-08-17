@@ -4,6 +4,8 @@ created: 2026-06-04T22:53:24+08:00
 type: 股票
 tags: [research, 蓝思科技, 300433, 6613, 玻璃盖板, UTG, 折叠屏, AI眼镜, 周群飞, 中美晚宴]
 related: ["[[AI应用]]", "[[机器人]]", "[[算力]]"]
+sw_industry: "消费电子"
+concepts: ["AI手机", "新型烟草(电子烟)", "玻璃基板", "蚂蚁集团概念", "TOPCON电池", "无线耳机", "柔性屏(折叠屏)", "光纤概念"]
 source_count: 23
 archive: "research/2026-06-04_lens-technology-300433/"
 ---

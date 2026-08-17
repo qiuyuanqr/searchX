@@ -4,6 +4,8 @@ created: 2026-07-02T11:30:00+0800
 type: 股票
 tags: [research, 阳光电源, 300274, 光伏逆变器, 储能, 光储, AIDC, FCC]
 related: ["[[算力]]"]
+sw_industry: "光伏设备"
+concepts: ["虚拟电厂", "宁德时代概念", "充电桩", "氢能源", "风电", "数字经济", "光伏概念", "数据中心(AIDC)"]
 source_count: 26
 archive: "research/2026-07-02_sungrow-power-300274"
 ---

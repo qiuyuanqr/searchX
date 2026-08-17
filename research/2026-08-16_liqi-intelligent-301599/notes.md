@@ -4,6 +4,8 @@ created: 2026-08-16T16:27:40+0800
 type: 股票
 tags: ["research", "股票", "理奇智能", "301599"]
 related: []
+sw_industry: "电池"
+concepts: ["超级电容", "光刻胶", "固态电池", "宁德时代概念", "高端装备", "工业互联网", "锂电池概念", "比亚迪概念"]
 source_count: 40
 archive: "research/2026-08-16_liqi-intelligent-301599/"
 source_system: stocks

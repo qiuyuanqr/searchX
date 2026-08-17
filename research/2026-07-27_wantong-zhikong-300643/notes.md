@@ -4,6 +4,8 @@ created: 2026-07-27T11:57:44+08:00
 type: 股票
 tags: [research, 万通智控, 300643, TPMS, 胎压监测, 传感器, 车联网, 具身智能, 机器人概念, 汽车零部件]
 related: ["[[机器人]]"]
+sw_industry: "汽车零部件"
+concepts: ["华为汽车", "长安汽车概念", "特斯拉概念", "传感器", "车联网(车路协同)", "汽车电子", "芯片概念"]
 source_count: 16
 archive: "2026-07-27_wantong-zhikong-300643/"
 ---

@@ -4,6 +4,8 @@ created: 2026-08-10T17:17:11+0800
 type: 股票
 tags: [research, 长电科技, 600584, 封装测试, 先进封装, OSAT, 半导体]
 related: ["[[算力]]", "[[光模块]]"]
+sw_industry: "元件"
+concepts: ["玻璃基板", "中芯国际概念", "毫米波雷达", "苹果概念", "汽车芯片", "第三代半导体", "存储芯片", "先进封装"]
 source_count: 22
 archive: "research/2026-08-10_jcet-600584/"
 ---

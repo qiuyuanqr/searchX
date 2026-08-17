@@ -4,6 +4,8 @@ created: 2026-07-30T21:30:17+0800
 type: 股票
 tags: ["research", "股票", "蓝思科技", "300433", "AI应用", "机器人", "算力"]
 related: ["[[AI应用]]", "[[机器人]]", "[[算力]]"]
+sw_industry: "消费电子"
+concepts: ["AI手机", "新型烟草(电子烟)", "玻璃基板", "蚂蚁集团概念", "TOPCON电池", "无线耳机", "柔性屏(折叠屏)", "光纤概念"]
 source_count: 27
 archive: "research/2026-07-30_lens-technology-300433/"
 source_system: stocks

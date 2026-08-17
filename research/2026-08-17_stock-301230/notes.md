@@ -4,6 +4,8 @@ created: 2026-08-17T01:19:44+0800
 type: 股票
 tags: ["research", "股票", "泓博医药", "301230"]
 related: []
+sw_industry: "医疗服务"
+concepts: ["减肥药", "CRO概念", "ChatGPT概念", "多模态AI", "合成生物", "流感", "创新药", "智能医疗"]
 source_count: 31
 archive: "research/2026-08-17_stock-301230/"
 source_system: stocks

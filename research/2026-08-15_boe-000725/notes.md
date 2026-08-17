@@ -4,6 +4,8 @@ created: 2026-08-15T14:34:26+0800
 type: 股票
 tags: ["research", "股票", "京东方A", "000725"]
 related: []
+sw_industry: "光学光电子"
+concepts: ["电子纸", "玻璃基板", "智慧灯杆", "AI PC", "民营医院", "MicroLED概念", "钙钛矿电池", "MiniLED"]
 source_count: 23
 archive: "research/2026-08-15_boe-000725/"
 source_system: stocks

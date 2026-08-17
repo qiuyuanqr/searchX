@@ -4,6 +4,8 @@ created: 2026-08-14T00:55:57+0800
 type: 股票
 tags: ["research", "股票", "药石科技", "300725"]
 related: []
+sw_industry: "医疗服务"
+concepts: ["CRO概念", "合成生物", "创新药", "智能医疗", "AI应用", "人工智能"]
 source_count: 40
 archive: "research/2026-08-14_pharmablock-300725/"
 source_system: stocks

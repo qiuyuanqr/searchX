@@ -4,6 +4,8 @@ created: 2026-06-05T02:26:04+0800
 type: 股票
 tags: [research, 国瓷材料, 300285, MLCC, 介质粉, 固态电解质, 低轨卫星, 陶瓷管壳, 氮化硅陶瓷球, 齿科氧化锆]
 related: ["[[航天]]", "[[机器人]]", "[[算力]]", "[[光模块]]"]
+sw_industry: "电子化学品Ⅱ"
+concepts: ["牙科医疗", "MLCC概念", "3D打印", "共封装光学(CPO)", "卫星导航", "固态电池", "宁德时代概念", "氢能源"]
 source_count: 27
 archive: "research/2026-06-05_guoci-materials-300285"
 ---

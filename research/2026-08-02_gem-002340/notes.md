@@ -4,6 +4,8 @@ created: 2026-08-02T02:24:39+0800
 type: 股票
 tags: ["research", "股票", "格林美", "002340"]
 related: []
+sw_industry: "电池"
+concepts: ["汽车拆解概念", "金属钴", "金属镍", "稀土永磁", "石墨烯", "黄金概念", "金属回收", "土壤修复"]
 source_count: 34
 archive: "research/2026-08-02_gem-002340/"
 source_system: stocks

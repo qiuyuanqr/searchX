@@ -4,6 +4,8 @@ created: 2026-06-27T16:12:44+0800
 type: 股票
 tags: [research, 三环集团, 300408, MLCC, 陶瓷插芯, 电子陶瓷, 港股H股]
 related: ["[[光模块]]", "[[算力]]"]
+sw_industry: "元件"
+concepts: ["MLCC概念", "光纤概念", "共封装光学(CPO)", "燃料电池", "小米概念", "5G", "消费电子概念", "数据中心(AIDC)"]
 source_count: 21
 archive: "research/2026-06-27_sanhuan-300408"
 ---

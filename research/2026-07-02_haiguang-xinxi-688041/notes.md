@@ -4,6 +4,8 @@ created: 2026-07-02T00:54:02+08:00
 type: 股票
 tags: [research, 海光信息, 688041, CPU, DCU, 国产算力, 信创, x86, 半导体]
 related: ["[[算力]]"]
+sw_industry: "半导体"
+concepts: ["量子科技", "抖音概念(字节概念)", "百度概念", "水利", "腾讯概念", "信创", "阿里巴巴概念", "东数西算(算力)"]
 source_count: 30
 archive: "2026-07-02_haiguang-xinxi-688041"
 ---

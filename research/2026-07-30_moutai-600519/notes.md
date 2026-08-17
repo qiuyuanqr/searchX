@@ -4,6 +4,8 @@ created: 2026-07-30T20:20:50+0800
 type: 股票
 tags: ["research", "股票", "贵州茅台", "600519"]
 related: []
+sw_industry: "白酒Ⅱ"
+concepts: ["白酒概念", "超级品牌"]
 source_count: 40
 archive: "research/2026-07-30_moutai-600519/"
 source_system: stocks

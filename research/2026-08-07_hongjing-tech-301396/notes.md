@@ -4,6 +4,8 @@ created: 2026-08-07T20:47:23+0800
 type: 股票
 tags: ["research", "股票", "宏景科技", "301396", "算力", "AI应用"]
 related: ["[[算力]]", "[[AI应用]]"]
+sw_industry: "IT服务Ⅱ"
+concepts: ["空间计算", "财税数字化", "MR(混合现实)", "职业教育", "ChatGPT概念", "旅游概念", "多模态AI", "安防"]
 source_count: 19
 archive: "research/2026-08-07_hongjing-tech-301396/"
 source_system: stocks

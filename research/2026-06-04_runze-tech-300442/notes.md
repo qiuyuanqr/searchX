@@ -4,6 +4,8 @@ created: 2026-06-04T17:42:07+08:00
 type: 股票
 tags: [research, 润泽科技, 300442, IDC, AIDC, 数据中心, 算力, REITs, 液冷]
 related: ["[[算力]]", "[[AI应用]]"]
+sw_industry: "通信服务"
+concepts: ["算力租赁", "抖音概念(字节概念)", "液冷服务器", "东数西算(算力)", "数据中心(AIDC)", "机器人概念"]
 source_count: 34
 archive: "research/2026-06-04_runze-tech-300442/"
 ---

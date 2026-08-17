@@ -4,6 +4,8 @@ created: 2026-07-13T14:17:06+0800
 type: 股票
 tags: [research, 国瓷材料, 300285, MLCC, 陶瓷材料, 固态电池, 卫星, 估值回归]
 related: ["[[AI应用]]", "[[算力]]", "[[航天]]", "[[机器人]]"]
+sw_industry: "电子化学品Ⅱ"
+concepts: ["牙科医疗", "MLCC概念", "3D打印", "共封装光学(CPO)", "卫星导航", "固态电池", "宁德时代概念", "氢能源"]
 source_count: 24
 archive: "research/2026-07-13_guoci-materials-300285/"
 ---

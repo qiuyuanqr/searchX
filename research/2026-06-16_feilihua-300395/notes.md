@@ -4,6 +4,8 @@ created: 2026-06-16T14:34:48+0800
 type: 股票
 tags: [research, 菲利华, 300395, 石英玻璃, 半导体材料, Q布, 石英电子布, 算力, 光模块, 航天]
 related: ["[[算力]]", "[[光模块]]", "[[航天]]"]
+sw_industry: "航空装备Ⅱ"
+concepts: ["光纤概念", "OLED", "PCB概念", "5G", "光伏概念", "芯片概念"]
 source_count: 23
 archive: "research/2026-06-16_feilihua-300395"
 ---

@@ -4,6 +4,8 @@ created: 2026-07-03T20:05:00+08:00
 type: 股票
 tags: [research, 巨轮智能, 002031, 减速器, 机器人题材, 审计保留意见]
 related: ["[[机器人]]"]
+sw_industry: "专用设备"
+concepts: ["航空发动机", "工业母机", "减速器", "冷链物流", "智能物流", "机器视觉", "高端装备", "人形机器人"]
 source_count: 17
 archive: "research/2026-07-03_greatoo-002031/"
 ---

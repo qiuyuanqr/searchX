@@ -4,6 +4,8 @@ created: 2026-08-11T11:31:15+0800
 type: 股票
 tags: [research, 芯原股份, 688521, 半导体IP, NPU, ASIC, RISC-V, AI算力, 端侧AI]
 related: ["[[算力]]", "[[AI应用]]"]
+sw_industry: "半导体"
+concepts: ["AI手机", "上海自贸区", "智能音箱", "数字货币", "MCU芯片", "汽车芯片", "AI眼镜", "先进封装"]
 source_count: 28
 archive: "research/2026-08-11_verisilicon-688521/"
 ---

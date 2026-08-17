@@ -4,6 +4,8 @@ created: 2026-07-27T11:05:00+0800
 type: 股票
 tags: [research, 万通发展, 600246, 数渡科技, PCIe交换芯片, 国产替代, 房地产转型]
 related: ["[[算力]]"]
+sw_industry: "房地产开发"
+concepts: ["毫米波雷达", "物业管理", "存储芯片", "云计算", "卫星导航", "5G", "创投", "商业航天"]
 source_count: 21
 archive: "research/2026-07-27_wantong-fazhan-600246"
 ---

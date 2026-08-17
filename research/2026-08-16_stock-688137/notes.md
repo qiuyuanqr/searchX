@@ -4,6 +4,8 @@ created: 2026-08-16T22:55:14+0800
 type: 股票
 tags: ["research", "股票", "近岸蛋白", "688137"]
 related: []
+sw_industry: "生物制品"
+concepts: ["重组蛋白", "细胞免疫治疗", "CRO概念", "合成生物", "流感"]
 source_count: 18
 archive: "research/2026-08-16_stock-688137/"
 source_system: stocks

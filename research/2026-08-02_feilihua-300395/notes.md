@@ -4,6 +4,8 @@ created: 2026-08-02T02:59:06+0800
 type: 股票
 tags: ["research", "股票", "菲利华", "300395", "算力", "光模块", "航天"]
 related: ["[[算力]]", "[[光模块]]", "[[航天]]"]
+sw_industry: "航空装备Ⅱ"
+concepts: ["光纤概念", "OLED", "PCB概念", "5G", "光伏概念", "芯片概念"]
 source_count: 31
 archive: "research/2026-08-02_feilihua-300395/"
 source_system: stocks

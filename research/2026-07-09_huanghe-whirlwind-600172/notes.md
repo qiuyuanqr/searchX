@@ -4,6 +4,8 @@ created: 2026-07-09T14:16:47+0800
 type: 股票
 tags: [research, 黄河旋风, 600172, 人造金刚石, 培育钻石, 金刚石散热, 超硬材料]
 related: ["[[算力]]", "[[金刚石在 AI 行业的应用]]"]
+sw_industry: "通用设备"
+concepts: ["培育钻石", "旅游概念", "物业管理", "第三代半导体"]
 source_count: 20
 archive: "2026-07-09_huanghe-whirlwind-600172/"
 ---

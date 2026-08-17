@@ -4,6 +4,8 @@ created: 2026-07-21T22:58:00+08:00
 type: 股票
 tags: [research, 盛合晶微, 688820, 先进封装, 封测, 2.5D, 华为昇腾, 科创板]
 related: ["[[算力]]"]
+sw_industry: "半导体"
+concepts: ["存储芯片", "先进封装", "芯片概念"]
 source_count: 15
 archive: "research/2026-07-21_shenghe-jingwei-688820/"
 ---

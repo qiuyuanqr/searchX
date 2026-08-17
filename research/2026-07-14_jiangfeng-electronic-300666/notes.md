@@ -4,6 +4,8 @@ created: 2026-07-14T22:52:01+0800
 type: 股票
 tags: [research, 股票, 江丰电子, 300666, 溅射靶材, 半导体材料, 静电吸盘, 国产替代]
 related: ["[[算力]]"]
+sw_industry: "半导体"
+concepts: ["中韩自贸区", "光刻机", "碳纤维", "中芯国际概念", "OLED", "第三代半导体", "共同富裕示范区", "存储芯片"]
 source_count: 19
 archive: "research/2026-07-14_jiangfeng-electronic-300666/"
 ---

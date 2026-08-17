@@ -4,6 +4,8 @@ created: 2026-08-02T04:32:20+0800
 type: 股票
 tags: ["research", "股票", "天孚通信", "300394", "光模块", "算力"]
 related: ["[[光模块]]", "[[算力]]"]
+sw_industry: "通信设备"
+concepts: ["英伟达概念", "光纤概念", "先进封装", "共封装光学(CPO)", "无人驾驶", "5G", "数据中心(AIDC)", "华为概念"]
 source_count: 27
 archive: "research/2026-08-02_tfc-optical-300394/"
 source_system: stocks

@@ -4,6 +4,8 @@ created: 2026-08-02T03:25:16+0800
 type: 股票
 tags: ["research", "股票", "北特科技", "603009", "机器人"]
 related: ["[[机器人]]"]
+sw_industry: "汽车零部件"
+concepts: ["汽车热管理", "特斯拉概念", "人形机器人", "比亚迪概念", "新能源汽车"]
 source_count: 20
 archive: "research/2026-08-02_beite-technology-603009/"
 source_system: stocks

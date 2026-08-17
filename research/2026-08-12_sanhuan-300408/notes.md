@@ -4,6 +4,8 @@ created: 2026-08-12T20:53:21+0800
 type: 股票
 tags: ["research", "股票", "三环集团", "300408", "光模块", "算力"]
 related: ["[[光模块]]", "[[算力]]"]
+sw_industry: "元件"
+concepts: ["MLCC概念", "光纤概念", "共封装光学(CPO)", "燃料电池", "小米概念", "5G", "消费电子概念", "数据中心(AIDC)"]
 source_count: 25
 archive: "research/2026-08-12_sanhuan-300408/"
 source_system: stocks

@@ -4,6 +4,8 @@ created: 2026-08-16T16:12:49+0800
 type: 股票
 tags: ["research", "股票", "药明康德", "603259"]
 related: []
+sw_industry: "医疗服务"
+concepts: ["CRO概念", "创新药"]
 source_count: 32
 archive: "research/2026-08-16_wuxi-apptec-603259/"
 source_system: stocks

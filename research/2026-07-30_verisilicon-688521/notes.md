@@ -4,6 +4,8 @@ created: 2026-07-30T21:07:00+0800
 type: 股票
 tags: ["research", "股票", "芯原股份", "688521", "算力", "AI应用"]
 related: ["[[算力]]", "[[AI应用]]"]
+sw_industry: "半导体"
+concepts: ["AI手机", "上海自贸区", "智能音箱", "数字货币", "MCU芯片", "汽车芯片", "AI眼镜", "先进封装"]
 source_count: 44
 archive: "research/2026-07-30_verisilicon-688521/"
 source_system: stocks
