@@ -33,6 +33,7 @@ import { execFileSync } from "child_process";
 import { sanitize } from "./sanitize.js";
 import { mdToHtml, escapeHtml, inline } from "./md-to-html.js";
 import { metaOf, exchangeOf } from "./mapping.js";
+import { buildSectorSql, groupSectorRows, pickConcepts, suggestBoards } from "./sectors.js";
 import {
   pickOneLiner, pickMainBusiness, pickLinks, pickDate, pickTextSources,
   classifySource, SRC_CLASS, pickGlossary,
@@ -65,6 +66,25 @@ ORDER BY r.generated_at ASC, r.id ASC;`;
     encoding: "utf8", maxBuffer: 256 * 1024 * 1024,
   });
   return out.split("\n").filter((l) => l.trim().startsWith("{")).map((l) => JSON.parse(l));
+}
+
+// 申万行业 + 同花顺概念，一条 SQL 查全部票（不做 N+1）。
+// **查不到不阻断导入**：这两项是展示增强，缺了报告照样发，与 mapping 查表失败
+// 一样走「降级不阻断上线」。库结构变了 / 表被改名，也只该少两行展示，不该拦住报告。
+function querySectors(codes) {
+  const sql = buildSectorSql(codes, exchangeOf);
+  if (!sql) return {};
+  try {
+    const out = execFileSync("sqlite3", [STOCKS_DB, sql], {
+      encoding: "utf8", maxBuffer: 32 * 1024 * 1024,
+    });
+    return groupSectorRows(
+      out.split("\n").filter((l) => l.trim().startsWith("{")).map((l) => JSON.parse(l))
+    );
+  } catch (e) {
+    log(`⚠️ 申万行业与概念标签查库失败（${String(e.message).split("\n")[0]}），本轮这两项不展示`);
+    return {};
+  }
 }
 
 // ========== 幂等：已导过哪些 ==========
@@ -193,7 +213,7 @@ created: ${meta.created}
 type: 股票
 tags: ${fm(tags)}
 related: ${fm(boards)}
-source_count: ${sourceCount}
+${meta.industry ? `sw_industry: ${JSON.stringify(meta.industry)}\n` : ""}${(meta.concepts || []).length ? `concepts: ${fm(meta.concepts)}\n` : ""}source_count: ${sourceCount}
 archive: "research/${dir}/"
 source_system: stocks
 stocks_report_id: ${meta.reportId}
@@ -284,9 +304,19 @@ export function buildReportHtml({ template, meta, summary, tldr, bodyHtml, links
         .map(([t, d]) => `<dt>${escapeHtml(t)}</dt><dd>${escapeHtml(d)}</dd>`)
         .join("")}</dl></section>`
     : "";
-  const boards = meta.boards.length
-    ? `<span><b>关联板块</b> ${escapeHtml(meta.boards.join(" · "))}</span>`
-    : "";
+  // 报头的三个标签维度性质不同，分开陈述：
+  //   关联板块 = 作者自己的五大关注框架（人工判断）
+  //   申万行业 = 客观唯一的行业归属（库里只有二级，见 sectors.js）
+  //   概念标签 = 市场热点标记，已剔除交易属性类噪音并按特异度排序
+  // 概念那行独占一整行（flex-basis:100%）：它比另两项长得多，混排会把报头挤乱。
+  // inline style 是允许的——报告页 CSP 为 `style-src 'unsafe-inline'`。
+  const boards = [
+    meta.boards.length ? `<span><b>关联板块</b> ${escapeHtml(meta.boards.join(" · "))}</span>` : "",
+    meta.industry ? `<span><b>申万行业</b> ${escapeHtml(meta.industry)}</span>` : "",
+    (meta.concepts || []).length
+      ? `<span style="flex-basis:100%"><b>概念标签</b> ${escapeHtml(meta.concepts.join(" · "))}</span>`
+      : "",
+  ].filter(Boolean).join("\n      ");
   const limitation = `<div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 ${meta.date}），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>`;
 
   // 模板开头那段「填充说明」注释里本身就写着 {{TITLE}} / {{TOKEN}} 等占位符样例。
@@ -365,15 +395,18 @@ function parseArgs(argv) {
 
 function log(...s) { console.log(...s); }
 
-export function importOne(row, { template, dryRun }) {
+export function importOne(row, { template, dryRun, sector }) {
   const code = String(row.ts_code).padStart(6, "0");
   const { date, created } = splitTime(row.generated_at);
   const { slug, boards, known } = metaOf(code);
   const dir = `${date}_${slug}`;
   const parsedSummary = JSON.parse(row.summary_json || "{}");
   const { value: summary, applied: priceFixes } = applyPriceFixes(parsedSummary, row.id);
+  // 申万行业与概念标签：查不到就是空，展示层按空处理（不显示那一行），不编造。
+  const industry = sector?.industry || "";
+  const concepts = pickConcepts(sector?.concepts || []);
   const meta = {
-    name: row.name, code, date, created, boards, reportId: row.id,
+    name: row.name, code, date, created, boards, reportId: row.id, industry, concepts,
     title: `${row.name}（${code}.${exchangeOf(code)}）`,
   };
 
@@ -419,6 +452,9 @@ export function importOne(row, { template, dryRun }) {
   return {
     dir, dropped: dropped.length, links: sourceCount, known, title: meta.title,
     priceFixes: [...priceFixes, ...bodyFixes],
+    industry, concepts,
+    // 只是建议，不写进 mapping.js——由人确认（2026-08-17 用户拍板）。
+    suggestedBoards: suggestBoards(concepts),
   };
 }
 
@@ -451,10 +487,18 @@ export function main(argv = process.argv.slice(2)) {
   }
   if (!args.porcelain) log(`发现 ${rows.length} 篇新报告${args.dryRun ? "（dry-run，不落盘）" : ""}：`);
 
+  // 申万行业与概念标签一次查完，避免每篇一次 sqlite 调用。
+  const sectors = querySectors(rows.map((r) => String(r.ts_code).padStart(6, "0")));
+
   const unknown = [];
+  const suggestions = [];
   for (const r of rows) {
-    const res = importOne(r, { template, dryRun: args.dryRun });
-    if (!res.known) unknown.push(String(r.ts_code).padStart(6, "0"));
+    const code0 = String(r.ts_code).padStart(6, "0");
+    const res = importOne(r, { template, dryRun: args.dryRun, sector: sectors[code0] });
+    if (!res.known) {
+      unknown.push(code0);
+      if (res.suggestedBoards.length) suggestions.push(`${code0}（${res.title}）→ ${res.suggestedBoards.join(" / ")}`);
+    }
     const obs = args.dryRun ? "-" : toObsidian(res.dir, res.title);
     if (args.porcelain) { console.log(res.dir); continue; }
     const pf = res.priceFixes.length ? ` · 价位红线改写 ${res.priceFixes.length} 处` : "";
@@ -464,6 +508,12 @@ export function main(argv = process.argv.slice(2)) {
   if (unknown.length) {
     log(`\n⚠️ 这些代码不在 src/mapping.js 的元数据表里，已用 stock-<代码> 兜底命名、板块留空：${unknown.join(" / ")}`);
     log("   请补进表里（slug 一旦上线就不该再改；板块按「确有关联才挂」的口径人工判断）。");
+    if (suggestions.length) {
+      log("   按同花顺概念标签给出的板块建议（**仅供参考，需人工确认后再写进表里**）：");
+      for (const s of suggestions) log(`     · ${s}`);
+      log("   注意这份建议既可能多挂也可能漏挂：概念标签泛化时会带出无关板块，而海光信息这类");
+      log("   标的的标签里根本没有「算力」字样、必然漏报。判断权在人，别直接照抄。");
+    }
   }
   log(`\n完成。接下来跑 \`bun run build\` 检查，再 push 上线。`);
   return 0;
