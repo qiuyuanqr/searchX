@@ -56,6 +56,21 @@ trap 'rmdir "$LOCK" 2>/dev/null' EXIT
 
 say "──────── tick：检查 Stocks 有无新的深度调研报告"
 
+# —— 0) 先补推「已提交但没推出去」的 ——
+# 与下面 1b) 是同一类缺口的另一半：push 失败后（网络抖动、或凭证在非 GUI session 取不到）
+# 本地提交仍然在，而下一轮若没有新报告就安静退出——那个提交会永远躺在本机，报告也就
+# 永远不上线。所以每轮先看一眼有没有欠着的提交。
+# 失败只记日志、不发报警、不中止：每 5 分钟一轮，报警会变成轰炸，而下一轮本就会再试。
+unpushed=$(git rev-list --count @{u}..HEAD 2>/dev/null || echo 0)
+if [ "${unpushed:-0}" -gt 0 ]; then
+  say "有 $unpushed 个提交没推出去，先补推"
+  if git push -q >> "$LOG" 2>&1; then
+    say "补推成功，CI 将自动部署"
+  else
+    say "补推失败，下一轮再试（若持续失败，多半是凭证或网络）"
+  fi
+fi
+
 # —— 1) 增量导入 ——
 NEW_DIRS=$(bun run services/stocks-import/src/index.js --porcelain 2>>"$LOG")
 code=$?
