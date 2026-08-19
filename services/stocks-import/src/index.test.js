@@ -1,9 +1,11 @@
 import { test, expect } from "bun:test";
 import { mkdtempSync, mkdirSync, writeFileSync } from "fs";
+import { execFileSync } from "child_process";
 import { tmpdir } from "os";
 import { join } from "path";
 import {
   splitTime, buildTldr, applyPriceFixes, insertIndexRow, hasIndexRow, importedIds, buildSources,
+  sqliteJsonLines,
 } from "./index.js";
 import { metaOf, exchangeOf } from "./mapping.js";
 import { extractDirection } from "../../../web/build/extract-direction.js";
@@ -120,4 +122,53 @@ test("产出的 notes.md 能被首页真实抽取器读出标题与导语", () =
   expect(note.type).toBe("股票");
   expect(note.tldr).toContain("PB 1.58 倍全组最低");
   expect(note.tldr.length).toBeGreaterThan(40);
+});
+
+// —— 撞上 Stocks 写事务不该直接失败 ——
+// 2026-08-19 18:35:14 的真实故障：Stocks 的 compute-factors（每交易日 18:35 起、写 3.3 万行、
+// 耗时 15 秒）正在写库，我们的 tick 恰好落进那 15 秒，sqlite3 CLI 的 busy_timeout 默认是 0，
+// 于是「in prepare, database is locked (5)」→ 退出码 1 → 报警邮件。Stocks 自己那边早有对策
+// （database.py get_conn 设了 30 秒 timeout），只有 searchX 这条直查通道没设。
+test("查库撞上别人的写事务时要等锁，不能立刻失败", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "sx-lock-"));
+  const db = join(dir, "t.db");
+  execFileSync("sqlite3", [db,
+    "PRAGMA journal_mode=WAL; CREATE TABLE t(id INTEGER, v TEXT); INSERT INTO t VALUES(1,'a');"]);
+
+  // 起一个把库整个锁死的写进程，模拟 Stocks 侧的写事务窗口
+  const holder = Bun.spawn(["sqlite3", db], { stdin: "pipe", stdout: "ignore", stderr: "ignore" });
+  holder.stdin.write("PRAGMA locking_mode=EXCLUSIVE;\nBEGIN IMMEDIATE;\nINSERT INTO t VALUES(2,'b');\n");
+  holder.stdin.flush();
+  await Bun.sleep(400);
+
+  // 1.2 秒后放锁——等得起的查询应当拿到数据，等不起的当场就炸
+  const releaseAt = setTimeout(() => {
+    holder.stdin.write("COMMIT;\n.quit\n");
+    holder.stdin.flush();
+  }, 1200);
+
+  const t0 = performance.now();
+  const rows = sqliteJsonLines(db, "SELECT json_object('id', id, 'v', v) FROM t WHERE id=1;");
+  const waited = performance.now() - t0;
+  clearTimeout(releaseAt);
+  holder.kill();
+
+  expect(rows).toEqual([{ id: 1, v: "a" }]);
+  // 确认真撞上了锁并等到了释放，而不是压根没撞上、测试白跑
+  expect(waited).toBeGreaterThan(700);
+});
+
+test("等满 busy_timeout 仍拿不到锁时照常失败——不能把真故障吞掉", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "sx-lock2-"));
+  const db = join(dir, "t.db");
+  execFileSync("sqlite3", [db, "PRAGMA journal_mode=WAL; CREATE TABLE t(id INTEGER);"]);
+
+  const holder = Bun.spawn(["sqlite3", db], { stdin: "pipe", stdout: "ignore", stderr: "ignore" });
+  holder.stdin.write("PRAGMA locking_mode=EXCLUSIVE;\nBEGIN IMMEDIATE;\nINSERT INTO t VALUES(1);\n");
+  holder.stdin.flush();
+  await Bun.sleep(400);
+
+  expect(() => sqliteJsonLines(db, "SELECT json_object('id', id) FROM t;",
+    { busyTimeoutMs: 200, retries: 1, retryDelayMs: 100 })).toThrow();
+  holder.kill();
 });

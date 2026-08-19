@@ -50,22 +50,61 @@ const OBSIDIAN_VAULT = process.env.OBSIDIAN_VAULT || "/Volumes/SS_SSD/obsidian";
 
 // ========== 查库 ==========
 
+// 等锁的上限。Stocks 是活库、一整天都有定时任务在写（compute-factors 每交易日 18:35 起写
+// 3.3 万行因子、耗时 15 秒；backfill_min_1 常驻长事务；每天 19:00 还有一次 TRUNCATE
+// checkpoint），而我们每 5 分钟 tick 一次，撞上写窗口是必然的，不是异常。
+// 30 秒是照 Stocks 自己的口径来的（database.py get_conn 的 timeout=30，注释写着「默认 5 秒
+// 扛不住 backfill 长事务，API 读会因 database is locked 直接 traceback」）——只有 searchX
+// 这条 CLI 直查通道漏了这层：sqlite3 CLI 的 busy_timeout **默认是 0**，比 Python 的 5 秒
+// 还激进，一撞就当场 SQLITE_BUSY(5)。2026-08-19 18:35 的那封报警就是这么来的。
+export const DB_BUSY_TIMEOUT_MS = 30_000;
+const DB_RETRIES = 1;          // busy_timeout 之外再兜一层，见下
+const DB_RETRY_DELAY_MS = 5_000;
+
 // 用 sqlite3 CLI 而不是 bun:sqlite：后者的 readonly 走的是 SQLITE_OPEN_READONLY，
 // 与 mode=ro 同一个毛病（WAL 库上打不开）。CLI + query_only 是本仓库已验证可用的通道。
 // 一行一条 JSON：content_md 里的换行被 json_object 转义成 \n，不会撑破行边界。
+//
+// **等锁失败仍然照常抛**：这一层只消掉「人家正常写库那十几秒」造成的误报，不负责把真故障
+// 变安静。库真的坏了、路径错了、表没了，依旧退出码 1 + 报警，与改动前一致。
+// 代价：库真坏了的时候，报警会比以前晚 65 秒到达（每处最多 30+5+30 秒；本脚本有两处查库，
+// 全都卡死则 130 秒）。tick 间隔 300 秒、脚本自身还有 mkdir 互斥锁，不会堆积。
+// 重试只给 1 次是有意的：Stocks 侧单次写事务一般十几秒，30 秒等不到就不是「正常写窗口」了，
+// 再多等的收益低、拖长报警的代价高。
+export function sqliteJsonLines(dbPath, sql, {
+  maxBuffer = 32 * 1024 * 1024,
+  busyTimeoutMs = DB_BUSY_TIMEOUT_MS,
+  retries = DB_RETRIES,
+  retryDelayMs = DB_RETRY_DELAY_MS,
+} = {}) {
+  // busy_timeout 要排在 query_only 前面：先把等锁能力装上，再收紧成只读。
+  const script = `PRAGMA busy_timeout=${busyTimeoutMs};\nPRAGMA query_only=1;\n${sql}`;
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const out = execFileSync("sqlite3", [dbPath, script], { encoding: "utf8", maxBuffer });
+      // PRAGMA 赋值会回显一行数字（busy_timeout 那行），过滤器只取 JSON 行，天然挡掉。
+      return out.split("\n").filter((l) => l.trim().startsWith("{")).map((l) => JSON.parse(l));
+    } catch (e) {
+      // busy_timeout 靠的是 SQLite 的 busy handler，而 handler 在「等下去可能死锁」的场合
+      // 是**不会被调用**的（直接返回 BUSY）——那种情况等多久都没用，只能过一会儿重来。
+      // 所以这一层不是 busy_timeout 的重复，是它够不着的那半边。
+      const msg = String(e.stderr || e.message || "");
+      if (attempt >= retries || !/database is locked|database table is locked|SQLITE_BUSY/i.test(msg)) throw e;
+      warn(`⚠️ 查库撞上写事务（${msg.split("\n")[0].trim()}），${retryDelayMs / 1000} 秒后重试（第 ${attempt + 1}/${retries} 次）`);
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, retryDelayMs);
+    }
+  }
+}
+
 function queryReports() {
-  const sql = `PRAGMA query_only=1;
-SELECT json_object(
+  const sql = `SELECT json_object(
   'id', r.id, 'ts_code', r.ts_code, 'generated_at', r.generated_at,
   'name', COALESCE(b.name, r.ts_code),
   'content_md', r.content_md, 'summary_json', r.summary_json)
 FROM research_report r
 LEFT JOIN stock_basic b ON b.ts_code = r.ts_code
 ORDER BY r.generated_at ASC, r.id ASC;`;
-  const out = execFileSync("sqlite3", [STOCKS_DB, sql], {
-    encoding: "utf8", maxBuffer: 256 * 1024 * 1024,
-  });
-  return out.split("\n").filter((l) => l.trim().startsWith("{")).map((l) => JSON.parse(l));
+  return sqliteJsonLines(STOCKS_DB, sql, { maxBuffer: 256 * 1024 * 1024 });
 }
 
 // 申万行业 + 同花顺概念，一条 SQL 查全部票（不做 N+1）。
@@ -75,14 +114,9 @@ function querySectors(codes) {
   const sql = buildSectorSql(codes, exchangeOf);
   if (!sql) return {};
   try {
-    const out = execFileSync("sqlite3", [STOCKS_DB, sql], {
-      encoding: "utf8", maxBuffer: 32 * 1024 * 1024,
-    });
-    return groupSectorRows(
-      out.split("\n").filter((l) => l.trim().startsWith("{")).map((l) => JSON.parse(l))
-    );
+    return groupSectorRows(sqliteJsonLines(STOCKS_DB, sql));
   } catch (e) {
-    log(`⚠️ 申万行业与概念标签查库失败（${String(e.message).split("\n")[0]}），本轮这两项不展示`);
+    warn(`⚠️ 申万行业与概念标签查库失败（${String(e.message).split("\n")[0]}），本轮这两项不展示`);
     return {};
   }
 }
@@ -394,6 +428,10 @@ function parseArgs(argv) {
 }
 
 function log(...s) { console.log(...s); }
+// 诊断与降级提示一律走 stderr：--porcelain 模式下 stdout 是给 scheduled-run.sh 解析的
+// 目录清单，往里掺一行人读的话，那行就会被当成目录名 git add。stderr 被脚本重定向进日志，
+// 该看见的照样看得见。
+function warn(...s) { console.error(...s); }
 
 export function importOne(row, { template, dryRun, sector }) {
   const code = String(row.ts_code).padStart(6, "0");

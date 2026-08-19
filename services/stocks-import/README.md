@@ -28,6 +28,13 @@ bun run stocks-import --porcelain     # 只吐新建的目录名，一行一个�
 库上常态打不开（CLAUDE.md 记着这条教训）。代价也写明——`query_only` 是连接级只读，
 比打开级只读弱一层，它拦得住本进程的写语句，拦不住"以读写方式打开"这件事本身。
 
+同时设 `PRAGMA busy_timeout=30000`（`DB_BUSY_TIMEOUT_MS`），等不到再重试一次。Stocks 是活库、
+一整天都有定时任务在写，我们每 5 分钟 tick 一次，撞上写窗口是常态不是异常；而 `sqlite3` CLI 的
+busy_timeout **默认是 0**，一撞就当场 `database is locked (5)`，整轮退出码 1 并发报警邮件
+（2026-08-19 18:35 就撞上了 compute-factors 那 15 秒的因子写入）。30 秒是照 Stocks 自己的口径
+（`database.py` 的 `get_conn` timeout=30）。等锁失败仍照常抛——这层只消误报，不吞真故障，
+代价是库真坏时报警晚 65 秒到。
+
 ## 过滤了什么（src/sanitize.js）
 
 三步，顺序不能反：
