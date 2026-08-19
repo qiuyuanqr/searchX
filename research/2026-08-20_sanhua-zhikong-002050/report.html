@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>三花智控（002050.SZ） · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>三花智控（002050.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-08-20（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>关联板块</b> 机器人 · 算力</span>
+      <span><b>申万行业</b> 家电零部件Ⅱ</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 空气能热泵 · 汽车热管理 · 华为汽车 · 家用电器 · 燃料电池 · 液冷服务器 · 长安汽车概念 · 特斯拉概念</span>
+      <span><b>来源</b> 40 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    三花智控（002050）主要做的是制冷空调电器零部件和汽车零部件业务。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——主业已确认减速，股价溢价定价的是尚无营收的机器人与液冷。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：主业已确认减速，股价溢价定价的是尚无营收的机器人与液冷。支撑在于机器人执行器期权价值；液冷切入数据中心；控股股东提议回购2-4亿。主要风险是Q1营收仅增1.36%主业断崖减速；机器人液冷零营收佐证；PE37.88倍是白电同行2.6-4.8倍。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>机器人执行器期权价值</li>
+      <li>液冷切入数据中心</li>
+      <li>控股股东提议回购2-4亿</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">生成时点：2026-08-20 凌晨（A 股开盘前）｜数据基准：最近一个交易日 2026-08-19 数据源：本项目库内取数十三个只读函数 + 联网补库外活信息（政策/产业链/预期差/事件时点四类）</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：主业已确认减速，股价溢价定价的是尚无营收的机器人与液冷。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>人形机器人执行器的期权价值</strong>——公司是特斯拉 Optimus 中国核心供应商之一，2026 年 7–8 月启动投产、年底目标产能 5 万台的产业节奏正在推进（置信度：中，产业进度多源可查、公司承接份额不可查）</li>
+<li><strong>数据中心液冷从零到一</strong>——公司已切入液冷一次侧/二次侧，品类覆盖阀、泵、换热器、控制器，美国数据中心为主攻方向（置信度：中，公司口径 + 两家媒体独立报道，无营收规模披露）</li>
+<li><strong>控股股东提议的 2–4 亿元回购正在实施中</strong>，截至 2026-07-31 已回购 279.82 万股、耗资 9993.23 万元（置信度：高，库内公告 + 联网公告双证）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>主业增速断崖</strong>：2026Q1 营收同比仅 +1.36%、净利同比 +2.68%，对比 2025 全年的 +10.97%/+31.10%（置信度：高，库内财务）</li>
+<li><strong>新叙事零营收佐证</strong>：库内主营描述完全未提机器人；2025 年报对机器人的表述仍停留在「研发、试制、迭代、送样」（置信度：高，库内 + 第一财经年报透视双证）</li>
+<li><strong>估值与盈利脱节 + 治理面瑕疵</strong>：PE(TTM) 37.88 是同库三大白电的 2.6–4.8 倍（推算）；董事长 2026 年 3 月减持 975.60 万股、套现约 4.2 亿元（置信度：高）</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ul>
+<li><strong>2026-08-27 中报</strong>（交易所官方披露计划，见 I 节 W2）：① 2026H1 营收同比能否回到 8% 以上（Q1 只有 1.36%）；② 中报是否<strong>首次</strong>给出机器人 / 液冷的营收或在手订单口径——这一条是整份报告的胜负手</li>
+<li><strong>9 月 Optimus 批量供货窗口</strong>（I 节 W3，库内事件重要性 8）：公司有无对应公告</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong>：我把「主业减速已被市场充分定价」当成了默认前提，但没有硬证据。2026-07-27 董秘问答明确提到「一季度汇兑损失拖累利润率、二季度汇率回暖」——若 8/27 中报 Q2 单季因汇兑反转而明显加速，本报告的偏谨慎基调需要整体修正。</p>
+<h2>B. 公司快照</h2>
+<p><strong>基础信息</strong>（库库内公司档案）</p>
+<ul>
+<li>名称：三花智控｜代码：002050 ｜行业（库内口径）：家用电器｜板块：主板｜上市状态：L（正常上市）</li>
+<li>上市日期：2005-06-07（至今约 21 年 2 个月）｜员工：19,090 人｜注册资本：420,801.3935 万元</li>
+<li>主营：制冷空调电器零部件和汽车零部件业务</li>
+<li>业务描述：制冷空调电器零部件从事建筑暖通（HVAC）、电器设备专业化经营，主要产品包括四通换向阀、电子膨胀阀、电磁阀、微通道换热器、Omega 泵等；汽车零部件专注汽车热管理，主要产品包括热力膨胀阀、电子膨胀阀、电子水泵、新能源车热管理集成组件等。国内与海外市场并行。</li>
+<li>经营范围（节选）：家用电器研发；制冷、空调设备制造；普通阀门和旋塞制造；通用零部件制造；泵及真空设备制造；电机制造；风机、风扇制造；货物进出口。</li>
+</ul>
+<div class="callout">⚠️ <strong>注意</strong>：库内公司档案的主营与业务描述中<strong>完全没有出现「机器人」「液冷」「数据中心」</strong>。这不是遗漏，是这份库内工商/主营口径的真实状态——G 节据此对概念标签逐个分级。</div>
+<p><strong>当前行情</strong>（库库内行情，唯一行情事实源）</p>
+<ul>
+<li>价格：<strong>36.79 元</strong> ｜当日涨跌幅：<strong>-7.10%</strong> ｜成交额：34.7 亿元</li>
+<li>盘中最高相对昨收：-1.59% ｜盘中最低：-8.16% ｜数据时点：15:35 收盘快照</li>
+</ul>
+<p><strong>时点说明（重要）</strong>：本次调研运行于 2026-08-20 凌晨、A 股开盘前，故该收盘快照对应<strong>最近一个交易日 2026-08-19</strong>。三处库内取数互相印证：库内估值、库内 A/H 对照、库内行情收盘价 36.79 完全一致（置信度：高）。据价格与涨跌幅推算，前一交易日（8/18）收盘约 39.60 元。</p>
+<p><strong>盘口形态</strong>：当日盘中最高只到 -1.59%、最低 -8.16%，收在 36.79 元（-7.10%）接近全天低位——是一根<strong>低位收盘的宽幅下跌 K 线</strong>，非低开横盘（置信度：高，库内行情三个字段直接给出）。</p>
+<p><strong>估值</strong>（库库内估值，交易日=20260819）</p>
+<ul>
+<li>PE(TTM)：<strong>37.88 倍</strong> ｜ PB：<strong>4.74 倍</strong> ｜股息率：0.68% ｜换手率：2.52%</li>
+<li>总市值：<strong>1,548.13 亿元</strong></li>
+<li>同行业（家用电器，92 只在市票）：行业 PE 中位数 36.48 倍，本票 PE 由小到大<strong>排第 40 名</strong>——即在家电板块内部处于<strong>中位偏贵一档</strong>，但并非极端高估（仅估值口径判断，不等于好坏结论；置信度：高）</li>
+</ul>
+<p><strong>A/H 跨市场参照</strong>（库库内 A/H 对照，交易日=20260819）</p>
+<ul>
+<li>H 股：02050.HK 三花智控，收盘 26.74 港元、当日 -5.78%</li>
+<li><strong>A 股对 H 股溢价 60.13%</strong>——同一家公司，A 股定价比港股贵六成（置信度：高）</li>
+<li>注：A 股当日跌 7.10%、H 股跌 5.78%，A 股跌得更多，溢价当日是<strong>收窄</strong>方向</li>
+</ul>
+<h2>C. 财务健康</h2>
+<p>库库内财务（近 4 期），近 4 期（累计口径，新→旧）：</p>
+<ul>
+<li><strong>2026Q1（20260331，公告 2026-04-30）</strong>：营收 <strong>77.74 亿</strong>、同比 <strong>+1.36%</strong>；净利 <strong>9.28 亿</strong>、同比 <strong>+2.68%</strong>；ROE 2.88%；毛利率 <strong>27.80%</strong>；净利率 <strong>12.23%</strong>；EPS 0.22；资产负债率 33.28%</li>
+<li><strong>2025 年报（20251231，公告 2026-03-24）</strong>：营收 <strong>310.12 亿</strong>、同比 <strong>+10.97%</strong>；净利 <strong>40.63 亿</strong>、同比 <strong>+31.10%</strong>；ROE 15.92%；毛利率 <strong>28.78%</strong>；净利率 13.24%；EPS 1.03；资产负债率 35.15%</li>
+<li><strong>2025Q3 累计（20250930）</strong>：营收 240.29 亿、同比 +16.86%；净利 32.42 亿、同比 +40.85%；ROE 12.73%；毛利率 28.08%；净利率 13.69%；EPS 0.84；资产负债率 34.25%</li>
+<li><strong>2025H1（20250630）</strong>：营收 162.63 亿、同比 +18.91%；净利 21.10 亿、同比 +39.31%；ROE 8.73%；毛利率 28.12%；净利率 13.15%；EPS 0.57；资产负债率 36.80%</li>
+</ul>
+<p><strong>趋势判断（不是罗列，是拐点在哪）</strong></p>
+<ol>
+<li><strong>营收增速是一条单调向下的滑梯</strong>：+18.91%（25H1）→ +16.86%（25Q3）→ +10.97%（25 全年）→ <strong>+1.36%（26Q1）</strong>。四期连续减速、且最后一跳是断崖式的（置信度：高）。</li>
+<li><strong>利润增速的拐点比营收晚一期、但幅度更陡</strong>：+39.31% → +40.85% → +31.10% → <strong>+2.68%</strong>。2025 年前三季利润增速一直是营收的 2 倍以上（经营杠杆在放大），到 2026Q1 这个杠杆<strong>消失了</strong>（置信度：高）。</li>
+<li><strong>单季拆解印证拐点在 2025Q4 就已出现</strong>（据库内累计数推算）：2025Q4 单季营收 = 310.12 − 240.29 = <strong>69.83 亿</strong>，单季净利 = 40.63 − 32.42 = <strong>8.21 亿</strong>，单季净利率 ≈ <strong>11.76%</strong>——明显低于前三季累计的 13.69%。也就是说，<strong>利润率的恶化从 2025Q4 就开始了，2026Q1 只是延续</strong>（置信度：中，推算值）。</li>
+<li><strong>毛利率</strong>：28.12% → 28.08% → 28.78% → <strong>27.80%</strong>。2025 全年是四期最高点，2026Q1 回落 0.98 个百分点，是四期最低（置信度：高）。</li>
+<li><strong>净利率</strong>：13.15% → 13.69% → 13.24% → <strong>12.23%</strong>，2026Q1 为四期最低（置信度：高）。但<strong>同比看未必恶化</strong>：据 yoy 反推 2025Q1 营收约 76.70 亿、净利约 9.04 亿，对应净利率约 11.79%——2026Q1 的 12.23% 反而<strong>高于</strong>去年同期（置信度：中，推算值）。<strong>结论：利润率是「环比走弱、同比微升」，不宜单向解读。</strong></li>
+<li><strong>唯一在持续变好的是资产负债表</strong>：资产负债率 36.80% → 34.25% → 35.15% → <strong>33.28%</strong>，四期最低，财务结构稳健、无杠杆风险（置信度：高）。</li>
+<li><strong>ROE 无法做同比对照</strong>：库内近 4 期不含 2025Q1，而 ROE 是累计口径（2026Q1 的 2.88% 与 2025 全年的 15.92% 不可比）。这是本节的一个<strong>信息缺口</strong>，见 M 节。</li>
+</ol>
+<p><strong>估值口径小结</strong>：以 2026Q1 的 EPS 0.22 元与 PE(TTM) 37.88 倍看，市场给的估值<strong>没有在为当前的增速付费</strong>——当前增速（+1.36% 营收 / +2.68% 净利）配不上 37.88 倍 PE，溢价部分定价的是别的东西（G 节与 J 节展开）。（<strong>仅估值口径判断</strong>，置信度：中）</p>
+<p><strong>分业务拆解（库内无，联网补）</strong>：2025 年报显示，制冷空调业务收入 185.85 亿元、同比 +12.22%、毛利率 28.77%（同比 +1.42 个百分点）；汽车零部件业务收入 124.27 亿元、同比 +9.14%，但<strong>销量 6375.27 万只、同比下滑 8.30%，产量同比减少 8.74%——为近年来该板块首次产销量同比下降</strong>，产能利用率仅约七成。两块相加 185.85 + 124.27 = 310.12 亿，与库内 2025 年报营收<strong>完全对上</strong>（交叉验证通过，置信度：高）。来源：<a href="https://www.yicai.com/news/103102290.html" target="_blank" rel="noopener">第一财经 2026-03-24</a></p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库库内同业对比（取 3 家）（同为「家用电器」行业、财务同为 20260331 期）：</p>
+<ul>
+<li><strong>三花智控 002050</strong>｜市值 1,548.13 亿 · PE(TTM) 37.88 · PB 4.74 · 营收 77.74 亿 · 净利 9.28 亿 · ROE 2.88% · 净利率 12.23%</li>
+<li><strong>美的集团 000333</strong>｜市值 6,450.11 亿 · PE(TTM) 14.59 · PB 2.78 · 营收 1,315.81 亿 · 净利 126.75 亿 · ROE 5.56% · 净利率约 9.63%（推算）</li>
+<li><strong>格力电器 000651</strong>｜市值 2,314.50 亿 · PE(TTM) 7.93 · PB 1.52 · 营收 430.80 亿 · 净利 60.82 亿 · ROE 4.08% · 净利率约 14.12%（推算）</li>
+<li><strong>海尔智家 600690</strong>｜市值 2,060.27 亿 · PE(TTM) 11.01 · PB 1.65 · 营收 736.87 亿 · 净利 46.52 亿 · ROE 3.81% · 净利率约 6.31%（推算）</li>
+</ul>
+<p><strong>⚠️ 可比性声明（必须先说）</strong>：库内同业对比是按库内行业归属 '家用电器' + 市值邻近取的，取到的三家全是<strong>白电整机厂</strong>，而三花是<strong>上游精密零部件商</strong>。两者商业模式、客户结构、估值体系都不同——这组对比只能读出「同一个行业标签下市场愿意付多少钱」，<strong>不能当成同业估值对标</strong>（置信度：高，这是取数逻辑的直接推论）。</p>
+<p><strong>能读出来的三件事</strong></p>
+<ol>
+<li><strong>贵在哪，一目了然</strong>：三花 PE 37.88 是美的的 <strong>2.6 倍</strong>、海尔的 <strong>3.4 倍</strong>、格力的 <strong>4.8 倍</strong>（推算）；PB 4.74 是三家的 1.7–3.1 倍（推算）。市场明确把三花放在<strong>成长股</strong>框架里定价，而不是白电框架（置信度：高）。</li>
+<li><strong>盈利质量确实更好，但不足以解释 3–5 倍的估值差</strong>：三花 2026Q1 净利率 12.23%，高于美的（约 9.63%）与海尔（约 6.31%），低于格力（约 14.12%）（推算）；ROE 2.88% 则是四家里<strong>最低</strong>的（同期累计口径）。也就是说，<strong>在纯财务维度上三花并没有压倒性优势</strong>，估值差主要来自叙事而非报表（置信度：中）。</li>
+<li><strong>规模是数量级差距</strong>：三花 2026Q1 营收 77.74 亿，是美的的 1/17、海尔的 1/9.5、格力的 1/5.5（推算）。作为零部件商，它的天花板由下游整机厂与整车厂的资本开支节奏决定，<strong>周期弹性大于自主定价权</strong>（置信度：中，推断）。</li>
+</ol>
+<p><strong>相对位置一句话</strong>：在家电板块 92 只票里 PE 排第 40（中位偏贵一档），但在<strong>它自己的可比同行（零部件/热管理）</strong> 里贵不贵——库内取不到，是本节的信息缺口（见 M 节）。</p>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>：B2B 精密零部件供应商。上游买金属与电机件，中游做阀（四通换向阀、电子膨胀阀、电磁阀）、泵（电子水泵、Omega 泵）、换热器（微通道），下游卖给白电整机厂、整车厂，近两年延伸到数据中心液冷与机器人执行器（库库内公司档案 + 经营范围）。</p>
+<p><strong>护城河分级（诚实分级，不拔高）</strong></p>
+<ul>
+<li><strong>结构性护城河（置信度：中）</strong>：制冷空调<strong>电子膨胀阀与四通换向阀</strong>属于长周期认证、批量一致性要求极高的品类，客户切换成本高、有明显的规模成本曲线。库内证据是间接的——2025 年报制冷空调业务毛利率 28.77% 且<strong>同比提升 1.42 个百分点</strong>（联网，第一财经 2026-03-24），在 2026Q1 空调行业销量同比 -2.8% 的背景下还能提毛利率，是定价权的间接指标。但<strong>库内没有市占率数据</strong>，无法把这条升到「高」。</li>
+<li><strong>阶段性优势（置信度：中）</strong>：作为特斯拉长期一级供应商，在汽车热管理集成组件上有先发与客户绑定。但 2025 年报汽车零部件<strong>销量已同比 -8.30%、产能利用率仅七成</strong>（联网，第一财经 2026-03-24），说明这条绑定关系当前<strong>没有转化成量的增长</strong>——阶段性优势正在被行业周期抵消。</li>
+<li><strong>无明显护城河的部分（置信度：中）</strong>：机器人执行器与液冷。这两块目前是「与客户共同开发、送样、验证」阶段，国内同类供应商众多（拓普、均胜等同被列为特斯拉机器人潜在供应商，联网 <a href="https://app.myzaker.com/news/article.php?pk=6a6740e68e9f09113f449a1f" target="_blank" rel="noopener">ZAKER/机器人产业报道</a>），<strong>尚看不出三花有排他性地位</strong>。</li>
+<li><strong>议价能力</strong>：夹在「上游大宗金属价格」与「下游高度集中的整机厂/整车厂」之间，两端议价能力都偏弱（置信度：中，推断，无库内证据支撑）。</li>
+</ul>
+<p><strong>一句话</strong>：制冷零部件是真护城河但增长慢；汽车热管理是绑定但在掉量；机器人与液冷是纯期权、护城河尚未成型。</p>
+<h2>F. 政策与监管</h2>
+<p>库内无政策数据，本节全部联网、每条带来源与日期。只写与本公司/本行业<strong>直接相关</strong>的。</p>
+<ol>
+<li><strong>《2026-2028 年全国算力基础设施建设行动方案》2026-09-01 起正式执行</strong>：七部门文件，央企国企新建智算中心的 AI 芯片、服务器、光模块<strong>国产采购占比强制不低于 75%</strong>，不达标不予批复（来源：库库内事件日历，事件重要性 8）。
+<ul>
+<li>传导链条：智算中心建设加速 → 单机柜功率密度上升 → 风冷转液冷 → <strong>阀/泵/换热器/控制器需求</strong>（三花液冷业务的核心品类）。</li>
+<li>方向：<strong>中性偏利好</strong>。但要打两个折：① 该文件约束的是「国产化率」不是「建设总量」；② 三花的液冷客户方向是<strong>美国数据中心</strong>（来源：<a href="https://news.qq.com/rain/a/20260514A044W100" target="_blank" rel="noopener">腾讯新闻/产业在线 2026-05-14</a>），国内政策对它的直接拉动有限（置信度：中）。</li>
+</ul></li>
+</ol>
+<ol>
+<li><strong>工信部将印发《算力标准体系建设指南》（日期待定，2026 年 7 月已明确将印发）</strong>：推动算力市场化定价（来源：库库内事件日历，重要性 7）。方向：中性，属基础性政策，对零部件商传导链条长（置信度：低）。</li>
+</ol>
+<ol>
+<li><strong>电池消费税新政 2026-09-01 生效</strong>：锂离子蓄电池等按 2% 税率征收消费税（来源：库库内事件日历，重要性 8）。方向：<strong>中性偏利空的间接项</strong>——压缩电池厂利润 → 整车成本压力 → 沿产业链向零部件商传导降价要求。三花不做电池，属二阶影响（置信度：低）。</li>
+</ol>
+<ol>
+<li><strong>新能源汽车行业的「增长换利润」压力</strong>：2026 年上半年新能源汽车产销 743.8 万辆 / 744.6 万辆，同比 +6.7% / +7.3%；而<strong>行业利润总额同比降 20%、销售利润率仅 3.8%</strong>（来源：<a href="https://k.sina.com.cn/article_7879923055_1d5ae156f01901h8cg.html" target="_blank" rel="noopener">中汽协数据/新浪 2026 上半年数据看板</a>、<a href="https://www.huxiu.com/article/4883251.html" target="_blank" rel="noopener">虎嗅 2026 价格战分析</a>，两个独立来源）。
+<ul>
+<li>传导链条：整车利润率被压到 3.8% → 向上游零部件压价 → 三花汽车零部件毛利率承压。</li>
+<li>方向：<strong>利空</strong>（置信度：中，产业逻辑推断，无三花具体降价证据）。</li>
+<li>一个对冲项：2026 年 1-4 月新能源车<strong>出口同比增长 1.2 倍</strong>（同上来源），三花海外配套若跟随出口放量可部分抵消（置信度：低，未见公司披露）。</li>
+</ul></li>
+</ol>
+<p><strong>监管/合规风险</strong>：库内新闻 60 天内<strong>无任何监管处罚、问询函、诉讼类事项</strong>（中无相关分类），公告类新闻全部是回购、担保额度调剂、董事会决议、H 股月报表等常规事项（置信度：高）。</p>
+<h2>G. 题材与产业链关联</h2>
+<p>库库内概念标签返回 <strong>24 个同花顺概念标签</strong>。按铁律逐个分级——<strong>标签沾边 ≠ 公司真有这块营收</strong>。</p>
+<p><strong>第一档 · 真有业务（有库内主营/经营范围直接佐证）</strong></p>
+<ul>
+<li><strong>家用电器（885543）</strong>——主营明写「制冷空调电器零部件业务」，2025 年该板块收入 185.85 亿（联网佐证）。<strong>真有业务</strong></li>
+<li><strong>汽车热管理（885999）</strong>——主营明写「汽车零部件业务专注于汽车热管理领域」，2025 年该板块收入 124.27 亿（联网佐证）。<strong>真有业务</strong></li>
+<li><strong>新能源汽车（885431）</strong>——主营明写「新能源车热管理集成组件」。<strong>真有业务</strong></li>
+<li><strong>空气能热泵（886010）</strong>——主营写「建筑暖通（HVAC）」，产品四通换向阀、电子膨胀阀正是热泵核心部件；经营范围含「制冷、空调设备制造」。<strong>业务相关，但库内无热泵单独营收拆分</strong>（置信度：中）</li>
+</ul>
+<p><strong>第二档 · 公司自述有布局，但库内与年报口径均无营收佐证</strong></p>
+<ul>
+<li><strong>人形机器人（886069）/ 机器人概念（885517）</strong>——库内公司档案主营描述<strong>未列机器人</strong>；库内唯一佐证是 2026-07-27 董秘问答标题中公司自述业务含「家用制冷、汽车热管理、液冷、机器人」四块。联网佐证方向相反且更硬：<strong>2025 年报对该业务的表述仍是「研发、试制、迭代、送样」，与半年前中报高度一致，未实现从样品到量产的跨越</strong>（来源：<a href="https://www.yicai.com/news/103102290.html" target="_blank" rel="noopener">第一财经 2026-03-24 年报透视</a>）。</li>
+</ul>
+<p>→ 定级：<strong>仅概念标签 + 公司自述布局，未见营收佐证</strong>（置信度：高）</p>
+<ul>
+<li><strong>液冷服务器（886044）/ 数据中心 AIDC（885887）</strong>——同上，董秘问答自述含「液冷」；经营范围含「泵及真空设备制造」。公司口径：「一次侧、二次侧公司已有产品供应，核心品类涵盖阀、泵、换热器、控制器等，已为全球部分客户提供相关产品」，并已组建液冷专项项目组（来源：<a href="https://www.nbd.com.cn/articles/2026-06-24/4436249.html" target="_blank" rel="noopener">每日经济新闻 2026-06-24</a>、<a href="http://www.chinaiol.com/News/Content/202606/17_67006.html" target="_blank" rel="noopener">产业在线 ChinaIOL 2026-06</a>，两个独立来源）。</li>
+</ul>
+<p>→ 定级：<strong>已有产品供应但无营收规模披露，未见营收佐证</strong>（置信度：中）</p>
+<p><strong>第三档 · 客户/关联方标签（库内无客户结构披露，全部未见营收佐证）</strong></p>
+<ul>
+<li>特斯拉概念（885467）· 宁德时代概念（885789）· 比亚迪概念（885997）· 小米概念（885785）· 华为汽车（885834）· 长安汽车概念（886061）</li>
+</ul>
+<p>→ 其中「特斯拉概念」有最强的外部佐证（长期一级供应商 + Optimus 中国核心供应商之一，来源同上 ZAKER 报道），但<strong>库内无任何客户集中度或单一客户收入占比数据</strong>，无法量化（置信度：中）</p>
+<p><strong>第四档 · 指数与交易属性标签（不是业务）</strong></p>
+<ul>
+<li>沪深 300 样本股（883300）· 深股通（885694）· 融资融券（885338）· 同花顺出海 50（886075）· 同花顺新质 50（886096）· 回购增持再贷款概念（886089）</li>
+</ul>
+<p>→ 这六个只说明「它是大盘蓝筹、外资可买、能融资融券、正在回购」，<strong>与业务无关</strong></p>
+<p><strong>第五档 · 仅概念标签，未见任何营收佐证</strong></p>
+<ul>
+<li><strong>储能（885921）</strong>——液冷技术已落地储能领域（联网，产业在线 2026-06），属<strong>相关但无拆分</strong></li>
+<li><strong>燃料电池（885775）</strong>——库内外均未见任何业务佐证（置信度：高，判为纯标签）</li>
+<li><strong>DeepSeek 概念（886100）</strong>——未见任何业务佐证（置信度：高，判为纯标签）</li>
+<li><strong>一带一路（885494）</strong>——公司确有海外业务与货物进出口经营范围，但无专项佐证</li>
+</ul>
+<p><strong>产业链位置</strong></p>
+<ul>
+<li><strong>上游</strong>：铜/铝/钢等金属原材料、电机与控制芯片。议价能力<strong>弱</strong>（大宗品价格被动接受）</li>
+<li><strong>本环</strong>：精密流体控制零部件 + 热管理集成组件 + （在研）机电执行器 / 液冷模块</li>
+<li><strong>下游</strong>：白电整机厂（美的/格力/海尔等）、整车厂（特斯拉/比亚迪等）、数据中心与服务器厂商</li>
+<li><strong>议价能力所在端</strong>：偏下游。下游集中度高，且 2026 上半年整车行业利润率已被压到 3.8%（F 节），向上游传导降价的动机强（置信度：中，推断）</li>
+</ul>
+<p><strong>一句话</strong>：24 个标签里，<strong>真有营收的只有前 4 个</strong>（制冷、汽车热管理、新能源车、热泵相关），而市场给 37.88 倍 PE 主要是在为第二档的机器人与液冷付费——<strong>这就是本票的核心矛盾</strong>。</p>
+<h2>H. 消息面与市场情绪</h2>
+<h3>新闻（库库内新闻，近 60 天共 20 条）</h3>
+<p>按重要性挑选，每条判断是否有基本面实质影响：</p>
+<ol>
+<li><strong>2026-07-27｜三花智控：拟以 2 亿元-4 亿元回购公司 A 股股份</strong>（cls，情绪标签 0.6）——<strong>有实质影响</strong>。同日董事会第八届第二十次临时会议决议通过。联网补充：回购价格上限 60 元/股，用于股权激励或员工持股计划，实施期限 12 个月；本次回购由<strong>控股股东提议</strong>（来源：<a href="https://finance.cnr.cn/ycbd/20260727/t20260727_527733038.shtml" target="_blank" rel="noopener">央广网 2026-07-27</a>、<a href="https://www.stcn.com/article/detail/4043522.html" target="_blank" rel="noopener">证券时报 2026-07-27</a>，两个独立来源）</li>
+<li><strong>2026-07-29｜三花智控：回购 279.82 万股，使用资金总额 9993.23 万元</strong>（eastmoney，情绪标签 0.5）——<strong>有实质影响</strong>。联网补充：截至 2026-07-31 累计回购 279.82 万股、<strong>回购价格区间 35.05–36.09 元/股</strong>（来源：<a href="https://finance.sina.cn/2026-08-03/detail-inimafqi2588401.d.html" target="_blank" rel="noopener">新浪财经 2026-08-03</a>）。⚠️ 该价格区间是<strong>公司公告披露的成交均价</strong>、不是行情快照；与库内当前收盘价 36.79 元对照，<strong>当前价格仅略高于公司自己回购的价格带上沿</strong>（置信度：高）</li>
+<li><strong>2026-07-27｜【董秘问答】一季度汇兑损失拖累利润率，二季度汇率回暖上半年汇兑是否实现修复？</strong>（库内投资者关系问答）——<strong>有实质影响，且是中报的关键变量</strong>。这条给出了 2026Q1 净利率环比走弱（12.23% vs 2025 全年 13.24%）的一个非经营性解释；若 Q2 汇兑反转，中报利润可能好于 Q1 线性外推（置信度：中，问答标题只给了问题、库内无公司答复内容）</li>
+<li><strong>2026-07-27｜【董秘问答】公司 8 月 27 号披露半年报，上半年家用制冷、汽车热管理、液冷、机器人四……</strong>（库内投资者关系问答）——<strong>有实质影响</strong>。这是库内<strong>唯一</strong>一条把「液冷、机器人」与「家用制冷、汽车热管理」并列为公司业务板块的记录，是 G 节第二档定级的库内依据</li>
+<li><strong>2026-08-12｜三花智控：H 股公告-董事会会议召开日期</strong>（库内公告）——程序性，指向 8/27 中报，<strong>无独立基本面影响</strong></li>
+<li><strong>2026-07-27｜关于在子公司之间调剂担保额度的公告</strong>（库内公告）——常规内部事项，<strong>无基本面影响</strong></li>
+<li><strong>2026-08-11 / 08-05 / 08-03 / 07-31 / 07-28｜多条人形机器人与机器人板块行情类新闻</strong>（cls / eastmoney，情绪标签 0.6–0.8）——<strong>均为板块级情绪，非公司事件</strong>。⚠️ 这些标题中出现的涨跌幅（如「斯菱智驱涨超 10%」「明新旭腾 2 连板」）是<strong>发稿时点的旧盘中快照、且是别的股票</strong>，与三花无关，本报告不引用</li>
+<li><strong>2026-08-05｜三花智控：H 股公告-截至 2026 年 7 月 31 日止之股份发行人的证券变动月报表</strong>（库内公告）——例行披露，<strong>无基本面影响</strong></li>
+</ol>
+<p><strong>新闻面小结</strong>：60 天内<strong>没有一条公司层面的重大利好或利空事件</strong>。公司自身新闻全是回购、担保调剂、H 股例行公告；情绪面新闻全是板块级机器人行情。中占绝对多数的是「噪音其他」——<strong>这意味着近两个月的股价波动主要由板块 beta 与情绪驱动，而非公司基本面变化</strong>（置信度：高）。</p>
+<h3>涨停史（库库内涨停记录，近 180 日）</h3>
+<p><strong>近 180 日无涨停记录</strong>（返回空列表）。对一只 1,548 亿市值的沪深 300 成分股而言这是常态，但也说明<strong>近半年未进入过游资主导的强情绪阶段</strong>，其波动属于机构定价范畴（置信度：高）。</p>
+<h3>8-19 的 -7.10% 归因（跨市场对照）</h3>
+<p>当日全市场普跌：<strong>沪指 -2.4%、深成指 -5.01%、创业板指 -6.26%</strong>，全市场超 5,000 只个股下跌、逾百股跌停；电子化学品、CPO、HBM、商业航天、机器人概念跌幅居前（来源：<a href="https://finance.sina.com.cn/tob/2026-08-19/doc-ininvshr7071131.shtml" target="_blank" rel="noopener">新浪财经收评 2026-08-19</a>、<a href="https://www.chinanews.com.cn/cj/2026/08-19/10680354.shtml" target="_blank" rel="noopener">中新网 2026-08-19</a>，两个独立来源）。诱因为隔夜美股科技股重挫、费城半导体指数跌近 5%，亚太联动（韩国综指盘中一度跌超 6%、日经 225 跌逾 3%），叠加 AI 硬件前期涨幅积累的获利兑现；另有报道指向美债收益率创 19 年新高引发的全球估值重定价（来源：<a href="https://www.nbd.com.cn/articles/2026-08-19/4546381.html" target="_blank" rel="noopener">每日经济新闻 2026-08-19</a>、<a href="https://finance.sina.com.cn/stock/observe/2026-08-19/doc-ininwawm6984883.shtml" target="_blank" rel="noopener">新浪财经 2026-08-19</a>）。</p>
+<p><strong>归因结论</strong>：三花当日 -7.10%（库库内行情）<strong>大于</strong>深成指 -5.01% 与创业板指 -6.26%，属于「系统性下跌 + 机器人概念额外承压」的叠加，<strong>不存在公司特定利空</strong>（置信度：中——多源支持系统性因素，但库内无法拆分 beta 与个股 alpha 的具体比例）。</p>
+<h3>资金与筹码（库库内资金筹码）</h3>
+<div class="callout">⚠️ <strong>纪律声明</strong>：以下是盘面与筹码现象，<strong>不是基本面证据</strong>——只作情绪面佐证，不进 J 节逻辑链，不单独用于下操作结论。</div>
+<ul>
+<li><strong>主力资金（近 20 个交易日，2026-07-23 至 2026-08-19）</strong>：净流入合计 <strong>-9.39 亿元</strong>（净流出）；其中特大单净额 <strong>-6.52 亿元</strong>；净流入为正 <strong>10/20 天</strong>、为负 10 天。</li>
+</ul>
+<p>→ 读法：<strong>天数上多空对半、金额上明显偏空</strong>，说明流出集中在少数几天且单日规模大——是「阴跌中被大额减持」而非「持续温和流出」（置信度：中）</p>
+<ul>
+<li><strong>筹码分布（截至 2026-08-07）</strong>：获利盘比例 <strong>46.27%</strong>；平均成本 41.02 元；15% 分位成本 36.60 元、50% 分位 40.80 元、85% 分位 45.60 元。</li>
+</ul>
+<p>→ <strong>两面读</strong>：获利盘 46.27% 处于中性偏低区间——<strong>好的一面</strong>是上方套牢盘虽有但短线获利抛压不算重；<strong>坏的一面</strong>是超过半数筹码处于亏损状态，深套盘在反弹时会形成持续阻力。 → ⚠️ <strong>重要时点差</strong>：该数据截至 8/7，而库内当前收盘价 36.79 元<strong>已低于 8/7 的 50% 分位成本 40.80 元与平均成本 41.02 元，仅略高于 15% 分位的 36.60 元</strong>——按 8/7 的分布静态推算，现价对应的实际获利盘应<strong>显著低于 46.27%</strong>（置信度：中，推算，筹码分布本身已随价格变动而重构）</p>
+<ul>
+<li><strong>股东户数</strong>：2026-03-31 为 <strong>674,741 户</strong>，较 2026-02-28 的 576,046 户<strong>增加 17.1%</strong>。</li>
+</ul>
+<p>→ 读法：<strong>筹码在趋于分散</strong>（户数增加 = 人均持股下降 = 散户化）。⚠️ 该数据截至 2026-03-31，<strong>滞后近 5 个月</strong>，仅供参考（置信度：低，因时效性）</p>
+<h3>治理面（联网补，库内无）</h3>
+<p>董事长、实际控制人张亚波于 <strong>2026-03-27 至 03-30 期间通过集中竞价减持 975.60 万股，减持均价 43.10 元/股，套现约 4.2 亿元</strong>；同期多名董事与高管一并减持。公司在 2026-05-26 业绩说明会上的回应为「个人资金需求，资金将继续用于产业投资」；此前另有「为孩子生活教育」的表述引发争议（来源：<a href="https://finance.sina.com.cn/roll/2026-05-30/doc-inhzshan7175900.shtml" target="_blank" rel="noopener">新浪财经 2026-05-30</a>、<a href="https://finance.sina.com.cn/wm/2026-05-29/doc-inhzqimi9449684.shtml" target="_blank" rel="noopener">新浪财经 2026-05-29</a>、<a href="https://36kr.com/p/3839930617035396" target="_blank" rel="noopener">36氪</a>，三个独立来源）。 → <strong>对判断的意义</strong>：这是一个<strong>方向相反的治理信号组合</strong>——控股股东一边提议公司用 2–4 亿元回购（7 月），一边董事长本人在 3 月减持套现 4.2 亿元。金额量级相当。<strong>回购的信号价值因此被显著削弱</strong>（置信度：中）。</p>
+<h3>⚠️ 重大预期差警示：「50 亿元 Optimus 订单」传闻已被公司否认</h3>
+<p>2025 年 9 月末起在社交媒体流传、2025-10-15 经国际社交平台放大回流的「特斯拉向三花下达约 50 亿元人民币（6.85 亿美元）Optimus 线性执行器订单、足够生产至少 18 万台」的说法，<strong>已由公司于 2025-10-18 晚间发布澄清公告，明确表示「相关订单传闻不属实」「不存在应披露而未披露的重大事项」</strong>（来源：<a href="https://www.yicai.com/news/102869235.html" target="_blank" rel="noopener">第一财经独家 2025-10-18</a>、<a href="https://www.stcn.com/article/detail/3415151.html" target="_blank" rel="noopener">证券时报</a>，两个独立来源）。</p>
+<p>⚠️ <strong>该传闻至今仍在部分自媒体与聚合平台上以「马斯克向三花抛出 6.85 亿美元订单」的标题传播</strong>（例如 <a href="https://36kr.com/p/3510288514980998" target="_blank" rel="noopener">36氪相关文章</a>）。<strong>任何据此推导的机器人业务营收假设都建立在已被官方否认的信息上</strong>（置信度：高——公司澄清公告是最高等级证据）。</p>
+<h2>I. 未来 13 周事件日历</h2>
+<p>数据来源：库库内事件日历（近 120 日） + 联网补。<strong>⚠️ 除 8/27 中报外，库内返回的事件全部是「概念关联」（为概念 ID），不是公司直接事件——用它们做催化判断必须打折。</strong></p>
+<ul>
+<li><strong>W1（2026-08-17 起）</strong>：本周无已知公司事件 · — · 重要性低 · 影响：8/19 已发生全市场级下跌（H 节），本周剩余交易日观察是否有超跌修复</li>
+<li><strong>W2（2026-08-24 起）</strong>：<strong>★ 8-27 三花智控 2026 中报披露</strong> · 财报 · 重要性 <strong>高（库内 importance 7，交易所官方披露计划，改期会自动跟随更新）</strong> · 影响：<strong>本报告的核心验证点</strong>——验证 C 节的增速拐点是否延续、G 节第二档的机器人/液冷是否首次出现营收拆分、H 节汇兑损失是否在 Q2 反转</li>
+<li><strong>W3（2026-08-31 起）</strong>：密集事件周（全部为概念关联）
+<ul>
+<li>8-31 · 特斯拉 FSD 中国商用获批并启动 OTA 推送（高预期待官宣） · 公司事件（概念 885467） · 重要性 7 · 影响：催化特斯拉产业链情绪，对三花无直接营收传导</li>
+<li>8-31 · 工信部印发算力标准体系建设指南（日期待定） · 政策（概念 885887） · 重要性 7 · 影响：液冷叙事的政策背景，传导链条长</li>
+<li>9-01 · <strong>《2026-2028 年全国算力基础设施建设行动方案》正式执行</strong>（国产算力硬件采购占比≥75%） · 政策（概念 885887） · 重要性 8 · 影响：见 F 节第 1 条，对三花以美国数据中心为主的液冷方向直接拉动有限</li>
+<li>9-01 · <strong>特斯拉 Optimus 供应链批量供货，9 月周产能目标 1000 台</strong> · 公司事件（概念 886069） · 重要性 <strong>8</strong> · 影响：<strong>本季度机器人叙事的最硬时点</strong>——观察三花有无对应公告或客户确认</li>
+<li>9-01 · 电池消费税新政生效（锂电按 2% 征税） · 政策（概念 885921） · 重要性 8 · 影响：二阶利空，见 F 节第 3 条</li>
+<li>9-01 · 特斯拉储能业务要求年底产能达标 · 公司事件（概念 885921） · 重要性 6 · 影响：储能液冷的潜在需求端信号</li>
+<li>9-01 · 特斯拉奥斯汀 Robotaxi 向公众开放（日期待定） · 公司事件（概念 885467） · 重要性 7 · 影响：情绪催化，无营收传导</li>
+<li>9-03 · <strong>工信部主办 2026 具身智能产业博览会（XAIR Expo）广州开幕（9/3-6）</strong> · 会议（概念 886069） · 重要性 8 · 影响：机器人零部件板块的政策与产业信号集中释放窗口</li>
+<li>9-03 · 2026 世界动力电池大会（宜宾，9/3-4） · 会议（概念 885431） · 重要性 7 · 影响：新能源车链情绪</li>
+</ul></li>
+<li><strong>W4（2026-09-07 起）</strong>：
+<ul>
+<li>9-11 · <strong>2026 中国算力大会（廊坊，9/11-13，工信部主办）</strong> · 会议（概念 885887） · 重要性 8 · 影响：液冷/IDC 板块催化窗口</li>
+<li>9-12 · 第 18 届金砖国家峰会（新德里，9/12-13） · 会议（概念 885494） · 重要性 7 · 影响：一带一路标签的宏观事件，与公司业务无直接关系</li>
+</ul></li>
+<li><strong>W5（2026-09-14 起）</strong>：9-15 · 特斯拉 Model Y L 美国市场启动交付（具体日期未定） · 公司事件（概念 885467） · 重要性 6 · 影响：库内已注明「在美国生产，对 A 股特斯拉概念直接拉动有限」</li>
+<li><strong>W6（2026-09-21 起）</strong>：本周无已知事件 · — · 重要性低 · 影响：观察窗口——月度家用空调排产数据通常在此前后由产业在线发布，是主业景气的高频跟踪点（联网补，非库内事件）</li>
+<li><strong>W7（2026-09-28 起）</strong>：国庆长假（10-01 起，A 股休市，<strong>具体安排以国务院公告为准</strong>） · 假期 · 重要性中 · 影响：持仓过节的外部风险敞口（外围市场休市期间波动无法反应）</li>
+<li><strong>W8（2026-10-05 起）</strong>：节后开市 · — · 重要性低 · 影响：假期期间外围市场（尤其美股科技股与费半指数，8/19 的下跌诱因）累积变动的一次性反应</li>
+<li><strong>W9（2026-10-12 起）</strong>：中汽协 9 月及前三季度汽车产销数据（通常 10 月中旬发布） · 行业数据 · 重要性中 · 影响：<strong>验证 F 节新能源车增速（2026H1 仅 +6.7%/+7.3%）是否进一步下行</strong>，直接关系三花汽车零部件板块（联网补，非库内事件）</li>
+<li><strong>W10（2026-10-19 起）</strong>：特斯拉 2026Q3 财报（通常 10 月下旬） · 公司事件（客户） · 重要性中 · 影响：Optimus 量产节奏的<strong>官方口径更新</strong>——这是比任何自媒体传闻都可靠的机器人进度信源（联网补，非库内事件）</li>
+<li><strong>W11（2026-10-26 起）</strong>：<strong>★ 三花智控 2026 三季报（预计）</strong> · 财报 · 重要性高 · 影响：按上一年度节奏推算（库内 2025 三季报公告日 20251031），预计落在 10 月下旬至月底；验证中报给出的趋势是否延续（推算，具体日期以公司预约披露公告为准）</li>
+<li><strong>W12（2026-11-02 起）</strong>：本周无已知事件</li>
+<li><strong>W13（2026-11-09 起）</strong>：本周无已知事件 · — · 重要性低 · 影响：本报告的有效期终点，届时应以中报 + 三季报数据重跑</li>
+</ul>
+<h2>J. 逻辑链</h2>
+<p><strong>事实 1</strong>：2026Q1 营收同比 +1.36%、净利同比 +2.68%，相较 2025 全年的 +10.97%/+31.10% 是断崖式减速；单季拆解显示利润率恶化自 2025Q4 就已开始（净利率约 11.76% vs 前三季累计 13.69%）。<strong>（库库内财务｜置信度：高；单季为推算值）</strong></p>
+<p><strong>事实 2</strong>：减速有清晰的行业侧解释——2026 年一季度家用空调销量同比 -2.8%（<a href="https://bao.hvacr.cn/202603_2117386.html" target="_blank" rel="noopener">产业在线/制冷快报 2026</a>）；2026 上半年新能源汽车产销仅 +6.7%/+7.3%、行业利润总额同比 -20%、销售利润率仅 3.8%（中汽协/虎嗅）；且公司 2025 年报汽车零部件<strong>销量已首次同比 -8.30%、产能利用率仅七成</strong>（第一财经 2026-03-24）。<strong>（联网多源｜置信度：中——行业数据可靠，与公司业绩的因果为推断）</strong></p>
+<p><strong>事实 3</strong>：市场给出 PE(TTM) 37.88 倍 / PB 4.74 倍，是同库三大白电的 2.6–4.8 倍 PE、1.7–3.1 倍 PB（推算）；行业内 PE 排 40/92，略高于中位 36.48。<strong>（库库内估值 + 库内同业对比｜置信度：高）</strong></p>
+<p><strong>事实 4</strong>：撑起这个溢价的两块「新叙事」——机器人与液冷——在<strong>库内主营描述中完全不存在</strong>，在 2025 年报中的表述仍是「研发、试制、迭代、送样」，未跨越到量产；且市场上流传的「50 亿元 Optimus 订单」已被公司于 2025-10-18 公告否认。<strong>（库库内公司档案 + 库内概念标签 + 第一财经年报透视 + 公司澄清公告｜置信度：高）</strong></p>
+<p><strong>↓ 推论</strong></p>
+<div class="callout">当前股价中，「相当于白电估值」的那部分由 310 亿营收 / 40 亿净利的真实业务支撑；而<strong>超出白电估值的那部分（PE 从约 11–15 倍到 37.88 倍的差额），定价的是机器人与液冷的期权价值，而非已兑现的盈利</strong>。这构成一个非对称结构：<strong>主业景气下行是已确认的事实，新叙事兑现是未确认的可能。</strong>（置信度：中）</div>
+<p><strong>↓ 如果推论成立，应该能观察到三个现象</strong></p>
+<ol>
+<li>股价对<strong>机器人产业事件</strong>的弹性，显著大于对<strong>主业经营数据</strong>的弹性</li>
+<li>一旦机器人板块预期降温，本票跌幅应<strong>大于</strong>白电同行、也大于大盘指数</li>
+<li>中报（8/27）里机器人与液冷<strong>仍不会出现营收拆分</strong></li>
+</ol>
+<p><strong>↓ 已有的验证（部分）</strong></p>
+<ul>
+<li>现象 ②<strong>已被 8-19 单日验证</strong>：当日创业板指 -6.26%、深成指 -5.01%、沪指 -2.4%（联网多源），而本票 -7.10%（库库内行情），跌幅大于所有三个指数，且盘中从 -1.59% 一路杀到 -8.16%、收在低位。<strong>（置信度：中——单日样本，不足以证明系统性规律）</strong></li>
+<li>现象 ①<strong>已被 60 天新闻结构间接支持</strong>：库内新闻 20 条中，公司自身新闻全部是回购/担保/例行公告（多为「噪音其他」），而情绪面新闻全部是机器人板块行情——说明近两月股价波动的信息源在板块而非公司。<strong>（置信度：中）</strong></li>
+<li>现象 ③<strong>尚未验证，8-27 揭晓</strong>。这是本报告最重要的一次证伪机会。</li>
+</ul>
+<p><strong>↓ 最弱的一环（整条链的命门）</strong></p>
+<p><strong>「主业减速已被市场充分定价」这个隐含前提没有任何硬证据。</strong> 反例就在库里：2026-07-27 董秘问答明确提到「一季度汇兑损失拖累利润率、二季度汇率回暖」——<strong>Q1 的净利率走弱可能有相当一部分是非经营性的</strong>。若 8/27 中报显示 Q2 单季营收与利润重新加速，则事实 1 的「断崖」定性要降级为「单季扰动」，整条链的谨慎基调需要整体修正。<strong>（置信度：这一条软肋本身的存在性置信度高，其影响幅度置信度低）</strong></p>
+<p><strong>第二弱的一环</strong>：D 节的估值对标用的是白电整机厂，而三花是零部件商——「PE 是同行 2.6–4.8 倍」这句话的对标基准本身可比性有限（见 D 节可比性声明）。库内取不到真正的可比同行（热管理零部件），这是无法在本报告内解决的结构性缺陷。</p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜<strong>触发</strong>：8-27 中报显示 2026H1 营收同比 <strong>≥8%</strong>（对照 Q1 的 +1.36%，意味 Q2 单季显著加速）<strong>且</strong> 中报<strong>首次</strong>给出机器人或液冷业务的营收金额或在手订单口径｜<strong>路径</strong>：新叙事从「期权」变成「可验证现金流」，37.88 倍 PE 获得盈利端支撑；叠加 W3（9 月）Optimus 批量供货窗口与 XAIR 博览会的板块催化，估值溢价被重新接受，向行业 PE 中位（36.48）以上区间修复</li>
+</ul>
+<ul>
+<li><strong>中性（50%）</strong>｜<strong>触发</strong>：8-27 中报 2026H1 营收同比落在 <strong>2%–8%</strong>、净利同比 <strong>0%–15%</strong>，且机器人/液冷<strong>仍只写「研发、试制、送样」、无营收拆分</strong>｜<strong>路径</strong>：基本面既不证实也不证伪，股价继续由机器人板块 beta 主导宽幅震荡；PE 在行业中位 36.48 附近拉锯，2–4 亿元回购在下方提供有限支撑（参考回购已成交价格带 35.05–36.09 元），A/H 溢价在 60% 上下波动</li>
+</ul>
+<ul>
+<li><strong>悲观（25%）</strong>｜<strong>触发</strong>：8-27 中报 2026H1 营收同比 <strong>&lt;2%</strong> 或净利同比转负，<strong>或</strong>综合毛利率跌破 2026Q1 的 <strong>27.80%</strong>；叠加 W10（10 月下旬）特斯拉 Q3 财报再度延后 Optimus 量产节奏｜<strong>路径</strong>：期权价值被重定价，PE 向白电同行区间（美的 14.59 / 海尔 11.01 / 格力 7.93）方向收敛的压力显现；筹码面上 8/7 分布的 50% 分位成本 40.80 元以上区域形成密集套牢带，反弹阻力加大</li>
+</ul>
+<p>（三档概率合计 100%。全部触发条件均可用 8/27 中报与公开数据直接核对。）</p>
+<h2>L. 决策与风控</h2>
+<h3>条件式操作倾向</h3>
+<ol>
+<li><strong>如果</strong> 8-27 中报显示 2026H1 营收同比 ≥8%（对照 2026Q1 的 +1.36%）<strong>且</strong> 中报首次披露机器人或液冷业务的营收金额或在手订单口径，<strong>那么</strong> 可考虑小仓位试仓。</li>
+</ol>
+<p>*（条件来自 I 节 W2 事件 + C 节 Q1 基数 + G 节第二档定级）*</p>
+<ol>
+<li><strong>如果</strong> 8-27 中报 2026H1 营收同比 &lt;2%，<strong>或</strong> 综合毛利率低于 2026Q1 的 27.80%，<strong>那么</strong> 观望，不参与。</li>
+</ol>
+<p>*（条件来自 C 节四期毛利率序列的最低值）*</p>
+<ol>
+<li><strong>如果</strong> 中报机器人/液冷仍无营收拆分（延续 2025 年报的「研发、试制、送样」表述），<strong>且</strong> 9 月 Optimus 批量供货窗口（I 节 W3，2026-09-01）过后公司无对应公告承接，<strong>那么</strong> 回避；已持有者考虑减仓。</li>
+</ol>
+<p>*（条件来自 G 节第二档 + I 节 W3 库内重要性 8 事件）*</p>
+<ol>
+<li><strong>如果</strong> A/H 溢价从当前的 60.13% 继续走阔至 70% 以上而库内财务数据无新增改善证据，<strong>那么</strong> 对 A 股一侧转谨慎。</li>
+</ol>
+<p>*（条件来自 B 节库内 A/H 对照；同一家公司两地定价的背离扩大是估值参照系的直接信号）*</p>
+<ol>
+<li><strong>如果</strong> 中报披露汽车零部件销量同比由负转正（对照 2025 年报的 -8.30%）<strong>且</strong> 综合毛利率回到 2025 年报的 28.78% 以上，<strong>那么</strong> 本报告的谨慎基调应被推翻，需重新评估。</li>
+</ol>
+<p>*（这是第 3 条的反向条件，写在这里是为了让判断可证伪）*</p>
+<h3>风控要点（推翻条件，不是止损价）</h3>
+<p>本判断应当被<strong>推翻</strong>的情形，任一成立即可：</p>
+<ul>
+<li>公司<strong>通过正式公告</strong>（非媒体传闻、非自媒体转述）披露机器人或液冷业务的实质性订单，且金额可核验</li>
+<li>中报出现「汽车零部件销量同比转正 + 综合毛利率回到 28.78% 以上」的组合</li>
+<li>中报的分部数据显示机器人或液冷已产生可计量营收</li>
+</ul>
+<p>⚠️ <strong>反面警戒</strong>：市场上仍在流传的「6.85 亿美元 / 50 亿元 Optimus 订单」<strong>已于 2025-10-18 被公司公告否认</strong>（H 节）。<strong>任何以该传闻为基础的加仓理由都不成立</strong>——这条是本票信息环境里最需要设防的一处。</p>
+<h3>仓位思路（相对概念，不给金额不给股数）</h3>
+<p>在机器人与液冷两块新叙事出现营收佐证之前，本票的属性是<strong>「稳健主业 + 高波动主题期权」的混合体</strong>，其波动由主题端主导（8-19 单日跌幅大于三个指数即为例证）。相对仓位思路：<strong>轻</strong>。不参与追涨；若参与，应把它当作主题仓而非价值仓来管理。中报（8/27）是一次性的重定价窗口，在结果出来前提高仓位等于对一个 7 天后就会揭晓的二元事件下注。</p>
+<h2>M. 逻辑自查</h2>
+<h3>最依赖的假设是哪一条？错了会怎样？</h3>
+<p><strong>最依赖的假设</strong>：「机器人与液冷业务在 2026 年内不会产生可见营收」。</p>
+<p><strong>如果它错了</strong>（中报或三季报突然披露实质性营收/订单）：整份报告的估值逻辑<strong>完全反转</strong>——37.88 倍 PE 就不再是「为期权付费」，而是「为高增长曲线的起点付费」，J 节的推论、K 节的三档概率分布、L 节的第 3 条操作倾向全部失效。这是本报告最大的单点风险，也正因如此，L 节第 5 条把它的反向条件明确写了出来。</p>
+<h3>有没有为了让逻辑好看而忽略的反面证据？</h3>
+<p>有，而且不止一条。以下是<strong>削弱本报告谨慎基调</strong>的证据，逐条列出：</p>
+<ol>
+<li><strong>控股股东提议回购 2–4 亿元且已实际执行 9993.23 万元 / 279.82 万股</strong>（库内新闻 + 联网公告）——管理层用真金白银表达了「价格偏低」的判断，且回购价格带 35.05–36.09 元与当前收盘价 36.79 元几乎重合。<strong>这是与本报告方向相反的强信号。</strong>（但被董事长 3 月减持 4.2 亿元这一等量反向动作抵消，见 H 节）</li>
+<li><strong>2025 年报净利增速（+31.10%）远快于营收增速（+10.97%）</strong>，制冷空调业务毛利率同比提升 1.42 个百分点——<strong>盈利质量在改善</strong>，不是单纯的「增长换利润」。</li>
+<li><strong>资产负债率四期连降至 33.28%</strong>，是四期最低，财务结构上没有任何风险点。</li>
+<li><strong>高盛在下调 A 股评级的同时上调了 2025-2030 年 EPS 预测 4%-8%，且对 H 股维持最高档评级</strong>——即便是最看空的那份研报，看空的也是<strong>估值而非基本面</strong>。这一点本报告在 J 节没有充分展开。</li>
+<li><strong>2026Q1 净利率同比其实是微升的</strong>（12.23% vs 推算的 2025Q1 约 11.79%），C 节第 5 条已如实写出，但 A 节的「核心风险 1」表述偏向了「断崖」这一面。</li>
+</ol>
+<h3>卖方观点汇总（全部套模板·库内优先）</h3>
+<p><strong>库内数据</strong>（库内研报：近 90 天 6 篇研报、5 家机构；评级分布为最高档 1 家、增持 1 家、中性 Neutral 1 家、未标评级 3 家）：</p>
+<ul>
+<li>〔卖方预期〕来源：浙商证券研报（库内） · 日期：2026-08-03 · 观点：预测 2026 年 EPS 1.136 元、归母净利 47.80 亿元；2027 年 EPS 1.364 元、净利 57.40 亿元；2028 年 EPS 1.656 元、净利 69.70 亿元 · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：国元证券研报（库内） · 日期：2026-07-15 · 观点：预测 2026 年 EPS 1.131 元、归母净利 47.58 亿元；2027 年 EPS 1.330 元、净利 55.98 亿元；2028 年 EPS 1.555 元、净利 65.44 亿元 · 置信度：低（同上）</li>
+<li>〔卖方预期〕来源：高盛集团（Goldman Sachs）研报（库内） · 日期：2026-07-06 · 观点：评级 Neutral（中性）；预测 2026H1 EPS 0.53 元、2026 全年 EPS 1.08 元、对应 PE 45.5 倍 · 置信度：低（同上）</li>
+</ul>
+<p><strong>联网补充</strong>（库内无逻辑正文，只有数字）：</p>
+<ul>
+<li>〔卖方预期〕来源：高盛研报，经<a href="https://wallstreetcn.com/articles/3758544" target="_blank" rel="noopener">华尔街见闻</a>、<a href="https://finance.sina.com.cn/stock/relnews/cn/2025-11-03/doc-infwckpt1342542.shtml" target="_blank" rel="noopener">新浪财经</a>、<a href="https://www.yicai.com/news/102893658.html" target="_blank" rel="noopener">第一财经</a>三个独立来源报道 · 日期：2025-11-03 · 观点：将 A 股评级由最高档下调至中性，理由是「市场对三花人形机器人执行器的收入规模和落地时间预期均过于乐观」——测算当时 A 股股价隐含 Optimus 出货 90 万–200 万台预期（假设三花执行器组装市占率 30%-70%），远超特斯拉 2030 年百万台目标；同时预测新能源车产量增速从 2025 年的 37% 放缓至 2026 年 19%、2027 年 2%，电动车热管理业务增速温和在 12%-15%；<strong>H 股评级维持最高档不变</strong> · 置信度：低（卖方预期非事实）</li>
+<li>〔卖方预期〕来源：同花顺 F10 一致预期，经<a href="https://m.sohu.com/a/1055401357_122121789" target="_blank" rel="noopener">搜狐财经</a>转述 · 日期：2026 年（具体日期不详） · 观点：2026 年归母净利一致预期约 48.11 亿元、EPS 均值约 1.14 元；另有研报口径预期 2026 年营收 351.98 亿元（+13.50%）、归母净利 46.63 亿元（+14.78%） · 置信度：低（一致预期非事实，且来源日期不精确·单源转述未交叉验证）</li>
+</ul>
+<div class="callout">⚠️ <strong>一致预期与库内实际的落差要看清楚</strong>：卖方普遍预期 2026 全年营收增长 13.5%–14.1%、净利增长 14.8%–18.2%，而<strong>库内 2026Q1 实际只有营收 +1.36% / 净利 +2.68%</strong>。要兑现全年预期，剩下三个季度需要显著加速。<strong>这个落差本身就是 8-27 中报的最大看点</strong>（置信度：高，两组数字均可核）。</div>
+<h3>信息缺口清单</h3>
+<ol>
+<li><strong>库中无 2026Q2 / 中报数据</strong>（库内财务最新期为 20260331）。<strong>影响</strong>：C 节的盈利趋势判断只能基于 Q1 单期，若 Q2 出现拐点（尤其汇兑反转），本报告的谨慎基调会失效。<strong>补法</strong>：2026-08-27 中报披露后重跑本调研（见 I 节 W2）。</li>
+<li><strong>库中无分业务营收拆分</strong>（库内财务只给合并口径）。<strong>影响</strong>：无法量化机器人 / 液冷在营收中的占比，G 节的分级只能停留在定性。本报告的分部数据全部来自联网的 2025 年报报道，属二手转述。<strong>补法</strong>：中报分部数据披露后，或直接读年报/中报原文。</li>
+<li><strong>库内无可比同行数据</strong>（库内同业对比按「家用电器」标签取到的是三家白电整机厂）。<strong>影响</strong>：D 节的估值对标基准可比性有限，「PE 是同行 2.6–4.8 倍」这个论断的说服力被削弱。<strong>补法</strong>：需要另建热管理零部件同业清单（盾安环境、拓普集团、银轮股份等），当前库内取数不支持。</li>
+<li><strong>库内研报的研报标题为空、6 篇研报中 3 篇评级为「无」、浙商与国元的字段均为 null</strong>。<strong>影响</strong>：J 节拿到了卖方的数字但拿不到卖方的推理逻辑，只能靠联网补高盛那一篇的完整论证。<strong>补法</strong>：读研报原文。</li>
+<li><strong>筹码分布筹码数据截至 2026-08-07</strong>，落后当前约 8 个交易日，其间股价明显下跌。<strong>影响</strong>：H 节的获利盘 46.27% 已明显失真（实际应更低）。<strong>补法</strong>：等下一期筹码数据入库。另注：筹码分布仅覆盖库内关注票，本票有数据。</li>
+<li><strong>股东户数数据截至 2026-03-31</strong>，滞后近 5 个月（季度/月度披露天然滞后）。<strong>影响</strong>：H 节的「筹码趋散」结论时效性很弱，只能标低置信度。</li>
+<li><strong>库内涨停记录近 180 日返回空</strong>。<strong>影响</strong>：无法从涨停维度观察情绪面强度，H 节的情绪判断只能依赖资金流与单日跌幅对照。这本身也是信息（大市值机构票的常态）。</li>
+<li><strong>库内事件日历除 8-27 中报外全部为「概念关联」事件</strong>（均为概念 ID，非公司直接事件）。<strong>影响</strong>：I 节 W3–W5 的密集事件对本票的实际传导强度存疑，做催化判断必须打折。<strong>补法</strong>：关注公司自身的公告与投资者关系记录。</li>
+<li><strong>联网纪律限制</strong>：按 skill 规定「不联网查行情数字」，本报告<strong>未引用</strong>任何联网得到的历史股价数字（历史高点、年内涨跌幅、历史区间等）。<strong>影响</strong>：B 节无法给出当前价相对历史区间的位置或回撤幅度，读者若需要这个维度须自行补充。（H 节引用的回购价格带 35.05–36.09 元与减持均价 43.10 元均为<strong>公司公告披露的成交价格</strong>，属事件事实而非行情快照，已在原文标注。）</li>
+<li><strong>8-19 的 -7.10% 无法拆分 beta 与 alpha</strong>。<strong>影响</strong>：H 节与 J 节的现象②验证只能定性（跌幅大于三个指数），无法给出个股超额跌幅的准确归因。<strong>补法</strong>：需要板块指数与个股的回归分析，当前库内取数不支持。</li>
+<li><strong>取数点覆盖说明</strong>：本次调研调用了库内公司档案、库内财务、库内估值、库内行情、库内概念标签、库内涨停记录、库内新闻、库内同业对比、库内事件日历、库内研报、库内 A/H 对照、库内资金筹码共 12 个数据函数，<strong>全部在正文有引用</strong>（库内涨停记录返回空、在 H 节写明「近 180 日无涨停记录」）。库内基础资料未调用——本次代码 002050 由调用方直接给出，无需名称解析，该函数不产出报告数字。</li>
+</ol>
+<h3>参考来源（联网部分）</h3>
+<ul>
+<li><a href="https://www.yicai.com/news/103102290.html" target="_blank" rel="noopener">第一财经：三花智控年报透视——新能源车热管理业务首现下滑，机器人业务「零进展」（2026-03-24）</a></li>
+<li><a href="https://www.yicai.com/news/102869235.html" target="_blank" rel="noopener">第一财经独家：引爆三花智控股价的大利好，竟是「出口转内销」的谣言（2025-10-18）</a></li>
+<li><a href="https://wallstreetcn.com/articles/3758544" target="_blank" rel="noopener">华尔街见闻：市场对机器人业务预期过高！高盛下调了「三花智控」评级（2025-11-03）</a></li>
+<li><a href="https://finance.sina.com.cn/stock/relnews/cn/2025-11-03/doc-infwckpt1342542.shtml" target="_blank" rel="noopener">新浪财经：高盛下调三花智控评级（2025-11-03）</a></li>
+<li><a href="https://www.yicai.com/news/102893658.html" target="_blank" rel="noopener">第一财经：三花智控还能不能涨？高盛发看空研报，机构观点分歧加剧</a></li>
+<li><a href="https://finance.sina.com.cn/stock/hkstock/hkgg/2026-01-23/doc-inhihhae1051785.shtml" target="_blank" rel="noopener">新浪财经：高盛料人形机器人公司出货量目标可增长数倍，予三花智控最高档评级（2026-01-23）</a></li>
+<li><a href="https://www.nbd.com.cn/articles/2026-06-24/4436249.html" target="_blank" rel="noopener">每日经济新闻：三花智控——数据中心液冷业务推进顺利（2026-06-24）</a></li>
+<li><a href="http://www.chinaiol.com/News/Content/202606/17_67006.html" target="_blank" rel="noopener">产业在线 ChinaIOL：三花智控数据中心液冷业务推进顺利（2026-06）</a></li>
+<li><a href="https://news.qq.com/rain/a/20260514A044W100" target="_blank" rel="noopener">腾讯新闻：三花智控液冷项目组瞄准美国数据中心（2026-05-14）</a></li>
+<li><a href="https://finance.cnr.cn/ycbd/20260727/t20260727_527733038.shtml" target="_blank" rel="noopener">央广网：三花智控披露股份回购方案，拟斥资 2 亿至 4 亿元回购 A 股股份（2026-07-27）</a></li>
+<li><a href="https://www.stcn.com/article/detail/4043522.html" target="_blank" rel="noopener">证券时报：三花智控拟 2 亿元—4 亿元回购股份（2026-07-27）</a></li>
+<li><a href="https://finance.sina.cn/2026-08-03/detail-inimafqi2588401.d.html" target="_blank" rel="noopener">新浪财经：三花智控回购 A 股近亿元，已耗资 9993 万元回购 279.82 万股（2026-08-03）</a></li>
+<li><a href="https://finance.sina.com.cn/roll/2026-05-30/doc-inhzshan7175900.shtml" target="_blank" rel="noopener">新浪财经：三花智控高管「为孩子教育」减持套现（2026-05-30）</a></li>
+<li><a href="https://finance.sina.com.cn/wm/2026-05-29/doc-inhzqimi9449684.shtml" target="_blank" rel="noopener">新浪财经：三花智控高管为何集体减持，董事长已套现 4.2 亿（2026-05-29）</a></li>
+<li><a href="https://36kr.com/p/3839930617035396" target="_blank" rel="noopener">36氪：马斯克机器人再好，也挡不住三花智控高管「教育式减持」</a></li>
+<li><a href="https://finance.sina.com.cn/tob/2026-08-19/doc-ininvshr7071131.shtml" target="_blank" rel="noopener">新浪财经：收评——创指低开低走大跌 6.26%，全市场超 5000 只个股下挫（2026-08-19）</a></li>
+<li><a href="https://www.chinanews.com.cn/cj/2026/08-19/10680354.shtml" target="_blank" rel="noopener">中新网：A 股收评——超 5000 只个股飘绿，三大指数集体收跌（2026-08-19）</a></li>
+<li><a href="https://www.nbd.com.cn/articles/2026-08-19/4546381.html" target="_blank" rel="noopener">每日经济新闻：超 5000 家下跌，逾百股跌停！A 股发生了什么？（2026-08-19）</a></li>
+<li><a href="https://finance.sina.com.cn/stock/observe/2026-08-19/doc-ininwawm6984883.shtml" target="_blank" rel="noopener">新浪财经：美债收益率创 19 年新高引发「全球估值风暴」（2026-08-19）</a></li>
+<li><a href="https://k.sina.com.cn/article_7879923055_1d5ae156f01901h8cg.html" target="_blank" rel="noopener">新浪/中汽协：2026 年上半年新能源汽车产销量均超 740 万辆</a></li>
+<li><a href="https://www.huxiu.com/article/4883251.html" target="_blank" rel="noopener">虎嗅：2026 年中国新能源汽车产业陷入价格战泥潭，利润下滑 20%</a></li>
+<li><a href="https://bao.hvacr.cn/202603_2117386.html" target="_blank" rel="noopener">制冷快报：2026 空调行业开年遇冷！产销双降</a></li>
+<li><a href="https://app.myzaker.com/news/article.php?pk=6a6740e68e9f09113f449a1f" target="_blank" rel="noopener">ZAKER：特斯拉机器人量产在即，拓普、均胜、三花等供应商有望受益</a></li>
+<li><a href="https://www.sohu.com/a/1055401357_122121789" target="_blank" rel="noopener">搜狐财经：三花智控拟定于 2026 年 8 月 27 日披露 2026 年半年报</a></li>
+<li><a href="https://www.stcn.com/article/detail/3415151.html" target="_blank" rel="noopener">证券时报：「50 亿订单」传闻点燃股价，三花智控的机器人前景究竟如何？</a></li>
+<li><a href="https://36kr.com/p/3510288514980998" target="_blank" rel="noopener">36氪：马斯克向三花抛出 6.85 亿美元订单（⚠️ 该说法已被公司 2025-10-18 公告否认，列此仅为标注传闻仍在传播）</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-08-20），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>Q1营收仅增1.36%主业断崖减速</li>
+      <li>机器人液冷零营收佐证</li>
+      <li>PE37.88倍是白电同行2.6-4.8倍</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>一致预期</dt><dd>多家券商盈利预测的平均值。是别人的观点，不是事实。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.yicai.com/news/103102290.html" target="_blank" rel="noopener">第一财经 2026-03-24</a> <em>2026-03-24</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://app.myzaker.com/news/article.php?pk=6a6740e68e9f09113f449a1f" target="_blank" rel="noopener">ZAKER/机器人产业报道</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260514A044W100" target="_blank" rel="noopener">腾讯新闻/产业在线 2026-05-14</a> <em>2026-05-14</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://k.sina.com.cn/article_7879923055_1d5ae156f01901h8cg.html" target="_blank" rel="noopener">中汽协数据/新浪 2026 上半年数据看板</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.huxiu.com/article/4883251.html" target="_blank" rel="noopener">虎嗅 2026 价格战分析</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.nbd.com.cn/articles/2026-06-24/4436249.html" target="_blank" rel="noopener">每日经济新闻 2026-06-24</a> <em>2026-06-24</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="http://www.chinaiol.com/News/Content/202606/17_67006.html" target="_blank" rel="noopener">产业在线 ChinaIOL 2026-06</a> <em>2026-06</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.cnr.cn/ycbd/20260727/t20260727_527733038.shtml" target="_blank" rel="noopener">央广网 2026-07-27</a> <em>2026-07-27</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.stcn.com/article/detail/4043522.html" target="_blank" rel="noopener">证券时报 2026-07-27</a> <em>2026-07-27</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.cn/2026-08-03/detail-inimafqi2588401.d.html" target="_blank" rel="noopener">新浪财经 2026-08-03</a> <em>2026-08-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/tob/2026-08-19/doc-ininvshr7071131.shtml" target="_blank" rel="noopener">新浪财经收评 2026-08-19</a> <em>2026-08-19</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.chinanews.com.cn/cj/2026/08-19/10680354.shtml" target="_blank" rel="noopener">中新网 2026-08-19</a> <em>2026-08-19</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.nbd.com.cn/articles/2026-08-19/4546381.html" target="_blank" rel="noopener">每日经济新闻 2026-08-19</a> <em>2026-08-19</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/observe/2026-08-19/doc-ininwawm6984883.shtml" target="_blank" rel="noopener">新浪财经 2026-08-19</a> <em>2026-08-19</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/roll/2026-05-30/doc-inhzshan7175900.shtml" target="_blank" rel="noopener">新浪财经 2026-05-30</a> <em>2026-05-30</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/wm/2026-05-29/doc-inhzqimi9449684.shtml" target="_blank" rel="noopener">新浪财经 2026-05-29</a> <em>2026-05-29</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://36kr.com/p/3839930617035396" target="_blank" rel="noopener">36氪</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.yicai.com/news/102869235.html" target="_blank" rel="noopener">第一财经独家 2025-10-18</a> <em>2025-10-18</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.stcn.com/article/detail/3415151.html" target="_blank" rel="noopener">证券时报</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://36kr.com/p/3510288514980998" target="_blank" rel="noopener">36氪相关文章</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://bao.hvacr.cn/202603_2117386.html" target="_blank" rel="noopener">产业在线/制冷快报 2026</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://wallstreetcn.com/articles/3758544" target="_blank" rel="noopener">华尔街见闻</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/relnews/cn/2025-11-03/doc-infwckpt1342542.shtml" target="_blank" rel="noopener">新浪财经</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.yicai.com/news/102893658.html" target="_blank" rel="noopener">第一财经</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.sohu.com/a/1055401357_122121789" target="_blank" rel="noopener">搜狐财经</a></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://finance.sina.com.cn/stock/hkstock/hkgg/2026-01-23/doc-inhihhae1051785.shtml" target="_blank" rel="noopener">新浪财经：高盛料人形机器人公司出货量目标可增长数倍，予三花智控最高档评级（2026-01-23）</a> <em>2026-01-23</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.sohu.com/a/1055401357_122121789" target="_blank" rel="noopener">搜狐财经：三花智控拟定于 2026 年 8 月 27 日披露 2026 年半年报</a></li>
+      <li><span class="src-tag src-media">媒体</span> 库库内事件日历，事件重要性 8 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [腾讯新闻/产业在线 2026-05-14](https://news.qq.com/rain/a/20260514A044W100 <em>2026-05-14</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库库内事件日历，重要性 7 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库库内事件日历，重要性 8 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [第一财经 2026-03-24 年报透视](https://www.yicai.com/news/103102290.html <em>2026-03-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [每日经济新闻 2026-06-24](https://www.nbd.com.cn/articles/2026-06-24/4436249.html <em>2026-06-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [央广网 2026-07-27](https://finance.cnr.cn/ycbd/20260727/t20260727_527733038.shtml <em>2026-07-27</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [每日经济新闻 2026-08-19](https://www.nbd.com.cn/articles/2026-08-19/4546381.html <em>2026-08-19</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [第一财经独家 2025-10-18](https://www.yicai.com/news/102869235.html <em>2025-10-18</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 20260331，公告 2026-04-30 <em>2026-04-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 20251231，公告 2026-03-24 <em>2026-03-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 联网，第一财经 2026-03-24 <em>2026-03-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> ⚠️ 该说法已被公司 2025-10-18 公告否认，列此仅为标注传闻仍在传播 <em>2025-10-18</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-08-20 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
