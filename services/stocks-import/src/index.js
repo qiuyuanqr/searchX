@@ -76,12 +76,13 @@ export function sqliteJsonLines(dbPath, sql, {
   busyTimeoutMs = DB_BUSY_TIMEOUT_MS,
   retries = DB_RETRIES,
   retryDelayMs = DB_RETRY_DELAY_MS,
+  bin = "sqlite3",   // 可换成别的可执行文件；测试拿它注入一个可控的替身
 } = {}) {
   // busy_timeout 要排在 query_only 前面：先把等锁能力装上，再收紧成只读。
   const script = `PRAGMA busy_timeout=${busyTimeoutMs};\nPRAGMA query_only=1;\n${sql}`;
   for (let attempt = 0; ; attempt++) {
     try {
-      const out = execFileSync("sqlite3", [dbPath, script], { encoding: "utf8", maxBuffer });
+      const out = execFileSync(bin, [dbPath, script], { encoding: "utf8", maxBuffer });
       // PRAGMA 赋值会回显一行数字（busy_timeout 那行），过滤器只取 JSON 行，天然挡掉。
       return out.split("\n").filter((l) => l.trim().startsWith("{")).map((l) => JSON.parse(l));
     } catch (e) {

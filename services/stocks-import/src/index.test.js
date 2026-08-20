@@ -1,11 +1,11 @@
 import { test, expect } from "bun:test";
-import { mkdtempSync, mkdirSync, writeFileSync } from "fs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "fs";
 import { execFileSync } from "child_process";
 import { tmpdir } from "os";
 import { join } from "path";
 import {
   splitTime, buildTldr, applyPriceFixes, insertIndexRow, hasIndexRow, importedIds, buildSources,
-  sqliteJsonLines,
+  sqliteJsonLines, DB_BUSY_TIMEOUT_MS,
 } from "./index.js";
 import { metaOf, exchangeOf } from "./mapping.js";
 import { extractDirection } from "../../../web/build/extract-direction.js";
@@ -127,48 +127,84 @@ test("产出的 notes.md 能被首页真实抽取器读出标题与导语", () =
 // —— 撞上 Stocks 写事务不该直接失败 ——
 // 2026-08-19 18:35:14 的真实故障：Stocks 的 compute-factors（每交易日 18:35 起、写 3.3 万行、
 // 耗时 15 秒）正在写库，我们的 tick 恰好落进那 15 秒，sqlite3 CLI 的 busy_timeout 默认是 0，
-// 于是「in prepare, database is locked (5)」→ 退出码 1 → 报警邮件。Stocks 自己那边早有对策
-// （database.py get_conn 设了 30 秒 timeout），只有 searchX 这条直查通道没设。
-test("查库撞上别人的写事务时要等锁，不能立刻失败", async () => {
+// 于是「in prepare, database is locked (5)」→ 退出码 1 → 报警邮件。
+//
+// **为什么这里不真造锁冲突**：前两版都真造锁，都栽了。第一版用 setTimeout 放锁——而被测函数
+// 是同步阻塞的（execFileSync），阻塞期间定时器根本不跑，本机侥幸绿、CI 上等满超时；第二版改
+// 由 holder 进程自己 sleep 放锁，单跑没问题，全量并发一跑又因机器负载拿不到锁。真并发锁测试
+// 依赖进程调度，做不到确定性，放进 CI 只会变成假故障源（它已经挂掉过 4 次部署）。
+// CI 里该守的是确定性的那部分——参数有没有传对、撞锁之后怎么处理；真实锁行为在诊断时已对真库
+// 验证过（无 busy_timeout 立刻报 locked，有则等 1285ms 后成功），并留了下面 SX_SLOW_TESTS 版。
+function withStubSqlite(fn, { failTimes = 0, stdout = "", errMsg = "Error: in prepare, database is locked (5)" } = {}) {
+  const dir = mkdtempSync(join(tmpdir(), "sx-stub-"));
+  writeFileSync(join(dir, "fail_times"), String(failTimes));
+  writeFileSync(join(dir, "stdout"), stdout);
+  writeFileSync(join(dir, "err_msg"), errMsg);
+  // 替身把每次收到的 SQL 原样存下来，好断言我们究竟传了什么过去
+  writeFileSync(join(dir, "sqlite3"), [
+    "#!/bin/sh",
+    'd=$(dirname "$0")',
+    'n=$(cat "$d/count" 2>/dev/null || echo 0); n=$((n+1)); printf %s "$n" > "$d/count"',
+    'printf %s "$2" > "$d/script.$n"',
+    'if [ "$n" -le "$(cat "$d/fail_times")" ]; then cat "$d/err_msg" >&2; exit 5; fi',
+    'cat "$d/stdout"',
+    "",
+  ].join("\n"), { mode: 0o755 });
+
+  // 用 bin 选项直接注入，不动 PATH——Bun 的 execFileSync 不认运行时改的 PATH，
+  // 改了也还是会去调真的 sqlite3（第一版就这么白跑了一轮）。
+  return fn(dir, join(dir, "sqlite3"));
+}
+
+test("查库一定要带 busy_timeout，且排在 query_only 前面", () => {
+  withStubSqlite((dir, bin) => {
+    const rows = sqliteJsonLines("/nonexistent.db", "SELECT 1;", { bin });
+    const script = readFileSync(join(dir, "script.1"), "utf8");
+    // 漏掉这一句就是 2026-08-19 那封报警：CLI 的 busy_timeout 默认 0，撞上写事务当场就死
+    expect(script.startsWith(`PRAGMA busy_timeout=${DB_BUSY_TIMEOUT_MS};`)).toBe(true);
+    // 顺序反了等于没设：query_only 之后再设也来不及挡住 prepare 阶段的 BUSY
+    expect(script.indexOf("busy_timeout")).toBeLessThan(script.indexOf("query_only"));
+    expect(script).toContain("PRAGMA query_only=1;");   // 只读保护不能被顺带弄丢
+    expect(rows).toEqual([{ id: 1 }]);
+  }, { stdout: '{"id":1}\n' });
+});
+
+test("撞上写事务：等锁之外还要重试一次，重试成功就当无事发生", () => {
+  withStubSqlite((dir, bin) => {
+    const rows = sqliteJsonLines("/nonexistent.db", "SELECT 1;", { bin, retryDelayMs: 10 });
+    expect(rows).toEqual([{ id: 1 }]);
+    expect(readFileSync(join(dir, "count"), "utf8")).toBe("2");   // 确认真重试了，不是第一次就成功
+  }, { failTimes: 1, stdout: '{"id":1}\n' });
+});
+
+test("一直拿不到锁：照常抛出——这层只消误报，不许把真故障吞掉", () => {
+  withStubSqlite((_dir, bin) => {
+    expect(() => sqliteJsonLines("/nonexistent.db", "SELECT 1;", { bin, retryDelayMs: 10 })).toThrow();
+  }, { failTimes: 99 });
+});
+
+test("不是锁的毛病就别重试——真故障要立刻报，不该被拖慢", () => {
+  withStubSqlite((dir, bin) => {
+    expect(() => sqliteJsonLines("/nonexistent.db", "SELECT 1;", { bin, retryDelayMs: 10 })).toThrow();
+    expect(readFileSync(join(dir, "count"), "utf8")).toBe("1");   // 只试了一次
+  }, { failTimes: 99, errMsg: "Error: no such table: research_report" });
+});
+
+// 真造锁冲突的版本：确定性靠不住（见上），只在显式开启时跑，用来手工核对
+// busy_timeout 在真 SQLite 上确实管用。跑法：SX_SLOW_TESTS=1 bun test services/stocks-import
+test.if(process.env.SX_SLOW_TESTS === "1")("[慢] 真造锁冲突：等到锁释放后拿到数据", () => {
   const dir = mkdtempSync(join(tmpdir(), "sx-lock-"));
   const db = join(dir, "t.db");
   execFileSync("sqlite3", [db,
     "PRAGMA journal_mode=WAL; CREATE TABLE t(id INTEGER, v TEXT); INSERT INTO t VALUES(1,'a');"]);
-
-  // 起一个把库整个锁死的写进程，模拟 Stocks 侧的写事务窗口
-  const holder = Bun.spawn(["sqlite3", db], { stdin: "pipe", stdout: "ignore", stderr: "ignore" });
-  holder.stdin.write("PRAGMA locking_mode=EXCLUSIVE;\nBEGIN IMMEDIATE;\nINSERT INTO t VALUES(2,'b');\n");
-  holder.stdin.flush();
-  await Bun.sleep(400);
-
-  // 1.2 秒后放锁——等得起的查询应当拿到数据，等不起的当场就炸
-  const releaseAt = setTimeout(() => {
-    holder.stdin.write("COMMIT;\n.quit\n");
-    holder.stdin.flush();
-  }, 1200);
-
-  const t0 = performance.now();
-  const rows = sqliteJsonLines(db, "SELECT json_object('id', id, 'v', v) FROM t WHERE id=1;");
-  const waited = performance.now() - t0;
-  clearTimeout(releaseAt);
-  holder.kill();
-
-  expect(rows).toEqual([{ id: 1, v: "a" }]);
-  // 确认真撞上了锁并等到了释放，而不是压根没撞上、测试白跑
-  expect(waited).toBeGreaterThan(700);
-});
-
-test("等满 busy_timeout 仍拿不到锁时照常失败——不能把真故障吞掉", async () => {
-  const dir = mkdtempSync(join(tmpdir(), "sx-lock2-"));
-  const db = join(dir, "t.db");
-  execFileSync("sqlite3", [db, "PRAGMA journal_mode=WAL; CREATE TABLE t(id INTEGER);"]);
-
-  const holder = Bun.spawn(["sqlite3", db], { stdin: "pipe", stdout: "ignore", stderr: "ignore" });
-  holder.stdin.write("PRAGMA locking_mode=EXCLUSIVE;\nBEGIN IMMEDIATE;\nINSERT INTO t VALUES(1);\n");
-  holder.stdin.flush();
-  await Bun.sleep(400);
-
-  expect(() => sqliteJsonLines(db, "SELECT json_object('id', id) FROM t;",
-    { busyTimeoutMs: 200, retries: 1, retryDelayMs: 100 })).toThrow();
-  holder.kill();
-});
+  // locking_mode=EXCLUSIVE 才挡得住读者：WAL 下普通写事务不阻塞读，复现不出线上那条错。
+  // 放锁由 holder 自己的 sleep 驱动——本进程在 execFileSync 里是阻塞的，指望不上定时器。
+  const hold = "PRAGMA locking_mode=EXCLUSIVE;\nBEGIN IMMEDIATE;\nINSERT INTO t(id) VALUES(99);\n";
+  const holder = Bun.spawn(["sh", "-c",
+    `{ printf '%s' "$1"; sleep 2; printf 'COMMIT;\n'; } | sqlite3 "$0"`, db, hold],
+    { stdout: "ignore", stderr: "ignore" });
+  try {
+    const rows = sqliteJsonLines(db, "SELECT json_object('id', id, 'v', v) FROM t WHERE id=1;");
+    expect(rows).toEqual([{ id: 1, v: "a" }]);
+  } finally { holder.kill(); }
+}, 60_000);
