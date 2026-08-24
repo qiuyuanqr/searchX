@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>指南针（300803.SZ） · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>指南针（300803.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-08-24（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 软件开发</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 参股券商 · 互联网金融 · AI应用</span>
+      <span><b>来源</b> 5 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    指南针（300803）主要做的是以证券工具型软件终端为载体、互联网为工具，向投资者提供金融数据分析和证券投资咨询服务。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。当前判断的方向是震荡。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中。支撑在于营收高增但利润待中报验证；麦高证券增资推进证券变现；9月AI事件密集情绪催化。主要风险是PE TTM 249高于行业中位数；2026Q1净利润同比-19.8%；9月30日网络营销新规落地。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>营收高增但利润待中报验证</li>
+      <li>麦高证券增资推进证券变现</li>
+      <li>9月AI事件密集情绪催化</li>
+    </ul>
+  </div>
+
+  <main>
+    <h2>A. 一屏结论（BLUF）</h2>
+<ul>
+<li><strong>方向</strong>：震荡（置信度：中）。</li>
+<li><strong>核心逻辑</strong>：指南针是“金融信息服务 + 控股证券子公司（麦高证券）”双轮驱动的高成长软件股，营收连续高增（2025全年 +40.39%，2026Q1 +30.96%），但利润端与营收端明显背离（2026Q1 净利润同比 -19.80%）。当前估值极高（PE TTM 249.07，行业中位数 93.80），股价 80.26 元、当日 -1.98%，近 180 天（库内涨停史窗口）无涨停记录。</li>
+<li><strong>最该盯的信号</strong>（置信度：中）：8月27日 2026 中报能否把高营收转化为利润修复；麦高证券增资落地及其后续报表；9月30日《金融产品网络营销管理办法》实施后的合规成本变化。</li>
+<li><strong>最可能出错的地方</strong>（置信度：中）：把“AI应用/参股券商”概念标签当成真实营收；把 20 日资金净流入当成基本面证据；在 Q1 利润仍下滑、PE 249 倍的背景下，仅凭 9 月 AI 事件情绪催化追价。</li>
+</ul>
+<h2>B. 公司快照</h2>
+<ul>
+<li>证券简称：指南针；代码：300803。</li>
+<li>行业：软件服务；上市板块：创业板；上市日期：2019-11-18；上市状态：L（上市）。</li>
+<li>主营业务：以证券工具型软件终端为载体、互联网为工具，向投资者提供金融数据分析和证券投资咨询服务。</li>
+<li>经营范围要点：含证券投资咨询、互联网信息服务、第一类增值电信业务、出版物零售、广播电视节目制作经营等许可项；含技术服务、广告发布/制作/设计代理、数据处理、软件开发等一般项。</li>
+<li>员工人数：3783 人；注册资本：60979.19 万元（约 6.10 亿元）。</li>
+<li>当前行情（数据时点 15:35，当日收盘值）：现价 80.26 元，涨跌幅 -1.98%，成交额 8.50 亿元，日内最高 +0.70%、最低 -2.78%。</li>
+<li>估值（交易日 2026-08-21）：PE TTM 249.07；PB 17.42；总市值 499.30 亿元；换手率 2.68%；股息率：信息缺口，库中无数据。</li>
+<li>行业估值参照：软件服务行业 280 家公司，PE 中位数 93.80；指南针 PE 在行业内排序第 119 位（库内未注明排序方向，但 PE TTM 显著高于行业中位数，置信度：高）。</li>
+<li>A/H 溢价：非两地上市，库内为 null，不适用。</li>
+</ul>
+<h2>C. 财务健康</h2>
+<ul>
+<li>营收趋势（新→旧）：
+<ul>
+<li>2026Q1：7.10 亿元，同比 +30.96%。</li>
+<li>2025 全年：21.46 亿元，同比 +40.39%。</li>
+<li>2025 前三季：14.02 亿元，同比 +80.54%。</li>
+<li>2025 上半年：9.35 亿元，同比 +71.55%。</li>
+<li>判断：营收仍处高增长通道，但同比增速从 2025 上半年的 71.55%、前三季的 80.54%，回落至 2025 全年的 40.39%、2026Q1 的 30.96%，呈边际放缓（置信度：高）。</li>
+</ul></li>
+<li>利润趋势（新→旧）：
+<ul>
+<li>2026Q1：1.11 亿元，同比 -19.80%。</li>
+<li>2025 全年：2.28 亿元，同比 +118.74%。</li>
+<li>2025 前三季：1.16 亿元，同比 +205.48%。</li>
+<li>2025 上半年：1.43 亿元，同比 +391.17%。</li>
+<li>判断：2025 年利润高增长后，2026Q1 利润同比转负；且 2025 前三季净利（1.16 亿元）低于 2025 上半年（1.43 亿元，1.16 − 1.43 = −0.27 亿元，推算 Q3 单季），说明 2025 年 Q3 单季曾出现亏损，利润节奏波动较大（置信度：高）。</li>
+</ul></li>
+<li>盈利能力：
+<ul>
+<li>毛利率：88.38%（2025H1）→ 87.08%（2025 前三季）→ 87.44%（2025 全年）→ 89.98%（2026Q1），维持高位。</li>
+<li>净利率：20.40%（2025H1）→ 11.87%（2025 前三季）→ 14.65%（2025 全年）→ 21.31%（2026Q1）。</li>
+<li>ROE：5.84%（2025H1）→ 4.69%（2025 前三季）→ 9.05%（2025 全年）→ 3.93%（2026Q1），年度 ROE 为个位数。</li>
+<li>EPS：0.24（2025H1）→ 0.19（2025 前三季）→ 0.38（2025 全年）→ 0.18（2026Q1）。</li>
+<li>判断：毛利率高说明软件/信息服务业务本身盈利质量不差，但净利率和 ROE 波动大，盈利稳定性不足（置信度：中）。</li>
+</ul></li>
+<li>负债与结构：
+<ul>
+<li>资产负债率：80.23%（2025H1）→ 81.09%（2025 前三季）→ 81.91%（2025 全年）→ 84.78%（2026Q1），逐期上升。</li>
+<li>判断：高负债率很可能与并表全资子公司麦高证券的证券业务负债结构有关（证券经纪业务天然高杠杆），但库内无并表拆表数据，无法直接判断真实财务风险（置信度：中）。</li>
+</ul></li>
+<li>信息缺口：库内无经营现金流、投资现金流、筹资现金流、商誉、研发费用、分业务（软件 vs 证券）收入利润拆项、货币资金与有息负债明细。</li>
+</ul>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>按库内“软件服务”行业归口对比（注意：各公司业务差异较大，估值高低需结合业务结构看）：</p>
+<ul>
+<li>指南针（300803）：总市值 499.30 亿元；PE TTM 249.07；PB 17.42；最新一期 2026Q1 营收 7.10 亿元、净利 1.11 亿元、ROE 3.93%。</li>
+<li>同花顺（300033）：总市值 1671.84 亿元；PE TTM 50.05；PB 23.92；最新一期 2026Q1 营收 10.53 亿元、净利 2.56 亿元、ROE 3.11%。</li>
+<li>金山办公（688111）：总市值 1115.95 亿元；PE TTM 30.94；PB 7.40；最新一期 2026 年中报营收 33.13 亿元、净利 25.18 亿元、ROE 18.03%。</li>
+<li>润泽科技（300442）：总市值 1056.50 亿元；PE TTM 20.31；PB 7.40；最新一期 2026Q1 营收 18.40 亿元、净利 5.82 亿元、ROE 4.17%。</li>
+</ul>
+<ul>
+<li>指南针是四家中市值最小者，PE TTM 却最高（249.07），显著高于业务最接近的同花顺（50.05），也远高于金山办公、润泽科技（置信度：高）。</li>
+<li>指南针 PB（17.42）低于同花顺（23.92），但高于金山办公（7.40）与润泽科技（7.40），说明市净率估值同样不低（置信度：高）。</li>
+<li>指南针的高 PE 主要来自市场对其营收高增长、麦高证券“从软件导流到证券交易变现”的预期；但 2026Q1 净利同比 -19.80%，若利润不能兑现，PE 缺乏支撑（置信度：中）。</li>
+<li>同花顺体量更大、盈利更稳、PE 更低；金山办公 ROE 18.03% 为四家最高，业务属性为办公软件订阅，与指南针差异大；润泽科技属 IDC/算力基础设施，业务形态差异大，估值低有其行业属性原因（置信度：中）。</li>
+</ul>
+<h2>E. 护城河与商业模式</h2>
+<ul>
+<li>商业模式：以付费证券工具型软件/数据终端获客，提供金融数据分析、Level-2 行情、技术指标、投顾服务；同时通过全资子公司麦高证券承接证券经纪等业务，形成“软件获客 → 分级收费 → 证券业务导流变现”的双轮结构（商业模式描述来自公司介绍与库内新闻，置信度：中）。</li>
+<li>护城河要素：
+<ul>
+<li>数据授权：公司介绍称同时获得国家统计局、上交所、深交所、大连商品交易所数据授权，属行业准入性资源，构成一定壁垒（置信度：中）。</li>
+<li>产品与品牌：主力雷达、TopView/Level-2 衍生服务等产品在个人投资者中有一定认知度（置信度：中）。</li>
+<li>证券牌照：全资子公司麦高证券带来证券业务牌照，是金融信息服务商向交易变现延伸的关键资源（置信度：中）。</li>
+</ul></li>
+<li>持续性风险：
+<ul>
+<li>客户获取依赖互联网营销，受 9 月 30 日实施的《金融产品网络营销管理办法》约束，合规成本可能上升（来源见 F 节，置信度：中）。</li>
+<li>与同花顺、东方财富等头部平台相比，用户规模、数据生态和资本实力仍处追赶位置（置信度：中）。</li>
+<li>高毛利但 ROE 仅个位数，说明资产/负债结构较重，赚法能否持续取决于证券业务能否有效提升资本回报（置信度：中）。</li>
+</ul></li>
+</ul>
+<h2>F. 政策与监管</h2>
+<ul>
+<li>公司业务受证券投资咨询牌照监管、互联网信息服务监管、广告发布与网络营销监管多重约束（依据经营范围，置信度：高）。</li>
+<li>已确认政策时点（联网补充，多源可核）：
+<ul>
+<li>八部门（中国人民银行、工业和信息化部、市场监管总局、金融监管总局、证监会、国家知识产权局、网信办、外汇局）联合发布《金融产品网络营销管理办法》，自 2026-09-30 起施行。来源：财联社 2026-04-23/2026-04-24；中国银行业协会文件转载；多源可核。该办法对金融产品网络营销的内容审核、合作方管理、从业人员行为规范提出更高刚性要求，直接涉及指南针这类以互联网获客为主的金融信息服务商（置信度：高，多源可核）。</li>
+</ul></li>
+<li>监管趋严方向（单源/低置信度处理）：
+<ul>
+<li>据财联社 2026-08-11 报道，证券投顾行业“三道新规将至”，并提及《公开募集证券投资基金销售费用管理规定》已于 2026-01-01 施行、要求基金投顾业务不得双重收费；该报道为单一新闻室多平台转载，关键细节未做第二独立信源交叉验证，置信度：低。</li>
+<li>据《中国经营报》2026-03-06（经搜狐转载）：截至 2026 年 2 月底，证监会年内已对 8 家证券投顾机构采取行政监管措施，其中 4 家被责令暂停新增客户；单源未交叉验证，置信度：低。</li>
+</ul></li>
+<li>判断：行业监管整体趋向规范营销、限制误导性投顾宣传，对指南针获客合规能力提出更高要求，短期可能抬高营销与合规成本（置信度：中）。</li>
+</ul>
+<h2>G. 题材与产业链关联</h2>
+<p>逐个概念标签核验：</p>
+<ul>
+<li>AI应用：仅概念标签，未见营收佐证。库内财务数据无 AI 产品或 AI 服务收入拆项，主营业务描述也未显示 AI 为核心收入来源。事件日历中的 AI 催化（Fable 5.1、GPT-6、Meta Connect）属于板块情绪事件，不等于公司有对应营收（置信度：高）。</li>
+<li>互联网金融：与主营业务匹配度较高，有业务佐证——公司以互联网为工具提供金融数据和投顾服务，但库内未单独披露互联网业务收入占比（置信度：中）。</li>
+<li>参股券商：标签措辞与实际不完全一致。库内新闻显示麦高证券为指南针全资子公司，公司 2026-07-20 已审议通过向麦高证券增资的议案；这属于“控股证券子公司”，而非“参股”。证券业务真实存在，但库内无证券业务收入、利润占比（置信度：高）。</li>
+<li>沪深300样本股：指数成分股标签，无业务含义。</li>
+<li>深股通：市场互联互通标签，无业务含义。</li>
+<li>融资融券：交易机制标签，无业务含义。</li>
+</ul>
+<p>结论：真正与业务相关的是互联网金融（金融信息服务）和证券业务（控股麦高证券）；AI 应用目前是概念标签，不能作为基本面决策依据。</p>
+<h2>H. 消息面与市场情绪</h2>
+<ul>
+<li>近期新闻（库内统计窗口：近 60 天）：
+<ul>
+<li>2026-08-14：全资子公司变更注册资本并完成工商变更登记公告（来源：库内公告，噪音其他，情感 0.0）。</li>
+<li>2026-07-31：金融科技概念异动拉升，恒银科技直线涨停（来源：cls，市场，噪音其他）。该标题为盘中旧快照，指南针当日无涨停记录，不能把板块异动当作个股状态。</li>
+<li>2026-07-29：互联金融板块异动拉升，兆日科技 20cm 涨停（来源：cls，市场，噪音其他）。同样为板块盘中旧快照，非指南针个股表现。</li>
+<li>2026-07-20：第十四届董事会第十九次会议决议公告；关于向全资子公司麦高证券增资的公告（来源：库内公告，公司事件）。</li>
+<li>2026-07-17：麦高证券 2026 年半年度未经审计非合并财务报表及提示性公告（来源：库内公告，公司事件）。库内未提供该报表的具体数字。</li>
+</ul></li>
+<li>涨停史（库内统计窗口：近 180 天）：无涨停记录，情绪面未见涨停催化（置信度：高）。</li>
+<li>资金流（仅情绪面，非基本面证据）：
+<ul>
+<li>近 20 日（2026-07-27 至 2026-08-21）：主力资金净额 +9.45 亿元；特大单净额 -2.43 亿元；净流入天数 10 天、净流出天数 10 天。</li>
+<li>解读：主力口径净流入与特大单口径净流出并存，资金分层存在分歧；20 日方向信号不清晰，不构成操作依据（置信度：中）。</li>
+</ul></li>
+<li>筹码（数据时点 2026-08-07，与当前行情时点 2026-08-21 存在 14 天时点差（由两日期相减得出），只能作情绪面参考，不可与现价直接换算）：
+<ul>
+<li>获利盘比例 66.06%；加权平均成本 84.28；15% 成本位 78.00、50% 成本位 81.90、85% 成本位 91.00。</li>
+<li>两面解读：获利盘比例高，意味着上方套牢盘相对少，但短线获利了结抛压也大；反之若获利盘低，则深套盘密集、反弹阻力更大。本股当前读数偏“高获利盘”一侧，短线波动会被获利盘放大（置信度：中）。</li>
+</ul></li>
+<li>股东户数：2026-03-31 为 131581 户，较 2025-12-31 的 136653 户减少 3.70%，筹码温和集中（置信度：中）。</li>
+</ul>
+<h2>I. 未来 13 周事件日历</h2>
+<p>周期范围：2026-08-21 至 2026-11-20（按每 7 天一周自 2026-08-21 起切分）。</p>
+<ul>
+<li>第 1 周（08-21 至 08-27）：08-27 指南针 2026 中报披露（交易所官方披露计划，重要性 7）。</li>
+<li>第 2 周（08-28 至 09-03）：08-31 Anthropic 新一代模型 Fable 5.1 预计 8 月底前发布，已灰度测试（概念：AI应用，重要性 7）。</li>
+<li>第 3 周（09-04 至 09-10）：09-08 2026 全球工业互联网大会沈阳开幕，主题“AI+制造”（会议，概念：AI应用，重要性 6）。</li>
+<li>第 4 周（09-11 至 09-17）：09-15 OpenAI 下一代大模型 GPT-6（代号 Astra）预计 9 月发布，日期未官宣（概念：AI应用，重要性 8）。</li>
+<li>第 5 周（09-18 至 09-24）：09-23 Meta Connect 2026 开发者大会开幕（9 月 23-24 日，概念：AI应用，重要性 7）。</li>
+<li>第 6 周（09-25 至 10-01）：09-30《金融产品网络营销管理办法》施行（政策时点；来源：八部门公告，财联社 2026-04-23 等，多源可核）。该时点未列入库内事件日历，为联网补充。</li>
+<li>第 7 周（10-02 至 10-08）：本周无已知事件。</li>
+<li>第 8 周（10-09 至 10-15）：本周无已知事件。</li>
+<li>第 9 周（10-16 至 10-22）：本周无已知事件（库内暂无指南针 2026 三季报披露计划）。</li>
+<li>第 10 周（10-23 至 10-29）：本周无已知事件。</li>
+<li>第 11 周（10-30 至 11-05）：本周无已知事件。</li>
+<li>第 12 周（11-06 至 11-12）：本周无已知事件。</li>
+<li>第 13 周（11-13 至 11-20）：本周无已知事件。</li>
+</ul>
+<h2>J. 逻辑链</h2>
+<p>偏涨逻辑（因果链）：</p>
+<ul>
+<li>营收端连续高增（2025 全年 +40.39%、2026Q1 +30.96%），说明金融信息服务与证券业务扩张仍在推进（置信度：中）。</li>
+<li>库内新闻显示公司持续向全资子公司麦高证券增资、并披露其 2026 半年报，证券业务是第二增长曲线，若证券业务放量，软件用户价值可进一步变现（置信度：中）。</li>
+<li>8 月 27 日中报是近期最关键的验证点；若利润端修复，可支撑“高营收 → 利润兑现”的叙事（置信度：中）。</li>
+<li>9 月密集 AI 事件（Fable 5.1、GPT-6、Meta Connect）对 AI 应用板块有情绪带动，指南针被归入 AI 应用概念，可能获得阶段性情绪溢价（注意：仅为概念标签，无营收佐证）（置信度：低）。</li>
+</ul>
+<p>偏跌逻辑（因果链）：</p>
+<ul>
+<li>估值极高：PE TTM 249.07，高于软件服务行业 PE 中位数 93.80，也远高于可比公司同花顺 50.05（置信度：高）。</li>
+<li>利润与营收背离：2026Q1 净利润同比 -19.80%，2025 年 Q3 曾出现单季亏损，盈利稳定性差（置信度：中）。</li>
+<li>资产负债率逐期上升至 84.78%，若证券业务拖累整体负债结构或市场成交转弱，会放大波动（置信度：中）。</li>
+<li>9 月 30 日《金融产品网络营销管理办法》施行，网络获客合规成本可能上升，影响利润率（置信度：中）。</li>
+<li>近 180 天（库内涨停史窗口）无涨停、当前行情 -1.98%，情绪面本身不强（置信度：中）。</li>
+</ul>
+<p>最脆弱的一环：</p>
+<ul>
+<li>“高营收增长能否在中报转化为利润增长”是整个逻辑链最脆弱处。Q1 利润已同比 -19.80%，若 8 月 27 日中报继续显示利润负增长或毛利率明显回落，高 PE 将失去基本面支撑（置信度：中）。</li>
+</ul>
+<p>卖方预期（他人观点，非事实）：</p>
+<ul>
+<li>〔卖方预期〕来源：华西证券 · 日期：2026-07-11 · 观点：2026Q4 EPS 0.66 元、净利 40246.27 万元；2027Q4 EPS 0.73 元、净利 44514.81 万元；评级：买入（库内原始评级，为华西证券外部观点，非本报告建议）· 置信度：低。</li>
+<li>〔卖方预期〕来源：华西证券 · 日期：2026-06-20 · 观点：2026Q4 EPS 0.60 元、净利 36587.52 万元；2027Q4 EPS 0.82 元、净利 50002.94 万元；评级：买入（库内原始评级，为华西证券外部观点，非本报告建议）· 置信度：低。</li>
+<li>说明：上述为卖方预测，是外部观点、不是事实，不构成本报告结论；预测 EPS 与库内最新财报 EPS（2026Q1 0.18 元）存在明显跨度，兑现难度需以财报逐季核验。</li>
+</ul>
+<h2>K. 三情景推演</h2>
+<ul>
+<li>乐观情景：
+<ul>
+<li>触发条件：8 月 27 日中报显示营收同比 ≥ 25%，且 Q2 单季净利润同比转正、毛利率稳定在 87% 以上；麦高证券半年度报表显示证券业务收入或经纪业务数据改善。</li>
+<li>演化路径：盈利拐点预期成立，市场可能重新评估高营收增长的可兑现性，叠加 9 月 AI 板块事件催化，股价偏向震荡上行；但 PE 249 倍的消化仍需后续 Q3 财报接力验证（置信度：低）。</li>
+</ul></li>
+<li>中性情景：
+<ul>
+<li>触发条件：中报营收继续高增，但净利润仍小幅负增长或持平；麦高证券报表无超预期；9 月 30 日新规实施前资金观望。</li>
+<li>演化路径：股价围绕当前估值高位宽幅震荡，概念催化与利润压力相互抵消，方向不明，需等待 Q3 财报（置信度：中）。</li>
+</ul></li>
+<li>悲观情景：
+<ul>
+<li>触发条件：中报利润大幅下滑或 Q2 单季亏损；《金融产品网络营销管理办法》实施后获客/合规成本明显上升；AI 概念降温。</li>
+<li>演化路径：高 PE 被质疑，杀估值压力主导；高获利盘筹码（66.06%，8 月 7 日时点）可能放大回撤，股价向筹码成本下沿方向寻找支撑（置信度：低）。</li>
+</ul></li>
+</ul>
+<h2>L. 决策与风控</h2>
+<p>以下均为条件式操作倾向，触发条件可核验；不构成目标价或评级。</p>
+<ul>
+<li>如果 8 月 27 日 2026 中报显示 Q2 单季净利润同比转正、且营收同比 ≥ 25%，则可将该信号视为盈利拐点初步验证，倾向在事件落地后评估试仓。</li>
+<li>如果中报显示净利润继续同比负增长、或毛利率跌破 85%，则倾向观望或回避，不因 9 月 AI 事件单独作为参与理由。</li>
+<li>如果 9 月 30 日新规实施后，后续 Q3 财报显示毛利率/净利率未显著恶化、且麦高证券增资落地并有报表佐证，则可在 Q3 财报后评估加仓；若获客成本跳升导致净利率明显下行，则倾向减仓或回避。</li>
+<li>风控要点：
+<ul>
+<li>该股 PE TTM 249.07、PB 17.42，波动天然较大，仓位需与估值风险匹配。</li>
+<li>概念标签“AI应用”无营收佐证，不把情绪催化当作基本面持仓理由。</li>
+<li>资金流与筹码只作情绪面参考，不作为决策的决定性依据。</li>
+</ul></li>
+<li>核验时点：8 月 27 日中报；9 月 30 日《金融产品网络营销管理办法》实施；后续 Q3 财报（具体披露日期以交易所计划为准）；麦高证券后续公告。</li>
+</ul>
+<h2>M. 逻辑自查</h2>
+<ul>
+<li>本报告最可能错在哪：
+<ul>
+<li>对 84.78% 资产负债率的解读假设为“证券业务并表结构导致”，但库内无拆表数据；若实际为经营性负债或高风险负债，结论会显著变化（置信度：中）。</li>
+<li>把 8 月 27 日中报当作最关键验证点，但中报披露日期为交易所计划，存在改期可能；且单一财报不足以确认趋势反转（置信度：中）。</li>
+<li>对 9 月 AI 事件催化判断仅基于概念标签，若市场风格切换或事件不及预期，情绪溢价可能落空（置信度：低）。</li>
+</ul></li>
+<li>依赖尚未验证的假设：
+<ul>
+<li>麦高证券并表是负债率上升主因（未验证）。</li>
+<li>麦高证券增资和证券业务扩张会带来利润贡献（未验证，库内无证券业务利润拆项）。</li>
+<li>AI 事件会对指南针产生可交易的情绪拉动（未验证，仅概念标签）。</li>
+</ul></li>
+<li>信息缺口清单：
+<ul>
+<li>库内无现金流、分业务营收/利润拆项、麦高证券财务数字、研发费用、商誉、股息率、A/H 溢价数据。</li>
+<li>筹码数据时点（2026-08-07）早于当前行情时点（2026-08-21），不可直接换算。</li>
+<li>本报告做了有限联网核验，仅补政策动向与产业链景气方向；财务数字、行情数字均以库内为准。联网来源：《金融产品网络营销管理办法》八部门公告（财联社 2026-04-23/24，多源）；财联社 2026-08-11 投顾监管报道（单一报道多平台转载，置信度低）；《中国经营报》2026-03-06 投顾机构查处报道（单源未交叉验证，置信度低）；国泰海通研报（2026 年 5 月上旬，经格隆汇转载）与金融科技行业双周报第 32 期（新浪财经，2026-08-09）关于金融信息服务行业景气与 AI 投研商业化方向。</li>
+</ul></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-08-24），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>PE TTM 249高于行业中位数</li>
+      <li>2026Q1净利润同比-19.8%</li>
+      <li>9月30日网络营销新规落地</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>经营现金流</dt><dd>经营活动产生的现金流量净额。利润是账面数，这个是真金白银进出。</dd><dt>商誉</dt><dd>收购时溢价支付的部分记在账上的资产。被收购方业绩不达预期时要计提减值、直接冲减利润。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>BLUF</dt><dd>Bottom Line Up Front，结论先行——把最重要的判断放在最前面。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-disc">披露</span> 库内公告，噪音其他，情感 0.0 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> cls，市场，噪音其他 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 库内公告，公司事件 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社 2026-04-23/24，多源 <em>2026-04-23</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经，2026-08-09 <em>2026-08-09</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-08-24 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
