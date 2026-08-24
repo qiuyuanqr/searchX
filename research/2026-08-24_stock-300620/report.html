@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>光库科技（300620.SZ） · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>光库科技（300620.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-08-24（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 通信设备</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 横琴新区 · 光纤概念 · 量子科技 · 3D打印 · 共封装光学(CPO) · 海工装备 · 卫星导航 · 无人驾驶</span>
+      <span><b>来源</b> 5 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    光库科技（300620）主要做的是专业从事光纤器件的设计、研发、生产、销售及服务。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。当前判断的方向是震荡。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中。支撑在于AI光模块/CPO景气+催化密集；2026H1净利同比+186%、毛利率四连升；薄膜铌酸锂调制器稀缺卡位。主要风险是PE_TTM 272.7倍，约为行业中位2.9倍；TFLN产能利用率不及预期、PAM-4进度延后；股东户数单季+37.8%、获利盘82%。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>AI光模块/CPO景气+催化密集</li>
+      <li>2026H1净利同比+186%、毛利率四连升</li>
+      <li>薄膜铌酸锂调制器稀缺卡位</li>
+    </ul>
+  </div>
+
+  <main>
+    <h2>A. 一屏结论（BLUF）</h2>
+<ul>
+<li><strong>方向判断：震荡（高波动），置信度：中。</strong></li>
+<li><strong>核心逻辑</strong>：AI算力资本开支 → 高速光模块/CPO高景气 → 光纤器件与薄膜铌酸锂调制器需求，公司2026H1营收同比+72.91%、净利同比+186.09%，毛利率连续4期抬升；但当前PE_TTM 272.69倍（行业PE中位数93.91倍）、PB 33.00倍，估值已计入较多乐观预期，而核心增量（AI用薄膜铌酸锂调制器）仍处送样/小批量阶段。</li>
+<li><strong>最该盯的信号</strong>：2026Q3累计净利同比能否维持100%以上（约10月下旬披露，Q3预约披露日库内未确认）；96G/130G薄膜铌酸锂海外大客户验证进展（库内董秘问答口径）；英伟达财报（2026-08-26）、博通财报（2026-09-02）；CIOE光博会（2026-09-09~11）；2026-11-30铌酸锂募投项目是否如期达可使用状态（来源：公司2025年度募投专项报告，披露日2026-03-23，库外披露文件）。</li>
+<li><strong>最可能出错的地方</strong>（置信度：中）：把CPO/薄膜铌酸锂概念标签当成已兑现营收；高增速建立在低基数上；估值与筹码结构（股东户数单季+37.8%、获利盘82.1%）不支持无脑追高。</li>
+</ul>
+<h2>B. 公司快照</h2>
+<ul>
+<li>名称/代码：光库科技（300620）</li>
+<li>行业：通信设备｜板块：创业板｜上市日期：2017-03-10｜上市状态：L（正常上市）</li>
+<li>主营：专业从事光纤器件的设计、研发、生产、销售及服务</li>
+<li>员工：4203人｜注册资本：24918.05万元</li>
+<li>业务范围要点：光电子器件制造/销售、集成电路芯片设计及制造、光通信设备、光学仪器、太赫兹检测技术研发、工业自动控制系统等</li>
+<li>当前行情（数据时点2026-08-24 15:35，收盘后口径）：现价298.98元，当日-1.98%；成交额27.3亿元；日内高点+2.29%、低点-5.48%</li>
+<li>估值（2026-08-24）：PE_TTM 272.69｜PB 33.00｜股息率0.0334%｜总市值745.0亿元｜换手率3.69%；同行业137家PE中位数93.91，公司PE在行业中排第67位</li>
+<li>A/H溢价：非两地上市，无溢价数据（库内为null，常态）</li>
+</ul>
+<h2>C. 财务健康</h2>
+<ul>
+<li>多期趋势（新→旧，单位已换算为亿元）：
+<ul>
+<li>2026H1：营收10.32亿（+72.91%）｜净利1.48亿（+186.09%）｜毛利率38.77%｜净利率13.90%｜ROE 6.70%｜资产负债率46.28%</li>
+<li>2026Q1：营收4.26亿（+60.80%）｜净利0.45亿（+312.52%）｜毛利率36.63%｜净利率9.91%｜ROE 2.05%｜资产负债率42.00%</li>
+<li>2025FY：营收14.74亿（+47.56%）｜净利1.77亿（+163.76%）｜毛利率34.66%｜净利率12.24%｜ROE 8.63%｜资产负债率40.37%</li>
+<li>2025前三季：营收9.98亿（+35.11%）｜净利1.15亿（+106.61%）｜毛利率32.41%｜净利率11.13%｜ROE 5.76%｜资产负债率41.03%</li>
+</ul></li>
+<li>拐点判断（置信度：高，纯库内数据推算）：营收同比增速呈加速态势（35.11%→47.56%→60.80%→72.91%）；毛利率连续4期改善（32.41%→34.66%→36.63%→38.77%）。</li>
+<li>由库内相邻报告期相减推算：2026Q2单季营收6.06亿、净利1.03亿，单季净利率约17.0%，较Q1（9.91%）明显抬升，Q2单季净利环比约+130%——二季度是H1利润爆发的主力（置信度：高，推算值）。</li>
+<li>隐忧一：资产负债率从2026Q1的42.00%升至2026H1的46.28%，Q2单季+4.28个百分点（46.2809−42.0005=4.2804，库内相邻报告期推算）；较2025FY的40.37%累计上升约5.91个百分点（46.2809−40.3717=5.9092，库内推算）。需在Q3核验是扩产备货所致还是营运资金占用恶化（置信度：中）。</li>
+<li>隐忧二：2026-08-17披露《2026年半年度计提信用减值准备及资产减值准备的公告》，事件库标注severity为“商誉减值”，具体减值金额库中无数据（信息缺口）。公司有外延并购动作（如控股拜安光电），需在Q3财报核验商誉科目与减值规模（置信度：低-中）。</li>
+</ul>
+<h2>D. 竞争格局与竞对对比</h2>
+<ul>
+<li>库内可比公司（最新报告期不同，不可直接同比）：
+<ul>
+<li>工业富联：总市值11985.83亿｜PE_TTM 25.55｜PB 6.82｜2026H1营收5578.61亿、净利237.4亿｜ROE 13.86%</li>
+<li>中际旭创：总市值10179.26亿｜PE_TTM 49.77｜PB 25.54｜2026Q1营收194.96亿、净利57.35亿｜ROE 17.55%</li>
+<li>新易盛：总市值5744.34亿｜PE_TTM 53.49｜PB 28.19｜2026Q1营收83.38亿、净利27.8亿｜ROE 14.52%</li>
+<li>光库科技：总市值745.0亿｜PE_TTM 272.69｜PB 33.00｜2026H1营收10.32亿、净利1.48亿｜ROE 6.70%</li>
+</ul></li>
+<li>规模与盈利差：光库2026H1营收10.32亿元，约为新易盛2026Q1单季营收83.38亿元的1/8（83.38/10.32≈8.1，库内推算），约为中际旭创2026Q1单季营收194.96亿元的1/19（194.96/10.32≈18.9，库内推算；注意光库为H1累计、竞对为Q1单季，报告期口径不同，按光库Q1单季4.26亿比，差距更大）。ROE（6.70%）显著低于三家光模块龙头（13.86%~17.55%）。光库是“小市值、小利润、高估值”的卡位型标的（置信度：高）。</li>
+<li>估值差：光库PE_TTM 272.69约为行业中位数（93.91）的2.9倍，是旭创/新易盛的5倍上下；PB 33.00亦高于旭创（25.54）与新易盛（28.19）。贵的逻辑在于“薄膜铌酸锂调制器”稀缺卡位与高增速预期，而非当前盈利规模（置信度：中）。</li>
+</ul>
+<p>卖方预期（别人的观点，非事实，套模板）：</p>
+<ul>
+<li>〔卖方预期〕来源：国泰海通 · 日期：2026-08-04 · 观点：2026/2027/2028年归母净利润预期4.33/11.09/18.96亿元（库内万元值换算：43300万/110900万/189600万÷10000），EPS 1.74/4.45/7.61元，评级增持 · 置信度：低</li>
+<li>〔卖方预期〕来源：天风证券 · 日期：2026-06-18 · 观点：2026/2027/2028年归母净利润预期2.55/3.26/3.90亿元（库内万元值换算：25503万/32560万/39044万÷10000），EPS 1.02/1.31/1.57元，评级增持 · 置信度：低</li>
+<li>两机构2028年净利预期相差近5倍（18.96亿 vs 3.90亿），说明薄膜铌酸锂放量节奏高度不确定，上述预测仅可作市场情绪参照，不可作估值锚（置信度：中）。</li>
+</ul>
+<h2>E. 护城河与商业模式</h2>
+<ul>
+<li>赚法：光纤器件+铌酸锂调制器芯片/器件的设计、研发、生产、销售；下游覆盖光通信、数据中心、高功率工业激光、微波光子、激光雷达（控股拜安光电布局1550nm光源模块）等；海外有意大利产线与泰国光库生产基地（募投项目，预定2026-03-31达可使用状态，库外披露文件）。</li>
+<li>护城河来源（置信度：中）：薄膜铌酸锂调制器技术稀缺性——据集邦TrendForce 2026-08-06与上证报2026-08-05（两源交叉），光库科技位列国内薄膜铌酸锂布局企业；头部客户认证周期长、转换成本高；实控人为珠海华发集团，国资背景。</li>
+<li>可持续性存疑点（置信度：中）：当前“真护城河”仍属构建期。据公司《2025年度募集资金存放与实际使用情况的专项报告》（库外披露文件，披露日2026-03-23，巨潮/深交所）：铌酸锂高速调制器芯片研发及产业化项目截至2025年末投资进度70.77%，预定可使用状态延期至2026-11-30；2025年度该募投项目实现效益为负、未达预计效益，累计产能利用率不及预测达产率；面向数据中心/AI集群高速光互连的PAM-4薄膜铌酸锂调制器芯片仍在验证送样阶段且下游客户开拓及产品验证进度有所延后。护城河要转化为利润，还需“送样→批量→满产”三道关。</li>
+</ul>
+<h2>F. 政策与监管</h2>
+<ul>
+<li>政策面偏暖（置信度：中，库内事件日历）：工信部算力标准体系建设指南（2026-08-31前后，日期待定）；《2026-2028年全国算力基础设施建设行动方案》2026-09-01正式执行，央国企新建智算中心国产算力硬件采购占比强制不低于75%——对国产光模块/光器件构成硬性需求牵引。</li>
+<li>产业政策外溢（联网补充）：薄膜铌酸锂获产业资本加注——铌奥光电2026-08完成数亿元B轮融资、投向TFLN光芯片量产（上证报2026-08-05、TrendForce 2026-08-06，两源交叉验证）。</li>
+<li>外部风险：公司募投报告自述“国际贸易环境的不确定性”影响投资节奏与订单；2026-09-03美国对进口无人机及零部件最高100%关税生效，对公司仅涉商业航天概念映射，库内未见直接营收冲击（置信度：低-中）。</li>
+<li>合规风险（置信度：低-中）：库内无立案/处罚/问询记录；近60天有减值公告（标签“商誉减值”），后续审计意见与减值规模需跟踪。</li>
+</ul>
+<h2>G. 题材与产业链关联（概念逐个判：沾边 vs 真有业务）</h2>
+<ul>
+<li>真有业务/有财报或披露佐证：
+<ul>
+<li>光纤概念：主业即光纤器件，核心业务（置信度：高）</li>
+<li>芯片概念：业务范围含集成电路芯片设计/制造，薄膜铌酸锂调制器芯片即光芯片（置信度：高）</li>
+<li>CPO：光器件/调制器是CPO上游关键器件，业务关联真实；但CPO整机营收未见拆分，AI用PAM-4芯片仍在送样（置信度：中）</li>
+<li>数据中心(AIDC)：DCI相干CDM芯片获客户验证订单、PAM-4面向AI集群，真实但中早期（置信度：中）</li>
+<li>无人驾驶：控股拜安光电布局1550nm激光雷达光源模块（库内董秘问答佐证），业务关联真实，营收体量未见披露（置信度：中）</li>
+<li>2025年报预增/2026一季报预增/2026中报预增：业绩标签，已由库内财报证实（+163.76%/+312.52%/+186.09%），无增量信息价值（置信度：高）</li>
+</ul></li>
+<li>间接沾边（无营收拆分）：
+<ul>
+<li>5G：光器件用于光通信网络，间接相关，无5G专项营收拆分</li>
+<li>一带一路：泰国生产基地为真实海外布局，但“一带一路”订单无拆分</li>
+<li>国企改革：实控人珠海华发集团（国资属性真实），但“改革/重组”具体动作库内无公告</li>
+</ul></li>
+<li>仅概念标签，未见营收佐证（置信度：中）：3D打印、卫星导航、商业航天、海工装备、量子科技——库内无对应营收或订单佐证。其中量子科技仅属产业畅想（联网报道称TFLN有量子信息想象空间，非公司收入）。</li>
+<li>地域/交易机制标签（非业务）：横琴新区、粤港澳大湾区、中证500成份股、深股通、融资融券</li>
+<li>股权转让(并购重组)：公司有外延并购动作（拜安光电等），但近60天库内无具体股权转让公告，标签≠当期事件（置信度：中）</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<ul>
+<li>新闻时间线（库内近60天）：
+<ul>
+<li>2026-08-20 CPO概念震荡拉升，仕佳光子、德科立盘中曾涨超10%（发稿时点旧快照，与当前行情无关）</li>
+<li>2026-08-18 受益高速光模块市场持续高景气，公司上半年净利润翻倍（业绩类，情绪标签 0.9）</li>
+<li>2026-08-17 半年报系列公告；同日披露计提信用减值及资产减值公告（severity标注“商誉减值”）</li>
+<li>2026-08-13 “易中天”狂飙，机构称CPO受益AI算力需求验证</li>
+<li>2026-08-12 Lumentum Q4业绩超预期，光模块情绪提振</li>
+<li>2026-08-07 CPO概念持续反弹，光迅科技涨停</li>
+<li>2026-08-05 董秘问答：拜安光电1550nm激光雷达光源模块；意大利产线/珠海三期产能爬坡进度；96G/130G薄膜铌酸锂海外大客户进展；实控人为珠海华发、近期股价调整与中小股东被套</li>
+</ul></li>
+<li>涨停史（近180天）：2026-08-04，+20.0%（创业板涨停），首板，13:03:42封板、0次开板，封单额2.57亿元——情绪面有记录，属CPO板块共振型涨停（置信度：中）。</li>
+<li>资金流（20日，2026-07-28至08-24，盘面现象）：主力净流入4.05亿元；大单口径（elg_net_sum）净流入7.22亿元；正/负天数10/10——多空拉锯，无单边共识。</li>
+<li>筹码（2026-08-07，盘面现象）：获利盘比例82.1%｜加权平均成本256.38元｜15%/50%/85%成本分位214.2/251.6/289.0元。现价298.98元高于85%分位。两面解读（置信度：中）：高获利盘＝上方套牢盘少，但短线获利抛压大。</li>
+<li>股东户数（盘面现象，非基本面证据）：2026-06-30为85905户，较2026-03-31的62321户+37.8%——单季筹码快速分散、散户化，是情绪面偏热的反向信号（置信度：中）。</li>
+</ul>
+<h2>I. 未来13周事件日历（2026-08-24起，约一个季度）</h2>
+<ul>
+<li>W1（08-24~08-30）：08-24嫦娥七号发射（商业航天概念映射）；08-24~26文昌国际航空航天论坛；08-26英伟达FY2027Q2财报（AI算力/CPO风向标，重要性9）</li>
+<li>W2（08-31~09-06）：08-31 CSEAC半导体展；08-31特斯拉Cybercab最快部署+FSD中国获批（待官宣）；08-31工信部算力标准体系指南（日期待定）；08-31~09-01上合峰会；09-01算力行动方案正式执行（国产算力硬件采购≥75%）；09-01~02 IDAS EDA峰会；09-02博通财报；09-03美国无人机关税生效；09-03特斯拉Cybercab发布会</li>
+<li>W3（09-07~09-13）：09-07~08 IFOC讯石光通信大会；09-08~11投洽会；09-09~11 CIOE光博会（重要性8）；09-09~11 IICIE集成电路展；09-11~13中国算力大会（重要性8）；09-12~13金砖峰会</li>
+<li>W4（09-14~09-20）：09月中下旬SpaceX星舰第14次试飞（商业航天，日期未定）</li>
+<li>W5（09-21~09-27）：09-22~24世界新能源汽车大会（无人驾驶）</li>
+<li>W6（09-28~10-04）：本周无已知事件；Q3收官，关注三季报预约披露日（库中无具体日期）</li>
+<li>W7（10-05~10-11）：本周无已知事件</li>
+<li>W8（10-12~10-18）：本周无已知事件；进入三季报窗口期</li>
+<li>W9（10-19~10-25）：本周无已知事件；参考2025年三季报披露日（2025-10-23），2026Q3或于10月下旬披露，属推断、库中无确认（置信度：低）</li>
+<li>W10（10-26~11-01）：本周无已知事件</li>
+<li>W11（11-02~11-08）：本周无已知事件</li>
+<li>W12（11-09~11-15）：本周无已知事件</li>
+<li>W13（11-16~11-22）：本周无已知事件；下一硬节点为11-30——铌酸锂高速调制器芯片募投项目预定可使用状态日期（来源：公司2025年度募投专项报告，2026-03-23披露），届时需核验是否如期达产</li>
+</ul>
+<h2>J. 逻辑链</h2>
+<ul>
+<li>上涨因果链：AI算力资本开支上行 → 800G/1.6T光模块与CPO高景气（800G/1.6T为库内事件日历IFOC议题口径；联网补充：2025年AI集群高速光模块+CPO市场约165亿美元、2026年预计约260亿美元，连续两年增速约60%，证券时报/经济日报等2026-05-06多源交叉）→ 光器件/调制器需求 → 公司营收加速（+35.11%→+72.91%）+毛利率抬升 → 2026H1净利+186.09% → 若薄膜铌酸锂调制器通过海外大客户验证并放量，盈利存在非线性上修空间 → 事件催化密集（英伟达/博通财报、CIOE、算力大会）。</li>
+<li>下跌因果链：PE_TTM 272.69 vs 行业中位93.91，估值透支高增长 → 一旦Q3增速回落，面临戴维斯双杀；薄膜铌酸锂核心产品（PAM-4）仍在送样、进度延后，产能利用率不及预期（2025年报口径）→ “CPO/薄膜铌酸锂”题材有被证伪风险；股东户数+37.8%、获利盘82.1% → 筹码结构偏脆弱；商誉减值公告提示外延资产风险。</li>
+<li>最脆弱一环（置信度：中）：薄膜铌酸锂“送样→小批量→放量”的转化。目前唯一硬证据是2025年报口径的“部分批量出货+头部客户小批量订单+AI用PAM-4进度延后”，尚无96G/130G海外大客户放量的公告级证据。整条上涨链的重量压在一个尚未验证的假设上。</li>
+</ul>
+<h2>K. 三情景推演</h2>
+<ul>
+<li>乐观（触发：2026Q3累计净利同比≥2026H1累计净利同比186.09%（库内财务多期口径，即增速不回落），且96G/130G薄膜铌酸锂获海外大客户公告级进展）：业绩+稀缺卡位共振，估值可维持甚至扩张；路径为TFLN小批量转批量 → 分部营收可见 → 分析师上修 → 筹码换手后二次走强。</li>
+<li>中性（触发：Q3累计净利同比约100%，TFLN仍处送样/小批量、无公告级进展）：高景气延续但无增量催化，股价高位震荡消化估值；路径为跟随CPO板块β波动，等待2026-11-30募投达产核验。</li>
+<li>悲观（触发：Q3累计净利同比回落至60%以下，或商誉减值金额显著扩大，或TFLN客户验证再度延后）：成长逻辑动摇，估值向行业中枢回归风险大；路径为高PE+高获利盘形成踩踏，股价向筹码成本中位（251.6元）甚至更低寻找支撑。</li>
+<li>概率排序：中性 &gt; 悲观 &gt; 乐观（置信度：中）。</li>
+</ul>
+<h2>L. 决策与风控（条件式，无评级）</h2>
+<ul>
+<li>如果 2026Q3累计净利同比≥100% 且 96G/130G薄膜铌酸锂海外大客户进展获公告或董秘正式确认，那么可考虑试仓或持有；</li>
+<li>如果 2026Q3累计净利同比回落至60%以下，或股价收盘跌破筹码成本50%分位251.6元，那么观望或减仓；</li>
+<li>如果商誉减值公告金额显著扩大（如单次减值占2026H1净利1.48亿比例超30%），或股东户数在Q3继续大幅增加，那么回避或减仓。</li>
+<li>验证信号与核验时点：
+<ul>
+<li>2026Q3财报（约10月下旬）｜</li>
+<li>英伟达2026-08-26、博通2026-09-02财报的AI资本开支指引｜</li>
+<li>CIOE 2026-09-09~11是否出现薄膜铌酸锂新订单/新品信息｜</li>
+<li>2026-11-30铌酸锂募投项目是否如期达可使用状态、产能利用率是否改善｜</li>
+<li>2026Q3末股东户数与筹码获利盘变化</li>
+</ul></li>
+</ul>
+<h2>M. 逻辑自查</h2>
+<ul>
+<li>本报告最可能错的地方（置信度：中）：
+<ul>
+<li>把“高增速可持续”线性外推——2025FY与2026H1高增建立在低基数+行业β上，β退坡后α未必接得住；</li>
+<li>把CPO/薄膜铌酸锂概念标签误当已兑现营收——库内无分部/分产品营收拆分，无法量化薄膜铌酸锂收入占比；</li>
+<li>卖方预测仅2家、且对2028年净利分歧近5倍，不能作为估值锚。</li>
+</ul></li>
+<li>依赖尚未验证的假设：TFLN 96G/130G海外大客户放量；PAM-4送样转订单；募投项目2026-11-30如期达产并达到预期效益；Q3毛利率继续抬升；商誉减值规模可控。</li>
+<li>信息缺口清单：
+<ul>
+<li>库中无2026Q3及之后财务数据；无分部/分产品营收拆分；无商誉及减值具体金额；无海外营收占比；无当期产能利用率与良率数据（仅有2025年报口径的库外披露）；无减持/质押/回购等股东行为数据；A/H溢价为null（非两地上市）。</li>
+<li>本报告联网核验仅覆盖“政策动向/产业链景气/市场预期差/未来事件时点”四类：CPO/光模块景气（多源交叉）与TFLN技术路线地位（两源交叉）可信度较好；TFLN全球市场规模（QYResearch 2026-08-10，单源未交叉验证·置信度低）、800G/1.6T出货预测（中信证券研报引Trendforce，2026-08-23，单源未交叉验证·置信度低）仅作参考。</li>
+<li>联网信息与库内数据冲突时已以库内为准；本报告未采用任何联网行情数字与联网公司财务数字，行情以“当前行情”块为准、财务以“财务多期”块为准。</li>
+</ul></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-08-24），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>PE_TTM 272.7倍，约为行业中位2.9倍</li>
+      <li>TFLN产能利用率不及预期、PAM-4进度延后</li>
+      <li>股东户数单季+37.8%、获利盘82%</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>商誉</dt><dd>收购时溢价支付的部分记在账上的资产。被收购方业绩不达预期时要计提减值、直接冲减利润。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>BLUF</dt><dd>Bottom Line Up Front，结论先行——把最重要的判断放在最前面。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-disc">披露</span> 公司2025年度募投专项报告，披露日2026-03-23，库外披露文件 <em>2026-03-23</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公司2025年度募投专项报告，2026-03-23披露 <em>2026-03-23</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 库外披露文件，披露日2026-03-23，巨潮/深交所 <em>2026-03-23</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 800G/1.6T为库内事件日历IFOC议题口径 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-research">研究</span> 中信证券研报引Trendforce，2026-08-23，单源未交叉验证·置信度低 <em>2026-08-23</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-08-24 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
