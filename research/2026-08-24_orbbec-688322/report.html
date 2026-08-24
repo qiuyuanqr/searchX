@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>奥比中光（688322.SH） · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>奥比中光（688322.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-08-24（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>关联板块</b> 机器人 · AI应用</span>
+      <span><b>申万行业</b> 光学光电子</span>
+      <span style="flex-basis:100%"><b>概念标签</b> MLOps概念 · 空间计算 · 移动支付 · 英伟达概念 · 蚂蚁集团概念 · 人脸识别 · 在线教育 · 3D打印</span>
+      <span><b>来源</b> 21 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    奥比中光（688322）主要做的是3D 视觉感知产品的设计、研发、生产和销售（库内）；技术路线覆盖结构光、iToF、dToF、双目、Lidar 等（联网补证：证券之星 2026-08-24）。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。当前判断的方向是偏跌。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向偏跌、置信度中。支撑在于2026H1营收+0.49%净利-30.8%增长熄火；PE349倍为行业中枢5倍估值透支；主力20日净流出且股东户数+83.8%。主要风险是9月人形机器人/华为/特斯拉催化密集；卖方预测2026-2028净利高增形成支撑；H股发行与股权激励带来事件驱动。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>2026H1营收+0.49%净利-30.8%增长熄火</li>
+      <li>PE349倍为行业中枢5倍估值透支</li>
+      <li>主力20日净流出且股东户数+83.8%</li>
+    </ul>
+  </div>
+
+  <main>
+    <p>数据基准：库内财务多期截至 2026-06-30；当前行情数据时点 2026-08-24 15:34（收盘值）；联网补证已标注来源与日期，与库内冲突处以库内为准。</p>
+<h2>A. 一屏结论（BLUF）</h2>
+<ul>
+<li>方向判断：<strong>偏跌（未来一个季度），置信度中</strong>。</li>
+<li>核心逻辑：这是一家 3D 视觉感知平台型公司（自研芯片+算法+模组，库内称&quot;亚洲第一家、全球第四家全技术布局&quot;），2025 年刚扭亏（营收 9.41 亿、+66.7%；净利 1.28 亿、+303.3%），但 <strong>2026 上半年增长熄火：营收 4.38 亿、仅 +0.49%，归母净利 0.42 亿、-30.8%</strong>（库内财务多期）。当前 92.5 元（8/24 收盘，-8.42%）对应 <strong>PE_TTM 349.19 倍，是行业中枢 68.60 倍的 5 倍以上</strong>；PB 9.56 倍、H1 ROE 仅 1.19%——估值主要靠人形机器人/AI 题材支撑，而非当期盈利。</li>
+<li>最该盯的信号：① 10 月下旬三季报单季营收同比能否回到 20% 以上、净利能否回正增长（2025 年三季报为 10/25 披露，可作时点参考）；② 9/1-9/3 特斯拉 Optimus 量产与工信部具身智能博览会期间，公司是否有订单/合作公告；③ 9/14 临时股东会（H 股发行+股权激励议案）及后续 H 股定价。</li>
+<li>最可能出错的地方：把概念标签当营收——人形机器人/英伟达/华为目前多为&quot;适配+生态&quot;层面，收入未单列；低估研发费用刚性（H1 研发费率已升至 25.46%）；低估 H 股发行的比价与摊薄影响。</li>
+<li>一句话：<strong>方向真实（机器人之眼卡位好），但体量尚小、当期利润下滑、估值极端，短期赔率不占优；三季报是验证或证伪的分水岭。</strong></li>
+</ul>
+<h2>B. 公司快照</h2>
+<ul>
+<li>奥比中光科技集团股份有限公司（688322），行业归属：元器件（库内），科创板，2022-07-07 上市，上市状态 L（正常存续）。</li>
+<li>主营：3D 视觉感知产品的设计、研发、生产和销售（库内）；技术路线覆盖结构光、iToF、dToF、双目、Lidar 等（联网补证：证券之星 2026-08-24）。</li>
+<li>规模：员工 888 人，注册资本 40114.424 万元；总部深圳，上海、西安、美国密歇根设分支机构（库内公司简介）。</li>
+<li>客户（库内）：OPPO、蚂蚁集团、中国银联、惠普等，累计服务全球客户逾 1000 家。</li>
+<li>当前行情（库内，2026-08-24 15:34 收盘）：92.5 元，-8.42%；日内高 -3.17%、低 -10.71%；成交额 15.2 亿元；换手率 5.07%。
+<ul>
+<li>盘中旧快照（不得作当前状态）：21 世纪经济报道 8/24 11:07 发稿时曾报 91.50 元、跌 9.41%（联网补证，来源：21 世纪经济报道 2026-08-24）。</li>
+</ul></li>
+<li>估值（库内，2026-08-24）：PE_TTM 349.19 倍；PB 9.56 倍；总市值 381.87 亿元；股息率 null（库中无）；行业 PE 中位数 68.60 倍，奥比中光 PE 排名 212/312。</li>
+<li>A/H 溢价：库中无 A/H 溢价数据（非两地上市为 null 是常态）。注意：公司正在推进 H 股发行（9/14 临时股东会审议），当前尚非两地上市标的。</li>
+</ul>
+<h2>C. 财务健康</h2>
+<p>四期趋势（库内，新→旧）：</p>
+<ul>
+<li>2026H1：营收 4.38 亿（+0.49%）｜净利 0.42 亿（-30.82%）｜毛利率 48.55%｜净利率 9.32%｜ROE 1.19%｜资产负债率 9.50%</li>
+<li>2026Q1：营收 2.03 亿（+6.19%）｜净利 0.31 亿（+27.48%）｜毛利率 48.58%｜净利率 14.94%｜ROE 1.04%｜资产负债率 10.90%</li>
+<li>2025 年报：营收 9.41 亿（+66.66%）｜净利 1.28 亿（+303.33%）｜毛利率 43.76%｜净利率 13.57%｜ROE 4.38%｜资产负债率 12.27%</li>
+<li>2025 三季报：营收 7.14 亿（+103.50%）｜净利 1.08 亿（+279.12%）｜毛利率 42.80%｜净利率 15.08%｜ROE 3.70%｜资产负债率 12.38%</li>
+</ul>
+<p>关键拐点与解读：</p>
+<ul>
+<li><strong>2025 是扭亏高增长大年，2026 上半年断崖</strong>：营收同比从 +66.7%（2025 全年）掉到 +0.49%（2026H1），净利从 +303.3% 掉到 -30.8%。</li>
+<li><strong>Q2 单季是拖累主因（推算值，置信度中）</strong>：由库内 Q1 与 H1 数据相减，Q2 单季营收约 2.35 亿（环比 +15.7%、同比约 -4%）；Q2 单季净利约 0.11 亿（环比约 -66%、同比约 -70%，同比基数为库内同比反推值）。即 Q1 尚能正增长，Q2 单季明显转弱。</li>
+<li><strong>毛利率逆势改善</strong>：42.8%（2025Q3）→ 43.76%（2025）→ 48.55%（2026H1），约 +5-7pct。联网补证（21 世纪经济报道 2026-08-24）：主因&quot;高毛利产品销售规模占比上升&quot;，上年同期毛利率约 41.3%。</li>
+<li><strong>但净利率被费用与减值侵蚀</strong>：H1 净利率 9.32%，显著低于 Q1 的 14.94%。联网补证（证券之星 2026-08-24）：H1 研发费用 1.11 亿（+22.17%）、研发费率 25.46%（+4.52pct）、研发人员 335→442 人；管理费用 5286 万（+17.69%）；资产减值 969 万（上年 434 万）；政府补助 1484 万（-41.73%）。&quot;增收不增利&quot;= 研发加码 + 补助退坡 + 减值扩大三重叠加。</li>
+<li><strong>现金与家底（联网补证，证券之星 2026-08-24）</strong>：经营现金流净额仅 1391 万（-83.51%），存货较期初 +38%（原材料备货）；但货币资金 12.23 亿、短期借款仅 9069 万、资产负债率 9.50%（与库内 9.4988 一致）。2026H1 完成向特定对象发行 1010.31 万股、募资净额 9.75 亿（6/22 完成登记），归母净资产增至 39.94 亿（+34.16%）。</li>
+<li><strong>分红能力</strong>：半年度不分配，期末累计未弥补亏损 14.81 亿（联网补证，证券之星 2026-08-24）——与库内股息率 null 相互印证。</li>
+<li>信息缺口：库中无分产品/分客户营收官方拆分；无历史经营现金流与研发费用序列（联网仅补 H1 单期）；无 Q1 2025、H1 2025 原始单期数（本报告同比反推值已标&quot;推算值&quot;）。</li>
+</ul>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业（元器件行业）：</p>
+<ul>
+<li>奥比中光：市值 381.87 亿｜PE_TTM 349.19｜PB 9.56｜ROE 1.19%（2026H1）</li>
+<li>立讯精密：市值 4156.76 亿｜PE_TTM 24.15｜PB 4.71｜ROE 4.21%（2026Q1）</li>
+<li>东山精密：市值 3545.99 亿｜PE_TTM 98.91｜PB 14.55｜ROE 12.90%（2026H1）</li>
+<li>生益科技：市值 3067.83 亿｜PE_TTM 59.06｜PB 16.58｜ROE 18.66%（2026H1）</li>
+<li>行业 PE 中位数 68.60；奥比中光 PE 排名 212/312（偏贵区间）。</li>
+</ul>
+<p>解读（置信度中）：</p>
+<ul>
+<li>奥比中光体量约为三家同行的 1/10，PE 却是行业中枢的 5 倍以上；PB 9.56 低于东山/生益，但 ROE 远低于二者（1.19% vs 12.90%/18.66%）——同等 PB 下盈利产出能力最弱，估值溢价主要来自&quot;3D 视觉稀缺平台 + 机器人期权&quot;，而非当期回报。</li>
+<li>生益科技 ROE 最高（18.66%）且 PE 59 倍，盈利质量在四家中最扎实；立讯 PE 最低但 ROE 也低，是营收规模型。</li>
+<li>奥比的&quot;贵&quot;要成立，前提是机器人/境外业务把收入体量做大、并把净利率拉回 10% 以上——目前 H1 净利率 9.32% 且收入增速熄火，该前提尚未兑现。</li>
+</ul>
+<p>信息缺口：库中无奥比中光市占率、无直接竞争对手（海外 3D 视觉厂商等）财务数据；联网仅补市场空间数据（见 G 节），无份额对比数据。</p>
+<h2>E. 护城河与商业模式</h2>
+<ul>
+<li>赚钱方式：卖 3D 视觉感知产品（传感器 + 整机及方案 + 服务）。2026H1 分产品（联网补证，21 世纪经济报道 2026-08-24，合并口径）：传感器 2.07 亿、整机及方案 2.03 亿，双支柱；母公司报表口径为传感器 1.80 亿、整机及方案 1.26 亿、服务及其他 0.22 亿（证券之星 2026-08-24，口径不同，以公司正式披露为准）。</li>
+<li>护城河要素（置信度中）：
+<ol>
+<li>全栈技术：库内公司简介称&quot;3D 感知芯片/光学测量系统 + AI 芯片 + 行业应用算法&quot;全栈布局，结构光、TOF、双目全面布局；芯片自 MX400 迭代至 MX6800（联网补证，证券之星 2026-08-24）。</li>
+<li>客户卡位：刷脸支付（蚂蚁集团、中国银联）、手机（OPPO）、海外（惠普）基本盘；机器人客户超 1000 家，与蚂蚁灵波、自变量、北京天工（北京人形机器人创新中心）、乐聚、智平方、星尘智能等完成适配，海外 Richtech Robotics、Collaborative Robotics 采用其相机（联网补证，21 世纪经济报道 2026-08-24）。</li>
+<li>生态卡位：Gemini 330 系列完成英伟达 Jetson Thor 平台适配验证，融入英伟达 Isaac/Jetson、苹果 macOS、微软 Windows 平台，加入英特尔 Industrial Builders 计划（联网补证，21 世纪经济报道 2026-08-24）。</li>
+</ol></li>
+<li>持续性疑虑（置信度中高）：
+<ol>
+<li>老场景平台期：整体营收 H1 仅 +0.49%，机器人高增长被生物识别等其他基本盘平淡表现稀释（21 世纪经济报道 2026-08-24）。</li>
+<li>研发刚性吞噬利润：研发费率 25.46%，属&quot;以利润换壁垒&quot;投入期（媒体引述分析师观点，21 世纪经济报道 2026-08-24）。</li>
+<li>具身智能收入未单独披露、体量尚小——护城河在&quot;卡位&quot;层面成立，在&quot;收入贡献&quot;层面尚未被证明。</li>
+</ol></li>
+</ul>
+<h2>F. 政策与监管</h2>
+<p>库内事件日历的政策项：</p>
+<ul>
+<li>工信部人形机器人&quot;首台套&quot;认定首批申报（9/15 关键节点，单台最高补 300 万）——3D 视觉传感器属核心零部件，直接相关（概念匹配 886069）。</li>
+<li>工信部算力标准体系建设指南（待印发）——间接沾边（仅概念标签）。</li>
+<li>工信部主办具身智能产业博览会（9/3 广州）、中国算力大会（9/11 廊坊）——政策信号密集窗口。</li>
+</ul>
+<p>联网补证（政策动向，来源+日期）：</p>
+<ul>
+<li>杭州市《具身智能机器人&quot;强链补链&quot;行动方案（2026-2027 年）》（杭州市经信局官网，2026-01-05）：扶持视觉智能大模型、支持首台（套）装备奖补——官方一手来源。</li>
+<li>浙江省布局推进人形机器人产业创新发展（企业观察网，2026-03-21）：在首台（套）装备、首批次新材料等政策中加强人形机器人整机及关键零部件（含传感器、编码器）支持。</li>
+<li>《人形机器人与具身智能标准体系（2026 版）》：公司半年报引述称政策密集出台（证券之星 2026-08-24，单源未交叉验证·置信度低）。</li>
+</ul>
+<p>监管/合规风险：</p>
+<ul>
+<li>H 股发行：8/20 独立董事会议、8/21 董事会审议通过发行 H 股并在港交所上市相关议案，9/14 临时股东会表决（联网补证，证券之星 2026-08-22 摘要）；涉及跨境监管与公司治理制度全面修订（库内新闻块大量章程/制度公告）。</li>
+<li>股权激励：2026 年股票期权与限制性股票激励计划（草案）待股东会审议，后续有费用摊销与股本摊薄。</li>
+<li>分红受限：累计未弥补亏损 14.81 亿，弥补前不具备现金分红条件（联网补证）。</li>
+</ul>
+<h2>G. 题材与产业链关联（逐个判：沾边 vs 真有业务）</h2>
+<p>真有业务（主营/客户/半年报有佐证）：</p>
+<ul>
+<li>芯片概念：真有。自研 3D 感知芯片 MX 系列（库内公司简介 + 证券之星 2026-08-24）。</li>
+<li>传感器：真有。主营即 3D 视觉传感器；2026H1 合并口径传感器收入 2.07 亿（21 世纪经济报道 2026-08-24）。</li>
+<li>机器视觉：真有。3D 视觉感知是机器视觉核心，主营直接对应。</li>
+<li>人工智能：真有。为 AI 提供三维感知，属 AI 基础共性技术（库内公司简介）。</li>
+<li>人脸识别：真有。3D 结构光刷脸支付，客户蚂蚁集团、中国银联（库内公司简介）。</li>
+<li>移动支付：真有。刷脸支付 3D 摄像头是成熟商业场景。</li>
+<li>消费电子概念：真有。OPPO、惠普等客户（库内公司简介）。</li>
+<li>蚂蚁集团概念：真有客户关系。蚂蚁集团在客户名单（库内），2026H1 与蚂蚁灵波联合推出机器人端侧深度增强引擎方案（21 世纪经济报道 2026-08-24）。</li>
+<li>机器人概念 / 人形机器人：有业务布局与订单佐证、但收入未单列。经营范围含&quot;智能机器人的研发&quot;（库内）；2025 年以来人形机器人订单季度环比增速 &gt;60%、2026Q1 订单环比翻倍（Orbbec 官网/央视，2026-05-21，单源·置信度低）；2026H1 机器人视觉方案收入达上年同期 2 倍以上（21 世纪经济报道 2026-08-24）；与荣耀签署战略合作（Orbbec 官网 2026-08-21）——&quot;真有业务、体量未单列&quot;，置信度中。</li>
+</ul>
+<p>沾边（有生态/经营范围线索，未见对应营收）：</p>
+<ul>
+<li>英伟达概念：沾边偏实。Gemini 330 完成英伟达 Jetson Thor 适配验证、融入 Isaac/Jetson 生态（21 世纪经济报道 2026-08-24）——属生态适配，未见对英伟达的销售收入佐证。</li>
+<li>阿里巴巴概念：沾边。蚂蚁集团与阿里生态关联，库内未见阿里本体营收佐证。</li>
+<li>3D 打印：沾边。经营范围含&quot;3D 打印服务；增材制造装备制造&quot;（库内），但主营未见 3D 打印营收；联网提及&quot;三维扫描&quot;为高增长赛道（证券之星 2026-08-24），3D 打印本身未见数据。</li>
+<li>智能座舱 / 无人驾驶 / 新能源汽车：沾边。经营范围含智能车载设备制造/销售（库内），未见车载营收佐证。</li>
+<li>元宇宙 / 虚拟现实 / 空间计算 / 数字孪生 / 虚拟数字人：沾边。3D 感知是底层输入技术，未见对应营收。</li>
+</ul>
+<p>仅概念标签，未见营收佐证：</p>
+<ul>
+<li>华为概念：仅标签。库内与联网均未见华为客户/合作营收佐证。</li>
+<li>智能物流：仅标签，未见营收佐证（机器人客户含物流方向但未单列）。</li>
+<li>MLOps 概念：仅标签。</li>
+<li>东数西算(算力)：仅标签。</li>
+<li>在线教育：仅标签。</li>
+<li>新型工业化：政策/主题标签，泛沾边。</li>
+<li>专精特新：资质类标签，库内无认定文件佐证，按标签处理。</li>
+<li>中证500成份股 / 同花顺新质50：指数成分标签，非业务。</li>
+<li>沪股通 / 融资融券：交易机制标签，非业务。</li>
+<li>粤港澳大湾区：地域标签（总部深圳），事实性成立。</li>
+</ul>
+<p>产业链景气（联网补证，来源+日期）：</p>
+<ul>
+<li>Omdia 测算 2025 年全球工业机器人图像传感器市场约 2 亿美元、2029 年约 3.8 亿美元、CAGR 约 14%（智通财经 + 证券之星，2026-04-06，≥2 来源交叉验证）。</li>
+<li>全球具身智能机器人 3D 视觉传感器 2025 年销售额 4.35 亿美元、2032 年预计 23.62 亿美元、CAGR 29%（2026-2032）（格隆汇，日期缺失，单源未交叉验证·置信度低）。</li>
+<li>高工人形机器人数据：2025 年国内人形机器人出货 1.8 万台、2026 年有望 6.25 万台（Orbbec 官网新闻转述，2026-05-21，单源未交叉验证·置信度低）。</li>
+<li>Yole 预测 2025 年全球 3D 视觉感知市场约 150 亿美元（新浪财经转公司公告引述，2025-09-15，单源·置信度低）。</li>
+</ul>
+<p>小结：真实业务主线 = 3D 视觉传感器 + 整机方案；第二曲线 = 机器人（订单/适配有据、收入未单列）；英伟达、华为等标签目前停留在生态适配/概念层面。</p>
+<h2>H. 消息面与市场情绪</h2>
+<p>近期新闻（库内近 60 天，集中于 8/21-22）：</p>
+<ul>
+<li>H 股发行并上市系列公告（章程草案、聘请审计机构、员工多元化政策、董事会企业管治委员会等）——资本运作进行时，情绪中性，后续定价是关键变量。</li>
+<li>2026 年股票期权与限制性股票激励计划（草案+名单+考核办法）——绑定团队，中性偏正。</li>
+<li>非执行董事辞职暨调整董事会审计委员会——噪音。</li>
+<li>提质增效重回报半年度评估报告——中性偏正。</li>
+<li>联网补证：8/20 独立董事会议通过 H 股发行议案（九方智投 2026-08-19 / 中财网 2026-08-20）；9/14 临时股东会、9/8 股权登记日（证券之星 2026-08-22）。</li>
+</ul>
+<p>涨停史（库内）：近 180 天无涨停记录——无涨停板情绪记忆，不属于短线资金反复炒作型标的（置信度中）。</p>
+<p>资金流（库内，20 日，截至 8/24）：主力净流入 -1.91 亿；elg 净流入 -3.74 亿；20 日中 13 日净流出——资金持续净流出。⚠️ 盘面现象，仅作情绪佐证，不作为基本面证据。</p>
+<p>筹码（库内，8/7 时点）：获利盘 78.61%；加权成本 104.36 元；成本 15%/50%/85% 分位 = 89.6 / 104.0 / 116.8 元。当前价 92.5 元已低于加权成本 104.36 元与 50% 分位 104.0 元——8/7 时点的高获利盘结构已明显恶化，多数筹码转入浮亏。两面性：104-116.8 元为上方套牢密集区（反弹有阻力）；89.6 元为 15% 成本位（下方支撑参考）。</p>
+<p>股东户数（库内）：2026-03-31 为 26463 户 → 2026-06-30 为 48628 户，+83.8%——筹码快速分散、散户大量进场，与股价回落相印证（联网补证：证券之星 2026-08-24 亦报 48628 户，与库内一致）。</p>
+<p>情绪面小结（置信度中）：短期偏空（单日 -8.42% 收于日内低位 + 资金净流出 + 筹码分散 + 无涨停记忆）；中期看 9 月题材催化与 10 月三季报能否接棒。</p>
+<h2>I. 未来 13 周事件日历（自 2026-08-25 起，约一个季度）</h2>
+<ul>
+<li>第 1 周（8/24-8/30）：8/26 英伟达 FY2027 Q2 财报（概念匹配 886048，公司对英伟达仅为生态适配，情绪传导为主）；8/28 数博会贵阳（东数西算，仅标签）；8/29 鸿蒙生态大会深圳（华为概念，仅标签）；8/31 CSEAC 无锡（芯片概念）；8/31 特斯拉 Cybercab 部署/FSD 中国获批（无人驾驶，沾边）；8/31 工信部算力标准体系指南待印发（间接沾边）。</li>
+<li>第 2 周（8/31-9/6）：9/1 特斯拉 Optimus 供应链批量供货、周产目标 1000 台（人形机器人，直接催化）；9/1 IDAS EDA 峰会（芯片概念）；9/2 博通 FY2026 Q3 财报（芯片/算力链）；9/3 工信部具身智能博览会 XAIR 广州（人形机器人，直接催化）；9/3 世界动力电池大会宜宾（新能源汽车，沾边）；9/3 特斯拉 Cybercab 发布会（无人驾驶，沾边）。</li>
+<li>第 3 周（9/7-9/13）：9/7 华为 Mate XT2 发布会（华为概念，仅标签；消费电子有业务）；9/8 全球工业互联网大会沈阳（新型工业化，泛沾边）；9/9 苹果秋季发布会（消费电子概念，苹果非库内客户）；9/9 IICIE 深圳（芯片概念）；9/10-12 杭州 AI 与机器人博览会（人形机器人，Optimus V3 中国首秀传闻）；9/11 中国算力大会廊坊（东数西算，仅标签）。</li>
+<li>第 4 周（9/14-9/20）：<strong>9/14 公司 2026 年第二次临时股东会</strong>：审议 H 股发行 + 股权激励等议案，9/8 股权登记日（联网补证，证券之星 2026-08-22）；9/15 特斯拉 Model Y L 美国交付（新能源汽车，间接）；9/15 工信部人形机器人&quot;首台套&quot;首批申报节点（直接政策）；9/17-19 华为全联接大会上海（华为概念，仅标签）；9/20-23 世界制造业大会合肥（新型工业化/机器人）。</li>
+<li>第 5 周（9/21-9/27）：9/22-24 云栖大会杭州（阿里/人工智能）；9/22-24 世界新能源汽车大会海口（新能源汽车，沾边）；9/23-24 Meta Connect（元宇宙/VR/AR，沾边）。</li>
+<li>第 6 周（9/28-10/4）：本周无已知事件（库内事件日历未覆盖）。</li>
+<li>第 7 周（10/5-10/11）：本周无已知事件（留意 H 股发行后续进展公告）。</li>
+<li>第 8 周（10/12-10/18）：本周无已知事件（科创板三季报披露窗口临近，预约日期库内暂无）。</li>
+<li>第 9 周（10/19-10/25）：本周无已知事件；参考 2025 年三季报披露日为 10/25，2026 年三季报大概率在本周前后披露（推算，置信度中）——<strong>全报告最重要验证时点</strong>。</li>
+<li>第 10 周（10/26-11/1）：本周无已知事件（若三季报已披露，进入业绩消化与预期修正期）。</li>
+<li>第 11 周（11/2-11/8）：本周无已知事件。</li>
+<li>第 12 周（11/9-11/15）：本周无已知事件。</li>
+<li>第 13 周（11/16-11/22）：本周无已知事件。</li>
+</ul>
+<h2>J. 逻辑链</h2>
+<p>为什么会涨（因果链）：</p>
+<ol>
+<li>机器人第二曲线真实放量：2026H1 机器人视觉方案收入达上年同期 2 倍以上、直接境外收入近翻倍（21 世纪经济报道 2026-08-24）；人形机器人订单 2026Q1 环比翻倍（Orbbec 官网 2026-05-21，单源）→ 若 9 月 Optimus 量产与具身智能博览会催化订单，市场愿为&quot;机器人之眼&quot;付溢价。</li>
+<li>生态与客户卡位：Gemini 330 适配英伟达 Jetson Thor、与荣耀战略合作、覆盖全球超千家机器人客户（21 世纪经济报道 2026-08-24；Orbbec 官网 2026-08-21）→ 平台卡位叙事强化。</li>
+<li>安全垫：2025 年扭亏 + 毛利率 48.5% + 资产负债率 9.50% + 货币资金 12.23 亿 → 盈利拐点叙事与财务安全边际。</li>
+<li>事件驱动：股权激励 + H 股发行 → 治理改善、资金弹药、国际曝光。</li>
+<li>卖方一致乐观背书（见下，观点非事实）。</li>
+</ol>
+<p>为什么会跌（因果链）：</p>
+<ol>
+<li>增长熄火：2026H1 营收 +0.49%、净利 -30.82%（库内），Q2 单季净利约 0.11 亿（推算值，置信度中）→ 当期业绩撑不起 349 倍 PE。</li>
+<li>估值极端：PE_TTM 349.19 倍 vs 行业中枢 68.60 倍、排名 212/312（库内）→ 题材一旦降温，估值回归空间大。</li>
+<li>预期差缺口：卖方 2026 全年净利预测 3.0-3.6 亿（观点），对照 H1 实际 0.42 亿（库内事实），隐含 H2 需 2.6-3.2 亿（见下算术）。</li>
+<li>资金面走弱：20 日主力净流出 1.91 亿、股东户数 +83.8%、今日 -8.42% 收于日内低位（库内）→ 筹码与情绪共振向下。</li>
+<li>概念与营收脱节：人形机器人/英伟达/华为等标签大多停留在适配与生态层面，具身智能收入未单列、体量尚小（21 世纪经济报道 2026-08-24）→ 题材退潮时无业绩缓冲。</li>
+</ol>
+<p>卖方预期（他人观点，非事实）：</p>
+<ul>
+<li>〔卖方预期〕来源：中信证券 · 日期：2026-07-01 · 观点：2026/2027/2028 年净利预测 3.05/5.86/8.90 亿元、EPS 0.74/1.43/2.16 元 · 置信度：低</li>
+<li>〔卖方预期〕来源：华创证券 · 日期：2026-06-02 · 观点：2026/2027/2028 年净利预测 3.08/5.94/8.59 亿元、EPS 0.77/1.48/2.14 元、评级&quot;强推&quot; · 置信度：低</li>
+<li>〔卖方预期〕来源：NOMURA · 日期：2026-05-31 · 观点：2026/2027 年净利预测 3.58/5.95 亿元、EPS 0.892/1.48 元、评级&quot;Buy&quot; · 置信度：低</li>
+</ul>
+<p>以卖方预测为基准的算术推演（卖方预测为观点，库内财务为事实，分开列示；置信度中）：</p>
+<ul>
+<li>卖方 2026 全年净利预测 3.0-3.6 亿，减去库内 H1 实际 0.42 亿，隐含 2026H2 需完成约 2.6-3.2 亿。</li>
+<li>由库内反推：2025H1 净利约 0.60 亿、2025H2 净利约 0.68 亿（推算值，置信度中）——卖方预测隐含 2026H2 净利同比需 +280% 以上，而 2026H1 实际同比为 -30.8%。</li>
+<li>结论：<strong>这是全逻辑链最脆弱的一环</strong>——H2 收入能否重新加速并放大利润，是全部乐观叙事的前提，唯一可核验时点为 10 月下旬三季报。</li>
+</ul>
+<h2>K. 三情景推演</h2>
+<ul>
+<li>乐观情景（置信度：低）：触发 = 9 月出现机器人/车载大额订单或合作公告，且 10 月下旬三季报单季营收同比 ≥20%、净利回正增长、毛利率维持 48% 以上。路径 = 9 月密集催化 → 情绪修复 → 三季报验证加速 → 股价收复并站稳 104 元加权成本上方，向 116.8 元（85% 成本位）靠拢。</li>
+<li>中性情景（置信度：中）：触发 = 无重大订单公告，三季报营收持平微增（同比 0-10%）、净利降幅收窄。路径 = 股价在 89.6-104 元区间震荡，等待 H 股定价与 2026 年报，估值消化为主。</li>
+<li>悲观情景（置信度：中）：触发 = 三季报营收同比转负或净利继续 -30% 以上下滑；或 H 股发行定价较 A 股显著折价形成比价压力。路径 = 估值回归占主导，股价跌破 89.6 元（15% 成本位）后向行业中枢方向收敛，题材催化无法对冲业绩缺口。</li>
+</ul>
+<h2>L. 决策与风控</h2>
+<p>操作倾向（全部条件式，无目标价、无评级）：</p>
+<ul>
+<li>当前阶段：观望为主。触发依据 = PE_TTM 349.19 倍（库内）+ H1 净利 -30.8%（库内）+ 20 日资金净流出（库内）三者同时成立。</li>
+<li>如果 10 月下旬三季报单季营收同比 ≥20% 且净利同比回正增长，那么可考虑试仓。</li>
+<li>如果 9/1-9/3 期间出现机器人订单/合作公告且股价放量站稳 104 元加权成本上方，那么可考虑试仓（事件驱动，须自设止损纪律）。</li>
+<li>如果三季报前股价跌破 89.6 元（15% 成本位）且无量能修复，那么应观望或回避。</li>
+<li>如果 H 股发行定价较 A 股显著折价，那么应回避短期摊薄与比价冲击，待定价落地再评估。</li>
+</ul>
+<p>验证信号与核验时点：</p>
+<ul>
+<li>10 月下旬三季报（参考 2025 年 10/25 披露）：单季营收同比、净利同比、毛利率、经营现金流。</li>
+<li>9/1-9/3 特斯拉 Optimus 供应链与工信部具身智能博览会：公司是否进入供应商名单/有公告。</li>
+<li>9/14 临时股东会：H 股发行与股权激励议案表决结果；后续 H 股招股书与发行定价。</li>
+<li>10 月底（三季报同期）股东户数更新：户数是否从 48628 户回落（筹码重新集中为偏多信号）。</li>
+</ul>
+<h2>M. 逻辑自查</h2>
+<p>最可能出错的地方：</p>
+<ol>
+<li>概念→业务的过度外推：事件日历匹配基于同花顺概念标签，英伟达/华为/东数西算等无营收佐证；本报告已区分，但情绪传导难以量化。</li>
+<li>推算值误差：Q2 单季营收/净利、H1 2025 净利、2025H2 净利均由库内同比数据反推，未经公司单季披露验证（置信度中）。</li>
+<li>筹码时点滞后：筹码数据为 8/7，当前为 8/24，获利盘结构推算有 17 天时差。</li>
+<li>单日大跌归因不完整：库内无当日大盘与行业指数对照，无法判断 -8.42% 的相对强弱。</li>
+<li>卖方预测缺口算术：以卖方预测（观点）为基准的 H2 缺口推演，若卖方预测本身被大幅下修，缺口结论随之失效。</li>
+</ol>
+<p>依赖未验证的假设：</p>
+<ul>
+<li>机器人订单能转化为单列营收（公司未披露具身智能收入金额）。</li>
+<li>H2 收入重新加速（乐观与中性情景的共同前提）。</li>
+<li>H 股发行顺利且不对 A 股形成持续比价压力。</li>
+</ul>
+<p>信息缺口清单：</p>
+<ul>
+<li>库中无分产品/分客户官方营收拆分（联网仅有媒体转述口径：合并口径传感器 2.07 亿/整机及方案 2.03 亿，母公司口径传感器 1.80 亿/整机及方案 1.26 亿——口径不同，以公司正式披露为准）。</li>
+<li>库中无历史经营现金流序列、研发费用明细（联网补证仅 H1 单期）。</li>
+<li>库中无市占率与直接竞争对手财务数据。</li>
+<li>库中无 A/H 溢价数据（H 股尚未上市）。</li>
+<li>库中无 2026 年三季报预约披露日期。</li>
+<li>库中无当日大盘/行业对照数据。</li>
+<li>库中无股息率（股息率为 null），且公司累计未弥补亏损 14.81 亿、半年度不分配（联网补证）。</li>
+<li>联网核验说明：本次已联网补证政策动向、产业链景气、市场预期差、未来事件时点四类信息；关键数字与库内交叉一致（股东户数 48628、H1 净利 4164 万、资产负债率 9.50% 均吻合）。其中&quot;具身智能机器人 3D 视觉传感器 2032 年 23.62 亿美元&quot;（格隆汇）与&quot;高工 2026 年出货 6.25 万台&quot;（Orbbec 官网转述）为单源，已标置信度低。</li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-08-24），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>9月人形机器人/华为/特斯拉催化密集</li>
+      <li>卖方预测2026-2028净利高增形成支撑</li>
+      <li>H股发行与股权激励带来事件驱动</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>经营现金流</dt><dd>经营活动产生的现金流量净额。利润是账面数，这个是真金白银进出。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>BLUF</dt><dd>Bottom Line Up Front，结论先行——把最重要的判断放在最前面。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> 联网补证：证券之星 2026-08-24 <em>2026-08-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 21 世纪经济报道 2026-08-24 <em>2026-08-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 证券之星 2026-08-24 <em>2026-08-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 联网补证，证券之星 2026-08-24 <em>2026-08-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 联网补证，21 世纪经济报道 2026-08-24，合并口径 <em>2026-08-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 证券之星 2026-08-24，口径不同，以公司正式披露为准 <em>2026-08-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 联网补证，21 世纪经济报道 2026-08-24 <em>2026-08-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 媒体引述分析师观点，21 世纪经济报道 2026-08-24 <em>2026-08-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 杭州市经信局官网，2026-01-05 <em>2026-01-05</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 证券之星 2026-08-24，单源未交叉验证·置信度低 <em>2026-08-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 联网补证，证券之星 2026-08-22 摘要 <em>2026-08-22</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内公司简介 + 证券之星 2026-08-24 <em>2026-08-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> Orbbec 官网/央视，2026-05-21，单源·置信度低 <em>2026-05-21</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> Orbbec 官网 2026-08-21 <em>2026-08-21</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 智通财经 + 证券之星，2026-04-06，≥2 来源交叉验证 <em>2026-04-06</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> Orbbec 官网新闻转述，2026-05-21，单源未交叉验证·置信度低 <em>2026-05-21</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 新浪财经转公司公告引述，2025-09-15，单源·置信度低 <em>2025-09-15</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 证券之星 2026-08-22 <em>2026-08-22</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 联网补证：证券之星 2026-08-24 亦报 48628 户，与库内一致 <em>2026-08-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 联网补证，证券之星 2026-08-22 <em>2026-08-22</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> Orbbec 官网 2026-05-21，单源 <em>2026-05-21</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-08-24 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
