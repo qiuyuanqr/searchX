@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>寒武纪（688256.SH） · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>寒武纪（688256.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-08-24（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 半导体</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 国产操作系统 · 汽车芯片 · 先进封装 · 阿里巴巴概念 · 东数西算(算力) · 数据中心(AIDC) · 芯片概念 · 人工智能</span>
+      <span><b>来源</b> 4 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    寒武纪（688256）主要做的是应用于各类云服务器、边缘计算设备、终端设备的人工智能核心芯片研发、设计与销售，并提供芯片产品与系统软件解决方案（库内主营）。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。当前判断的方向是震荡。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      
+    </ul>
+  </div>
+
+  <main>
+    <p>报告性质：档案式研究，非荐股报告。全部数据来自库内数据块，数据时点与口径见各节及 M 节。</p>
+<h2>A. 一屏结论（BLUF）</h2>
+<ul>
+<li><strong>方向：震荡（置信度：中）</strong>。高景气成长与高估值、技术面走弱两股力量对冲，短期方向取决于政策落地与订单验证。</li>
+<li><strong>核心逻辑</strong>：国产AI芯片核心标的。2025年营收64.97亿（+453.21%）、净利20.59亿（+555.24%）；2026H1营收59.96亿（+108.13%）、净利23.11亿（+122.61%），半年净利已超2025全年（置信度：高）。政策端2026-09-01起《2026-2028年全国算力基础设施建设行动方案》正式执行，央国企新建智算中心国产算力硬件采购占比强制不低于75%（库内事件日历 event_name 原文），构成硬催化（置信度：中）。</li>
+<li><strong>但</strong>：当前PE(TTM) 182.89倍，显著高于行业PE中位103.17倍（置信度：高）；PB 44.96倍为可比公司最高之一（置信度：高）。当前价969.05元（2026-08-24收盘，-6.37%），已低于1000元关口；筹码50%成本位（库内 cost_50pct）1254.5元、85%成本位（库内 85% 分位筹码成本）1486.1元，上方套牢密集（置信度：中）；近20日主力净流出55.06亿（置信度：高）。</li>
+<li><strong>最该盯的信号</strong>：9/1政策执行后的央企/国企智算中心招标与订单落地；股价能否收复1000元及1254.5元（50%成本位，库内 cost_50pct）；2026Q3财报（库内往期2025Q3财报公告日为2025-10-18，据此推断2026Q3财报或于10月中下旬披露，属推测值）的营收同比与毛利率。</li>
+<li><strong>最可能出错的地方</strong>（置信度：中）：把概念标签当营收（先进封装/汽车芯片/阿里概念均无营收佐证）；把卖方远期盈利预测当事实；低估高估值与上方套牢盘对反弹的压制。</li>
+</ul>
+<h2>B. 公司快照</h2>
+<ul>
+<li>名称/代码：寒武纪（688256）· 行业：半导体 · 板块：科创板 · 上市日：2020-07-20 · 上市状态：L（上市）</li>
+<li>主营：应用于各类云服务器、边缘计算设备、终端设备的人工智能核心芯片研发、设计与销售，并提供芯片产品与系统软件解决方案（库内主营）</li>
+<li>产品线（库内简介）：终端智能处理器IP（已出货过亿台）、云端智能芯片及加速卡（已进入国内主流服务器厂商并量产出货）、边缘智能芯片及加速卡、配套基础系统软件平台</li>
+<li>员工：1107人 · 注册资本：62829.30万元</li>
+<li>当前行情（库内唯一行情事实源，数据时点 15:34，结合库内估值/资金流日期为2026-08-24，收盘值）：969.05元 · -6.37% · 成交168.90亿 · 日内高+0.39%/低-8.21%</li>
+<li>估值（2026-08-24）：PE(TTM) 182.89 · PB 44.96 · 总市值6093.91亿 · 换手率2.75% · 股息率：null（库中无数据）</li>
+<li>行业参照：半导体行业197家可比，PE中位103.17；寒武纪PE排名107/197（库内未注明排序方向，按PE数值与中位关系判断处于中位偏上，置信度：中）</li>
+<li>A/H溢价：null（非两地上市，属常态），无跨市场参照数据</li>
+</ul>
+<p>卖方盈利预期参照（他人观点、非事实，与库内真实财务分开列示）：</p>
+<ul>
+<li>〔卖方预期〕来源：西部证券 · 日期：2026-08-17 · 观点：2026Q4 EPS 8.94元（净利56.16亿）、2027Q4 EPS 20.05元（净利125.96亿）、2028Q4 EPS 33.18元（净利208.48亿），对应PE 122.3/54.5/32.9，评级买入（库内标签）· 置信度：低</li>
+<li>〔卖方预期〕来源：华创证券 · 日期：2026-08-13 · 观点：2026Q4 EPS 8.47元（净利53.24亿）、2027Q4 EPS 17.70元（净利111.22亿）、2028Q4 EPS 29.71元（净利186.64亿），对应PE 129.0/62.0/37.0，评级推荐 · 置信度：低</li>
+<li>〔卖方预期〕来源：国盛证券 · 日期：2026-08-11 · 观点：2026Q4 EPS 9.09元（净利57.09亿），对应PE 120.0，评级买入（库内标签）· 置信度：低</li>
+<li>〔卖方预期〕来源：东北证券 · 日期：2026-08-11 · 观点：2026Q4 EPS 9.57元（净利60.15亿），对应PE 113.92，评级增持 · 置信度：低</li>
+<li>库内汇总：近90天19份报告、15家机构；评级分布为买入8份、推荐4份、增持3份、Overweight 1份、无评级3份（库内 rating_dist）。上述卖方预测隐含的2026Q4对应PE约113-129（由库内四家券商2026Q4预测PE取极值：113.92/120.0/122.3/129.0，自行推算），低于当前PE(TTM) 182.89，但该隐含估值基于卖方预测，非事实（置信度：低）。</li>
+</ul>
+<h2>C. 财务健康</h2>
+<p>四期数据（新→旧，金额单位亿元，均为库内官方财报口径）：</p>
+<ul>
+<li>2026-06-30（中报，2026-08-08披露）：营收59.96 · 同比+108.13% ｜净利23.11 · 同比+122.61% ｜毛利率55.25% ｜净利率38.54% ｜ ROE 18.20%（半年度）｜ EPS 3.68 ｜资产负债率25.48%</li>
+<li>2026-03-31（一季报，2026-04-30披露）：营收28.85 · 同比+159.56% ｜净利10.13 · 同比+185.04% ｜毛利率54.33% ｜净利率35.12% ｜ ROE 8.20% ｜ EPS 2.40 ｜资产负债率16.38%</li>
+<li>2025-12-31（年报，2026-03-13披露）：营收64.97 · 同比+453.21% ｜净利20.59 · 同比+555.24% ｜毛利率55.15% ｜净利率31.68% ｜ ROE 23.86% ｜ EPS 4.93 ｜资产负债率11.87%</li>
+<li>2025-09-30（三季报累计，2025-10-18披露）：营收46.07 · 同比+2386.38% ｜净利16.05 · 同比+321.49% ｜毛利率55.29% ｜净利率34.81% ｜ ROE 19.18% ｜ EPS 3.85 ｜资产负债率10.12%</li>
+</ul>
+<p>趋势与判断：</p>
+<ul>
+<li>高增长已确认：四期均为正利润，2025全年营收+453.21%、净利+555.24%，2026H1营收+108.13%、净利+122.61%（置信度：高，库内四期数据一致）。</li>
+<li>增速随基数回落：营收同比从2025Q3累计的+2386.38%、2025全年的+453.21%，回落至2026H1的+108.13%；其中2025Q3累计+2386.38%属极低基数效应，不可线性外推（置信度：高）。</li>
+<li>盈利质量改善：毛利率稳定在55%附近（54.33%~55.29%），净利率由2025年报的31.68%升至2026H1的38.54%（置信度：中，仅四期数据）。</li>
+<li>半年规模：2026H1营收59.96亿，已达2025全年64.97亿的约92.3%（59.96/64.97，自行推算）；2026H1净利23.11亿，已超2025全年20.59亿（置信度：高）。</li>
+<li>隐忧：资产负债率逐季上升，10.12%→11.87%→16.38%→25.48%，翻倍有余，方向明确（置信度：高）；原因库内无明细（可能为备货、预付款或负债扩张），需后续财报验证。</li>
+<li>信息缺口：库中无经营现金流、存货、应收账款、研发费用、客户集中度、专利数据，无法评估盈利质量与回款质量。</li>
+</ul>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内可比公司（半导体行业，报告期以字段为准）：</p>
+<ul>
+<li>寒武纪（688256）· 总市值6093.91亿 · PE 182.89 · PB 44.96 · 2026H1：营收59.96亿、净利23.11亿、ROE 18.20%（半年度）</li>
+<li>海光信息（688041）· 总市值5364.80亿 · PE 170.75 · PB 21.14 · 2026H1：营收90.99亿、净利17.98亿、ROE 7.51%</li>
+<li>中芯国际（688981）· 总市值10322.93亿 · PE 204.59 · PB 6.89 · 2026Q1：营收176.17亿、净利13.61亿、ROE 0.91%</li>
+<li>长鑫科技（688825）· 总市值37854.58亿 · PE 134.26 · PB 46.32 · 2026Q1：营收508.00亿、净利247.62亿、ROE 35.76%</li>
+</ul>
+<p>对比结论：</p>
+<ul>
+<li>海光信息是与寒武纪最接近的AI算力芯片同类：两者市值接近（6093.91亿 vs 5364.80亿），寒武纪PE（182.89）略高于海光（170.75），PB（44.96）约为海光（21.14）的两倍以上。海光2026H1营收更大（90.99亿 vs 59.96亿），但寒武纪净利更高（23.11亿 vs 17.98亿），对应净利率38.54% vs 约19.8%（由库内数据计算：17.98/90.99），寒武纪盈利能力显著更强（置信度：中）。</li>
+<li>中芯国际为晶圆代工模式，PB仅6.89、ROE仅0.91%，重资产低回报，与寒武纪fabless设计模式不可直接类比（置信度：高）。长鑫科技体量最大（市值3.79万亿级、2026Q1营收508亿），属存储芯片，PE 134.26、PB 46.32，与寒武纪模式不同（置信度：高）。</li>
+<li>贵贱判断：寒武纪PE 182.89高于行业PE中位103.17，也高于海光、长鑫，仅低于中芯；PB 44.96在可比公司中处最高档。市场给予的溢价来自AI算力芯片稀缺性与国产替代叙事（置信度：中）。溢价能否维持取决于订单与业绩兑现，而非概念标签（置信度：中）。</li>
+<li>信息缺口：库中无各公司细分产品份额、客户结构、先进制程进展数据，无法判断技术代差；长鑫/中芯报告期为2026Q1，寒武纪/海光为2026H1，规模比较需保留（期数不对齐）。</li>
+</ul>
+<h2>E. 护城河与商业模式</h2>
+<ul>
+<li>商业模式：Fabless芯片设计公司，收入来自云端/边缘/终端AI芯片与加速卡销售、终端IP授权及配套系统软件，靠研发设计溢价与软件栈粘性赚钱（库内主营/简介，置信度：高）。</li>
+<li>护城河要素：
+<ul>
+<li>自主指令集与微架构（库内简介）——技术自主性，在国产替代语境下属稀缺资产（置信度：中，无第三方技术评测佐证）。</li>
+<li>终端IP出货过亿台、云端芯片进入国内主流服务器厂商并量产出货（</li>
+</ul></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-08-24），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>暂无显著风险项</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>经营现金流</dt><dd>经营活动产生的现金流量净额。利润是账面数，这个是真金白银进出。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>BLUF</dt><dd>Bottom Line Up Front，结论先行——把最重要的判断放在最前面。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-disc">披露</span> 库内往期2025Q3财报公告日为2025-10-18，据此推断2026Q3财报或于10月中下旬披露，属推测值 <em>2025-10-18</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 一季报，2026-04-30披露 <em>2026-04-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 年报，2026-03-13披露 <em>2026-03-13</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 三季报累计，2025-10-18披露 <em>2025-10-18</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-08-24 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
