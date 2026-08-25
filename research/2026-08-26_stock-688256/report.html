@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>寒武纪（688256.SH） · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>寒武纪（688256.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-08-26（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 半导体</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 国产操作系统 · 汽车芯片 · 先进封装 · 阿里巴巴概念 · 东数西算(算力) · 数据中心(AIDC) · 芯片概念 · 人工智能</span>
+      <span><b>来源</b> 52 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    寒武纪（688256）主要做的是应用于各类云服务器、边缘计算设备、终端设备中人工智能核心芯片的研发、设计和销售，为客户提供芯片产品与系统软件解决方案。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——高增长已经兑现，但估值在为 2028 年定价。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：高增长已经兑现，但估值在为 2028 年定价。支撑在于9月起75%国产算力硬件强制红线；H1营收+108%净利率升至38.5%；82.5亿存货备货指向下半年出货。主要风险是PE190.7/PB46.9远高于行业中位；经营现金流3.11亿对净利23.11亿；近20日主力净流出27.88亿。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>9月起75%国产算力硬件强制红线</li>
+      <li>H1营收+108%净利率升至38.5%</li>
+      <li>82.5亿存货备货指向下半年出货</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据基准：库内行情时点 <strong>2026-08-25 收盘（库内行情数据时点 15:34）</strong>；估值时点 <strong>2026-08-25</strong>；最新财报 <strong>2026 年半年报（公告日 2026-08-08）</strong>。报告生成于 2026-08-26。</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：高增长已经兑现，但估值在为 2028 年定价。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>政策从&quot;鼓励&quot;转向&quot;强制&quot;</strong>——七部门《2026-2028 年全国算力基础设施建设行动方案》自 2026 年 9 月起实施，央企与地方国资新建智算/超算中心的 AI 芯片、AI 服务器、高速光模块国产化采购比例<strong>不得低于 75%</strong>，未达标不予立项审批、取消配套扶持资金（来源：搜狐财经 2026-08、网易财经 2026-08、企数智 2026-08，多源交叉）。这是需求侧的制度性变量，不是情绪催化。（置信度：高）</li>
+<li><strong>盈利质量在变好，不只是变大</strong>——库内财务：2026H1 营收 59.96 亿元（同比 +108.13%）、归母净利 23.11 亿元（同比 +122.61%），净利率从 2025 全年的 31.68% 升到 38.54%，毛利率稳在 55.25%。利润增速快于营收增速，是经营杠杆在起作用。（置信度：高）</li>
+<li><strong>备货规模指向下半年出货</strong>——库内资产负债率从 2025Q3 的 10.12% 一路升到 2026H1 的 25.48%，与联网口径的&quot;存货 82.48 亿元、较年初 +66.83%，预付款 29.14 亿元&quot;（来源：新浪财经 2026-08-07、财联社 2026-08-07，两源一致）互为佐证。公司在为下半年交付押上资产负债表。（置信度：中）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>估值已在很贵的位置</strong>——库内估值：PE(TTM) 190.71、PB 46.88，而半导体行业 PE 中位数 104.39；在同行业 197 家在市公司中（其中 147 家 PE 为正），有 110 家 PE 低于它。（置信度：高）</li>
+<li><strong>利润的现金含量极低</strong>——2026H1 经营活动现金流净额仅 3.11 亿元、同比 −65.83%，而同期归母净利 23.11 亿元（现金流数据来源：新浪财经 2026-08-07、钛媒体 2026-08-08，两源一致；净利数据来自库内财务）。赚到的是&quot;账上的利润&quot;，不是&quot;手里的现金&quot;。（置信度：中高）</li>
+<li><strong>主力资金在离场</strong>——库内资金筹码：近 20 个交易日（2026-07-29 至 2026-08-25）主力资金净流出 27.88 亿元，其中特大单净流出 15.63 亿元，净流入天数仅 10/20。（置信度：高，但这是盘面现象不是基本面证据）</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ul>
+<li><strong>三季报单季营收与存货余额</strong>（预计 2026 年 10 月下旬，见 I 节 W9）：单季营收能否站上 37.5 亿元（据全年激励目标 135 亿元与 H1 已完成 59.96 亿元推算的下半年半程线），以及存货是否从 82.48 亿元开始去化。</li>
+<li><strong>经营活动现金流净额能否从 3.11 亿元转向改善</strong>（同一份三季报可核）。</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong></p>
+<p>我可能把&quot;估值贵&quot;错当成&quot;会跌&quot;的理由。在一轮由政策强制托底的产业趋势里，估值可以长期停在贵的位置而不均值回归——2025 全年营收同比 +453.21% 这种量级的增长，本来就不适用常规估值锚。另外，我对下半年出货节奏的判断<strong>完全建立在备货数据的间接推断上</strong>，库内没有订单、客户结构、在手合同的任何一手证据（见 M 节信息缺口）。</p>
+<h2>B. 公司快照</h2>
+<p><strong>基本信息</strong>（来源：库内公司档案）</p>
+<ul>
+<li>名称：寒武纪 · 代码：688256 · 所属行业：<strong>半导体</strong> · 上市板：<strong>科创板</strong></li>
+<li>上市日期：2020-07-20（至今约 6 年）· 上市状态：<strong>L（在市，正常交易）</strong></li>
+<li>员工人数：1,107 人 · 注册资本：62,829.2969 万元</li>
+<li>主营业务：应用于各类云服务器、边缘计算设备、终端设备中人工智能核心芯片的研发、设计和销售，为客户提供芯片产品与系统软件解决方案。</li>
+<li>产品线：终端智能处理器 IP、云端智能芯片及加速卡、边缘智能芯片及加速卡，以及配套的基础系统软件平台。库内介绍称&quot;采用公司终端智能处理器 IP 的终端设备已出货过亿台&quot;，云端加速卡&quot;已应用到国内主流服务器厂商的产品中，并已实现量产出货&quot;。</li>
+</ul>
+<p><strong>当前行情</strong>（来源：库内行情，数据时点数据时点 <strong>15:34</strong>，对应 2026-08-25 收盘）</p>
+<ul>
+<li>现价 <strong>1,010.48 元</strong> · 当日涨跌 <strong>+4.28%</strong> · 成交额 <strong>125.9 亿元</strong></li>
+<li>当日最高相对昨收 +6.21%、最低 −1.66%，全日振幅约 7.87 个百分点（据库内行情的 / 推算）——单日近 8 个点的振幅，说明筹码分歧极大。（置信度：高）</li>
+</ul>
+<p><strong>估值</strong>（来源：库内估值，交易日 2026-08-25）</p>
+<ul>
+<li>总市值 <strong>6,354.44 亿元</strong> · PE(TTM) <strong>190.71</strong> · PB <strong>46.88</strong> · 换手率 <strong>1.9992%</strong> · 股息率：库内为空（公司未分红）</li>
+<li>行业参照：半导体行业在市 <strong>197 家</strong>，行业 PE 中位数 <strong>104.39</strong>，寒武纪 PE 排名第 <strong>111</strong> 位（升序，即有 110 家比它便宜）。补充口径：该排名只在 PE 为正的 <strong>147 家</strong> 之间比较（据库内同行业行情库统计），换算约处在<strong>由便宜到贵的 75% 分位</strong>（推算）。</li>
+</ul>
+<p><strong>估值一句话</strong>：仅从估值口径看，它比行业中位数贵约 83%（190.71 对 104.39，推算），但<strong>没有贵到行业极值</strong>——半导体板块本身就聚集了大量高 PE 与亏损公司。PB 46.88 才是更刺眼的数字，说明市场给的是&quot;未来现金流&quot;而非&quot;现有资产&quot;的价（置信度：高）。这是估值贵贱判断，<strong>不等于好坏结论</strong>。</p>
+<div class="callout">库内 A/H 对照返回 None——该票非 A+H 两地上市，无跨市场溢价参照。</div>
+<h2>C. 财务健康</h2>
+<p>数据来自库内财务（近 4 期），均为<strong>累计口径</strong>（新→旧）：</p>
+<ul>
+<li><strong>2026H1（截至 2026-06-30，2026-08-08 披露）</strong>：营收 <strong>59.96 亿元</strong>（同比 <strong>+108.13%</strong>）· 归母净利 <strong>23.11 亿元</strong>（同比 <strong>+122.61%</strong>）· ROE <strong>18.20%</strong>（半年口径）· 毛利率 <strong>55.25%</strong> · 净利率 <strong>38.54%</strong> · EPS <strong>3.68 元</strong> · 资产负债率 <strong>25.48%</strong></li>
+<li><strong>2026Q1（截至 2026-03-31，2026-04-30 披露）</strong>：营收 <strong>28.85 亿元</strong>（同比 <strong>+159.56%</strong>）· 归母净利 <strong>10.13 亿元</strong>（同比 <strong>+185.04%</strong>）· ROE <strong>8.20%</strong> · 毛利率 <strong>54.33%</strong> · 净利率 <strong>35.12%</strong> · EPS <strong>2.40 元</strong> · 资产负债率 <strong>16.38%</strong></li>
+<li><strong>2025 全年（2026-03-13 披露）</strong>：营收 <strong>64.97 亿元</strong>（同比 <strong>+453.21%</strong>）· 归母净利 <strong>20.59 亿元</strong>（同比 <strong>+555.24%</strong>）· ROE <strong>23.86%</strong> · 毛利率 <strong>55.15%</strong> · 净利率 <strong>31.68%</strong> · EPS <strong>4.93 元</strong> · 资产负债率 <strong>11.87%</strong></li>
+<li><strong>2025 前三季（2025-10-18 披露）</strong>：营收 <strong>46.07 亿元</strong>（同比 <strong>+2386.38%</strong>）· 归母净利 <strong>16.05 亿元</strong>（同比 <strong>+321.49%</strong>）· ROE <strong>19.18%</strong> · 毛利率 <strong>55.29%</strong> · 净利率 <strong>34.81%</strong> · EPS <strong>3.85 元</strong> · 资产负债率 <strong>10.12%</strong></li>
+</ul>
+<h3>趋势读法（不是罗列，是找拐点）</h3>
+<p><strong>① 变好的：净利率在系统性抬升。</strong> 34.81% → 31.68% → 35.12% → <strong>38.54%</strong>，而毛利率四期几乎纹丝不动（55.29 / 55.15 / 54.33 / 55.25）。毛利率不动而净利率抬升，意味着<strong>改善来自费用摊薄而非提价</strong>——收入规模上来了，研发和管理费用被稀释。这是芯片设计公司规模效应兑现的典型形态。（置信度：高）</p>
+<p><strong>② 变好的：H1 已完成去年全年利润的大部分。</strong> 2026H1 EPS 3.68 元，已相当于 2025 全年 4.93 元的 74.6%（推算）；H1 净利 23.11 亿元相当于 2025 全年 20.59 亿元的 112.2%（推算）——<strong>半年就超过了去年整年</strong>。（置信度：高）</p>
+<p><strong>③ 值得警惕的：增速在明显减档。</strong> 拆单季（据 H1 与 Q1 累计值推算）：</p>
+<ul>
+<li>Q2 单季营收 = 59.96 − 28.85 = <strong>31.11 亿元</strong>，环比 Q1 仅 <strong>+7.83%</strong>（推算）</li>
+<li>Q2 单季净利 = 23.11 − 10.13 = <strong>12.98 亿元</strong>，环比 <strong>+28.14%</strong>（推算）</li>
+<li>Q2 单季净利率 ≈ 41.72%、毛利率 ≈ 56.09%（推算）</li>
+</ul>
+<p>同比口径上：由库内 2026Q1 同比 +159.56%、2026H1 同比 +108.13% 反推，2025Q1 营收约 11.12 亿元、2025H1 约 28.81 亿元，得 <strong>2026Q2 单季同比约 +75.9%</strong>（推算）。这个数字与联网口径的&quot;Q2 营收 31.11 亿，同比 75.8%&quot;（来源：新浪 2026-08-08 中报分析）<strong>独立吻合</strong>——两条路径互相验证，说明推算成立。</p>
+<p><strong>营收同比从 Q1 的 +159.56% 降到 Q2 的约 +75.9%，是本报告最重要的一个减速信号</strong>（置信度：中高）。它不必然是坏事（基数在抬高），但&quot;增速减半&quot;这件事本身就足以解释为什么中报炸裂而股价没涨。中国基金报 2026-08 的中报报道标题也直接点了&quot;营业收入增速明显放缓&quot;。</p>
+<p><strong>④ 最该警惕的：资产负债率四期翻了一倍半。</strong> 10.12% → 11.87% → 16.38% → <strong>25.48%</strong>。这是库内数据，<strong>它与联网口径的备货故事严丝合缝</strong>：存货 82.48 亿元（较 2025 年末 +66.83%，其中原材料 57.49 亿元、委托加工物资 25.37 亿元）、预付款项从 2025Q4 末的 7.45 亿元经 2026Q1 末 18.97 亿元升到 2026Q2 末 <strong>29.14 亿元</strong>（来源：财联社 2026-08-07、新浪财经 2026-08-07，两源一致）。（置信度：中高）</p>
+<p><strong>⑤ 最硬的一条负面事实：利润没有变成现金。</strong> 2026H1 经营活动现金流净额 <strong>3.11 亿元、同比 −65.83%</strong>（来源：钛媒体 2026-08-08、新浪财经 2026-08-07，两源一致），而同期归母净利 23.11 亿元（库内）。<strong>净利的现金含量约 13.5%</strong>（推算）。原因是明确的——钱都压在上面那 111.62 亿元的存货加预付款里（82.48 + 29.14，推算）。</p>
+<div class="callout"><strong>这两件事必须连起来看</strong>：负债率上升、存货预付猛增、现金流骤降，<strong>是同一件事的三个切面</strong>——公司在赌下半年的交付。赌对了，存货变收入、现金流回来；赌错了，就是存货减值加资金链紧张。<strong>下一份三季报就是判决书</strong>（置信度：高）。</div>
+<p><strong>信息缺口</strong>：库中库内财务只提供营收/净利/ROE/毛利率/净利率/EPS/负债率七项，<strong>不含现金流量表、存货明细、应收账款、客户集中度</strong>。本节涉及现金流与存货的数字全部来自联网、已标注来源与日期。影响：C 节最关键的判断依赖库外数据，若来源有误则该判断失效。补法：三季报披露后调取财报原文核对（见 I 节 W9）。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>数据来自库内同业对比（取 3 家），同属&quot;半导体&quot;行业：</p>
+<ul>
+<li><strong>寒武纪（688256）</strong>｜总市值 6,354.44 亿元｜PE(TTM) 190.71｜PB 46.88｜营收 59.96 亿元（截至 2026-06-30）｜净利 23.11 亿元｜ROE 18.20%</li>
+<li><strong>长鑫科技（688825）</strong>｜总市值 37,787.70 亿元｜PE(TTM) 134.02｜PB 46.24｜营收 508.00 亿元（截至 2026-03-31）｜净利 247.62 亿元｜ROE 35.76%</li>
+<li><strong>中芯国际（688981）</strong>｜总市值 10,273.27 亿元｜PE(TTM) 203.61｜PB 6.86｜营收 176.17 亿元（截至 2026-03-31）｜净利 13.61 亿元｜ROE 0.91%</li>
+<li><strong>海光信息（688041）</strong>｜总市值 5,393.86 亿元｜PE(TTM) 171.67｜PB 21.26｜营收 90.99 亿元（截至 2026-06-30）｜净利 17.98 亿元｜ROE 7.51%</li>
+</ul>
+<div class="callout">⚠️ <strong>对比口径不齐，读的时候要扣掉</strong>：寒武纪与海光的财务数是 <strong>2026H1（半年累计）</strong>，长鑫科技与中芯国际是 <strong>2026Q1（一季累计）</strong>。四家的营收/净利<strong>不可直接横比</strong>，能比的是市值、PE、PB 与 ROE 的相对关系（ROE 同样受期次影响，长鑫/中芯的是单季口径）。这是库内数据的真实状态，不做修饰。（置信度：高）</div>
+<p><strong>位置判断</strong></p>
+<p><strong>① 唯一可做同期比较的是海光信息</strong>（同为 2026H1）：寒武纪营收 59.96 亿元<strong>低于</strong>海光的 90.99 亿元，但净利 23.11 亿元<strong>高于</strong>海光的 17.98 亿元。海光 H1 净利率约 19.76%（推算），寒武纪 38.54%——<strong>寒武纪的净利率接近海光的两倍</strong>；ROE 18.20% 对 7.51%，也是两倍多。市值上寒武纪 6,354.44 亿元略高于海光 5,393.86 亿元。（置信度：高）</p>
+<p><strong>② 贵在 PB 不在 PE。</strong> 寒武纪 PE 190.71 与海光 171.67、中芯 203.61 在同一量级，但 <strong>PB 46.88 是海光 21.26 的 2.2 倍、中芯 6.86 的 6.8 倍</strong>（推算）。这说明市场对寒武纪的定价方式和对晶圆厂完全不同——中芯是重资产制造，PB 低是资产实；寒武纪是无晶圆设计（Fabless），账面净资产小，PB 天然高。<strong>跨商业模式比 PB 意义有限</strong>，真正可比的是它与海光的 2.2 倍差距——两家都是 Fabless 算力芯片，这个倍数差就是市场给寒武纪的&quot;额外溢价&quot;。（置信度：中高）</p>
+<p><strong>③ 长鑫科技是这张表里的异类</strong>：市值 37,787.70 亿元接近寒武纪的 6 倍，ROE 35.76% 也是最高，而 PE 134.02 反而更低。它属存储赛道、与寒武纪不构成直接竞争，只作行业估值坐标。（置信度：中）</p>
+<p><strong>④ 库内同行业名单不含最大的竞争者。</strong> 国产 AI 芯片市场份额第一的华为昇腾<strong>不是上市公司</strong>，不会出现在库内同业对比里——<strong>这张表天然看不到寒武纪最大的对手</strong>。这是本节最重要的结构性局限（置信度：高）。市场份额的库外情况见 E 节。</p>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>（库内公司档案）：无晶圆（Fabless）AI 芯片设计商，产品覆盖云端加速卡、边缘加速卡、终端处理器 IP 三层，外加配套的基础系统软件平台。收入靠卖芯片和加速卡，制造环节外包——这解释了 D 节的高 PB 与 C 节的高预付款（预付给代工与封测环节）。</p>
+<p><strong>护城河分级（诚实分档）</strong></p>
+<p><strong>① 阶段性优势——&quot;中立的第三方&quot;卡位（置信度：中）</strong> 联网信息称寒武纪的差异化在于&quot;不做云、不与客户竞争&quot;的中立定位，因而成为字节、腾讯、阿里等互联网大厂的选择（来源：36 氪《国产 AI 芯片崛起：三大门派》2026 年，单源未交叉验证·置信度低）。这个逻辑本身是成立的——华为既卖昇腾又卖华为云，与互联网大厂存在业务冲突；而寒武纪只卖芯片。<strong>但这是商业格局带来的位置，不是技术壁垒</strong>：一旦大厂自研成熟（阿里平头哥、百度昆仑芯已各自有份额），这个位置随时可以被绕过。归为阶段性优势而非结构性护城河。</p>
+<p><strong>② 阶段性优势——软件栈与生态迁移成本（置信度：低）</strong> 库内主营描述提到&quot;配套的基础系统软件平台&quot;，这是 AI 芯片的关键壁垒（客户一旦在某个软件栈上完成模型迁移，切换成本高）。但<strong>库内没有任何量化证据</strong>——没有客户数、没有生态开发者数、没有软件相关收入拆分。仅凭一句主营描述不足以判定壁垒强度，标低。</p>
+<p><strong>③ 结构性护城河——从库内信息看不出（置信度：中）</strong> 库内没有专利数、没有独占牌照、没有网络效应证据。库内介绍称&quot;核心人员在处理器芯片和人工智能领域深耕十余年，带领公司研发了智能处理器指令集与微架构等一系列自主创新关键技术&quot;——<strong>自研指令集</strong>如果形成生态确实可以是结构性壁垒（参照 ARM、x86），但这需要生态规模佐证，库内没有。</p>
+<p><strong>④ 上游是明确的软肋（置信度：中高）</strong> Fabless 模式意味着产能不在自己手里。联网信息称思元 690 于 2026 年初量产，采用双 die 封装、FP16 算力超 700 TFLOPS、配 196GB HBM3 高带宽内存（来源：卖方研报摘要转载 2026-05、知乎产业调研 2026，单源系·置信度低）。<strong>HBM 与先进封装产能是全球性紧缺资源</strong>，公司买得到多少，很大程度上不由自己决定。C 节那 29.14 亿元预付款，本质就是在为抢产能付定金。</p>
+<p><strong>结论</strong>：<strong>目前看不到结构性护城河，有两项阶段性优势，且上游产能是明确的外部依赖</strong>（置信度：中）。当前的高盈利更像是&quot;供不应求 + 政策强制国产化&quot;共同造出的窗口期红利，而不是壁垒收租。</p>
+<h2>F. 政策与监管</h2>
+<p>库内无政策数据，本节全部为联网信息，每条带来源与日期。</p>
+<p><strong>① 最重要的一条：算力硬件国产化 75% 硬性红线，2026 年 9 月起执行（置信度：高，多源交叉）</strong></p>
+<p>工信部、发改委、国资委等七部门联合印发《2026-2028 年全国算力基础设施建设行动方案》，自 2026 年 9 月起正式实施，为期三年。核心条款：央企、地方国资出资新建智算中心、超算中心时，<strong>AI 芯片、AI 服务器、高速光模块等算力核心硬件国产化采购比例不得低于 75%</strong>；项目立项、能耗指标审批、专项财政补贴发放均将国产化比例作为核心考核项，未达标者不予通过审批、取消配套扶持资金资格。 （来源：搜狐财经《七部委算力建设方案 9 月落地》2026-08；网易财经《新增 5 万 P 算力 + 75% 国产红线》2026-08；企数智《七部委发布 2026-2028 硬科技协同发展方案》2026-08；新浪财经 2026-06-18 七部门算力基础设施行动计划报道）</p>
+<p><strong>传导链条</strong>：政策 → 央国企新建智算中心必须采购 ≥75% 国产 AI 芯片 → 国产 AI 芯片总需求出现制度性下限 → 寒武纪云端加速卡（库内主营，B 节）直接受益。 <strong>方向：利好。</strong> 但要注意一个限定——<strong>受益的是&quot;国产 AI 芯片&quot;整体，不是寒武纪独家</strong>。华为昇腾、海光、平头哥、昆仑芯同样在这个池子里，且份额都比寒武纪大或相当（见下条）。政策抬的是行业地板，不是个股天花板。（置信度：中高）</p>
+<p><strong>② 配套支持政策（置信度：中，单源系）</strong></p>
+<p>同一方案下：800G/1.6T 国产高速光模块采购最高享 30% 财政补贴；科技企业研发加计扣除提升至 230%；国家级算力攻关基金重点扶持磷化铟光芯片、12 寸硅光子等短板环节。 （来源：新浪新闻转载 2026-08、知乎《七部委划定算力国产化 75% 硬性红线》2026-08） <strong>对寒武纪的直接相关性</strong>：研发加计扣除 230% 对研发投入巨大的芯片设计公司是实质性的税负减免；光模块补贴与寒武纪无直接关系。<strong>方向：轻度利好</strong>。</p>
+<p><strong>③ 即将到来的政策窗口（置信度：中，库内事件日历）</strong></p>
+<ul>
+<li>2026-08-26：国新办发布会，工信部介绍&quot;十五五&quot;规划实施与新型工业化推进，库内标注会透露芯片等重点制造业政策方向（库内重要性 7）</li>
+<li>2026-08-31：工信部印发《算力标准体系建设指南》（7 月已明确将印发，具体日期待定，库内重要性 7）</li>
+<li>2026-09-11 至 13：中国算力大会（河北廊坊，工信部主办），库内标注&quot;将重磅发布算力产业政策方向&quot;（库内重要性 8）</li>
+</ul>
+<p><strong>④ 未见的监管风险</strong>：库内新闻近 60 日 20 条中，<strong>无任何监管处罚、问询函、立案调查类信息</strong>；全部为&quot;噪音其他&quot;。联网也未检索到针对该公司的合规事件。（置信度：中，因新闻窗口只覆盖到 2026-08-17，见 H 节）</p>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 15 个同花顺概念标签。<strong>逐个分级</strong>——标签沾边不等于有营收：</p>
+<p><strong>第一类：指数成份 / 交易机制标签（与业务无关，共 6 个）</strong></p>
+<ul>
+<li>上证 180 成份股（883302.TI）、上证 50 样本股（883301.TI）、沪深 300 样本股（883300.TI）、中国 AI 50（886102.TI）、同花顺新质 50（886096.TI）——<strong>均为指数或榜单成份</strong>，只说明市值与流动性够格，不含任何业务信息。</li>
+<li>沪股通（885520.TI）、融资融券（885338.TI）——<strong>交易机制标的</strong>，说明外资可买、可两融，与主营无关。</li>
+</ul>
+<p><strong>第二类：真有业务（有库内主营描述佐证，共 4 个）</strong></p>
+<ul>
+<li><strong>人工智能（885728.TI）</strong>——库内主营即&quot;人工智能核心芯片的研发、设计和销售&quot;，<strong>名副其实</strong>。（置信度：高）</li>
+<li><strong>芯片概念（885756.TI）</strong>——同上，主营就是芯片设计。（置信度：高）</li>
+<li><strong>数据中心 AIDC（885887.TI）</strong>——库内主营明确写&quot;应用于各类云服务器&quot;，云端加速卡&quot;已应用到国内主流服务器厂商的产品中，并已实现量产出货&quot;。<strong>有主营佐证</strong>。（置信度：高）</li>
+<li><strong>东数西算（算力）（885957.TI）</strong>——同上，云端 AI 加速卡是智算中心的核心算力硬件，与 F 节 75% 国产化政策的受益口径一致。<strong>有主营佐证</strong>。（置信度：中高）</li>
+</ul>
+<p><strong>第三类：仅概念标签，未见营收佐证（共 5 个，逐条说明为什么）</strong></p>
+<ul>
+<li><strong>先进封装（886009.TI）</strong>——⚠️ <strong>方向恰好是反的</strong>。联网信息称思元 690 采用双 die 封装、配 HBM3（来源：卖方研报摘要 2026-05，单源·置信度低），说明寒武纪是先进封装的<strong>采购方/需求方</strong>，不是<strong>供给方</strong>。这个标签会让人误以为它卖封装服务，实际它<strong>买</strong>封装服务——C 节那 25.37 亿元&quot;委托加工物资&quot;正是这笔支出。<strong>仅概念标签，且相关性是成本端而非收入端</strong>。（置信度：中高）</li>
+<li><strong>国产操作系统（885844.TI）</strong>——⚠️ 库内主营提到&quot;配套的基础系统软件平台&quot;，那是芯片配套的软件栈（驱动、算子库、编译器），<strong>不是操作系统</strong>。库内无操作系统相关营收佐证。<strong>仅概念标签</strong>。（置信度：中）</li>
+<li><strong>汽车芯片（885945.TI）</strong>——⚠️ 库内主营与经营范围<strong>通篇未提汽车、车规、智驾任何一个字</strong>。<strong>仅概念标签，未见营收佐证</strong>。（置信度：中高）</li>
+<li><strong>阿里巴巴概念（885611.TI）</strong>——⚠️ 联网信息称寒武纪是互联网大厂的选择之一（来源：36 氪 2026，单源·置信度低），且阿里三年 3800–4800 亿元资本开支中&quot;芯片有七成投向国产&quot;（来源：新浪财经 2026-05-14、财联社 2026-05，两源一致）。但<strong>库内没有任何客户名称或收入拆分数据</strong>，无法证实阿里是其客户。<strong>仅概念标签，未见营收佐证</strong>。（置信度：中）</li>
+</ul>
+<h3>产业链位置</h3>
+<ul>
+<li><strong>上游</strong>：晶圆代工厂、先进封装（CoWoS/3D 堆叠类）、HBM 存储厂。<strong>议价能力在上游那一端</strong>——全球 HBM 与先进封装产能紧缺，寒武纪需要预付 29.14 亿元锁产能（C 节）。这是它议价能力最弱的一环。（置信度：中高）</li>
+<li><strong>自身</strong>：芯片设计 + 软件栈，Fabless 模式，不持有产线。</li>
+<li><strong>下游</strong>：服务器整机厂 → 智算中心/超算中心运营方（央国企、互联网大厂）。<strong>议价能力目前偏向寒武纪</strong>——政策强制 75% 国产化（F 节）+ 大厂资本开支扩张（阿里 3800–4800 亿元、腾讯 2026 年 900–1000 亿元、字节讨论提至最高 700 亿美元，来源：新浪财经 2026-05-14、财联社 2026-05、经济日报 2026），供不应求。</li>
+<li><strong>一句话</strong>：<strong>下游有政策托底的刚性需求，上游有产能卡脖子，公司夹在中间赚窗口期的钱</strong>。这个窗口的宽度取决于上游产能何时松、大厂自研何时成——两个都不由它决定。（置信度：中）</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<h3>新闻（库内新闻（近 60 日），返回 20 条，实际覆盖 2026-08-17 至 2026-08-25）</h3>
+<div class="callout">⚠️ <strong>数据边界</strong>：函数窗口设的是 60 天，但只返回 20 条、最早仅到 2026-08-17——<strong>这只是最近 9 天的记录</strong>，7 月与 8 月上半月的消息面（包括 7-28 股权激励草案、8-08 中报披露当天的市场反应）<strong>不在这 20 条里</strong>。本节结论只能覆盖最近 9 天。（置信度：高，这是数据事实）</div>
+<p>按重要性挑选，逐条判断有无实质基本面影响：</p>
+<ol>
+<li><strong>2026-08-17/18：寒武纪 56.1 万股股权激励股份将于 8 月 20 日上市流通，124 名员工人均股票价值 557.15 万元</strong>（来源：财联社、东方财富）——<strong>有实质影响，偏负面</strong>。这是<strong>已授予激励股份的实际解禁</strong>，形成可流通的减持来源。库内该条情绪标签为 −0.4/−0.3，属真实利空但量级不大（56.1 万股对 6.29 亿总股本约占 0.09%，推算）。（置信度：中高）</li>
+<li><strong>2026-08-17：北京市中伦律师事务所关于 2026 年限制性股票激励计划调整及首次授予事项的法律意见书</strong>（来源：巨潮公告库内公告）——<strong>流程性文件，无直接基本面影响</strong>，但确认了 7 月那份激励计划已进入授予执行阶段（计划详情见下文&quot;股权激励&quot;段）。（置信度：高）</li>
+<li><strong>2026-08-20：寒武纪股价跌破 1000 元关口</strong>（来源：东方财富，发稿时点 14:30）——⚠️ 这是<strong>发稿时点的盘中旧快照</strong>，股价<strong>曾</strong>跌破 1000 元；以库内行情为准，2026-08-25 收盘已回到 <strong>1,010.48 元</strong>。库内情绪标签 −0.6。<strong>无基本面影响，是情绪指标</strong>。（置信度：高）</li>
+<li><strong>2026-08-18：频准激光盘中股价超越寒武纪，位列科创板第三</strong>（来源：东方财富）——<strong>无基本面影响</strong>，但侧面反映&quot;最贵科创板股&quot;的标签正在转移，是资金注意力的迁移信号。（置信度：低）</li>
+<li><strong>2026-08-22/23：2026 绿色算力大会签约 13 个项目，总投资 1361 亿元</strong>（来源：财联社、东方财富，库内情绪标签 0.8–0.9）——<strong>行业级利好，对寒武纪是间接的</strong>。智算中心投资落地是需求侧证据，与 F 节 75% 国产化政策同向。但库内无证据表明寒武纪参与其中。（置信度：中）</li>
+<li><strong>2026-08-24/25：小米发布大模型专用 AI 加速芯片玄戒 O100</strong>（来源：东方财富，库内情绪标签 0.6）——⚠️ <strong>这条需要分清</strong>。联网信息显示玄戒 O100 是<strong>端侧</strong>大模型 AI 加速芯片，行业首颗 6nm 3D 晶圆级堆叠，内存带宽 1.22TB/s，用于手机等终端设备（来源：腾讯新闻 2026-08-24、新浪财经 2026-08-24、中关村在线 2026-08、EET China 2026-08，多源交叉·置信度高）。<strong>它对标的是寒武纪的&quot;终端智能处理器 IP&quot;业务，不是云端训练加速卡这块主战场</strong>。定性：<strong>对终端 IP 线是竞争压力，对云端主业无直接冲击</strong>；但作为&quot;又一家大厂自研成功&quot;的信号，对 E 节那条&quot;中立第三方卡位&quot;的护城河是负面注脚。（置信度：中）</li>
+<li><strong>2026-08-24：科创 50 指数跌幅扩大至 3%</strong>（来源：东方财富，库内情绪标签 −0.7）——<strong>板块级回撤</strong>，非个股问题。当日寒武纪跌 6.37%（据库内日线，跌幅约为指数的两倍），说明它是板块里的高 beta 品种。（置信度：中高）</li>
+<li><strong>2026-08-25：AI 算力产业链业绩持续兑现 / 三重利好提振芯片板块</strong>（来源：东方财富两条，情绪标签 0.6–0.7）——<strong>情绪面利好</strong>，与当日库内行情的 +4.28% 相印证。（置信度：中）</li>
+</ol>
+<p><strong>新闻面小结</strong>：最近 9 天<strong>没有一条针对寒武纪基本面的实质性负面消息</strong>（ 20 条全为&quot;噪音其他&quot;）。真正的压力来自三处：激励股份解禁、板块级回撤、以及&quot;又一家大厂自研 AI 芯片&quot;的持续叙事。（置信度：中高）</p>
+<h3>股权激励（联网补充，库内新闻只见流程文件）</h3>
+<p>2026-07-28 公司发布 2026 年限制性股票激励计划（草案）：拟授予 500 万股，占总股本 0.80%，授予价 <strong>750 元/股</strong>；首次授予涉及 <strong>945 名员工</strong>，占员工总数 85.37%。业绩考核目标：<strong>2026 年营收不低于 135 亿元；2026–2027 年累计营收不低于 405 亿元；2026–2028 年累计营收不低于 1000 亿元</strong>。第三类激励对象另有净利润考核：以 2025 年净利润为基数（剔除股份支付影响），2027 年增长率不低于 300%、2028 年不低于 500%。 （来源：财联社 2026-07-28、中国金融信息网 2026-07-28、同花顺财经 2026-07-28、新浪财经 2026-07-28，多源交叉·置信度高）</p>
+<div class="callout"><strong>这份激励计划是本报告最有用的&quot;公司自己给的标尺&quot;</strong>：135 亿元的 2026 年营收目标，对照库内 H1 已实现 59.96 亿元 = <strong>完成 44.4%</strong>（推算），意味着<strong>下半年需做到至少 75.04 亿元，环比 H1 增长 25.2%</strong>（推算）。这是一条可以逐季核对的硬线（置信度：高）。 更值得留意的是后两年：2027 单年需 ≥270 亿元、2028 单年需 ≥595 亿元（据 405 与 1000 的累计目标推算）——<strong>2028 年的目标接近 2026 年的 4.4 倍</strong>。当前 PB 46.88 定的就是这条曲线。</div>
+<h3>涨停史（库内涨停记录（近 180 日））</h3>
+<p>近 180 日<strong>仅 1 次涨停</strong>：</p>
+<ul>
+<li><strong>2026-04-30</strong>｜涨幅 <strong>+20.00%</strong>（科创板 20cm 涨停）｜<strong>1 连板</strong>｜首次封板 <strong>13:44:38</strong>｜全天开板 <strong>0 次</strong>｜封单金额 <strong>7.54 亿元</strong>｜所属半导体</li>
+</ul>
+<p><strong>读法</strong>：180 天只有一次涨停，且是 1 连板即结束——<strong>这不是一只被游资连续爆炒的票</strong>。下午 13:44 才封板、但全天零开板、封单 7.54 亿元，说明当日是<strong>资金坚决但节奏偏慢</strong>的机构式买盘，不是竞价一字板的情绪抢筹。<strong>它的定价权在机构手里，不在情绪盘手里</strong>（置信度：中高）。这与 B 节&quot;单日振幅近 8 个点&quot;并不矛盾——高价股的大资金分歧同样能打出大波动。</p>
+<h3>资金流与筹码（库内资金筹码）</h3>
+<div class="callout">⚠️ <strong>纪律声明</strong>：以下三项是<strong>盘面与筹码现象，不是基本面证据</strong>。它们只作情绪面佐证，<strong>不进 J 节逻辑链，也不单独用来下操作结论</strong>。</div>
+<p><strong>① 主力资金：近 20 个交易日在净流出（置信度：高）</strong> 窗口 2026-07-29 至 2026-08-25：主力资金净流出 <strong>27.88 亿元</strong>，其中特大单净流出 <strong>15.63 亿元</strong>；净流入天数 <strong>10 天</strong>、净流出 <strong>10 天</strong>。 <strong>读法</strong>：进出天数各半，但<strong>金额上是净流出 27.88 亿元</strong>——说明流出的那 10 天单日规模更大。这是&quot;跌起来更凶&quot;的资金结构。（置信度：中高）</p>
+<p><strong>② 筹码：数据时点滞后近 3 周，要按滞后读（置信度：中）</strong> 数据日 <strong>2026-08-07</strong>：获利盘比例 <strong>41.84%</strong>；加权平均成本 <strong>1,274.29 元</strong>；成本 15% 分位 <strong>1,100.10 元</strong>、50% 分位 <strong>1,254.50 元</strong>、85% 分位 <strong>1,486.10 元</strong>。</p>
+<p><strong>必须写两面，且必须扣掉时点差</strong>：</p>
+<ul>
+<li>数据日当天获利盘 41.84%，属<strong>中性偏低</strong>——上方套牢盘多于下方获利盘，反弹有阻力，但短线获利抛压相对小。</li>
+<li>⚠️ <strong>关键是时点</strong>：这组数据截至 2026-08-07，而库内行情的最新价是 <strong>1,010.48 元（2026-08-25）</strong>，<strong>已低于当时的 15% 分位成本 1,100.10 元</strong>。这意味着<strong>按 8-07 的筹码分布推算，当前价位下超过 85% 的持仓处于浮亏</strong>（推算，置信度：中——期间有换手，真实分布已迁移）。</li>
+<li>双面解读：<strong>深套盘密集意味着每一次反弹到成本密集区（1,254.50 元一线）都会遇到解套抛压</strong>；反过来，极低的获利盘也意味着<strong>短线获利了结的动能基本耗尽</strong>。（置信度：中）</li>
+</ul>
+<p><strong>③ 股东户数：在集中（置信度：中高）</strong> 截至 <strong>2026-06-30</strong> 股东户数 <strong>58,270 户</strong>，较 2026-03-31 的 68,582 户<strong>减少 15.0%</strong>。 <strong>读法</strong>：户数下降 15% 意味着<strong>筹码在向少数账户集中</strong>，通常伴随机构增持或散户离场。⚠️ 但这是<strong>季度披露数据、天然滞后</strong>——截止日 6 月 30 日，<strong>完全没有反映 8 月这波回撤期间的筹码变动</strong>。用它推断当下持仓结构是不成立的。（置信度：中，且时效受限）</p>
+<h2>I. 未来 13 周事件日历</h2>
+<p>数据来自库内事件日历（近 120 日）（15 条，<strong>全部为概念匹配，无一条是公司专属事件</strong>——见 M 节信息缺口）+ 联网补充。周起点为周一。</p>
+<ul>
+<li><strong>W1（2026-08-24 起）</strong>：
+<ul>
+<li>2026-08-26 · 国新办发布会：工信部介绍&quot;十五五&quot;规划实施、加快推进新型工业化 · 政策 · 重要性 <strong>高</strong>（库内 7）· 影响：可能给出芯片产业政策方向口径，直接关系 F 节判断</li>
+<li>2026-08-26（美东） · 英伟达 FY2027Q2 财报 · 公司事件 · 重要性高 · 影响：全球 AI 算力资本开支风向标（来源：搜索结果综合 2026-08，<strong>单源未交叉验证·置信度低</strong>）</li>
+<li>2026-08-28 至 30 · 中国国际大数据产业博览会（贵阳，国家数据局主办）· 会议 · 重要性中高（库内 7）· 影响：数据要素与东数西算方向情绪催化</li>
+</ul></li>
+<li><strong>W2（2026-08-31 起）</strong>：
+<ul>
+<li>2026-08-31 · 第十四届半导体设备材料及核心部件展 CSEAC 2026（无锡）· 会议 · 重要性中高（库内 7）</li>
+<li>2026-08-31 · 工信部印发《算力标准体系建设指南》（已明确将印发，<strong>日期待定</strong>）· 政策 · 重要性中高（库内 7）</li>
+<li><strong>2026-09-01 · 《2026-2028 年全国算力基础设施建设行动方案》正式执行：新建智算中心国产算力硬件采购占比强制不低于 75% · 政策 · 重要性最高（库内 8）· 影响：本报告 J 节逻辑链第一环，是全季度最关键的政策落点</strong></li>
+<li>2026-09-01 至 02 · 第四届设计自动化产业峰会 IDAS 2026（上海张江）· 会议 · 重要性中（库内 6）</li>
+<li>2026-09-02 · 博通 FY2026Q3 财报 · 公司事件 · 重要性高（库内 8）· 影响：北美 AI 算力资本开支强度的读数</li>
+</ul></li>
+<li><strong>W3（2026-09-07 起）</strong>：
+<ul>
+<li>2026-09-07 至 08 · 第 24 届讯石光通信大会 IFOC 2026（深圳）· 会议 · 重要性中高（库内 7）</li>
+<li>2026-09-08 · 小米 18 Fold 折叠屏发布（首发自研玄戒 O3）· 公司事件 · 重要性中（库内 6）· 影响：延续 H 节第 6 条的&quot;大厂自研&quot;叙事</li>
+<li>2026-09-09 至 11 · IICIE 国际集成电路创新博览会（深圳）· 会议 · 重要性中（库内 6）</li>
+<li>2026-09-10 至 12 · 杭州国际人工智能与机器人创新博览会 AI Show 2026 · 会议 · 重要性中高（库内 7）</li>
+<li>2026-09-10 至 11 · 第 16 次 APEC 能源部长会议（北京，主题&quot;AI+能源&quot;）· 会议 · 重要性中高（库内 7）</li>
+<li><strong>2026-09-11 至 13 · 2026 中国算力大会（河北廊坊，工信部主办）· 会议 · 重要性最高（库内 8）· 影响：库内标注将&quot;重磅发布算力产业政策方向&quot;，是 F 节政策链的第二个落点</strong></li>
+<li>2026-09-11 至 14 · 2026 浦江创新论坛（上海，含 AI 赋能科学研究专题）· 会议 · 重要性中（库内 6）</li>
+</ul></li>
+<li><strong>W4（2026-09-14 起）</strong>：本周无已知事件</li>
+<li><strong>W5（2026-09-21 起）</strong>：
+<ul>
+<li>2026-09-22 至 24 · 2026 云栖大会（杭州，阿里巴巴主办）· 会议 · 重要性高（库内 8）· 影响：观察国内 AI 算力与云计算景气；与 G 节&quot;阿里巴巴概念&quot;标签直接相关，若披露国产芯片采购口径可验证该标签成色</li>
+</ul></li>
+<li><strong>W6（2026-09-28 起）</strong>：本周无已知事件（国庆节前最后交易周，A 股节假日安排以交易所公告为准）</li>
+<li><strong>W7（2026-10-05 起）</strong>：本周无已知事件（国庆假期，A 股休市）</li>
+<li><strong>W8（2026-10-12 起）</strong>：本周无已知事件（三季报披露窗口临近，可留意公司预约披露日期公告）</li>
+<li><strong>W9（2026-10-19 起）</strong>：
+<ul>
+<li><strong>预计 2026 年第三季度报告披露 · 财报 · 重要性最高 · 影响：验证 C 节全部关键判断——单季营收、存货是否从 82.48 亿元去化、经营活动现金流能否从 3.11 亿元改善</strong></li>
+<li>⚠️ <strong>日期为推算</strong>：依据是库内财务中 2025 年三季报公告日 = 2025-10-18。公司尚未公告 2026 年三季报确切预约披露日，联网亦未检索到（置信度：低）</li>
+</ul></li>
+<li><strong>W10（2026-10-26 起）</strong>：
+<ul>
+<li>2026-10-31 前 · 三季报法定披露截止 · 财报 · 重要性最高 · 影响：无论 W9 预估是否准确，三季报必在本周结束前落地</li>
+</ul></li>
+<li><strong>W11（2026-11-02 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-11-09 起）</strong>：本周无已知事件</li>
+<li><strong>W13（2026-11-16 起）</strong>：
+<ul>
+<li>英伟达 FY2027Q3 财报 · 公司事件 · 重要性中高 · 影响：全球 AI 算力景气读数；<strong>日期未公告</strong>，参照 FY2026Q3 于 2025-11-20 披露推算（来源：新浪财经 2025-11-20，<strong>日期为推算·置信度低</strong>）</li>
+</ul></li>
+</ul>
+<p><strong>日历读法</strong>：<strong>催化剂高度集中在 W2–W5（9 月）</strong>——政策落地、工信部算力大会、云栖大会三个高重要性事件都在这四周内；<strong>而真正的基本面验证点在 W9–W10（10 月下旬）</strong>。中间的 W6–W8 是三周的事件真空期。这个节奏意味着：<strong>9 月是消息驱动的行情、10 月下旬才是数字驱动的清算</strong>（置信度：中高）。</p>
+<h2>J. 逻辑链</h2>
+<p>把 B–I 的事实串成一条可证伪的链，每环标置信度，并点出最弱一环。</p>
+<p><strong>第 1 环（置信度：高）</strong> 因为 <strong>七部门《2026-2028 年全国算力基础设施建设行动方案》自 2026 年 9 月起强制央国企新建智算中心国产算力硬件采购比例 ≥75%，且立项与补贴挂钩</strong>（F 节，多源交叉）， 且 <strong>国内头部互联网大厂资本开支仍在上修</strong>（阿里三年 3800–4800 亿元、腾讯 2026 年 900–1000 亿元、字节讨论提至最高 700 亿美元，G 节，多源交叉）， → <strong>所以国产 AI 加速卡在 2026H2–2027 存在制度性 + 市场性的双重需求下限</strong>。 → 如果这条成立，应该观察到：<strong>9 月起央国企智算中心招标中国产芯片中标占比显著上升</strong>（可在 W2–W10 期间通过公开招标信息核验）。</p>
+<p><strong>第 2 环（置信度：中高）</strong> 因为 <strong>寒武纪主营即云端 AI 加速卡且已在主流服务器厂商产品中量产出货</strong>（B 节，库内主营描述）， 且 <strong>2026H1 毛利率 55.25% 稳定、净利率升至 38.54%、营收同比 +108.13%</strong>（C 节，库内）， → <strong>所以它是第 1 环需求的直接承接方之一，且承接过程中没有出现价格战侵蚀毛利的迹象</strong>。 → 如果这条成立，应该观察到：<strong>三季报毛利率仍稳定在 54%–56% 区间</strong>（W9 可核）。</p>
+<p><strong>第 3 环（置信度：中）</strong> 因为 <strong>资产负债率从 2025Q3 的 10.12% 升至 2026H1 的 25.48%</strong>（库内）， 且 <strong>存货 82.48 亿元、预付款 29.14 亿元，合计约 111.62 亿元</strong>（联网两源 + 推算）， → <strong>所以公司已把资产负债表押在下半年交付上；这批备货最终会以收入或减值两种形式之一出清</strong>。 → 如果这条成立，应该观察到：<strong>三季报存货余额从 82.48 亿元回落，且单季营收环比 Q2 的 31.11 亿元明显放大</strong>（W9 可核）。</p>
+<p><strong>第 4 环（置信度：中，⚠️ 这是整条链最弱的一环）</strong> 因为 <strong>公司自设 2026 年营收 ≥135 亿元的激励考核目标</strong>（H 节，多源交叉）， 且 <strong>H1 仅完成 59.96 亿元、占 44.4%</strong>（推算）， → <strong>所以下半年必须做到 ≥75.04 亿元、环比 H1 增长 25.2%（推算），才能兑现自己的承诺</strong>。 → 如果这条成立，应该观察到：<strong>三季报单季营收 ≥37.5 亿元</strong>（下半年半程线，推算）。</p>
+<p><strong>⚠️ 命门在第 4 环，理由有两层：</strong></p>
+<p><strong>第一层——这一环的方向已经在恶化。</strong> Q2 单季营收环比 Q1 仅 <strong>+7.83%</strong>、同比从 Q1 的 +159.56% 降到约 <strong>+75.9%</strong>（均为推算，且与联网口径独立吻合）。<strong>要在 H2 实现环比 +25.2%，需要出货节奏比 Q2 明显加速，而 Q2 的实际趋势是减速。</strong> 这个矛盾是本报告最不舒服的地方。</p>
+<p><strong>第二层——它依赖一个我无法验证的外部变量：上游产能。</strong> E 节已说明，寒武纪是 Fabless，HBM 与先进封装产能不在自己手里。<strong>那 29.14 亿元预付款既是它抢产能的证据，也是它抢不到就会出问题的证据。</strong> 库内没有任何产能、订单、在手合同数据（M 节）。</p>
+<p><strong>证伪条件（明确写出来）</strong>：如果三季报出现以下任一项，本条逻辑链断裂——① 单季营收 &lt;33 亿元（低于 Q2 的 31.11 亿元仅微增，全年 135 亿元目标基本无望）；② 存货较 82.48 亿元继续上升；③ 毛利率跌破 54%（说明出现价格竞争）；④ 出现存货减值计提。</p>
+<h2>K. 三情景推演</h2>
+<p>三个概率加总 100%。触发条件全部可用三季报数字或公开事件核对。</p>
+<ul>
+<li><strong>乐观（30%）</strong>｜<strong>触发</strong>：三季报单季营收 ≥40 亿元 <strong>且</strong> 存货较 82.48 亿元回落 <strong>且</strong> 经营活动现金流净额由 3.11 亿元转向明显改善｜<strong>路径</strong>：全年 135 亿元营收目标可见度大幅提升，J 节第 3、4 环同时验证通过，&quot;备货变收入&quot;的叙事成立；估值锚从 2026 年切换到券商预期的 2027 年（见 J 节与下方卖方预期段），市场重新为 2028 年千亿营收目标定价，跟随算力板块走强 beta。（置信度：中）</li>
+<li><strong>中性（45%）</strong>｜<strong>触发</strong>：三季报单季营收落在 33–40 亿元区间 <strong>且</strong> 存货小幅去化或基本持平 <strong>且</strong> 毛利率仍在 54%–56%｜<strong>路径</strong>：增长兑现但达不到自设目标的节奏，多空双方各有依据；PE(TTM) 190.71 的高估值缺乏进一步扩张的燃料，也缺乏坍塌的导火索；跟随算力板块 beta 宽幅震荡，不形成单边趋势，波动主要由 I 节 9 月密集催化剂与 10 月财报之间的预期差驱动。（置信度：中）</li>
+<li><strong>悲观（25%）</strong>｜<strong>触发</strong>：三季报单季营收 &lt;33 亿元 <strong>或</strong> 存货较 82.48 亿元继续上升 <strong>或</strong> 经营活动现金流进一步恶化 <strong>或</strong> 出现存货减值计提｜<strong>路径</strong>：J 节第 3、4 环双双断裂，&quot;2028 年千亿营收&quot;的定价基础受质疑；PB 46.88 缺乏账面资产支撑，估值下修压力集中释放；叠加 H 节主力资金已连续 20 日净流出 27.88 亿元的资金结构，以及筹码上 85% 以上持仓浮亏形成的解套抛压，回撤可能超过板块平均。（置信度：中）</li>
+</ul>
+<p><strong>概率分配的理由</strong>：中性给到 45% 是因为 J 节第 4 环的两个方向（Q2 已在减速 vs 政策 9 月落地）力量相当，且缺乏订单数据无法偏向任何一边；乐观略高于悲观（30% vs 25%），理由是 F 节的 75% 国产化红线是<strong>制度性的、有强制力的</strong>需求下限，这类政策变量的确定性高于一般的行业景气判断。（置信度：中）</p>
+<h2>L. 决策与风控</h2>
+<h3>条件式操作倾向</h3>
+<ol>
+<li><strong>如果</strong> 三季报（预计 2026 年 10 月下旬，见 I 节 W9）单季营收 <strong>≥40 亿元</strong> 且存货较 2026H1 的 82.48 亿元出现回落，<strong>那么</strong> 可对国产算力方向的持仓<strong>维持或小幅加仓</strong>——此时 J 节第 3、4 环同时验证通过，备货兑现为收入的逻辑成立。</li>
+<li><strong>如果</strong> 三季报单季营收 <strong>&lt;33 亿元</strong>（即较 Q2 的 31.11 亿元仅微增）<strong>或</strong> 存货较 82.48 亿元继续上升 <strong>或</strong> 出现存货减值计提，<strong>那么</strong> <strong>减仓或回避</strong>——J 节命门断裂，当前 PE(TTM) 190.71 与 PB 46.88 失去支撑。</li>
+<li><strong>如果</strong> 在三季报落地之前（即 2026 年 9 月至 10 月中旬的 I 节 W2–W8 期间），<strong>那么</strong> <strong>观望</strong>——这段时间只有政策与会议催化（9/1 政策执行、9/11 算力大会、9/22 云栖大会），<strong>没有任何可以验证 J 节命门的数字</strong>；在此期间的价格波动全部是预期变化而非事实变化。</li>
+</ol>
+<h3>风控要点：什么情况下应当推翻本报告的判断</h3>
+<p>本报告给出&quot;震荡&quot;而非单边方向，推翻它需要以下任一条：</p>
+<ul>
+<li><strong>向上推翻</strong>：公司公告获得大额确定性订单，或披露客户结构显示单一客户依赖度已实质下降——<strong>这会把 J 节第 4 环从&quot;推断&quot;变成&quot;事实&quot;</strong>，届时&quot;震荡&quot;判断过于保守。</li>
+<li><strong>向下推翻</strong>：出现 F 节 75% 国产化政策的执行口径松动（如允许&quot;实质性国产&quot;等变通解释），或大厂自研芯片进入云端训练场景（H 节小米玄戒 O100 目前只在端侧，若下一代进云端则性质改变）——<strong>这会同时打掉 J 节第 1、2 环</strong>。</li>
+<li><strong>横向推翻</strong>：三季报毛利率跌破 54%（四期以来最低为 54.33%）——说明国产 AI 芯片之间已开始价格竞争，&quot;政策抬地板&quot;变成&quot;多家分同一块地板&quot;，E 节的窗口期红利提前结束。</li>
+</ul>
+<h3>仓位思路</h3>
+<ul>
+<li>在三季报落地前，<strong>属于&quot;不宜重仓&quot;的品种</strong>：估值处于行业由便宜到贵约 75% 分位（B 节推算），利润现金含量仅约 13.5%（C 节推算），主力资金 20 日净流出 27.88 亿元（H 节），三项同向；而唯一的正面确定性来自政策（F 节），政策利好的是整个国产算力板块、不是它独家。</li>
+<li>若参与，<strong>相对概念是轻仓</strong>，且应当把仓位与 I 节 W9 的三季报绑定——<strong>把它当成一笔有明确验证时点的判断，而不是一笔可以无限期持有的配置</strong>。</li>
+<li>本节不给具体金额、不给股数、不给价位。</li>
+</ul>
+<h2>M. 逻辑自查</h2>
+<h3>这份判断最依赖的假设是哪一条？错了会怎样？</h3>
+<p><strong>最依赖的假设：那 82.48 亿元存货 + 29.14 亿元预付款是&quot;为已知需求备货&quot;，而不是&quot;对赌需求&quot;。</strong></p>
+<p>这条假设支撑了 J 节第 3、4 环，也支撑了 K 节乐观与中性合计 75% 的概率分配。<strong>但库内没有任何证据能证实它</strong>——库里没有订单数据、没有在手合同、没有客户结构。我唯一的支撑是&quot;公司敢把资产负债率从 10.12% 拉到 25.48%（库内），通常意味着有需求可见度&quot;。</p>
+<p><strong>这是一个行为推断，不是事实。</strong> 如果错了——即备货是基于对政策的乐观预判而非确定订单——那么 K 节的悲观情景概率应当远高于 25%，且 L 节第 1 条的加仓条件永远不会触发。</p>
+<h3>有没有为了让逻辑好看而忽略的反面证据？</h3>
+<p><strong>有三处，我在正文里已经写了，但在这里再明确一次，因为它们容易被 A 节的&quot;震荡&quot;结论稀释掉：</strong></p>
+<ol>
+<li><strong>Q2 增速减半这件事，我给的权重可能不够。</strong> 营收同比从 Q1 的 +159.56% 降到 Q2 的约 +75.9%（推算），环比只有 +7.83%。我在 J 节第 4 环点了它，但在 A 节的&quot;核心驱动&quot;里我仍然把&quot;营收 +108.13%&quot;列为驱动之一——<strong>那是累计口径，它掩盖了单季的减速</strong>。诚实的说法是：<strong>H1 的漂亮数字有相当一部分是 Q1 贡献的</strong>。</li>
+<li><strong>中报炸裂而股价没涨，这个事实本身就是市场的答案。</strong> 库内财务显示中报 2026-08-08 披露，而库内新闻里 8-20 有&quot;股价跌破 1000 元关口&quot;（H 节第 3 条）。<strong>市场用两周时间给出了它的判断，而我的报告在很大程度上是在重新论证市场已经得出的结论</strong>。我应当承认：本报告没有提供任何市场不知道的信息。</li>
+<li><strong>我把 75% 国产化政策列为第一驱动，但没有充分处理&quot;它利好的是整个板块&quot;这一点。</strong> F 节我写了这句话，但在 A 节把它列为核心驱动第 1 位时，那句限定的分量被削弱了。<strong>华为昇腾份额远高于寒武纪</strong>（见下方&quot;来源冲突&quot;），政策抬地板时，最大受益方大概率不是寒武纪。</li>
+</ol>
+<h3>信息缺口清单</h3>
+<p><strong>缺口 1：库内无任何公司专属事件（严重度：高）</strong> 库内事件日历（近 120 日）返回 15 条，<strong>全部都是&quot;概念 XXX&quot;</strong>——没有一条是寒武纪自己的财报日、股东大会、限售解禁、业绩说明会。 <strong>影响</strong>：I 节 W9/W10 的三季报日期是我依据库内 2025 年三季报公告日（2025-10-18）推算的，<strong>联网也未查到 2026 年三季报的预约披露日</strong>。而三季报恰恰是本报告全部判断的验证点。若实际披露日大幅偏离，L 节的时点安排全部失准。 <strong>补法</strong>：关注公司在 I 节 W8（10 月中旬）前后发布的预约披露日期公告；或查上交所披露平台。</p>
+<p><strong>缺口 2：库内新闻只覆盖 9 天，不是 60 天（严重度：中）</strong> 函数参数设的是实际返回 20 条、最早仅到 2026-08-17。 <strong>影响</strong>：H 节的消息面结论只能覆盖 2026-08-17 至 08-25。<strong>中报披露当天（08-08）的市场反应、7-28 股权激励草案发布的即时影响，都不在库内这 20 条里</strong>——这两件事我是靠联网补的。 <strong>补法</strong>：调大返回条数，或按事件类型分别取。</p>
+<p><strong>缺口 3：库内财务数据不含现金流量表与资产负债表明细（严重度：高）</strong> 库内财务只给营收/净利/ROE/毛利率/净利率/EPS/资产负债率七项。 <strong>影响</strong>：C 节最关键的三个判断（经营现金流 3.11 亿元、存货 82.48 亿元、预付款 29.14 亿元）<strong>全部来自联网</strong>，我已为每条标注了两个独立来源与日期，但它们<strong>不是库内硬数据</strong>，可靠性低于库内数字一档。J 节第 3 环、K 节全部三个情景的触发条件都依赖这些数字。 <strong>补法</strong>：三季报披露后调取财报原文核对；或在数据层补入现金流量表字段。</p>
+<p><strong>缺口 4：无客户结构、无订单、无产能数据（严重度：高）</strong> <strong>影响</strong>：这是 M 节第一段那个&quot;最依赖的假设&quot;无法验证的直接原因。也使 E 节的护城河判断只能停在&quot;看不出结构性护城河&quot;。 <strong>补法</strong>：三季报与年报的&quot;前五大客户&quot;披露；行业招标公开信息。</p>
+<p><strong>缺口 5：库内同业对比看不到最大的竞争对手（严重度：中高）</strong> 华为昇腾非上市公司，不在库内基础资料里，D 节的横向对比天然缺了国产 AI 芯片份额第一名。 <strong>补法</strong>：只能靠联网的第三方份额统计，而那些统计本身存在冲突（见下）。</p>
+<p><strong>缺口 6：库内概念标签无法区分标签成色，需人工分级（严重度：低）</strong> 已在 G 节逐个分级处理，15 个标签中 4 个&quot;真有业务&quot;、5 个&quot;仅概念标签&quot;、6 个属指数/交易机制。其中&quot;先进封装&quot;标签方向是<strong>反的</strong>（它是采购方不是供给方），&quot;汽车芯片&quot;在库内主营与经营范围中<strong>一个字都没提到</strong>。</p>
+<h3>来源冲突（按纪律必须写出来）</h3>
+<p><strong>冲突 1：国产 AI 芯片市场份额，两个联网来源互相矛盾。</strong> 一处称 2026 年华为 49%、平头哥 16%、百度昆仑芯与寒武纪并列第三各 7%、海光 5%（来源：新浪新闻转载市场格局分析 2026）；另一处标题直接写&quot;华为 43%，寒武 11%&quot;（来源：钛媒体《2026 年国产 AI 芯片的产能饥饿游戏》2026）。<strong>寒武纪的份额在 7% 与 11% 之间存在 57% 的相对差异</strong>。 <strong>处理</strong>：本报告不采信任何一个具体数字，只保留可以从两源共同得出的定性结论——<strong>华为份额显著领先，寒武纪处于第二梯队</strong>（置信度：低，冲突未解决）。F 节&quot;政策抬地板但最大受益方未必是寒武纪&quot;的判断，依赖的正是这个定性结论而非具体数字。</p>
+<p><strong>冲突 2：中报披露日期。</strong> 库内财务的公告日 = <strong>2026-08-08</strong>，多数联网来源也指向 8 月 7–8 日；但有一处搜索结果称&quot;已于 2026 年 8 月 12 日披露 2026 年上半年报告&quot;。 <strong>处理</strong>：<strong>以库内为准，采用 2026-08-08</strong>。这条冲突量级很小，但按纪律记录。</p>
+<p><strong>冲突 3（非冲突，是时点差异，避免误读）</strong>：联网来源称&quot;寒武纪 7540 亿市值、按上半年利润年化约 163 倍市盈率&quot;（来源：钛媒体 2026-08-08）。而库内估值显示总市值 <strong>6,354.44 亿元</strong>、PE(TTM) <strong>190.71</strong>（时点 2026-08-25）。 <strong>这不是矛盾，是时点不同</strong>——该报道写于中报披露前后，当时股价约 1,199.93 元，而库内行情的最新价是 1,010.48 元。两个市值之差正是这段回撤。<strong>本报告一律以库内 6,354.44 亿元与 PE 190.71 为准。</strong></p>
+<h2>附：卖方预期（单列，不与库内事实混陈）</h2>
+<p>数据来自库内研报：近 90 天库内收录 <strong>19 篇研报，来自 15 家机构</strong>；评级分布为买入 8、推荐 4、增持 3、Overweight 1、无评级 3。</p>
+<div class="callout">⚠️ <strong>两点口径提醒</strong>：① 19 篇来自 15 家，存在同一机构多次发布的情况，<strong>评级分布会被高频发报告的机构轻微放大</strong>，不宜当作&quot;15 家机构的独立投票&quot;读；② 下列字段是<strong>研报发布当日股价</strong>对应的静态 PE，<strong>不是当前价对应的 PE</strong>（例：西部证券 2026-08-17 的 EPS 8.94 × pe 122.3 ≈ 1,093 元，接近当时股价）。</div>
+<ul>
+<li>〔卖方预期〕来源：西部证券研报（库内）· 日期：2026-08-17 · 观点：预测 2026 年 EPS 8.94 元、归母净利 56.16 亿元，2027 年 EPS 20.05 元、归母净利 125.96 亿元，2028 年 EPS 33.18 元、归母净利 208.48 亿元，评级&quot;买入&quot; · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：华创证券研报（库内）· 日期：2026-08-13 · 观点：预测 2026 年 EPS 8.47 元、归母净利 53.24 亿元，2027 年 EPS 17.70 元、归母净利 111.22 亿元，2028 年 EPS 29.71 元、归母净利 186.64 亿元，评级&quot;推荐&quot; · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：国盛证券研报（库内）· 日期：2026-08-11 · 观点：预测 2026 年 EPS 9.09 元、归母净利 57.09 亿元，评级&quot;买入&quot; · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：东北证券研报（库内）· 日期：2026-08-11 · 观点：预测 2026 年 EPS 9.57 元、归母净利 60.15 亿元，评级&quot;增持&quot; · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：群益证券研报《算力紧缺利好国产芯片企业》（库内）· 日期：2026-07-29 · 观点：认为算力紧缺环境利好国产芯片企业（库内仅收录标题，未收录具体预测数字）· 置信度：低（卖方预期非事实，未经交叉验证）</li>
+</ul>
+<p><strong>这批预期怎么用（这是我的解读，不是卖方观点）</strong></p>
+<p>四家机构对 2026 年归母净利的预测区间为 <strong>53.24 亿至 60.15 亿元</strong>（库内盈利预测的净利润（万元）换算）。对照库内 H1 实际归母净利 23.11 亿元，<strong>隐含下半年需实现 30.13 亿至 37.04 亿元，较 H1 环比增长 30.4% 至 60.3%</strong>（推算）。</p>
+<p><strong>这个隐含增速比公司自己的激励目标还要激进</strong>——激励考核对应的下半年营收环比增长约 25.2%（H 节推算），而卖方隐含的下半年利润环比增长最高到 60.3%。<strong>换句话说，当前卖方一致预期建立在&quot;下半年出货大幅加速&quot;之上，而 Q2 的实际趋势是环比 +7.83%（推算）</strong>。这个落差是 J 节命门的量化形式（置信度：中高）。</p>
+<p>按库内行情的 1,010.48 元与上述 2026 年 EPS 预测区间 8.47–9.57 元计算，对应静态 PE 约 <strong>105.6 至 119.3 倍</strong>（推算）——即便按卖方最乐观的盈利预测，估值仍在百倍以上。</p>
+<p><strong>信息来源（联网部分）</strong></p>
+<p>Sources:</p>
+<ul>
+<li><a href="https://m.sohu.com/a/1052720161_121721205" target="_blank" rel="noopener">七部委算力建设方案9月落地，核心硬件国产化率不低于75%（搜狐财经，2026-08）</a></li>
+<li><a href="https://www.163.com/dy/article/L2FL2BT805386WWT.html" target="_blank" rel="noopener">新增5万P算力+75%国产红线：国产GPU的&quot;真替真用&quot;大考（网易财经，2026-08）</a></li>
+<li><a href="https://www.qishuzhi.com/article/4ldqq0o" target="_blank" rel="noopener">七部委发布2026-2028硬科技协同发展方案（企数智，2026-08）</a></li>
+<li><a href="https://finance.sina.com.cn/jjxw/2026-06-18/doc-inicvfct3346557.shtml" target="_blank" rel="noopener">七部门：深入开展算力基础设施高质量发展和算力互联互通行动计划（新浪财经，2026-06-18）</a></li>
+<li><a href="https://finance.sina.com.cn/jjxw/2026-08-07/doc-inimpfya9847281.shtml" target="_blank" rel="noopener">营收净利翻倍狂奔！寒武纪上半年存货金额创新高（新浪财经/财联社，2026-08-07）</a></li>
+<li><a href="https://www.tmtpost.com/8096056.html" target="_blank" rel="noopener">寒武纪：上半年暴赚23亿，下半年看交付（钛媒体，2026-08-08）</a></li>
+<li><a href="https://www.sina.cn/news/detail/5329768805042984.html" target="_blank" rel="noopener">寒武纪2026年中报分析（新浪，2026-08-08）</a></li>
+<li><a href="https://www.chnfund.com/article/ARdbfedb0a-9d6a-c757-baba-3a22ef10907e" target="_blank" rel="noopener">寒武纪交出2026年上半年业绩，营业收入增速明显放缓（中国基金报，2026-08）</a></li>
+<li><a href="https://www.cls.cn/detail/2439383" target="_blank" rel="noopener">寒武纪：拟推500万股限制性股票激励计划（财联社，2026-07-28）</a></li>
+<li><a href="https://www.cnfin.com/kx/detail/20260728/4447501_1.html" target="_blank" rel="noopener">寒武纪发布2026年限制性股票激励计划草案（中国金融信息网，2026-07-28）</a></li>
+<li><a href="https://news.qq.com/rain/a/20260824A08LGQ00" target="_blank" rel="noopener">小米发布三款玄戒自研芯片（腾讯新闻，2026-08-24）</a></li>
+<li><a href="https://finance.sina.com.cn/jjxw/2026-08-24/doc-inipkzxr0010890.shtml" target="_blank" rel="noopener">小米发布大模型专用AI加速芯片玄戒O100（新浪财经，2026-08-24）</a></li>
+<li><a href="https://36kr.com/p/3767894822925058" target="_blank" rel="noopener">国产AI芯片崛起：三大门派、瓜分英伟达（36氪，2026）</a></li>
+<li><a href="https://www.tmtpost.com/8051488.html" target="_blank" rel="noopener">华为43%，寒武11%：2026年国产AI芯片的产能饥饿游戏（钛媒体，2026）</a></li>
+<li><a href="https://finance.sina.com.cn/stock/t/2026-05-14/doc-inhxvtwn8745150.shtml" target="_blank" rel="noopener">&quot;没有一张卡是空的&quot;！大厂AI资本开支再提速（新浪财经，2026-05-14）</a></li>
+<li><a href="https://money.udn.com/money/story/5604/9494099" target="_blank" rel="noopener">字节跳动AI投资加码，资本支出计划（经济日报，2026）</a></li>
+<li><a href="https://finance.sina.com.cn/tech/digi/2025-11-20/doc-infxyyfk2486426.shtml" target="_blank" rel="noopener">NVIDIA 发布 2026 财年第三季度财务报告（新浪财经，2025-11-20）</a></li>
+<li><a href="https://stock.finance.sina.com.cn/stock/go.php/vReport_Show/kind/lastest/rptid/839733373360/index.phtml" target="_blank" rel="noopener">寒武纪(688256)2026年半年报点评（新浪财经研报转载，2026-08）</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-08-26），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>PE190.7/PB46.9远高于行业中位</li>
+      <li>经营现金流3.11亿对净利23.11亿</li>
+      <li>近20日主力净流出27.88亿</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>经营现金流</dt><dd>经营活动产生的现金流量净额。利润是账面数，这个是真金白银进出。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>限售解禁</dt><dd>首发或定增取得的股份锁定期届满、可以上市流通。解禁本身不等于减持，但增加了潜在供给。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>一致预期</dt><dd>多家券商盈利预测的平均值。是别人的观点，不是事实。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.sohu.com/a/1052720161_121721205" target="_blank" rel="noopener">七部委算力建设方案9月落地，核心硬件国产化率不低于75%（搜狐财经，2026-08）</a> <em>2026-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.163.com/dy/article/L2FL2BT805386WWT.html" target="_blank" rel="noopener">新增5万P算力+75%国产红线：国产GPU的&quot;真替真用&quot;大考（网易财经，2026-08）</a> <em>2026-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.qishuzhi.com/article/4ldqq0o" target="_blank" rel="noopener">七部委发布2026-2028硬科技协同发展方案（企数智，2026-08）</a> <em>2026-20</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/jjxw/2026-06-18/doc-inicvfct3346557.shtml" target="_blank" rel="noopener">七部门：深入开展算力基础设施高质量发展和算力互联互通行动计划（新浪财经，2026-06-18）</a> <em>2026-06-18</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/jjxw/2026-08-07/doc-inimpfya9847281.shtml" target="_blank" rel="noopener">营收净利翻倍狂奔！寒武纪上半年存货金额创新高（新浪财经/财联社，2026-08-07）</a> <em>2026-08-07</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.tmtpost.com/8096056.html" target="_blank" rel="noopener">寒武纪：上半年暴赚23亿，下半年看交付（钛媒体，2026-08-08）</a> <em>2026-08-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.sina.cn/news/detail/5329768805042984.html" target="_blank" rel="noopener">寒武纪2026年中报分析（新浪，2026-08-08）</a> <em>2026-08-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.chnfund.com/article/ARdbfedb0a-9d6a-c757-baba-3a22ef10907e" target="_blank" rel="noopener">寒武纪交出2026年上半年业绩，营业收入增速明显放缓（中国基金报，2026-08）</a> <em>2026-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2439383" target="_blank" rel="noopener">寒武纪：拟推500万股限制性股票激励计划（财联社，2026-07-28）</a> <em>2026-07-28</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cnfin.com/kx/detail/20260728/4447501_1.html" target="_blank" rel="noopener">寒武纪发布2026年限制性股票激励计划草案（中国金融信息网，2026-07-28）</a> <em>2026-07-28</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260824A08LGQ00" target="_blank" rel="noopener">小米发布三款玄戒自研芯片（腾讯新闻，2026-08-24）</a> <em>2026-08-24</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/jjxw/2026-08-24/doc-inipkzxr0010890.shtml" target="_blank" rel="noopener">小米发布大模型专用AI加速芯片玄戒O100（新浪财经，2026-08-24）</a> <em>2026-08-24</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://36kr.com/p/3767894822925058" target="_blank" rel="noopener">国产AI芯片崛起：三大门派、瓜分英伟达（36氪，2026）</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.tmtpost.com/8051488.html" target="_blank" rel="noopener">华为43%，寒武11%：2026年国产AI芯片的产能饥饿游戏（钛媒体，2026）</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/t/2026-05-14/doc-inhxvtwn8745150.shtml" target="_blank" rel="noopener">&quot;没有一张卡是空的&quot;！大厂AI资本开支再提速（新浪财经，2026-05-14）</a> <em>2026-05-14</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://money.udn.com/money/story/5604/9494099" target="_blank" rel="noopener">字节跳动AI投资加码，资本支出计划（经济日报，2026）</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/tech/digi/2025-11-20/doc-infxyyfk2486426.shtml" target="_blank" rel="noopener">NVIDIA 发布 2026 财年第三季度财务报告（新浪财经，2025-11-20）</a> <em>2025-11-20</em></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://stock.finance.sina.com.cn/stock/go.php/vReport_Show/kind/lastest/rptid/839733373360/index.phtml" target="_blank" rel="noopener">寒武纪(688256)2026年半年报点评（新浪财经研报转载，2026-08）</a> <em>2026-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> 搜狐财经 2026-08、网易财经 2026-08、企数智 2026-08，多源交叉 <em>2026-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-08-07、财联社 2026-08-07，两源一致 <em>2026-08-07</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内公司档案 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内行情，数据时点数据时点 15:34，对应 2026-08-25 收盘 <em>2026-08-25</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内估值，交易日 2026-08-25 <em>2026-08-25</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪 2026-08-08 中报分析 <em>2026-08-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社 2026-08-07、新浪财经 2026-08-07，两源一致 <em>2026-08-07</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 钛媒体 2026-08-08、新浪财经 2026-08-07，两源一致 <em>2026-08-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 36 氪《国产 AI 芯片崛起：三大门派》2026 年，单源未交叉验证·置信度低 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-research">研究</span> 卖方研报摘要转载 2026-05、知乎产业调研 2026，单源系·置信度低 <em>2026-05</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 搜狐财经《七部委算力建设方案 9 月落地》2026-08 <em>2026-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 网易财经《新增 5 万 P 算力 + 75% 国产红线》2026-08 <em>2026-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 企数智《七部委发布 2026-2028 硬科技协同发展方案》2026-08 <em>2026-20</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-06-18 七部门算力基础设施行动计划报道 <em>2026-06-18</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪新闻转载 2026-08、知乎《七部委划定算力国产化 75% 硬性红线》2026-08 <em>2026-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-research">研究</span> 卖方研报摘要 2026-05，单源·置信度低 <em>2026-05</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 36 氪 2026，单源·置信度低 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-05-14、财联社 2026-05，两源一致 <em>2026-05-14</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社、东方财富 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 巨潮公告库内公告 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富，发稿时点 14:30 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社、东方财富，库内情绪标签 0.8–0.9 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富，库内情绪标签 0.6 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 腾讯新闻 2026-08-24、新浪财经 2026-08-24、中关村在线 2026-08、EET China 2026-08，多源交叉·置信度高 <em>2026-08-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富，库内情绪标签 −0.7 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富两条，情绪标签 0.6–0.7 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社 2026-07-28、中国金融信息网 2026-07-28、同花顺财经 2026-07-28、新浪财经 2026-07-28，多源交叉·置信度高 <em>2026-07-28</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 搜索结果综合 2026-08，单源未交叉验证·置信度低 <em>2026-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2025-11-20，日期为推算·置信度低 <em>2025-11-20</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪新闻转载市场格局分析 2026 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 钛媒体《2026 年国产 AI 芯片的产能饥饿游戏》2026 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 钛媒体 2026-08-08 <em>2026-08-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公告日 2026-08-08 <em>2026-08-08</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-08-26 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
