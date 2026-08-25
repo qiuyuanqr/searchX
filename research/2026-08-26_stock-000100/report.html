@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TCL科技（000100.SZ） · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>TCL科技（000100.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-08-26（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 通信设备</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 电子纸 · 超级品牌 · 玻璃基板 · 硅能源 · AI PC · MicroLED概念 · MiniLED · 柔性屏(折叠屏)</span>
+      <span><b>来源</b> 43 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    TCL科技（000100）主要做的是半导体显示业务、TCL多媒体电子、TCL通讯科技、家电集团、通力电子以及商用系统业务群和部品及材料业务群；互联网应用及服务事业本部、销售及物流服务业务群、以及TCL金融；创投及投资业务群。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——显示主业利润翻倍已被预告锁定，但面板价格下行与光伏巨亏同时压着估值。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：显示主业利润翻倍已被预告锁定，但面板价格下行与光伏巨亏同时压着估值。支撑在于中报预告归母增96%~108%；华星45%股权过户增厚归母；PE20倍居行业312只第3低。主要风险是电视面板7~8月价格连跌；中环光伏H1预亏30~33亿；Q1毛利率同比降0.74个百分点。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>中报预告归母增96%~108%</li>
+      <li>华星45%股权过户增厚归母</li>
+      <li>PE20倍居行业312只第3低</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据基准：库内取数库内取数｜行情时点 2026-08-25 16:23（收盘后）｜报告生成 2026-08-26 本报告不含任何持仓/账户信息，为全局共享档案。</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：显示主业利润翻倍已被预告锁定，但面板价格下行与光伏巨亏同时压着估值。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>2026 中报归母净利预增 96%~108%（37.0–39.2 亿元），8 月 29 日兑现</strong>——预告口径与库内 2025H1 归母 18.84 亿元完全对得上（37.0/18.84=96.4%、39.2/18.84=108.1%，据两数推算）。（置信度：高）</li>
+<li><strong>广州华星半导体 45% 少数股权收购已过户完成，t9 产线 100% 控股</strong>——2026-08-24 公司公告标的资产过户完成（库内新闻，event_id 43322），少数股东损益转归母，摊薄仅约 5.11%。（置信度：高）</li>
+<li><strong>估值处在行业极低分位</strong>——PE(TTM) 20.18 倍，在「元器件」行业 312 只可比票中排第 3 便宜（行业内 PE 排名=3），行业 PE 中位数 71.96 倍；PB 1.63。（置信度：高）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>面板价格 7、8 月连续下跌</strong>，Omdia 已下调 2026 年全球面板出货预测至同比 −6%——利润的价格端正在反向走。（置信度：中，双源交叉）</li>
+<li><strong>控股子公司 TCL中环（002129）2026H1 预亏 30–33 亿元</strong>，其 2026Q1 库内归母净利 −16.47 亿元、毛利率 −8.64%，光伏是持续失血口。（置信度：高）</li>
+<li><strong>9 月 24 日中美元首会晤前可能落地的对华 7.5%「产能过剩」关税</strong>（库内事件日历，重要性 10，外媒单源）叠加 7 月 10 日 9.86 亿股解禁的存量抛压。（置信度：低）</li>
+</ol>
+<p><strong>最该盯的信号</strong>：① <strong>8 月 29 日中报</strong>——半导体显示分部归母是否达到预告新闻口径的「超 32 亿元」，以及<strong>毛利率能否止住同比下滑</strong>（2026Q1 12.50% vs 2025Q1 13.24%，库内）；② <strong>9 月上旬 TrendForce/Omdia 月度电视面板报价</strong>——跌幅是收敛还是扩大。</p>
+<p><strong>这份判断最可能错在哪</strong>：我把「中报是已知的好消息、市场已定价」当成了主要论据。若 8 月 29 日中报里<strong>半导体显示的毛利率环比不降反升</strong>（即价格下跌被产品结构升级完全对冲掉），那么「面板价格下行 = 利润见顶」这条我最依赖的推论就塌了，方向应上修。</p>
+<h2>B. 公司快照</h2>
+<p><strong>基本面</strong>（库内公司档案）</p>
+<ul>
+<li>名称：TCL科技｜代码 000100｜上市地：深交所主板｜上市日期：2004-01-30（上市已逾 22 年）</li>
+<li>行业（库内基础资料口径）：<strong>元器件</strong>｜上市状态：（正常上市，非退市）</li>
+<li>员工数：71,419 人｜注册资本：2,080,086.24 万元</li>
+<li>公司简介（库内原文）：「公司是中国最大的、全球性规模经营的消费类电子企业集团之一。公司已形成多媒体、通讯、华星光电和TCL家电、通力电子五大产业集团，及产品业务领域，服务业务领域和创投及投资业务三大业务领域。」</li>
+<li>主营（库内原文）：「半导体显示业务、TCL多媒体电子、TCL通讯科技、家电集团、通力电子以及商用系统业务群和部品及材料业务群；互联网应用及服务事业本部、销售及物流服务业务群、以及TCL金融；创投及投资业务群。」</li>
+</ul>
+<div class="callout">⚠️ <strong>库内简介与主营描述明显滞后于当前业务结构</strong>：其中「多媒体、通讯、家电、通力电子」等消费电子板块，在当前的 TCL科技上市主体内已不是利润主体（当前实际重心为半导体显示 + 新能源光伏）。这条我在 M 节列为信息缺口，不据此描述当前主业构成。（置信度：中）</div>
+<p><strong>当前行情</strong>（库内行情，唯一行情事实源）</p>
+<ul>
+<li>最近收盘价 <strong>4.91 元</strong>｜当日涨跌 <strong>−0.20%</strong>｜数据时点 = <strong>16:23</strong>（2026-08-25 收盘后取数=realtime）</li>
+<li>当日盘中区间：最高较昨收 +0.20%、最低 −1.83%｜成交额 <strong>12.5 亿元</strong></li>
+</ul>
+<p><strong>估值</strong>（库内估值，交易日=20260825）</p>
+<ul>
+<li>总市值 <strong>1,021.32 亿元</strong>｜PE(TTM) <strong>20.18</strong>｜PB <strong>1.63</strong>｜股息率 <strong>0.97%</strong>｜换手率 1.27%</li>
+<li>行业 PE 分位：在「元器件」<strong>312 只</strong>可比票中排第 <strong>3</strong> 便宜；行业 PE 中位数 <strong>71.96 倍</strong></li>
+<li><strong>仅估值口径</strong>结论：PE 处于同行业极低分位、PB 略高于 1 倍净资产。这只说明「定价便宜」，不等于「公司好」——低 PE 在强周期股上常常出现在<strong>盈利周期高点</strong>（置信度：中）</li>
+</ul>
+<p><strong>A/H 溢价</strong>：库内 A/H 对照返回 None——该票非 A+H 两地上市，本项不适用。</p>
+<h2>C. 财务健康</h2>
+<p>数据来自库内财务（累计口径，归母净利，新→旧）。「归母净利率」为<strong>据库内营收与归母净利推算</strong>，非库内字段直接读取（原因见 M 节）。</p>
+<p><strong>近九期趋势</strong></p>
+<ul>
+<li><strong>2026Q1</strong>（20260331，公告 20260430）｜营收 434.78 亿（+8.37%）｜归母净利 15.56 亿（<strong>+53.71%</strong>）｜毛利率 12.50%｜推算归母净利率 3.58%｜ROE 2.49%｜资产负债率 65.03%｜EPS 0.0692</li>
+<li><strong>2025FY</strong>（20251231）｜营收 1,842.11 亿（+11.67%）｜归母净利 45.17 亿（<strong>+188.78%</strong>）｜毛利率 13.15%｜推算归母净利率 2.45%｜ROE 7.88%｜负债率 64.23%｜EPS 0.2333</li>
+<li><strong>2025Q3</strong>（20250930）｜营收 1,360.65 亿（+10.50%）｜归母净利 30.47 亿（+99.75%）｜毛利率 12.76%｜推算 2.24%｜ROE 5.34%｜负债率 67.58%</li>
+<li><strong>2025H1</strong>（20250630）｜营收 856.62 亿（+6.67%）｜归母净利 18.84 亿（+89.26%）｜毛利率 13.41%｜推算 2.20%｜ROE 3.53%｜负债率 67.70%</li>
+<li><strong>2025Q1</strong>（20250331）｜营收 401.19 亿（+0.43%）｜归母净利 10.13 亿（+321.96%）｜毛利率 <strong>13.24%</strong>｜推算 2.52%｜ROE 1.90%｜负债率 67.12%</li>
+<li><strong>2024FY</strong>（20241231）｜营收 1,649.63 亿（<strong>−5.44%</strong>）｜归母净利 15.64 亿（<strong>−29.38%</strong>）｜毛利率 11.59%｜推算 0.95%｜ROE 2.95%｜负债率 64.92%</li>
+<li><strong>2024Q3</strong>（20240930）｜营收 1,231.32 亿（−7.54%）｜归母净利 15.25 亿（−5.34%）｜毛利率 11.98%｜ROE 2.88%</li>
+<li><strong>2024H1</strong>（20240630）｜营收 803.03 亿（−5.74%）｜归母净利 9.95 亿（+192.29%）｜毛利率 12.26%｜ROE 1.89%</li>
+<li><strong>2024Q1</strong>（20240331）｜营收 399.46 亿（+1.22%）｜归母净利 2.40 亿（+143.71%）｜毛利率 11.53%｜ROE 0.45%</li>
+</ul>
+<p><strong>趋势判断（这一段是本报告的地基）</strong></p>
+<ol>
+<li><strong>拐点确实发生过，且发生在 2025 年</strong>（置信度：高）。营收从 2024 全年 −5.44% 转为 2025 全年 +11.67%；归母净利从 2024 全年 15.64 亿（同比 −29.38%）跳到 2025 全年 45.17 亿（+188.78%）；ROE 从 2.95% 抬到 7.88%。这不是单季波动，是四个季度连贯的方向改变。</li>
+</ol>
+<ol>
+<li><strong>但 2026Q1 已经出现「利润还在涨、毛利率先掉头」的分化</strong>（置信度：高，这是我全文最看重的一个数）。2026Q1 毛利率 <strong>12.50%</strong>，比 2025Q1 的 <strong>13.24%</strong> 低 <strong>0.74 个百分点</strong>（据两期库内数推算）；同期归母净利却 +53.71%。<strong>量价利同向的阶段已经结束</strong>——利润增长开始更多依赖非毛利因素（规模、费用、少数股东损益结构、非经常性项目），而不是单位产品赚得更多。</li>
+</ol>
+<ol>
+<li><strong>资产负债率仍在高位，但方向在改善</strong>（置信度：高）。从 2025H1 的高点 67.70% 回落到 2026Q1 的 65.03%；不过对比 2024Q1 的 62.90%，中期看仍是抬升的。65% 的负债率对重资产面板厂属常态，但它压缩了周期下行期的腾挪空间。</li>
+</ol>
+<ol>
+<li><strong>ROE 的绝对水平仍然不高</strong>（置信度：高）。2025 全年 ROE 7.88% 是近三年最好水平，仍低于 PB 1.63 倍所隐含的回报要求。这也是「PE 便宜但 PB 不便宜」的根源。</li>
+</ol>
+<p><strong>信息缺口（本节最重要的一条）</strong>：库中<strong>无 2026 中报（20260630 期）财务数据</strong>——库内财务最新期停在 2026Q1。全市场 20260630 期在库内已有 2,693 家，说明<strong>不是库漏了，是这家公司还没披露</strong>（计划披露日 2026-08-29，见 I 节 W1）。 <strong>影响</strong>：C 节全部趋势判断只建立在 Q1 之上；而市场关心的「Q2 面板价格下跌有没有传导到报表」恰恰只能在中报里看到。 <strong>补法</strong>：8 月 29 日中报披露、次日数据入库后重跑本调研。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比按「元器件」行业市值排序取前三（不含本票）。</p>
+<div class="callout">⚠️ <strong>口径不可比警告（必须先读）</strong>：peers 的营收/净利/ROE 取自各自<strong>最新披露期 20260630（2026 中报）</strong>，而 TCL科技最新期是 <strong>20260331（2026Q1）</strong>。<strong>三个月 vs 六个月，绝对额直接横比是错的</strong>。以下横比只在<strong>估值指标（市值/PE/PB，同为 20260825 同一交易日）</strong>上成立，财务额仅作规模量级参考。</div>
+<p><strong>同行业市值前三</strong></p>
+<ul>
+<li><strong>立讯精密（002475）</strong>｜市值 4,244.97 亿｜PE_ttm 23.85｜PB 4.56｜营收 1,745.04 亿（20260630）｜净利 78.43 亿｜ROE 8.79%</li>
+<li><strong>东山精密（002384）</strong>｜市值 3,495.44 亿｜PE_ttm 97.50｜PB 14.35｜营收 277.98 亿（20260630）｜净利 29.57 亿｜ROE 12.90%</li>
+<li><strong>生益科技（600183）</strong>｜市值 3,133.41 亿｜PE_ttm 60.32｜PB 16.94｜营收 190.26 亿（20260630）｜净利 32.87 亿｜ROE 18.66%</li>
+<li><strong>（本票）TCL科技（000100）</strong>｜市值 1,021.32 亿｜PE_ttm 20.18｜PB 1.63｜营收 434.78 亿（20260331）｜归母净利 15.56 亿｜ROE 2.49%</li>
+</ul>
+<p><strong>真正的同业参照（面板双雄，同为库内「元器件」行业，经库内估值/库内行情取数）</strong></p>
+<ul>
+<li><strong>京东方A（000725）</strong>｜市值 2,126.34 亿｜PE_ttm 35.74｜PB 1.56｜行业 PE 排名第 42｜收盘 5.74 元（2026-08-25，−0.17%）</li>
+<li><strong>深天马A（000050）</strong>｜市值 159.30 亿｜PE_ttm 无（对应盈利为负或不可算）｜PB 0.60｜收盘 6.54 元（2026-08-25，+2.03%）</li>
+</ul>
+<p><strong>一段话定位</strong>（置信度：中）</p>
+<p>TCL科技在「元器件」这个宽口径行业里是个<strong>异类</strong>：它是<strong>唯一一个 PB 低于 2 倍、PE 低于 25 倍</strong>的千亿级公司。立讯/东山/生益是「高 ROE、高 PB、高 PE」的组合（生益 ROE 18.66% 配 PB 16.94），本质是被市场当成 AI 硬件成长股在定价；TCL科技是「低 ROE、低 PB、低 PE」的<strong>重资产周期股</strong>定价。</p>
+<p>在真正的同业（面板）内部，本票相对<strong>京东方</strong>的定价特征是：<strong>PE 明显更低（20.18 vs 35.74）、PB 略高（1.63 vs 1.56）</strong>。这个组合意味着市场认为 TCL科技当前<strong>每单位净资产的盈利效率高于京东方</strong>，但对这份盈利的<strong>持续性给的折价更深</strong>。相对深天马（PB 0.60、PE 不可算）则处于绝对优势位置。</p>
+<p><strong>这家在同行里的位置</strong>：面板产能规模全球第二梯队龙头。2026 上半年全球大尺寸液晶电视面板出货 120.2 百万片，<strong>京东方出货首度下降、TCL华星上涨 6.5%</strong>（东方财富财富号，2026-08-06；单源未交叉验证·置信度低）。若属实，则份额是在<strong>继续向本票集中</strong>的。</p>
+<h2>E. 护城河与商业模式</h2>
+<p>按「结构性 / 阶段性 / 无」三级诚实分级：</p>
+<p><strong>① 规模成本 + 高世代产线卡位 —— 结构性护城河（置信度：中）</strong> 半导体显示是典型的资本壁垒行业：单条高世代线投资数百亿、建设周期数年、良率爬坡需要多年积累，全球有能力玩的公司不超过五家。本票通过本次交易实现<strong>广州华星半导体（t9 产线）100% 控股</strong>——t9 是第 8.6 代氧化物半导体产线，定位「国内首条专门生产高端 IT 产品及专业显示的液晶面板高世代产线，目前已实现满产运行」（IT之家，2026-08-20；LED在线，2026-06-03，双源）。这类产线的稀缺性构成真实的进入壁垒。</p>
+<p><strong>② 行业格局收敛带来的定价纪律 —— 阶段性优势（置信度：中）</strong> 中国前四大面板厂已合并占据全球电视面板 82.8% 份额，其中京东方约 27.0%、TCL华星约 24.5%（国际电子商情/eet-china 面板价格观察，2026-08）。行业已从「谁都能杀价」演进到「按需生产」的稼动率共识：2026Q1 中国 TFT-LCD 厂平均稼动率约 83%，Q2 回落至 80% 左右（同源，2026）。<strong>这是共识不是契约</strong>——它由几家龙头的自律维系，一旦需求超预期恶化随时可能瓦解，所以只能算阶段性，不算结构性。</p>
+<p><strong>③ 新能源光伏（TCL中环）—— 当前无护城河，且是失血项（置信度：高）</strong> 库内财务（002129）显示：2026Q1 毛利率 <strong>−8.64%</strong>、归母净利 <strong>−16.47 亿元</strong>；2025 全年归母净利 <strong>−92.64 亿元</strong>、毛利率 −6.36%。<strong>毛利率为负意味着卖一片亏一片</strong>——在这个价格环境下不存在任何护城河可言，规模越大失血越快。</p>
+<p><strong>④ 玻璃基板 / 玻璃基先进封装 —— 尚不构成护城河（置信度：中）</strong> 2026 年 6 月 16 日出资 5 亿元设立深圳市云启新材料科技有限公司（持股 51%），被视为布局玻璃基先进封装的核心实体；TCL华星 CEO 赵军表示预计下半年展示玻璃基载板样品、启动中试线开发平台筹建（新浪财经，2026-07-31；网易，2026；双源）。<strong>关键词是「样品」「中试线筹建」——处在产业化之前的阶段，未见任何营收佐证</strong>，不能计入当前护城河。</p>
+<p><strong>商业模式一句话</strong>：重资产、强周期、以「产能规模 × 产品结构升级」对抗「面板价格下行」的制造业模式；利润的方向由<strong>面板价格</strong>决定，利润的弹性由<strong>折旧节奏与产品结构</strong>决定。</p>
+<h2>F. 政策与监管</h2>
+<p>本节以联网为主（库内无政策数据），每条带来源与日期。</p>
+<p><strong>① 家电以旧换新「国补」延续但明显收窄 —— 传导方向：偏空（置信度：中，双源）</strong> 2026 年国补政策已发布，首批 625 亿元超长期特别国债资金下达（21经济网，2025-12-30）。家电以旧换新补贴支持范围<strong>从 2025 年的 12 类收缩到 6 类</strong>（冰箱、洗衣机、<strong>电视</strong>、空调、电脑、热水器），补贴标准调整为 1 级能效产品售价的 15%、单件上限 1,500 元（广州市人民政府门户网站，2026；平川区人民政府，2026）。 <strong>传导链条</strong>：电视仍在补贴目录内 → 但补贴范围收窄 + 2025 年高基数 → 终端换新需求增速放缓 → 电视整机厂拉货意愿下降 → <strong>电视面板需求承压</strong>。有券商观点指出，自 2025Q3 起因国补资金减少与高基数影响，家电各品类增速开始放缓，2025Q4 主要补贴品类内销额合计下滑达 14%（华创证券观点，经九方智投转述，2026；单源转述·置信度低）。</p>
+<p><strong>② 光伏「反内卷」供给侧整治 —— 传导方向：对本票偏多但间接（置信度：中，双源）</strong> 2026 年 8 月 6 日晚，八家多晶硅企业（通威股份、协鑫科技、大全能源、新特能源及亚洲硅业等）在上海签署《反内卷倡议书》，承诺所有光伏产品销售价格不得低于完全成本，覆盖有效产能超 90%（新浪财经，2026-08-07；珠海特区报客户端，2026-08-09）。三项光伏强制性国标已发布、预计 2027 年 1 月 1 日实施，实施后有望清退 20%–30% 落后产能（证券时报网 stcn.com，2026）。8 月以来多晶硅期货价格反弹超 10%，8 月 7 日主力合约收报 37,040 元/吨（+2.95%）（新浪财经，2026-08）。 <strong>⚠️ 传导方向需要拆开看</strong>：本票旗下 TCL中环的定位是<strong>硅片</strong>环节，不是签署方所在的<strong>多晶硅料</strong>环节。硅料涨价对硅片厂<strong>先是成本上升</strong>，只有在硅片售价能同步传导时才转为利多。所以「反内卷利好中环」这个推论<strong>中间隔着一层传导，不能直接成立</strong>（置信度：低）。真正确定的利好是中期的产能出清逻辑，2027 年才兑现。</p>
+<p><strong>③ 市场监管总局整治「内卷式」竞争 —— 中性（置信度：中）</strong> 库内新闻收录：2026-08-21 财联社「整治&quot;内卷式&quot;竞争市场监管总局公布六起经营者集中审查典型案例」（相关度 80=行业监管整顿）。这条是宏观监管取向的信号，未点名显示或光伏行业，暂判中性。</p>
+<p><strong>④ 中美关税与元首会晤 —— 传导方向：偏空、但可信度低（置信度：低，单源外媒）</strong> 库内事件日历收录两条重要性 10 的条目：2026-09-24「习近平应约国事访美并举行中美元首会晤（外媒报道为 9 月 24 日）」与「特朗普拟在习特会前宣布对中国商品加征 7.5%『产能过剩』关税（彭博报道，预计 9 月 24 日会晤前公布）」。 <strong>传导链条</strong>：若关税落地 → 中国出口电视整机与面板成本上升 → 北美终端需求受抑 → 面板需求进一步下修。<strong>这条是外媒单源、且属预告性质，未经交叉验证，我在 K 节只把它放进悲观情景的触发条件里，不作为基准假设。</strong></p>
+<p><strong>⑤ 工信部「十五五」新型工业化政策口径 —— 待观察（置信度：中）</strong> 库内事件日历：2026-08-26 国新办发布会，工信部介绍「全力抓好『十五五』规划实施、加快推进新型工业化」，会透露芯片、高端装备等重点制造业政策方向。新型显示历来在此类表述的重点产业清单内，口径值得盯一眼，但通常不构成即期业绩影响。</p>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 <strong>30 个</strong>同花顺概念标签。逐个分级如下——<strong>标签沾边 ≠ 真有这块营收</strong>。</p>
+<p><strong>真有业务（有主营描述、财报或公告佐证）</strong></p>
+<ul>
+<li><strong>OLED / MicroLED概念 / MiniLED / 柔性屏(折叠屏) / 电子纸</strong>：主营明确写「新型光电、液晶显示器件」，且 t9 产线定位高端 IT 与专业显示；2026 SID 展会上 TCL华星展出全球最高 1700PPI 的 Real RGB 玻璃基 OLED 显示产品（OFweek，2026-06）。显示技术路线属实有业务。（置信度：高）</li>
+<li><strong>消费电子概念</strong>：显示面板是消费电子核心零部件，营收主体即在此。（置信度：高）</li>
+<li><strong>光伏概念 / 硅能源 / 绿色电力</strong>：通过控股 TCL中环（002129，持股约 29.91%，中国证券报系报道口径）承载，库内中环 2025 全年营收 290.50 亿元。<strong>有业务，但当前是亏损业务</strong>。（置信度：高）</li>
+<li><strong>2025年报预增 / 2026中报预增</strong>：库内数据直接佐证——2025 全年归母净利 +188.78%；2026 中报预告归母 37.0–39.2 亿元、同比 +96%~108%（公司 2026-07-13 公告，经中国证券网/金融界等多源报道）。（置信度：高）</li>
+<li><strong>沪深300样本股 / 深股通 / 融资融券</strong>：交易属性标签，属实。（置信度：高）</li>
+<li><strong>粤港澳大湾区</strong>：注册与主要产线位于深圳、广州，属实。（置信度：高）</li>
+<li><strong>回购增持再贷款概念</strong>：公司 2026-07-03 披露《关于 2026 年回购社会公众股份的进展公告》（上海证券报，2026-07-03），回购在推进中。（置信度：中）</li>
+<li><strong>超级品牌</strong>：TCL 为消费电子知名品牌，但<strong>品牌业务主体（TCL实业）不在本上市主体内</strong>，此标签对本票的营收指向有限。（置信度：中）</li>
+</ul>
+<p><strong>推进中、尚未见营收佐证（介于两者之间，单列）</strong></p>
+<ul>
+<li><strong>玻璃基板</strong>：已完成 TGV 样品研发、设立云启新材料（5 亿元、持股 51%）、康宁 CEO 到访华星推进合作、计划下半年展示玻璃基载板样品并筹建中试线（新浪财经 2026-07-31、OFweek 2026-06、ZAKER 转载 2026-06，多源）。<strong>处于样品与中试阶段，未见营收佐证</strong>——这是 6 月股价那波行情的主要题材来源，但它目前只是期权，不是利润。（置信度：中）</li>
+</ul>
+<p><strong>仅概念标签，未见营收佐证</strong></p>
+<ul>
+<li><strong>AI PC / AI眼镜 / 人工智能 / 虚拟现实 / 工业互联网 / 智能座舱</strong>：这些是<strong>下游应用场景</strong>标签。公司做的是显示面板，理论上这些终端都要用屏，但库内无任何拆分数据显示这些场景贡献了可辨识的营收。属于「下游沾边」。（置信度：高，指「无佐证」这个判断本身）</li>
+<li><strong>PCB概念 / 芯片概念</strong>：主营含「半导体」字样与旗下天津普林（PCB）业务，但<strong>在当前上市主体的营收结构里不是可辨识的利润来源</strong>，库内无佐证。（置信度：中）</li>
+<li><strong>华为概念 / 小米概念 / 比亚迪概念</strong>：客户关系型标签，库内无任何客户集中度或供货金额数据支撑。（置信度：高）</li>
+<li><strong>参股银行</strong>：主营含「TCL金融」「创投及投资业务」，但库内无参股金额与收益数据。（置信度：中）</li>
+</ul>
+<p><strong>产业链位置</strong></p>
+<ul>
+<li><strong>上游</strong>：玻璃基板（康宁等海外巨头主导，是长期被卡的一环，也是公司自研玻璃基的动因）、液晶材料、偏光片、驱动 IC、半导体设备。<strong>议价能力在上游</strong>——尤其玻璃基板长期由少数外资供应。</li>
+<li><strong>本环节</strong>：面板制造。重资产、产能周期长、价格由供需即期决定。<strong>议价能力弱</strong>——面板厂对上游和下游都缺乏定价权，只能靠「控产」这种集体行为影响价格。</li>
+<li><strong>下游</strong>：电视/显示器/笔电/车载整机厂（三星、TCL实业、小米、联想等）。下游集中度高、采购议价能力强。</li>
+</ul>
+<p><strong>一句话</strong>：本票处在<strong>产业链议价能力最弱的中间环节</strong>，这解释了为什么它的 PB 只有 1.63、ROE 只有 7.88%（2025FY，库内），而下游品牌与上游材料环节的同行能拿到十几倍 PB。<strong>低估值不是错杀，很大程度是商业模式定价。</strong>（置信度：中）</p>
+<h2>H. 消息面与市场情绪</h2>
+<h3>新闻（库内新闻，近 60 天，库内共 20 条）</h3>
+<ol>
+<li><strong>2026-08-24｜「关于发行股份及支付现金购买资产之标的资产过户完成的公告」</strong>（库内公告，相关度 100，情感 +0.40）——<strong>有实质影响</strong>：广州华星半导体 45% 股权过户完成，该子公司自此 100% 归属。会计效果是<strong>少数股东损益转为归母净利</strong>（营收不变，因原持股 55% 已并表）。同日另有申万宏源独立财务顾问核查意见与嘉源律所法律意见书两条配套公告。（置信度：高）</li>
+<li><strong>2026-08-20｜「关于收到中国证监会《关于同意…发行股份及支付现金购买资产注册的批复》的公告」</strong>（库内公告，情感 +0.80）——<strong>有实质影响</strong>：这是上条的前置监管放行。同日东方财富转载「TCL科技收购广州华星半导体 45% 少数股权获注册批文」（=ma，情感 +0.50）。（置信度：高）</li>
+<li><strong>2026-08-25 / 08-20 / 08-18（票面利率）/ 08-18（延长簿记）/ 08-17（募集说明书、发行公告）｜2026 年科技创新公司债券（数字经济）第二期系列公告</strong>（库内公告，共 6 条）——<strong>有实质影响但方向中性偏警示</strong>：一个月内密集推进债券发行，且其中一条是「延长簿记建档时间」。结合 65.03% 的资产负债率（库内 2026Q1）与本次收购 46.62 亿元现金对价，<strong>这批债是在为资本开支与并购现金端筹钱</strong>。「延长簿记建档」通常意味着簿记进度不及预期，是需要留意的细节。（置信度：中）</li>
+<li><strong>2026-08-17｜「2026 年度 TCL科技集团股份有限公司信用评级报告」</strong>（库内公告）——中性。评级报告本身是发债配套，库内未收录评级结论正文，属信息缺口。</li>
+<li><strong>2026-08-12｜「TCL Solar 签约印尼合作伙伴将竞标开发当地大型新能源项目」</strong>（东方财富，相关度 80，情感 +0.60）——<strong>弱实质影响</strong>：光伏海外拓展，处在「竞标」阶段而非订单落地，对当期报表无影响。（置信度：中）</li>
+<li><strong>2026-08-21｜「整治&quot;内卷式&quot;竞争市场监管总局公布六起经营者集中审查典型案例」</strong>（财联社，相关度 80=行业监管整顿）——宏观监管信号，未点名本行业。</li>
+<li><strong>2026-08-20｜「早间公告：联创电子上半年净利润亏损 3.58 亿元同比转亏」</strong>（财联社=earnings=<strong>业绩暴雷</strong>，情感 −0.70）——<strong>这条是同板块噪音，不是本票的事</strong>。库内因行业相关性收录，与 TCL科技无直接关联，我不据此下任何判断。（置信度：高，指「不相关」这一判断）</li>
+<li><strong>2026-08-18｜「光伏设备板块午后拉升迈为股份涨超 12%」/ 2026-08-18｜「半导体硅片股震荡走强立昂微涨停」</strong>（相关度 70/100）——板块情绪面记录，与本票基本面无关。</li>
+</ol>
+<p><strong>新闻面小结</strong>：近 60 天的实质性新闻高度集中在<strong>两件事</strong>——收购过户完成、发债推进。<strong>没有一条关于面板价格、产品结构或客户订单的公司层面新闻</strong>。这本身是信息：公司近期的价值变化主要来自<strong>资本运作</strong>而非经营变化。（置信度：中）</p>
+<p>⚠️ 上述新闻标题中若含行情数字，均为<strong>发稿时点的旧快照</strong>，本报告的行情一律以库内行情（4.91 元 / 2026-08-25 16:23）为准。</p>
+<h3>涨停史（库内涨停记录，近 180 日，库内 3 条记录）</h3>
+<ul>
+<li><strong>2026-06-30</strong>｜涨幅 +10.02%｜连板 1（首板）｜首次封板 <strong>09:56:48</strong>、最后封板同一时刻｜<strong>开板 0 次</strong>｜封单 <strong>5.37 亿元</strong>｜行业标注「光学光电」｜涨停统计 2/4</li>
+<li><strong>2026-06-25</strong>｜涨幅 +10.10%｜连板 1｜首封 09:47:18、最后封板 13:15:18｜<strong>开板 1 次</strong>｜封单 2.51 亿元｜涨停统计 1/1</li>
+<li><strong>2026-06-17</strong>｜涨幅 +10.11%｜连板 1｜首封 <strong>13:17:09</strong>、最后封板 14:10:18｜<strong>开板 2 次</strong>｜封单 1.04 亿元｜涨停统计 1/1</li>
+</ul>
+<p><strong>读法</strong>（置信度：中）：三次涨停<strong>全部集中在 2026 年 6 月</strong>，且<strong>全是首板、无连板</strong>。质量呈<strong>递增</strong>：6/17 是下午盘才封、开板两次、封单仅 1.04 亿（弱）；6/30 是早盘 09:56 封死、零开板、封单 5.37 亿（强）。这说明 6 月确实有一波真实的资金关注度提升。<strong>但 7 月以后至今近两个月，无任何涨停记录</strong>——那波情绪已经结束。</p>
+<h3>股价位置（库内行情 + 库内日 K）</h3>
+<ul>
+<li>最近收盘 <strong>4.91 元</strong>（2026-08-25）</li>
+<li>近 250 个交易日区间：<strong>4.04 – 6.26</strong>（20250814 – 20260825）</li>
+<li><strong>年内高点 6.26 出现在 2026-07-01</strong>；当前较该高点回落 <strong>21.6%</strong>（据两数推算）</li>
+<li>近 6 个交易日：8/18 收 5.24 → 8/25 收 4.91，<strong>一周跌 6.3%</strong>（据库内日 K 推算），<strong>中报披露前一周走弱</strong></li>
+</ul>
+<p><strong>一条关键的时序事实</strong>（置信度：高，全部为库内日 K）：<strong>业绩预告发布后股价并未上涨</strong>。2026-07-13（预告披露当日）收盘 <strong>4.81 元、当日 −6.05%</strong>；7/14 反弹 +6.65% 至 5.13；此后一路回落至 8/25 的 4.91。<strong>从预告日到今天，股价 4.81 → 4.91，一个半月只涨了 2.1%</strong>——而这期间被公告的是「归母净利同比翻倍」。<strong>市场对这份翻倍增长给出的定价极其克制</strong>，这是本报告 A 节判断「震荡」的最硬的一条证据。</p>
+<h3>资金与筹码（库内资金筹码）</h3>
+<div class="callout">⚠️ <strong>纪律声明</strong>：以下是<strong>盘面与筹码现象，不是基本面证据</strong>。它们只在本节作情绪面佐证，<strong>不进 J 节逻辑链，也不单独驱动 L 节任何操作倾向</strong>。</div>
+<ul>
+<li><strong>主力资金</strong>（窗口 20260729–20260825，20 个交易日）：净流入合计 <strong>−16.70 亿元</strong>（净流出）；其中特大单口径 <strong>−1.51 亿元</strong>；<strong>净流入为正仅 8/20 天、为负 12/20 天</strong>。（置信度：高，库内聚合）</li>
+<li><strong>筹码分布</strong>（交易日 = <strong>20260807</strong>，注意该数据比行情<strong>滞后 18 天</strong>）：加权平均成本 <strong>5.02 元</strong>；成本 15% 分位 4.80、50% 分位 <strong>5.00</strong>、85% 分位 5.30；<strong>获利盘比例 = 33.58%</strong>。</li>
+</ul>
+<p><strong>两面读法</strong>：33.58% 属<strong>偏低</strong>水平——<strong>好的一面</strong>是上方获利抛压相对有限、短线浮盈盘不多；<strong>坏的一面</strong>是意味着<strong>约三分之二的持仓处于浮亏</strong>，深套盘在 5.00–5.30 一带密集，<strong>该区间反弹会遇到解套抛压</strong>。当前价 4.91 已低于 50% 分位成本 5.00 元。（置信度：中，因数据滞后 18 天）</p>
+<ul>
+<li><strong>股东户数</strong>（季度数据，天然滞后）：报告期 <strong>2026-03-31</strong> 为 <strong>614,385 户</strong>，较上一报告期 2026-02-28 的 582,032 户 <strong>+5.6%</strong>（筹码趋于分散）。</li>
+</ul>
+<p><strong>但拉长看方向相反</strong>：库内序列为 2025-03-31 <strong>734,938</strong> → 2025-06-30 686,366 → 2025-09-30 671,098 → 2025-12-31 582,581 → 2026-02-28 582,032 → 2026-03-31 614,385。即<strong>一年内户数净减少约 16.4%（据首尾两数推算），中期筹码是在集中的</strong>，仅最近一期小幅回升。<strong>该数据截至 2026-03-31，已滞后近 5 个月，参考价值有限。</strong>（置信度：低，因严重滞后）</p>
+<h3>解禁（联网，多源交叉验证）</h3>
+<p>2026 年 7 月 8 日公司公告：<strong>9.86 亿股限售股于 2026 年 7 月 10 日上市流通，占总股本 4.7416%</strong>，股份类型为定向增发机构配售股份，持有人为深圳市重大产业发展一期基金有限公司，<strong>该批股份 2025 年定增发行价为 4.42 元/股</strong>（同花顺财经、新浪财经、腾讯新闻等多源，2026-07-07/07-08）。解禁后有限售条件股份由 16.69 亿股降至 6.83 亿股（占比 8.02%→3.28%），无限售股份升至 201.18 亿股（96.72%）。 <strong>读法</strong>：解禁日 7 月 10 日，恰在年内高点 6.26 元（7/1）之后第 7 个交易日；解禁成本 4.42 元 vs 当前 4.91 元仍有约 11% 浮盈（据两数推算），<strong>减持动机在价格层面成立</strong>。这为 7 月以来的持续走弱提供了一条供给侧解释。（置信度：中——存在动机不等于确实在卖，库内表<strong>无 000100 任何增减持记录</strong>）</p>
+<h2>I. 未来 13 周事件日历</h2>
+<p>来源标注：<strong>〔库〕</strong>=库内事件日历 / 库内事件日历；<strong>〔网〕</strong>=联网补充并带来源；<strong>〔惯例〕</strong>=行业或监管的周期性安排，无具体日期确认。</p>
+<ul>
+<li><strong>W1（2026-08-24 起）</strong>：
+<ul>
+<li>08-26 · 国新办发布会：工信部介绍「十五五」规划实施与加快推进新型工业化 · 会议 · 重要性 7 〔库〕 · 影响：观察新型显示是否进入重点产业口径</li>
+<li>08-27 · <strong>TCL中环（002129）2026 中报披露</strong> · 公司事件 · 重要性 7 〔库〕 · <strong>影响：光伏拖累幅度的第一手定量数据，是本票中报的前哨</strong></li>
+<li>08-29 · <strong>★TCL科技（000100）2026 中报披露</strong> · 公司事件 · 重要性 7 〔库，交易所官方披露计划〕 · <strong>影响：验证 C 节全部趋势判断，尤其毛利率与半导体显示分部盈利</strong></li>
+<li>08-29~08-30 · 鸿蒙生态大会 2026（HEC·2026）深圳开幕 · 会议 · 重要性 7 〔库〕 · 影响：折叠屏与华为生态供应链情绪</li>
+</ul></li>
+<li><strong>W2（2026-08-31 起）</strong>：
+<ul>
+<li>08-31 · 第十四届半导体设备材料及核心部件展（CSEAC 2026）无锡开幕 · 会议 · 重要性 7 〔库〕</li>
+<li>09-01~09-02 · 第四届设计自动化产业峰会（IDAS 2026 EDA 峰会）上海张江 · 会议 · 重要性 6 〔库〕</li>
+<li>09-02 · 博通（Broadcom）2026 财年 Q3 财报 · 公司事件 · 重要性 8 〔库〕 · 影响：北美 AI 资本开支强度，间接影响 IT 面板需求</li>
+<li>09 月上旬 · <strong>TrendForce / Omdia 月度电视面板报价</strong> · 行业 · 重要性高〔惯例，依据 2026-07/08 月度报价文章的发布节奏〕 · <strong>影响：直接验证「面板价格下行是否收敛」这条核心风险</strong></li>
+</ul></li>
+<li><strong>W3（2026-09-07 起）</strong>：
+<ul>
+<li>09-07 14:30 · 华为鸿蒙 7 / Mate XT 2 及全场景新品发布会 · 公司事件 · 重要性 8 〔库〕 · 影响：折叠屏供应链催化</li>
+<li>09-08 · 小米 18 Fold 折叠屏发布（首发自研玄戒 O3）· 公司事件 · 重要性 6 〔库〕</li>
+<li>09-08 · 2026 全球工业互联网大会沈阳开幕（主题「AI+制造」）· 会议 · 重要性 6 〔库〕</li>
+<li>09-09 · <strong>苹果秋季新品发布会（iPhone 18 Pro 系列与首款折叠屏 iPhone）</strong> · 公司事件 · 重要性 8 〔库〕 · 影响：消费电子板块情绪与折叠屏渗透率预期</li>
+<li>09-09~09-11 · IICIE 国际集成电路创新博览会深圳 · 会议 · 重要性 6 〔库〕</li>
+<li>09-10~09-12 · 2026 杭州国际人工智能与机器人创新博览会 · 会议 · 重要性 7 〔库〕</li>
+<li>09-10~09-11 · 第 16 次 APEC 能源部长会议北京（主题「AI+能源」）· 会议 · 重要性 7 〔库〕</li>
+<li>09-11~09-14 · 2026 浦江创新论坛（第十九届）上海 · 会议 · 重要性 6 〔库〕</li>
+</ul></li>
+<li><strong>W4（2026-09-14 起）</strong>：
+<ul>
+<li>09-17~09-19 · 2026 华为全联接大会（HUAWEI CONNECT 2026）上海开幕 · 会议 · 重要性 8 〔库〕 · 影响：昇腾生态与国产算力情绪</li>
+</ul></li>
+<li><strong>W5（2026-09-21 起）</strong>：
+<ul>
+<li>09-22~09-24 · 2026 云栖大会杭州（阿里巴巴主办）· 会议 · 重要性 8 〔库〕</li>
+<li>09-23~09-24 · Meta Connect 2026 开发者大会（美国加州）· 会议 · 重要性 7 〔库〕 · 影响：AI 眼镜 / MR 显示需求预期</li>
+<li>09-24 · <strong>中美元首会晤（外媒报道口径）</strong> · 会议 · 重要性 10 〔库〕</li>
+<li>09-24 · <strong>特朗普拟宣布对中国商品加征 7.5%「产能过剩」关税（彭博报道）</strong> · 政策 · 重要性 10 〔库，外媒单源未交叉验证〕 · <strong>影响：K 节悲观情景的关键触发条件</strong></li>
+<li>09-24 · 美国或放行苹果采购中国存储芯片 · 政策 · 重要性 7 〔库〕</li>
+</ul></li>
+<li><strong>W6（2026-09-28 起）</strong>：
+<ul>
+<li>本票<strong>无已知公司事件</strong>（库内事件日历核查：9/28 当日的大批限售股解禁条目<strong>均为其他上市公司</strong>，不含 000100）</li>
+<li>09 月底 · 国庆长假前电视终端促销备货窗口 · 行业 · 重要性中〔惯例〕</li>
+</ul></li>
+<li><strong>W7（2026-10-05 起）</strong>：
+<ul>
+<li>国庆假期休市（10/1–10/7 前后，具体以交易所公告为准）</li>
+<li>10 月上旬 · TrendForce / Omdia 月度电视面板报价 · 行业 · 重要性高〔惯例〕</li>
+</ul></li>
+<li><strong>W8（2026-10-12 起）</strong>：本周无已知事件。观察窗：国庆长假电视终端销售数据陆续出炉，验证国补收窄后的真实需求（〔惯例〕）</li>
+<li><strong>W9（2026-10-19 起）</strong>：本周无已知事件。A 股三季报进入密集披露期（〔惯例〕）</li>
+<li><strong>W10（2026-10-26 起）</strong>：
+<ul>
+<li><strong>★TCL科技 2026 年三季报披露窗口</strong>（A 股三季报法定披露截止日为 10 月 31 日；<strong>库内暂无该票三季报预约披露日，属信息缺口，见 M 节</strong>）· 公司事件 · 重要性高〔惯例〕 · <strong>影响：Q3 是面板价格连续下跌后的第一个完整季度，是「价格下行是否已传导到报表」的决定性一期</strong></li>
+<li>10 月下旬 · 双 11 预售启动 · 行业 · 重要性中〔惯例〕</li>
+</ul></li>
+<li><strong>W11（2026-11-02 起）</strong>：
+<ul>
+<li>11 月上旬 · TrendForce / Omdia 月度电视面板报价 · 行业 · 重要性高〔惯例〕</li>
+<li>本票无已知公司事件</li>
+</ul></li>
+<li><strong>W12（2026-11-09 起）</strong>：
+<ul>
+<li>11-11 · 双 11 大促收官，电视整机终端销量数据 · 行业 · 重要性中〔惯例〕 · 影响：验证国补收窄后的旺季需求成色</li>
+</ul></li>
+<li><strong>W13（2026-11-16 起）</strong>：本周无已知事件。观察窗：年末面板厂 2027 年产能规划（BP）口径开始流出，是判断次年供给纪律的早期信号（〔惯例〕）</li>
+</ul>
+<p><strong>日历使用说明</strong>：W1 的 8/27（中环中报）与 8/29（本票中报）是整个 13 周里信息密度最高的两天；W10 的三季报是第二个决定性节点。中间的 W2–W9 主要是行业会议与月度面板报价，<strong>对本票的影响以情绪面为主、以月度报价为唯一实质变量</strong>。</p>
+<h2>J. 逻辑链</h2>
+<p><strong>主链（可证伪）</strong></p>
+<div class="callout"><strong>因为</strong>〔事实 1〕2026 中报预告归母净利 37.0–39.2 亿元、同比 +96%~108%（公司 2026-07-13 公告，多源；与库内 2025H1 归母 18.84 亿元完全自洽），<strong>且</strong>〔事实 2〕广州华星半导体 45% 股权已于 2026-08-24 过户完成、少数股东损益转归母（库内公告），<strong>且</strong>〔事实 3〕当前 PE(TTM) 20.18 倍、在行业 312 只中排第 3 便宜（库内估值，20260825）—— <strong>所以</strong>〔推论 A〕本票的盈利与估值在<strong>静态口径</strong>上是匹配甚至偏低的； <strong>如果</strong>推论 A 成立，<strong>应该能观察到</strong>：业绩预告发布后股价上行。 <strong>⚠️ 但实际观察到的是相反的</strong>：7/13 预告日收盘 4.81 元（−6.05%），至 8/25 收盘 4.91 元，<strong>一个半月仅 +2.1%</strong>（库内日 K 推算）。 <strong>所以</strong>〔推论 B〕市场并不按静态口径给这份利润定价——<strong>它在给「这份利润能持续多久」打折</strong>。</div>
+<p><strong>打折的原因链（这是全文的核心）</strong></p>
+<div class="callout"><strong>因为</strong>〔事实 4〕2026Q1 毛利率 12.50%，比 2025Q1 的 13.24% <strong>低 0.74 个百分点</strong>（库内两期推算），<strong>且</strong>〔事实 5〕2026 年 7、8 月电视面板价格连续下跌，8 月各尺寸普降 1–8 美元（国际电子商情 2026-08、新浪科技 2026-08-11，双源），<strong>且</strong>〔事实 6〕Omdia 已把 2026 年全球显示面板出货预测下调至同比 <strong>−6%</strong>、电视面板需求 −2%（财联社 cls.cn / IT之家 / 新浪财经转载，2026-06-15，多源）—— <strong>所以</strong>〔推论 C〕<strong>面板价格周期的顶部大概率已经过去</strong>，2026 上半年的利润高增是「价格高位 + 低基数」的组合，下半年缺少这个组合； <strong>如果</strong>推论 C 成立，<strong>应该能观察到</strong>：<strong>2026 中报（8/29）的毛利率环比 2026Q1 的 12.50% 不再改善</strong>，以及 <strong>9 月上旬月度面板报价继续下跌</strong>。</div>
+<p><strong>第二条压制链</strong></p>
+<div class="callout"><strong>因为</strong>〔事实 7〕控股子公司 TCL中环 2026H1 预亏 30–33 亿元、其中 Q2 预亏 13.53–16.53 亿元（财联社 2026-07-13、每日经济新闻 2026-07-13，双源），<strong>且</strong>〔事实 8〕库内 002129 数据显示其 2026Q1 毛利率 <strong>−8.64%</strong>、2025 全年归母净利 <strong>−92.64 亿元</strong>—— <strong>所以</strong>〔推论 D〕光伏板块在 2027 年产能出清落地之前，<strong>每个季度都会稳定吃掉本票的一部分归母利润</strong>； <strong>如果</strong>推论 D 成立，<strong>应该能观察到</strong>：8/27 中环中报确认 Q2 亏损，且<strong>毛利率仍为负</strong>。</div>
+<p><strong>⚠️ 这条链最弱的一环（命门）</strong></p>
+<p><strong>是〔推论 C〕里「毛利率下滑 = 价格周期见顶」这个等号。</strong> 理由有三：</p>
+<ol>
+<li><strong>0.74 个百分点是单季同比</strong>，样本只有一个点。面板厂的季度毛利率天然受稼动率、产品组合、折旧节奏摆布，一个季度不足以定周期方向。</li>
+<li><strong>产品结构升级可以对冲价格下跌</strong>。行业共识是「深化产品结构升级、提升高附加值大尺寸占比」（面板厂 2026 产线策略报道，2026）；若 55 吋以上占比提升足够快，均价下跌未必等于毛利率下跌。</li>
+<li><strong>我拿不到分部数据</strong>。库内财务只有合并口径，<strong>半导体显示与新能源光伏的毛利率是混在一起的</strong>——2026Q1 那 12.50% 里，有多少是被中环的 −8.64% 拖下来的，我算不出来。<strong>如果毛利率下滑主要来自光伏而非面板，那么推论 C 完全站不住。</strong></li>
+</ol>
+<p><strong>这一环 8 月 29 日中报就能证伪或证实</strong>（中报会披露分部数据）——这是我把「最该盯的信号」定在中报毛利率上的原因。（整条链置信度：中）</p>
+<h2>K. 三情景推演</h2>
+<p>三个概率加总 100%。触发条件均可用库内数据或公开披露核对。</p>
+<ul>
+<li><strong>乐观（25%）</strong>｜<strong>触发</strong>：8/29 中报归母净利落在预告区间上沿（≥39.0 亿元）<strong>且</strong>半导体显示分部毛利率环比 2026Q1 的 12.50% 持平或回升 <strong>且</strong> 9 月上旬 TrendForce/Omdia 月度电视面板报价跌幅收敛至 1 美元以内｜<strong>路径</strong>：市场确认「产品结构升级已能对冲价格下跌」，J 节推论 C 被证伪，盈利持续性折价收窄；PE 从 20.18 倍向面板同业京东方的 35.74 倍方向修复；广州华星 45% 权益全年增厚归母（按 2026H1 该子公司净利 11.54 亿元 × 45% 年化推算约 10 亿元量级，据公开数据推算·置信度低）成为额外弹性。价格回补 7 月高点前的失地。</li>
+</ul>
+<ul>
+<li><strong>中性（50%）</strong>｜<strong>触发</strong>：8/29 中报归母净利落在预告区间内（37.0–39.2 亿元，即不超预期也不低于预告）<strong>且</strong> 2026H1 毛利率维持在 12.5%–13.4% 区间内 <strong>且</strong> 9–10 月面板月度报价维持每月 1–3 美元的温和下跌｜<strong>路径</strong>：中报「兑现即出尽」——因为预告 7 月 13 日已发、市场已有一个半月消化时间（库内日 K 显示这期间股价仅 +2.1%）。股价在近三个月的箱体内继续震荡：下方由 PB 1.63 与解禁成本 4.42 元一带提供支撑，上方由筹码 50% 分位成本 5.00 元与 85% 分位 5.30 元（库内资金筹码，20260807）的解套抛压压制。等待 W10 三季报给出方向。</li>
+</ul>
+<ul>
+<li><strong>悲观（25%）</strong>｜<strong>触发</strong>：满足以下任一——① 8/29 中报归母净利<strong>低于预告下沿 37.0 亿元</strong>；② 2026H1 毛利率<strong>跌破 12.5%</strong>（即环比 2026Q1 继续恶化）；③ 8/27 中环中报亏损<strong>超过预告上沿 33 亿元</strong>；④ 9 月 24 日前后对华 7.5%「产能过剩」关税<strong>实际落地</strong>｜<strong>路径</strong>：J 节推论 C 与 D 同时被确认，市场把 2026 上半年的高增长重新定性为「周期性的一次性高点」；PE 的分母（未来盈利）被下修，20.18 倍的「便宜」失效；PB 向深天马的 0.60 倍方向靠拢的担忧升温，股价下探近 250 日区间下沿 4.04 元（库内日 K，20250814–20260825）的方向。</li>
+</ul>
+<h2>L. 决策与风控</h2>
+<div class="callout">⚠️ 本节不含目标价、不含评级。以下全部为条件式表述，触发条件均取自本报告出现过的库内指标或已披露事件。</div>
+<p><strong>条件式操作倾向</strong></p>
+<ol>
+<li><strong>如果</strong> 8 月 29 日中报披露后，归母净利落在预告区间内（37.0–39.2 亿元）<strong>且</strong>综合毛利率不低于 2026Q1 的 12.50%，<strong>那么</strong> 视为 J 节推论 C 暂未被证实、中性情景成立——<strong>观望</strong>，把决策推迟到 9 月上旬的面板月度报价与 W10 三季报。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> 8 月 29 日中报的<strong>半导体显示分部</strong>毛利率环比 2026Q1 提升，<strong>且</strong> 9 月上旬 TrendForce/Omdia 月度电视面板报价跌幅收敛到 1 美元以内，<strong>那么</strong>（乐观情景触发）可考虑<strong>轻仓试仓</strong>——因为此时「结构升级对冲价格」这条乐观链有了两个独立数据点支撑，而 PE 20.18 倍仍在行业 312 只的第 3 低位。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> 8 月 29 日中报归母净利低于预告下沿 37.0 亿元，<strong>或</strong>综合毛利率跌破 12.50%，<strong>或</strong> 8 月 27 日 TCL中环中报亏损超过其预告上沿 33 亿元，<strong>那么</strong> <strong>回避</strong>——三者中任意一条都直接证实 J 节的压制链，且中报是本 13 周内信息量最大的一次披露，误判成本最高。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> 9 月 24 日前后对华 7.5%「产能过剩」关税实际落地（目前仅彭博单源预告、库内事件日历重要性 10），<strong>那么</strong> 无论中报结果如何均转为<strong>回避</strong>——这是本报告未纳入基准假设的外生冲击，一旦发生会同时打击需求端与出口成本端。</li>
+</ol>
+<p><strong>风控要点（什么情况下这份判断应当被推翻）</strong></p>
+<ul>
+<li><strong>推翻「震荡」判断为偏涨</strong>：中报分部数据显示半导体显示毛利率<strong>环比与同比双双改善</strong>，证明价格下跌已被产品结构完全对冲——此时 J 节最弱那一环被证伪，A 节方向应上修。</li>
+<li><strong>推翻「震荡」判断为偏跌</strong>：中报综合毛利率跌破 12.50%，或三季报（W10）出现<strong>归母净利环比下滑</strong>——说明 2026 上半年是周期顶而非新平台。</li>
+<li><strong>本报告自动失效的时点</strong>：2026-08-29 中报披露后。届时 C 节全部趋势判断、J 节全部推论、K 节三情景的触发条件都会被新数据覆盖，<strong>必须重跑本调研</strong>。</li>
+</ul>
+<p><strong>仓位思路</strong>（只讲相对概念，不给金额、不给股数）</p>
+<p>在中报（8/29）落地之前，<strong>这只票不适合作为重仓标的</strong>——理由不是看空，而是<strong>信息结构不对称</strong>：一个 13 周内最关键的数据点距今只有 3 天，而它有能力单独推翻本报告的核心逻辑链。合理的做法是<strong>先不参与或保持极轻仓位观察</strong>，把仓位决策的权重留给中报与 9 月面板报价这两个可核验节点。若乐观情景触发，也宜从<strong>轻仓</strong>起步——因为面板是强周期行业，其估值修复往往需要连续两到三个季度的数据确认，单季不足以定论。</p>
+<h2>M. 逻辑自查</h2>
+<p><strong>这份判断最依赖的假设是哪一条？它错了会怎样？</strong></p>
+<p>最依赖的是：<strong>「面板价格下行会在报表毛利率上体现出来」</strong>。整个 J 节的推论 C、K 节的悲观触发条件、L 节的三条操作倾向，都挂在这一条上。</p>
+<p><strong>它错了会怎样</strong>：如果面板厂的产品结构升级（大尺寸占比提升）能力被我低估，那么「均价下跌」和「毛利率下跌」之间就断了链——公司可以在面板报价连跌的同时把毛利率做上去。这种情况下我的方向判断（震荡）会偏保守，而且会<strong>错在最贵的地方</strong>：因为此时 PE 20.18 倍、PB 1.63 倍的低估值配上改善的盈利质量，正是周期股最有弹性的组合。</p>
+<p><strong>有没有我为了让逻辑好看而忽略的反面证据？</strong></p>
+<p>有三条，我在此明确列出：</p>
+<ol>
+<li><strong>「TCL华星 2026H1 大尺寸电视面板出货同比 +6.5%，京东方首度下降」</strong>（东方财富财富号，2026-08-06）。这是一条对本票明确有利、且与「行业需求 −6%」形成反差的份额证据——<strong>如果行业下行而本票份额上行，那么本票的盈利下滑速度会显著慢于行业</strong>。我没把它写进 K 节乐观情景的触发条件，因为它是<strong>单源、且来自财富号自媒体渠道，未经交叉验证</strong>（置信度：低）。但它确实是我这份偏谨慎判断的反面证据。</li>
+</ol>
+<ol>
+<li><strong>收购增厚的量级可能被我低估</strong>。广州华星半导体 2026 年 1–6 月净利约 11.54 亿元、同比 +203.99%（IT之家 2026-08-20 转述交易文件），45% 权益对应半年约 5.2 亿元、年化约 10 亿元（据两数推算·置信度低）；而股份对价 46.62 亿元按发行价 4.16 元/股约发行 11.21 亿股、占发行后总股本约 5.11%（新浪财经/上海证券报系报道，2026-03-30 起多源）。<strong>增厚幅度（相对 2025 全年归母 45.17 亿元约 +22%）明显大于摊薄幅度（5.11%）</strong>。我在 A 节把它列为驱动 2，但没有把它做成乐观情景的独立触发条件——因为它是<strong>已完成的事</strong>，理论上应已被市场定价。</li>
+</ol>
+<ol>
+<li><strong>我用「预告后股价没涨」来证明市场已定价，但这个推理本身有替代解释</strong>。同一段时间（7/10）恰好发生了 9.86 亿股解禁，且 7 月是大盘与板块的普跌期。<strong>股价不涨可能是供给冲击而非定价判断</strong>。我保留原推论，但承认它不是唯一解释（置信度因此定为中而非高）。</li>
+</ol>
+<p><strong>信息缺口清单</strong></p>
+<ol>
+<li><strong>库中无 2026 中报（20260630 期）财务数据</strong>。库内财务最新期为 2026Q1（20260331）；全市场该期在库内已有 2,693 家，说明是<strong>公司尚未披露</strong>而非库缺失（计划披露日 2026-08-29）。</li>
+</ol>
+<p><strong>影响</strong>：C 节全部趋势判断、J 节全部推论均只建立在 Q1 之上；本报告的失效时点因此被压缩到 3 天内。 <strong>补法</strong>：8 月 29 日中报披露、数据入库后（通常 T+1）重跑本调研。</p>
+<ol>
+<li><strong>库内净利率字段在本票上明显异常，本报告未采用</strong>。库内财务返回的净利率（销售净利率）在 2025FY 为 <strong>0.1162%</strong>，而据同函数返回的营收 1,842.11 亿与归母净利 45.17 亿推算应为 <strong>2.45%</strong>，相差约 20 倍；2024FY 该字段为 <strong>−2.52%</strong> 而归母净利为正 15.64 亿。经同行业对照（002475 该字段 4.89% vs 推算 4.49%、600183 为 19.54% vs 推算 17.28%、000725 为 2.46% vs 推算 2.86%，均接近），<strong>判定为本票该字段的源数据口径异常，不是全局口径差异</strong>。</li>
+</ol>
+<p><strong>影响</strong>：C 节的「归母净利率」一律标注为<strong>据营收与归母净利推算</strong>，未直接引用该字段。若该字段实为扣非或含少数股东损益口径，则本票的<strong>扣非盈利质量可能显著弱于归母口径</strong>——这是一个我无法证实也无法排除的下行风险。 <strong>补法</strong>：中报披露后调阅利润表的扣非净利与少数股东损益明细核对；或在数据侧核查 Tushare 对本票的取数口径。</p>
+<ol>
+<li><strong>无分部（segment）财务数据</strong>。库内只有合并口径，<strong>半导体显示与新能源光伏的营收、毛利率无法拆分</strong>。</li>
+</ol>
+<p><strong>影响</strong>：这是 J 节命门无法在本报告内闭合的直接原因——12.50% 的合并毛利率里有多少是被中环的 −8.64% 拖累的，算不出来。 <strong>补法</strong>：8 月 29 日中报正文含分部报告，届时人工提取。</p>
+<ol>
+<li><strong>库内无三季报预约披露日</strong>。I 节 W10 只能按 A 股三季报法定截止日 10 月 31 日给出窗口，非确切日期。</li>
+</ol>
+<p><strong>补法</strong>：交易所披露计划更新后由库内事件日历自动带出。</p>
+<ol>
+<li><strong>库内公司档案的简介与主营描述已滞后于业务结构</strong>。库内仍描述「多媒体、通讯、家电、通力电子五大产业集团」，而这些消费电子业务当前不在上市主体的利润主体内。</li>
+</ol>
+<p><strong>影响</strong>：B 节据此写公司定位会失真，故我在 B 节直接标注了这一点，并以半导体显示 + 新能源光伏作为实际重心陈述。 <strong>补法</strong>：以中报「公司业务概要」章节为准更新认知。</p>
+<ol>
+<li><strong>筹码数据滞后 18 天</strong>。库内资金筹码的交易日为 20260807，而行情为 20260825。H 节的获利盘比例 33.58% 与成本分位（4.80/5.00/5.30）<strong>均为 8 月 7 日的状态</strong>，此后股价从该区间下移，实际获利盘比例可能已更低。</li>
+</ol>
+<ol>
+<li><strong>股东户数数据滞后近 5 个月</strong>。最新期报告期 = 2026-03-31，无法反映 7 月解禁与 8 月中报前的筹码变化。</li>
+</ol>
+<ol>
+<li><strong>（股东增减持）表中本票无任何记录</strong>。因此 H 节关于解禁股东减持动机的推断<strong>只有价格层面的动机证据，没有实际减持行为证据</strong>，置信度定为中。</li>
+</ol>
+<ol>
+<li><strong>库内 A/H 对照返回 None</strong>——本票非 A+H 两地上市，无跨市场估值参照系可用。这是数据不适用，非缺失。</li>
+</ol>
+<ol>
+<li><strong>库内研报已在 J/卖方段完整引用</strong>（见下），无遗漏。</li>
+</ol>
+<p><strong>卖方预期（严格单列，不与库内事实混陈）</strong></p>
+<p>库内研报库内近 <strong>90 天</strong>收录 <strong>8 篇</strong>研报、来自 <strong>7 家</strong>机构。评级分布：正面最高档 4 家、Buy（UBS 英文口径）1 家、增持 2 家、强推 1 家——<strong>8 篇全部为正面评级，库内近 90 天无中性或负面评级</strong>。</p>
+<ul>
+<li>〔卖方预期〕来源：中信证券研报（库内）· 日期：2026-08-02 · 观点：预测 2026Q4（全年）EPS 0.38 元、归母净利 78.60 亿元，对应 PE 12.4 倍；2027 全年 EPS 0.52 元、108.23 亿元，PE 9.1 倍；2028 全年 EPS 0.65 元、134.45 亿元，PE 7.3 倍 · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：中信建投研报（库内）· 日期：2026-08-02 · 观点：预测 2026 全年 EPS 0.36 元、归母净利 75.42 亿元，PE 13.05 倍；2027 全年 EPS 0.57 元、119.01 亿元，PE 8.27 倍；2028 全年 EPS 0.68 元、140.54 亿元，PE 7.0 倍 · 置信度：低（同上）</li>
+<li>〔卖方预期〕来源：UBS 研报（库内）· 日期：2026-07-15 · 观点：评级 Buy，预测 2026 全年 EPS 0.40 元、归母净利 82.18 亿元，PE 13.0 倍；2027 全年 EPS 0.52 元、108.33 亿元，PE 9.9 倍 · 置信度：低（同上）</li>
+<li>〔卖方预期〕来源：开源证券公司深度报告（库内）· 日期：2026-08-19 · 观点：标题为《面板主业迎来收获期，玻璃基板业务有潜力》· 置信度：低（库内仅收录标题，未收录正文结论与目标价；且「收获期」这一判断与本报告 F/H 节援引的面板价格连跌事实方向相反，冲突已如实记入本节）</li>
+</ul>
+<p><strong>⚠️ 卖方预期与库内事实的两处冲突，一并披露</strong>：</p>
+<ul>
+<li><strong>冲突一（幅度）</strong>：三家机构对 2026 全年归母净利的预测集中在 <strong>75.42–82.18 亿元</strong>；而库内财务显示 2025 全年归母净利仅 <strong>45.17 亿元</strong>，2026 中报预告上限 39.2 亿元。要达成卖方预测，下半年需再贡献约 36–43 亿元，<strong>即下半年利润需与上半年基本持平或更高</strong>——这与 F/H 节援引的「7、8 月面板价格连续下跌」方向相反。另有市场观点指出，机构对 2026 年净利的分歧区间实际是 <strong>50–75 亿元</strong>（ZAKER 转载，2026；单源未交叉验证·置信度低）。</li>
+<li><strong>冲突二（定性）</strong>：开源证券 2026-08-19 报告标题称「面板主业迎来收获期」，而 Omdia 于 2026-06-15 下调 2026 年全球面板出货预测至 <strong>−6%</strong>（财联社 / IT之家 / 新浪财经多源）、TrendForce 口径显示 7、8 月电视面板价格连续下跌（国际电子商情 2026-08、新浪科技 2026-08-11）。<strong>按本 skill 的联网纪律，冲突时以库内为准，卖方观点与产业数据的分歧本身如实记录在此，不做调和。</strong></li>
+</ul>
+<p><strong>Sources（本报告引用的联网来源）</strong></p>
+<ul>
+<li><a href="https://www.esmchina.com/marketnews/59132.html" target="_blank" rel="noopener">国际电子商情：8月电视面板需求回暖，显示器和笔电面板价格预计持平</a></li>
+<li><a href="https://finance.sina.com.cn/tech/roll/2026-08-11/doc-inimxvun5793599.shtml" target="_blank" rel="noopener">新浪科技：预计面板价格持续下行，8月电视面板价格普降1~3美金</a></li>
+<li><a href="https://www.cls.cn/detail/2399859" target="_blank" rel="noopener">财联社：Omdia：2026年显示面板需求下调预计出货量将下降6%</a></li>
+<li><a href="https://www.ithome.com/0/964/444.htm" target="_blank" rel="noopener">IT之家：Omdia 下调 2026 年显示面板出货数量预测至衰退 6%</a></li>
+<li><a href="https://www.cs.com.cn/ssgs/01/2026/07/13/detail_2026071310024100.html" target="_blank" rel="noopener">中国证券报：TCL科技：预计2026上半年实现归母净利润37.0亿元-39.2亿元</a></li>
+<li><a href="http://static.cninfo.com.cn/finalpage/2026-07-14/1225422244.PDF" target="_blank" rel="noopener">巨潮资讯：TCL科技 2026 年半年度业绩预告（公告编号 2026-067）</a></li>
+<li><a href="https://www.ithome.com/0/992/304.htm" target="_blank" rel="noopener">IT之家：100%控股 t9 产线，TCL科技 93.25 亿元收购广州华星 45% 股权获证监会注册</a></li>
+<li><a href="https://www.ledinside.cn/news/20260603-61810.html" target="_blank" rel="noopener">LED在线：TCL科技：广州t9产线2026年净利润预计超21亿</a></li>
+<li><a href="https://m.cnstock.com/commonDetail/662367?from=QRCODE" target="_blank" rel="noopener">上海证券报·中国证券网：93.25亿！TCL科技全资控股广州华星半导体</a></li>
+<li><a href="https://www.cls.cn/detail/2424874" target="_blank" rel="noopener">财联社：TCL中环：预计2026年半年度净亏损30亿元-33亿元</a></li>
+<li><a href="https://www.nbd.com.cn/articles/2026-07-13/4470036.html" target="_blank" rel="noopener">每日经济新闻：TCL中环：预计2026年半年度净亏损30亿元至33亿元</a></li>
+<li><a href="http://stock.10jqka.com.cn/20260707/c678018448.shtml" target="_blank" rel="noopener">同花顺财经：TCL科技：9.86亿解禁股将于7月10日上市流通</a></li>
+<li><a href="https://finance.sina.com.cn/stock/aiassist/xfjj/2026-07-07/doc-inifyzkw5096755.shtml" target="_blank" rel="noopener">新浪财经：TCL科技9.86亿限售股将于7月10日解禁占总股本4.7416%</a></li>
+<li><a href="https://finance.sina.com.cn/tech/digi/2026-08-07/doc-inimmyer3385186.shtml" target="_blank" rel="noopener">新浪科技：光伏硅料八巨头签署反内卷倡议书：不得低于成本价销售</a></li>
+<li><a href="https://pub-zhtb.hizh.cn/a/202608/09/AP6a77c6dfe4b0d5893136b8d9.html" target="_blank" rel="noopener">珠海特区报：开展价格自查自纠，8家多晶硅企业签署&quot;反内卷&quot;倡议</a></li>
+<li><a href="https://www.stcn.com/article/detail/3570794.html" target="_blank" rel="noopener">证券时报网：光伏&quot;反内卷&quot;：2026年进入攻坚期</a></li>
+<li><a href="https://www.gz.gov.cn/zt/tddgmsbgxhxfpyjhx/jcbs/content/post_10619035.html" target="_blank" rel="noopener">广州市人民政府门户网站：2026年&quot;国补&quot;新政，这些变化与你息息相关</a></li>
+<li><a href="https://www.21jingji.com/article/20251230/herald/8a45679c53702cef465303de7b551081.html" target="_blank" rel="noopener">21经济网：2026年&quot;两新&quot;政策发布，首批625亿元&quot;国补&quot;资金下达</a></li>
+<li><a href="https://finance.sina.com.cn/jjxw/2026-07-31/doc-inikstff0966301.shtml" target="_blank" rel="noopener">新浪财经：TCL华星CEO赵军：预计下半年展示玻璃基载板样品，启动中试线开发平台筹建</a></li>
+<li><a href="https://ee.ofweek.com/2026-06/ART-8140-2815-30691724.html" target="_blank" rel="noopener">OFweek电子工程网：玻璃基板被大佬定调，TCL科技值不值得一次重估？</a></li>
+<li><a href="https://caifuhao.eastmoney.com/news/20260806211759096531350" target="_blank" rel="noopener">东方财富财富号：2026年H1全球大尺寸液晶电视面板出货量120.2M片，京东方首度下降，TCL华星上涨6.5%</a></li>
+<li><a href="https://paper.cnstock.com/html/2026-07/03/content_2238955.htm" target="_blank" rel="noopener">上海证券报：TCL科技集团股份有限公司关于2026年回购社会公众股份的进展公告</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-08-26），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>电视面板7~8月价格连跌</li>
+      <li>中环光伏H1预亏30~33亿</li>
+      <li>Q1毛利率同比降0.74个百分点</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>扣非净利</dt><dd>扣除非经常性损益后的净利润。剔除卖资产、政府补助、公允价值变动等一次性项目，更接近主业真实盈利。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>业绩预告</dt><dd>上市公司在正式财报前发布的盈利区间预告，达到规定变动幅度时强制披露。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.esmchina.com/marketnews/59132.html" target="_blank" rel="noopener">国际电子商情：8月电视面板需求回暖，显示器和笔电面板价格预计持平</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/tech/roll/2026-08-11/doc-inimxvun5793599.shtml" target="_blank" rel="noopener">新浪科技：预计面板价格持续下行，8月电视面板价格普降1~3美金</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2399859" target="_blank" rel="noopener">财联社：Omdia：2026年显示面板需求下调预计出货量将下降6%</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.ithome.com/0/964/444.htm" target="_blank" rel="noopener">IT之家：Omdia 下调 2026 年显示面板出货数量预测至衰退 6%</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cs.com.cn/ssgs/01/2026/07/13/detail_2026071310024100.html" target="_blank" rel="noopener">中国证券报：TCL科技：预计2026上半年实现归母净利润37.0亿元-39.2亿元</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://static.cninfo.com.cn/finalpage/2026-07-14/1225422244.PDF" target="_blank" rel="noopener">巨潮资讯：TCL科技 2026 年半年度业绩预告（公告编号 2026-067）</a> <em>2026-06</em></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.ithome.com/0/992/304.htm" target="_blank" rel="noopener">IT之家：100%控股 t9 产线，TCL科技 93.25 亿元收购广州华星 45% 股权获证监会注册</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.ledinside.cn/news/20260603-61810.html" target="_blank" rel="noopener">LED在线：TCL科技：广州t9产线2026年净利润预计超21亿</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.cnstock.com/commonDetail/662367?from=QRCODE" target="_blank" rel="noopener">上海证券报·中国证券网：93.25亿！TCL科技全资控股广州华星半导体</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2424874" target="_blank" rel="noopener">财联社：TCL中环：预计2026年半年度净亏损30亿元-33亿元</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.nbd.com.cn/articles/2026-07-13/4470036.html" target="_blank" rel="noopener">每日经济新闻：TCL中环：预计2026年半年度净亏损30亿元至33亿元</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="http://stock.10jqka.com.cn/20260707/c678018448.shtml" target="_blank" rel="noopener">同花顺财经：TCL科技：9.86亿解禁股将于7月10日上市流通</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/aiassist/xfjj/2026-07-07/doc-inifyzkw5096755.shtml" target="_blank" rel="noopener">新浪财经：TCL科技9.86亿限售股将于7月10日解禁占总股本4.7416%</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/tech/digi/2026-08-07/doc-inimmyer3385186.shtml" target="_blank" rel="noopener">新浪科技：光伏硅料八巨头签署反内卷倡议书：不得低于成本价销售</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://pub-zhtb.hizh.cn/a/202608/09/AP6a77c6dfe4b0d5893136b8d9.html" target="_blank" rel="noopener">珠海特区报：开展价格自查自纠，8家多晶硅企业签署&quot;反内卷&quot;倡议</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.stcn.com/article/detail/3570794.html" target="_blank" rel="noopener">证券时报网：光伏&quot;反内卷&quot;：2026年进入攻坚期</a></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.gz.gov.cn/zt/tddgmsbgxhxfpyjhx/jcbs/content/post_10619035.html" target="_blank" rel="noopener">广州市人民政府门户网站：2026年&quot;国补&quot;新政，这些变化与你息息相关</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.21jingji.com/article/20251230/herald/8a45679c53702cef465303de7b551081.html" target="_blank" rel="noopener">21经济网：2026年&quot;两新&quot;政策发布，首批625亿元&quot;国补&quot;资金下达</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/jjxw/2026-07-31/doc-inikstff0966301.shtml" target="_blank" rel="noopener">新浪财经：TCL华星CEO赵军：预计下半年展示玻璃基载板样品，启动中试线开发平台筹建</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://ee.ofweek.com/2026-06/ART-8140-2815-30691724.html" target="_blank" rel="noopener">OFweek电子工程网：玻璃基板被大佬定调，TCL科技值不值得一次重估？</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://caifuhao.eastmoney.com/news/20260806211759096531350" target="_blank" rel="noopener">东方财富财富号：2026年H1全球大尺寸液晶电视面板出货量120.2M片，京东方首度下降，TCL华星上涨6.5%</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://paper.cnstock.com/html/2026-07/03/content_2238955.htm" target="_blank" rel="noopener">上海证券报：TCL科技集团股份有限公司关于2026年回购社会公众股份的进展公告</a></li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富财富号，2026-08-06 <em>2026-08-06</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 单源未交叉验证·置信度低 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> IT之家，2026-08-20 <em>2026-08-20</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> LED在线，2026-06-03，双源 <em>2026-06-03</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经，2026-07-31 <em>2026-07-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 网易，2026 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经，2026-08-07 <em>2026-08-07</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 珠海特区报客户端，2026-08-09 <em>2026-08-09</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经，2026-08 <em>2026-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公司 2026-07-13 公告，经中国证券网/金融界等多源报道 <em>2026-07-13</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 上海证券报，2026-07-03 <em>2026-07-03</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-07-31、OFweek 2026-06、ZAKER 转载 2026-06，多源 <em>2026-07-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 同花顺财经、新浪财经、腾讯新闻等多源，2026-07-07/07-08 <em>2026-07-07</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公司 2026-07-13 公告，多源 <em>2026-07-13</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 与库内 2025H1 归母 18.84 亿元完全自洽 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 国际电子商情 2026-08、新浪科技 2026-08-11，双源 <em>2026-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社 cls.cn / IT之家 / 新浪财经转载，2026-06-15，多源 <em>2026-06-15</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社 2026-07-13、每日经济新闻 2026-07-13，双源 <em>2026-07-13</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> IT之家 2026-08-20 转述交易文件 <em>2026-08-20</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经/上海证券报系报道，2026-03-30 起多源 <em>2026-03-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 国际电子商情 2026-08、新浪科技 2026-08-11 <em>2026-08</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-08-26 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
