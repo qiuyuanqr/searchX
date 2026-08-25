@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>长电科技（600584.SH） · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>长电科技（600584.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-08-25（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 元件</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 玻璃基板 · 中芯国际概念 · 毫米波雷达 · 苹果概念 · 汽车芯片 · 第三代半导体 · 存储芯片 · 先进封装</span>
+      <span><b>来源</b> 32 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    长电科技（600584）主要做的是集成电路封装测试、分立器件制造销售，产品主要应用于通讯类、家电类、资讯类、工业自动化等方面。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——利润拐点已被中报证实，但估值已提前透支这个拐点。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：利润拐点已被中报证实，但估值已提前透支这个拐点。支撑在于毛利率四期单调升至15.15%；Q2营收同比转正+11.72%；先进封装产能缺口与提价。主要风险是PE68倍已透支利润拐点；存储合约价涨幅已放缓；Q3同比基数抬高80%。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>毛利率四期单调升至15.15%</li>
+      <li>Q2营收同比转正+11.72%</li>
+      <li>先进封装产能缺口与提价</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据基准：库内取数 2026-08-25（库内估值）｜行情时点数据时点 15:34（当日收盘）｜财报最新期 2026 中报（公告日 20260821） 本报告为全局共享档案，不含任何账户、持仓、自选信息。</div>
+<h2>A. 一屏结论（BLUF）</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：利润拐点已被中报证实，但估值已提前透支这个拐点。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>盈利拐点是硬数据、不是预期</strong>——2026 中报净利 8.45 亿元、同比 +79.41%，毛利率从 2025Q1-Q3 累计的 13.74% 连续四期抬升到 15.15%；单季拆分后 2026Q2 净利 5.55 亿元、同比 +107.24%（据库内财务推算）。（置信度：高）</li>
+<li><strong>收入端在中报这一期完成了掉头</strong>——2026Q1 营收还是同比 -1.76%，2026H1 转为 +4.96%，反推 2026Q2 单季同比 +11.72%、环比 +12.92%（据库内财务推算）。营收从收缩转回增长，是这轮业绩的第二只脚。（置信度：高）</li>
+<li><strong>行业侧供不应求有外部佐证</strong>——先进封装产能缺口持续，日月光 2026 年内第三次上调先进封装报价、最高涨幅超 20%（2026-08-04 新浪财经/搜狐）；公司 2026 年固定资产投资预算约 100 亿元、较上年 85 亿元大幅上调（2026-05-09/05-10 新浪财经、腾讯新闻）。（置信度：中，联网双源）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>估值已把利润弹性算进去了</strong>——PE(TTM) 68.33 倍、PB 4.58 倍。即便用最乐观的卖方 2026 年 EPS 预测，按今日收盘价推算 PE 仍有 57.9~64.4 倍（据推算）。（置信度：高）</li>
+<li><strong>利润高增有低基数成分</strong>——2025Q2 净利仅 2.68 亿元、2025 全年净利同比还是 -2.75%（据库内财务推算/直取）。79% 的增速里有多少是真实经营改善、多少是基数塌陷，中报口径分不开。（置信度：高）</li>
+<li><strong>资金面与基本面背离</strong>——近 20 个交易日（20260729–20260825）整体资金净流出 16.28 亿元，净流入天数仅 7/20；而同期正是中报发布窗口（库内资金筹码）。（置信度：高，但资金流是盘面现象、不作基本面论据）</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ul>
+<li>信号①：<strong>三季报单季毛利率能否站上 15.68%</strong>（2026Q2 推算值）。核验时点：三季报披露，按交易所规则最迟 2026-10-31（见 I 节 W10）。</li>
+<li>信号②：<strong>三季报单季营收同比能否维持在 +11.72% 以上</strong>（2026Q2 推算值）。同一时点核验。</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong></p>
+<p>最可能错在「把周期位置读成拐点起点」。如果先进封装涨价周期在 2026Q4 见顶（存储侧已有涨幅放缓迹象，见 F 节），那么 2026Q2 的 15.68% 单季毛利率就是本轮高点而不是起点，届时 68 倍 PE 会向下重估——而本报告的三条驱动全都建立在「毛利率继续往上」这一个假设上。</p>
+<h2>B. 公司快照</h2>
+<p><strong>基本盘</strong>（全部来自库内公司档案）</p>
+<ul>
+<li>江苏长电科技股份有限公司，1972 年成立，2003-06-03 在上交所主板上市（上市日期 20030603），至今上市约 23 年。上市状态（正常上市）。</li>
+<li>行业归属：<strong>半导体</strong>（库内行业归属字段）。板块：主板。</li>
+<li>主营业务：集成电路封装测试、分立器件制造销售，产品主要应用于通讯类、家电类、资讯类、工业自动化等方面。</li>
+<li>员工 24,952 人；注册资本 178,941.457 万元。</li>
+<li>资质：国家重点高新技术企业、中国电子百强企业、集成电路封装技术创新战略联盟理事长单位；拥有国内唯一的高密度集成电路国家工程实验室、国家级企业技术中心、博士后科研工作站。</li>
+</ul>
+<p><strong>当前行情</strong>（库内行情，唯一行情事实源）</p>
+<ul>
+<li>收盘价 <strong>74.05 元</strong>，涨跌 <strong>+0.34%</strong>，数据时点 15:34（15:00 后即当日收盘值）。</li>
+<li>当日成交额 <strong>63.2 亿元</strong>；日内最高 +2.03%、最低 -3.71%——<strong>日内振幅约 5.7 个百分点，方向在盘中反复过</strong>（置信度：高）。</li>
+</ul>
+<p><strong>估值</strong>（库内估值，交易日 20260825）</p>
+<ul>
+<li>PE(TTM) <strong>68.33 倍</strong>｜PB <strong>4.58 倍</strong>｜股息率 <strong>0.2026%</strong>｜换手率 <strong>4.82%</strong></li>
+<li>总市值 <strong>1,325.06 亿元</strong></li>
+<li>同行业对照：半导体行业库内 <strong>197 只</strong>，行业 PE 中位数 <strong>104.39 倍</strong>，该票 PE 在行业内<strong>由低到高排第 45 位</strong>（约处在最便宜的 23% 分位，据推算）。</li>
+</ul>
+<p><strong>仅估值口径的一句话判断</strong>：绝对值上 68 倍 PE 不便宜，但<strong>放在半导体行业里它属于偏便宜的那一端</strong>（行业中位数 104 倍）——这两句话必须一起读，只说其中一句都会误导（置信度：高）。这是估值口径判断，<strong>不等于</strong>好坏结论。</p>
+<div class="callout">总股本交叉校验：总市值 1,325.06 亿 ÷ 收盘价 74.05 = 17.89 亿股，与注册资本 178,941.457 万元一致（据推算）——两个独立字段互相印证，后文所有 EPS 相关推算基于此。</div>
+<p>*（库内 A/H 对照返回 None，非 A+H 两地上市票，本节不涉及跨市场溢价。）*</p>
+<h2>C. 财务健康</h2>
+<p><strong>近 4 期核心数据</strong>（库内财务（近 4 期），新→旧，金额单位亿元）</p>
+<ul>
+<li><strong>2026 中报</strong>（报告期 20260630，公告 20260821）｜营收 <strong>195.27</strong>（同比 <strong>+4.96%</strong>）｜净利 <strong>8.45</strong>（同比 <strong>+79.41%</strong>）｜ROE <strong>2.93%</strong>｜毛利率 <strong>15.15%</strong>｜净利率 <strong>4.21%</strong>｜EPS <strong>0.47</strong>｜资产负债率 <strong>46.22%</strong></li>
+<li><strong>2026 一季报</strong>（公告 20260429）｜营收 <strong>91.71</strong>（同比 <strong>-1.76%</strong>）｜净利 <strong>2.90</strong>（同比 <strong>+42.74%</strong>）｜ROE <strong>1.01%</strong>｜毛利率 <strong>14.55%</strong>｜净利率 <strong>3.04%</strong>｜EPS <strong>0.16</strong>｜资产负债率 <strong>43.01%</strong></li>
+<li><strong>2025 年报</strong>（公告 20260410）｜营收 <strong>388.71</strong>（同比 <strong>+8.09%</strong>）｜净利 <strong>15.65</strong>（同比 <strong>-2.75%</strong>）｜ROE <strong>5.56%</strong>｜毛利率 <strong>14.15%</strong>｜净利率 <strong>4.04%</strong>｜EPS <strong>0.87</strong>｜资产负债率 <strong>43.64%</strong></li>
+<li><strong>2025 三季报</strong>（公告 20251024）｜营收 <strong>286.69</strong>（同比 <strong>+14.78%</strong>）｜净利 <strong>9.54</strong>（同比 <strong>-11.39%</strong>）｜ROE <strong>3.42%</strong>｜毛利率 <strong>13.74%</strong>｜净利率 <strong>3.32%</strong>｜EPS <strong>0.53</strong>｜资产负债率 <strong>43.10%</strong></li>
+</ul>
+<h3>趋势读法：三条线，两条在变好、一条要盯</h3>
+<p><strong>第一条线：毛利率是这四期里最干净的单调改善。</strong> 13.74% → 14.15% → 14.55% → 15.15%，四期连续抬升，累计 +1.40 个百分点（置信度：高）。<strong>这是本报告最有说服力的一个数据序列</strong>——它没有基数问题、没有口径切换，就是逐期变好。</p>
+<p><strong>第二条线：利润拐点确实发生了，但发生在 2026Q2 这一个季度里。</strong> 把累计数拆成单季（据库内财务推算）：</p>
+<ul>
+<li>2026Q2 单季营收 <strong>103.56 亿元</strong>，同比 <strong>+11.72%</strong>、环比 <strong>+12.92%</strong></li>
+<li>2026Q2 单季净利 <strong>5.55 亿元</strong>，同比 <strong>+107.24%</strong>、环比 <strong>+91.38%</strong></li>
+<li>2026Q2 单季毛利率 <strong>15.68%</strong>（vs Q1 的 14.55%）；单季净利率 <strong>5.36%</strong>（vs Q1 的 3.16%）</li>
+</ul>
+<p>也就是说，<strong>上半年 8.45 亿净利里有 5.55 亿（65.7%）是第二季度赚的</strong>（置信度：高）。拐点的形状是「一个季度陡峭抬升」，不是「四个季度缓坡向上」——<strong>这种形状对下一期的验证要求更高</strong>，因为它可能是单季度的产能/价格错配窗口。</p>
+<p><strong>第三条线：营收增速的历史路径提醒基数在起作用。</strong> 把四期串起来看（部分为推算值）：</p>
+<ul>
+<li>2025Q1-Q3 累计营收同比 +14.78% → 2025 全年 +8.09%，反推 <strong>2025Q4 单季营收同比约 -7.11%</strong>（据推算）</li>
+<li>2026Q1 同比 -1.76% → 2026H1 转 +4.96%，反推 2026Q2 同比 +11.72%</li>
+</ul>
+<p><strong>营收在 2025 年下半年经历过一段收缩，2026Q2 才转正。</strong> 同期净利：2025 全年同比 -2.75%、2025Q1-Q3 同比 -11.39%——<strong>去年利润基数本身是被压过的</strong>。因此 2026H1 那个 +79.41% 里，「低基数」是确定存在的成分（置信度：高），但<strong>低基数解释不了毛利率的四期单调改善</strong>（置信度：高）——这两件事要分开归因。</p>
+<p><strong>资产负债率是要盯的那一项。</strong> 43.10% → 43.64% → 43.01% → <strong>46.22%</strong>，前三期稳定，中报单期跳升 <strong>3.21 个百分点</strong>（置信度：高）。这与公司 100 亿元级别的固定资产投资计划（见 E/F 节联网佐证）方向一致，属于<strong>扩产期的正常杠杆抬升</strong>，但它意味着：<strong>如果需求侧掉头，折旧和财务费用会先于收入下滑而刚性存在</strong>（置信度：中）。</p>
+<p><strong>ROE 口径提示</strong>：中报 ROE 2.93% 是半年度值、2025 年报 5.56% 是全年值，<strong>两者不可直接比较</strong>（置信度：高）。可比的是同口径：2026H1 的 2.93% vs 2025H1（库内无该期数据，未取到）。</p>
+<p><strong>信息缺口</strong>：库内财务不返回分业务营收拆分、不返回经营性现金流、不返回研发费用。影响：无法从库内验证「运算电子成为第一大业务」这一结构性变化（该说法来自库内新闻标题与联网，见 G/H 节），也无法判断 8.45 亿净利的现金含量。补法：查阅 2026 年半年度报告全文（库内新闻已给出 PDF 地址本报告只读不外取）。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比（取 3 家）返回同属「半导体」行业的三只票（金额单位亿元）：</p>
+<ul>
+<li><strong>长鑫科技（688825）</strong>｜总市值 37,787.70｜PE(TTM) 134.02｜PB 46.24｜营收 508.00｜净利 247.62｜ROE 35.76%｜财报期 20260331</li>
+<li><strong>中芯国际（688981）</strong>｜总市值 10,273.27｜PE(TTM) 203.61｜PB 6.86｜营收 176.17｜净利 13.61｜ROE 0.91%｜财报期 20260331</li>
+<li><strong>寒武纪（688256）</strong>｜总市值 6,354.44｜PE(TTM) 190.71｜PB 46.88｜营收 59.96｜净利 23.11｜ROE 18.20%｜财报期 20260630</li>
+<li><strong>长电科技（600584）</strong>｜总市值 1,325.06｜PE(TTM) 68.33｜PB 4.58｜营收 195.27（H1）｜净利 8.45（H1）｜ROE 2.93%（半年度）｜财报期 20260630</li>
+</ul>
+<h3>⚠️ 这组对比的第一个结论是关于对比本身的</h3>
+<p><strong>这三家没有一家是封测同行</strong>（置信度：高）：长鑫科技是存储器 IDM、中芯国际是晶圆代工、寒武纪是 AI 芯片设计。库内同业对比是按<strong>库内行业标签 +市值</strong>取的，「半导体」是一级标签，它不区分设计/制造/封测三个完全不同的环节。<strong>所以下面的横向数字只能读出「在半导体这个大池子里它是什么形态」，读不出「它在封测赛道里排第几」</strong>——后者库内无数据（置信度：高）。</p>
+<h3>在这个池子里它是什么形态</h3>
+<p><strong>它是这四家里最像「制造业」的那一家</strong>（置信度：高）：</p>
+<ul>
+<li><strong>PB 4.58 是四家里最低的，且低一个数量级</strong>——长鑫 46.24、寒武纪 46.88、中芯 6.86。PB 低意味着它的市值主要由<strong>真实的厂房、设备、产线</strong>撑着，而不是由未来预期撑着。这与它「重资产封测厂 + 100 亿资本开支」的形态一致。</li>
+<li><strong>PE 68.33 也是四家里最低的</strong>，且不到中芯（203.61）和寒武纪（190.71）的三分之一。</li>
+<li><strong>但 ROE 2.93%（半年度）在四家里最弱</strong>——即便折成年化粗算也只有 6% 上下，远低于长鑫 35.76% 和寒武纪 18.20%（均为单期值，口径不同不可精细比较，置信度：中）。</li>
+</ul>
+<p><strong>一句话定位</strong>：<strong>便宜是真便宜（相对这个池子），弱也是真弱（回报率）</strong>。它的估值折价不是市场看错了，而是市场在给「封测环节议价能力弱、重资产、净利率只有 4% 出头」这件事定价（置信度：中）。<strong>便宜本身不构成买入理由，这是本节最重要的一句话。</strong></p>
+<p><strong>信息缺口</strong>：库内取不到真正的封测同业（通富微电、华天科技、日月光、安靠）的可比财务数据。影响：无法判断长电的毛利率改善是<strong>公司自身 alpha</strong> 还是<strong>全行业 beta</strong>——这个区分对 J 节逻辑链是决定性的。补法：三季报季对比通富微电（002156）、华天科技（002185）同期毛利率变动方向；本报告在 F 节用联网的行业景气度信息做了替代性判断，但那是间接证据（置信度：中）。</p>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>：集成电路封装测试（OSAT）——晶圆厂造出芯片后，由它做封装和测试，再交给下游。这是芯片产业链上<strong>靠近末端、按加工量收费</strong>的环节（基于库内公司档案主营描述 + 产业常识，置信度：高）。</p>
+<p><strong>这个模式的先天特征</strong>（置信度：高，由库内财务数据直接印证）：</p>
+<ul>
+<li><strong>净利率天然薄</strong>：2025 全年 4.04%、2026H1 4.21%。做的是加工，不是定价。</li>
+<li><strong>重资产</strong>：2026 年固定资产投资预算约 100 亿元（联网双源，见下），而 2025 全年净利才 15.65 亿元——<strong>一年的资本开支是一年净利的六倍多</strong>（据推算）。这决定了它的现金流常年被产线吃掉。</li>
+<li><strong>杠杆随扩产走</strong>：资产负债率中报跳到 46.22%。</li>
+</ul>
+<h3>护城河分级</h3>
+<p><strong>结构性护城河：弱到不存在</strong>（置信度：中） 从库内信息看不出牌照壁垒、专利垄断或网络效应。封测是充分竞争环节，全球前三（日月光、安靠、长电）之外还有大批厂商，客户可以切换（置信度：中，行业结构判断，非库内数据）。</p>
+<p><strong>阶段性优势：有，且当前正在兑现</strong>（置信度：中）</p>
+<ol>
+<li><strong>先进封装的产能卡位</strong>。这是本轮最实的一条：先进封装产能缺口持续，头部客户已锁定绝大部分产能、排期延至 2026 年底甚至更晚（2026-08-04 新浪财经、搜狐）；日月光 2026 年内第三次上调先进封装报价、最高涨幅超 20%（同源）。<strong>在产能是稀缺品的窗口期，封测厂的议价能力会暂时反转</strong>——这解释了 C 节的毛利率四期单调改善（置信度：中）。⚠️ 关键词是「<strong>阶段性</strong>」：产能一旦补齐，议价能力就交还给客户。</li>
+<li><strong>客户绑定（存储侧）</strong>。2024 年以 6.24 亿美元收购西部数据旗下晟碟半导体 80% 股权，晟碟主营闪存产品封测，收购直接带来闪迪的长期订单绑定；2025 年晟碟为公司新增超过 36 亿元营收和 2.4 亿元净利润（2024-08 电子工程专辑/21 经济网 + 2026-06-28 东方财富财富号）。（置信度：中，联网双源，库内无分部数据佐证）</li>
+<li><strong>国家级研发平台</strong>。国内唯一的高密度集成电路国家工程实验室（库内公司档案，置信度：高）——这是资质事实，但<strong>能否转化为定价权，库内无证据</strong>。</li>
+</ol>
+<p><strong>规模成本优势：存在但被行业结构稀释</strong>（置信度：低）。全球封测第三的规模理论上带来单位成本优势，但 4% 的净利率说明这份优势主要被让渡给了客户，而不是留在自己账上（置信度：中）。</p>
+<p><strong>一句话</strong>：<strong>它的护城河不在「别人做不了」，而在「此刻别人也没有产能」</strong>——这条河的水位由行业周期决定，不由公司决定（置信度：中）。这是 K 节三情景的分野所在。</p>
+<h2>F. 政策与监管</h2>
+<p>库内无政策数据，本节全部来自联网，每条带来源与日期。</p>
+<p><strong>① 算力基础设施国产化采购比例强制化——间接利好，传导链偏长</strong></p>
+<p>《2026-2028 年全国算力基础设施建设行动方案》自 <strong>2026-09-01</strong> 起正式执行：央企国企新建智算中心，AI 芯片、服务器、光模块国产采购比例不低于 75%，不达标不予批复（来源：库内事件日历事件项，事件类型=policy、importance=8、event_date=2026-09-01）。</p>
+<p>传导链：国产算力硬件采购放量 → 国产 AI 芯片/存储芯片流片量上升 → <strong>封测需求增加</strong>。⚠️ <strong>长电处在这条链的第三环，不是第一环</strong>——政策直接受益方是国产 AI 芯片和服务器厂商，封测是被动跟随的产能提供方（置信度：中）。方向利好，弹性有限。</p>
+<p><strong>② 工信部「十五五」新型工业化政策口径——中性偏正面，时点在明天</strong></p>
+<p>国新办 <strong>2026-08-26</strong> 上午发布会，工信部介绍「十五五」期间新型工业化推进方向，会透露芯片、高端装备、机器人等重点制造业政策方向（来源：库内事件日历，importance=7）。这是<strong>口径事件不是落地事件</strong>，对板块情绪的影响大于对公司报表的影响（置信度：中）。</p>
+<p><strong>③ 国家大基金持股在减持——这条是利空，且方向明确</strong></p>
+<p>国家集成电路产业投资基金曾是长电科技第一大股东，2024 年完成大宗转让退出；<strong>2026 年 1–5 月继续减持 1,072.54 万股，持股比例降至 5.97%</strong>（截至 2026 年 5 月）。大基金整体策略是「对成熟企业减持回收资金、再投向新领域」，成熟封测企业属被减持对象（来源：2026-06-24 腾讯新闻、2026-05-30 东方财富财富号）。</p>
+<p>⚠️ <strong>标注为「单源交叉度不足·置信度低」</strong>：两条来源均为财经媒体转述而非公司公告，且持股比例的时点为 2026 年 5 月、可能已过期。传导方向：<strong>持续的减持公告会周期性压制股价，且是可预期的供给</strong>（置信度：低）。<strong>这一条本报告未能从库内或公司公告层面核实，读者应自行核对最新权益变动公告。</strong></p>
+<p><strong>④ 中美科技管制边际松动的可能窗口——潜在利好，但未落地</strong></p>
+<p>外媒报道美方正考虑批准苹果采购长鑫存储、长江存储芯片，可能在 <strong>2026-09-24 前后</strong>（习特会后）公布（来源：库内事件日历，事件类型=policy、importance=7）。若成真，国内存储产业链景气度上台阶，<strong>长电的存储封测（晟碟）是间接受益方</strong>（置信度：低——事件本身尚未官宣，库内事件日历已滤掉纯猜测项但此条仍带「预计」字样）。</p>
+<p><strong>⑤ 上游价格周期已现放缓信号——这是本节唯一的减速带</strong></p>
+<p>2026Q3 DRAM 与 NAND 合约价涨幅虽保持双位数但<strong>较 Q2 明显放缓</strong>：传统 DRAM Q3 合约价环比涨约 17%，NAND（含 SSD）整体涨幅接近 20%；市场已现分化，签订含价格上限长期协议的客户 7 月价格已逐渐逼近协议天花板（来源：2026-08-08 新浪科技「存储涨价天花板到了」）。</p>
+<p>⚠️ <strong>这条是本报告最重要的反面证据</strong>（置信度：中，单源但内容具体）。存储涨价见顶 → 存储原厂利润扩张放缓 → 对封测环节的价格容忍度下降。它不直接打击 2026Q3，但<strong>它是 C 节「毛利率单调改善」这条线未来断掉的最可能原因</strong>。</p>
+<p><strong>信息缺口</strong>：未检索到 2026 年针对封测环节的直接产业政策（税收、补贴、专项）。影响：F 节全部是间接传导，无一条直接作用于公司报表。补法：跟踪 2026-08-26 工信部发布会与 2026-09-11 中国算力大会的政策文本（见 I 节 W1、W3）。</p>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 <strong>29 个</strong>同花顺概念标签。<strong>标签沾边不等于有营收</strong>，逐类分级如下。</p>
+<h3>第一类：真有业务（有主营描述、财报或公开披露佐证）</h3>
+<ul>
+<li><strong>先进封装（886009）</strong>——<strong>核心业务</strong>。主营即集成电路封装测试；2026 年固定资产投资预算约 100 亿元、重点投向先进封装产线，较上年 85 亿元大幅上调（2026-05-09/05-10 新浪财经、2026-05-10 腾讯新闻，双源）。（置信度：高）</li>
+<li><strong>芯片概念（885756）</strong>——主营直接对应。（置信度：高）</li>
+<li><strong>存储芯片（886042）</strong>——<strong>有实体业务但要看清位置</strong>。通过收购晟碟半导体 80% 股权切入闪存封测，2025 年晟碟贡献超 36 亿元营收、2.4 亿元净利润（2024-08 电子工程专辑、2026-06-28 东方财富财富号，双源）。⚠️ <strong>它做的是存储芯片的封装测试，不是存储芯片本身</strong>——存储涨价对它是间接传导（通过客户产能利用率），不是直接提价（置信度：中）。</li>
+<li><strong>汽车电子（885545）/ 汽车芯片（885945）</strong>——库内公司档案主营描述含「工业自动化」，且公司公开表述资本开支应用领域集中在「运算及汽车电子」两大战略方向（2026-05-09 新浪财经）。有业务，但<strong>库内无分部营收数据可量化占比</strong>（置信度：中）。</li>
+<li><strong>2026 中报预增（886110）</strong>——<strong>事实标签</strong>。2026-07-15 已披露半年度业绩预增公告，预计扣非净利 7.40 亿~9.10 亿元、同比 +68.95%~+107.76%（来源：2026-07-31 上海证券报刊登的异动公告原文引述）；库内中报净利 8.45 亿元已兑现（置信度：高）。</li>
+</ul>
+<h3>第二类：产业链间接关联（受益路径清楚，但未见营收佐证）</h3>
+<ul>
+<li><strong>人工智能（885728）/ 数据中心 AIDC（885887）</strong>——公司主营描述中<strong>无 AI 字样</strong>；关联路径是「AI 算力芯片需要先进封装」。库内新闻标题「运算电子跃升为第一大业务」（eastmoney，2026-08-22）指向这条链，但<strong>库内无分部数据可验证</strong>（置信度：中）。</li>
+<li><strong>人民币贬值受益（885840）</strong>——公司有海外资产与营收敞口（库内公告：2026-08-20「关于香港全资子公司变更记账本位币的公告」，说明确有外币记账主体）。<strong>有敞口是事实，方向和量级未见量化佐证</strong>（置信度：低）。</li>
+<li><strong>国家大基金持股（885893）</strong>——持股属实但<strong>正在减持中</strong>，2026 年 5 月已降至 5.97%（见 F 节③，单源置信度低）。<strong>这个标签的方向可能与市场默认理解相反</strong>（置信度：低）。</li>
+</ul>
+<h3>第三类：仅概念标签，未见营收佐证</h3>
+<p><strong>共封装光学 CPO（886033）</strong>——有公开表述称公司推动光电合封（CPO）方案在数据中心加速落地（2026-06-26 21 财经/东方财富，单源），但<strong>属技术布局表述，未见营收佐证</strong>（置信度：低）。</p>
+<p>以下标签在库内与本次联网中<strong>均未找到营收或主营佐证</strong>，判定为<strong>仅概念标签</strong>（置信度：高——指「未见佐证」这个判断本身可靠）：中芯国际概念（885897）、玻璃基板（886111）、第三代半导体（885908）、毫米波雷达（886035）、智能穿戴（885454）、机器人概念（885517）、无人驾驶（885736）、物联网（885312）、苹果概念（885376）、绿色电力（885936）、国企改革（886021）、央企国企改革（885595）、股权转让并购重组（885739）、同花顺果指数（886082）。</p>
+<div class="callout">⚠️ <strong>这一类里有一个系统性陷阱</strong>：封测厂<strong>给谁封装就被贴谁的标签</strong>。机器人芯片要封装、毫米波雷达芯片要封装、可穿戴芯片要封装——于是它同时挂着 14 个下游应用概念。<strong>这些标签几乎不携带任何关于这家公司的增量信息</strong>，但在题材行情中会被反复用作炒作依据（置信度：高）。读到「长电科技是机器人概念股」时，应该想起这一段。</div>
+<h3>第四类：指数与交易属性标签（非业务）</h3>
+<p>沪深 300 样本股（883300）、上证 180 成份股（883302）、沪股通（885520）、融资融券（885338）。<strong>这四个不是题材，是交易结构事实</strong>：意味着它被指数基金被动持有、可被北向资金买卖、可被融资融券。<strong>它们影响流动性与波动特征，不影响基本面</strong>（置信度：高）。</p>
+<h3>产业链位置</h3>
+<p>上游：晶圆代工厂（中芯国际、台积电等）与封装材料/设备厂商。 本环节：<strong>封装测试（OSAT）</strong>。 下游：芯片设计公司与终端品牌（算力芯片、汽车芯片、存储原厂）。</p>
+<p><strong>议价能力在哪端</strong>：常态下在<strong>下游（设计公司）</strong>——封测是加工服务，净利率 4% 出头就是议价能力的体现（库内财务，置信度：高）。<strong>但在产能紧缺窗口期会短暂反转</strong>：日月光年内三次提价、头部客户锁产能排期到 2026 年底之后（2026-08-04 双源）就是反转的证据（置信度：中）。<strong>这轮毛利率改善本质上是议价权的临时借用，不是永久转移</strong>（置信度：中）——这是 J 节逻辑链的命门。</p>
+<h2>H. 消息面与市场情绪</h2>
+<h3>新闻（库内新闻（近 60 日），返回 20 条）</h3>
+<p>⚠️ <strong>数据边界先说清</strong>：20 条全部集中在 <strong>2026-08-19 至 2026-08-24</strong> 这 6 天内，说明返回条数有上限、<strong>60 天窗口内更早的新闻未被覆盖</strong>（置信度：高）。因此本节的库内新闻部分只反映中报发布窗口，7 月及以前的消息面由联网补（下方标注）。</p>
+<p>按重要性挑选：</p>
+<ol>
+<li><strong>2026-08-20 21:08｜「长电科技：上半年净利同比增长 79.41% 拟每 10 股派 0.5 元」</strong>（cls，情感 +0.9；同时点 eastmoney 同题，+0.8）——中报正式落地，<strong>双源同时点发布</strong>。实质影响：<strong>有</strong>，是本轮所有讨论的事实起点。附带中期分红方案，按 17.89 亿股推算派息总额约 <strong>0.895 亿元、占 H1 净利 10.6%</strong>（据推算）——<strong>分红比例不高，与扩产期占用现金的判断一致</strong>（置信度：高）。</li>
+<li><strong>2026-08-22 11:55｜「长电科技上半年净利增近 80% 运算电子跃升为第一大业务」</strong>（eastmoney，+0.8）——<strong>这是本批新闻里信息量最大的一条</strong>：它指向业务结构切换。实质影响：<strong>有，但库内无法验证</strong>——库内财务不含分部数据。作为佐证，联网显示运算电子 2025 年营收占比 21.3%、收入同比 +42.6%，2026Q1 同比 +14.2%（2026 年券商研报转述，新浪财经）。<strong>若「跃升为第一大业务」属实，意味着占比已从 21.3% 显著上移</strong>（置信度：中，库内未验证）。</li>
+<li><strong>2026-08-21 07:43｜「A 股封测龙头长电科技上半年盈利增速远超收入头部厂商扩产提速｜财报解读」</strong>（eastmoney，+0.8）——标题本身就点破了 C 节的核心特征：<strong>利润增速远超收入增速 = 靠毛利率而非靠规模</strong>。实质影响：解读性内容，无新增事实。</li>
+<li><strong>2026-08-20 22:20｜「2026 年中期利润分配方案的公告」</strong>（库内公告交易所公告，+0.6）——官方公告，佐证第 1 条。实质影响：<strong>有</strong>（现金流去向）。</li>
+<li><strong>2026-08-20 22:20｜「关于向激励对象授予股票期权的公告」+ 同批 3 份配套文件</strong>（激励对象名单、调整公告、董事会薪酬与考核委员会核查意见、中伦律所法律意见书，库内公告，情感 0.0）——<strong>2025 年股票期权激励计划完成授予</strong>。实质影响：<strong>中性偏正面</strong>——激励落地通常绑定业绩考核目标，但<strong>库内公告标题不含行权条件，无法判断考核门槛高低</strong>（置信度：低）。⚠️ 期权授予会带来后续股份支付费用，<strong>对未来几期净利有摊薄压力，量级未知</strong>（置信度：低）。</li>
+<li><strong>2026-08-20 21:21｜「关于基建项目委托代建管理暨关联交易的公告」</strong>（库内公告，0.0）——与 100 亿元资本开支计划方向一致（置信度：中）。实质影响：<strong>有</strong>，是扩产在报表外的脚印。</li>
+<li><strong>2026-08-20 21:21｜「关于香港全资子公司变更记账本位币的公告」</strong>（库内公告，0.0）——外币敞口管理动作，佐证 G 节「人民币贬值受益」标签确有敞口基础（置信度：中）。</li>
+<li><strong>2026-08-21 14:44｜「韩国主要半导体设备商订单积压量预计比去年年底翻一番…测试设备结构性增长」</strong>（cls 电报解读，+0.6）——<strong>行业景气的外部佐证</strong>：测试设备订单积压翻倍，指向封测产能扩张周期仍在途中（置信度：中）。实质影响：对公司无直接影响，对 E 节「产能紧缺窗口」判断是支持性证据。</li>
+<li><strong>2026-08-24 16:52｜「人气板块及个股点评」</strong>（cls，情感 <strong>-0.4</strong>）——<strong>20 条中唯一情感为负的一条</strong>，且是泛化的板块点评，非公司事件。实质影响：<strong>无</strong>，纯情绪面噪音。</li>
+</ol>
+<p><strong>联网补充的关键消息面事件（库内 60 天窗口未覆盖）</strong>：</p>
+<ul>
+<li><strong>2026-07-15</strong>：披露半年度业绩预增公告，预计扣非净利 <strong>7.40 亿~9.10 亿元、同比 +68.95%~+107.76%</strong>（来源：2026-07-31 上海证券报刊登的公司异动公告原文引述）。</li>
+<li><strong>2026-07-31</strong>：披露股票交易价格异常波动公告——<strong>2026-07-28、07-29、07-30 连续 3 个交易日收盘价格跌幅偏离值累计超过 20%</strong>。公告称生产经营活动正常、内外部经营环境及行业政策未发生重大变化、不存在应披露而未披露的重大事项；董监高及控股股东、实际控制人在异动期间不存在买卖公司股票情形（来源：2026-07-31 上海证券报、上交所公告编号临 2026-034，双源）。</li>
+</ul>
+<div class="callout">⚠️ <strong>第 2 条极其重要，且它的方向容易被读反</strong>：<strong>7 月底那次异动是「三日累计跌幅超 20%」，是暴跌不是暴涨</strong>（置信度：高）。而它发生在业绩预增公告（7-15）之后、中报正式披露（8-20）之前——<strong>利好已出而股价重挫</strong>。这与本节资金流数据方向一致（见下），构成本报告 K 节悲观情景的现实基础。同时可查到 2026-05-23、2026-06-26 亦有同类异动公告，说明该票 2026 年以来波动被交易所多次提示（置信度：中）。</div>
+<h3>涨停史（库内涨停记录（近 180 日））</h3>
+<p>近 180 日共 <strong>9 次涨停</strong>，全部集中在 5 月中旬至 8 月上旬：</p>
+<ul>
+<li>2026-08-06｜首封 10:48:14｜末封 14:54:17｜<strong>开板 1 次</strong>｜封单 4.37 亿｜1 连板｜涨停统计 1/1</li>
+<li>2026-07-21｜首封 14:36:54｜末封 14:50:36｜<strong>开板 7 次</strong>｜封单 1.20 亿｜1 连板｜</li>
+<li>2026-07-09｜首封 13:05:54｜<strong>开板 0 次</strong>｜封单 8.34 亿｜1 连板｜</li>
+<li>2026-06-25｜首封 09:38:48｜末封 10:45:36｜<strong>开板 3 次</strong>｜封单 8.77 亿｜<strong>2 连板</strong>｜</li>
+<li>2026-06-24｜首封 09:57:07｜末封 11:20:40｜<strong>开板 5 次</strong>｜封单 8.21 亿｜1 连板｜</li>
+<li>2026-06-22｜首封 14:38:39｜<strong>开板 0 次</strong>｜封单 7.20 亿｜1 连板｜</li>
+<li>2026-05-26｜首封 14:44:16｜<strong>开板 0 次</strong>｜封单 4.77 亿｜<strong>2 连板</strong>｜</li>
+<li>2026-05-25｜首封 14:40:39｜<strong>开板 0 次</strong>｜封单 5.08 亿｜1 连板｜</li>
+<li>2026-05-11｜首封 10:29:27｜<strong>开板 0 次</strong>｜封单 6.06 亿｜1 连板｜</li>
+</ul>
+<p><strong>读法</strong>（置信度：高，均为库内直取字段）：</p>
+<ul>
+<li><strong>有情绪面关注，但从未形成高标</strong>：最高只到 2 连板，9 次里 7 次是 1 连板。<strong>这是一只「会涨停但不会连板」的票</strong>——1,325 亿市值的体量本身就压制连板空间。</li>
+<li><strong>封板质量在恶化</strong>：5 月三次涨停均 0 次开板；6 月下旬两次分别开板 5 次、3 次；7-21 那次<strong>开板 7 次、封单仅 1.20 亿</strong>（是 9 次里封单最小的一次，仅为 7-09 那次 8.34 亿的 14%）。<strong>同样是涨停，分歧程度差得很远</strong>（置信度：高）。</li>
+<li><strong>涨停时点偏后半场</strong>：9 次里 5 次首封在 13:00 之后（含 3 次在 14:30 后）。<strong>尾盘拉板的持续性通常弱于早盘封板</strong>（置信度：中，交易经验判断）。</li>
+<li><strong>最近一次涨停是 2026-08-06，距今约 3 周</strong>；此后经历了 7 月底那轮暴跌之后的修复与中报落地，<strong>未再出现涨停</strong>（置信度：高）。</li>
+</ul>
+<h3>资金与筹码（库内资金筹码）</h3>
+<p>⚠️ <strong>纪律声明：本小节是盘面/筹码现象，不是基本面证据。只作情绪面佐证，不进 J 节逻辑链，不单独驱动 L 节操作结论。</strong></p>
+<p><strong>资金流（近 20 个交易日，20260729–20260825）</strong>：</p>
+<ul>
+<li>整体净流入合计 <strong>-16.28 亿元</strong>（净流出）</li>
+<li><strong>特大单净流入 +2.41 亿元</strong>（为正）</li>
+<li>净流入天数 <strong>7 天 / 20 天</strong>，净流出 13 天</li>
+</ul>
+<p><strong>这组数字内部是分裂的，值得单独说一句</strong>（置信度：中）：整体大额净流出 16.28 亿，但<strong>特大单（主力）反而净流入 2.41 亿</strong>。方向相反意味着<strong>大单在接、中小单在出</strong>。这个窗口恰好覆盖了 7 月底暴跌之后到中报落地的全过程。⚠️ 需要说清楚它<strong>不能</strong>证明什么：它不能证明「主力看好」——特大单口径包含机构调仓、被动指数申赎（该票是沪深 300 与上证 180 成份股）、以及大宗对手盘，<strong>方向解读的可靠性低</strong>（置信度：低）。</p>
+<p><strong>筹码</strong>：筹码分布返回 None。<strong>筹码数据库内仅覆盖关注票，该票暂无</strong>——这是数据覆盖范围问题，不是事实缺失。因此<strong>获利盘比例（获利盘比例）无法给出</strong>，本报告无法判断上方套牢盘密度与短线获利抛压（信息缺口，见 M 节）。</p>
+<p><strong>股东户数</strong>：截至 <strong>2026-06-30</strong> 为 <strong>847,505 户</strong>（约 84.75 万户）。⚠️ 上一报告期与均为 None，<strong>库内无上一期数据，无法计算环比、无法判断筹码在集中还是趋散</strong>（置信度：高——指这个缺口本身确定）。且股东户数是<strong>季度披露、天然滞后</strong>，6-30 的数据已滞后近两个月，未覆盖 7 月底暴跌与 8 月中报窗口（置信度：高）。</p>
+<p><strong>情绪面综合判断</strong>：<strong>基本面在改善、情绪面在退潮</strong>（置信度：中）。证据：中报大幅超预期（+79.41%）→ 但 8-20 中报落地后至今 3 个交易日未再涨停、8-25 收盘仅 +0.34%；7 月底利好兑现前反而三日暴跌超 20%；近 20 日资金整体净流出 16.28 亿。<strong>「好消息不涨」是本节最需要被记住的观察</strong>。</p>
+<h2>I. 未来 13 周事件日历</h2>
+<p>数据来源：库内事件日历（近 120 日）返回 26 条（<strong>全部为概念标签匹配的行业/宏观事件，无一条是公司自身事件</strong>——这是重要的数据边界）+ 联网补充 + 交易所披露规则。每条标注是<strong>公司级</strong>还是<strong>概念级</strong>。</p>
+<ul>
+<li><strong>W1（2026-08-24 起）</strong>
+<ul>
+<li><strong>08-26</strong>｜英伟达公布 2027 财年第二季度财报（美股盘后）｜概念级（CPO 886033）｜重要性 <strong>9</strong>｜影响：AI 算力行情风向标，市场预期营收约 910 亿美元。业绩与指引超预期则 A 股算力链跟涨，反之承压——<strong>对长电是情绪传导，不是订单传导</strong></li>
+<li><strong>08-26</strong>｜国新办发布会：工信部介绍「十五五」新型工业化推进｜概念级（芯片 885756）｜重要性 7｜影响：验证 F 节②的政策口径</li>
+</ul></li>
+<li><strong>W2（2026-08-31 起）</strong>
+<ul>
+<li><strong>08-31</strong>｜第十四届半导体设备材料及核心部件展（CSEAC 2026）无锡开幕｜概念级｜重要性 7｜影响：观察国产设备进展与订单，间接印证 H 节第 8 条「测试设备订单积压翻倍」</li>
+<li><strong>09-01</strong>｜《2026-2028 年全国算力基础设施建设行动方案》正式执行（国产算力硬件采购占比≥75%）｜概念级（AIDC 885887）｜重要性 <strong>8</strong>｜影响：验证 F 节①的传导链是否兑现</li>
+<li><strong>09-02</strong>｜博通公布 2026 财年第三季度财报｜概念级｜重要性 8｜影响：反映北美 AI 算力资本开支强度 → 传导至先进封装需求</li>
+<li>同周另有：工信部算力标准体系建设指南（日期待定）、IDAS EDA 峰会（09-01 上海）、特斯拉 Optimus 供应链批量供货（09-01）、特斯拉 Cybercab 部署与 FSD 中国商用（08-31，均待官宣）、XAIR 具身智能博览会（09-03 广州）——<strong>均为概念级、与长电业务无直接关联</strong></li>
+</ul></li>
+<li><strong>W3（2026-09-07 起）</strong>——<strong>本季度事件最密集的一周</strong>
+<ul>
+<li><strong>09-09</strong>｜第 27 届中国国际光电博览会（CIOE）深圳开幕（09-09~11）｜概念级（CPO）｜重要性 <strong>8</strong>｜影响：CPO/光模块订单与新品密集释放，检验 G 节「CPO 仅概念标签」是否出现营收侧变化</li>
+<li><strong>09-09</strong>｜苹果秋季新品发布会｜概念级（苹果概念 885376）｜重要性 8｜影响：消费电子封测需求的年度锚点</li>
+<li><strong>09-11</strong>｜2026 中国算力大会廊坊开幕（工信部主办，09-11~13）｜概念级（AIDC）｜重要性 8｜影响：算力产业政策方向发布</li>
+<li>同周另有：讯石光通信大会 IFOC（09-07 深圳）、小米 18 Fold 发布（09-08）、IICIE 集成电路创新博览会（09-09 深圳）、杭州 AI 与机器人博览会（09-10）、APEC 能源部长会议（09-10 北京）、浦江创新论坛（09-11 上海）</li>
+</ul></li>
+<li><strong>W4（2026-09-14 起）</strong>
+<ul>
+<li><strong>09-15</strong>｜工信部人形机器人「首台套」认定首批申报开启｜概念级（机器人 885517）｜重要性 7｜影响：<strong>与长电无业务关联</strong>，仅题材联动</li>
+<li>本周无公司级已知事件</li>
+</ul></li>
+<li><strong>W5（2026-09-21 起）</strong>
+<ul>
+<li><strong>09-22</strong>｜2026 云栖大会杭州（09-22~24）｜概念级（AI 885728）｜重要性 8｜影响：国内 AI 算力景气观察窗口</li>
+<li><strong>09-24</strong>｜美国或放行苹果采购中国存储芯片（预计 9 月会晤后公布，待官宣）｜概念级（存储 886042）｜重要性 7｜影响：<strong>若落地，是本季度对长电存储封测最直接的一条外部利好</strong>（见 F 节④）</li>
+<li><strong>09-22</strong>｜2026 世界新能源汽车大会海口（09-22~24）｜概念级｜重要性 7｜影响：汽车电子需求指引</li>
+</ul></li>
+<li><strong>W6（2026-09-28 起）</strong>｜库内无已知事件｜⚠️ 按公开假期安排为国庆长假前最后交易周，<strong>具体休市安排以交易所公告为准</strong>（置信度：低——2026 年具体安排未经本次核实）</li>
+<li><strong>W7（2026-10-05 起）</strong>｜本周无已知事件（国庆假期窗口）</li>
+<li><strong>W8（2026-10-12 起）</strong>｜本周无已知事件｜⚠️ 三季报预约披露窗口开启，<strong>具体日期未查到</strong>（见下方缺口说明）</li>
+<li><strong>W9（2026-10-19 起）</strong>｜本周无库内已知事件｜三季报披露高峰期，<strong>该票具体日期待公司预约公告</strong></li>
+<li><strong>W10（2026-10-26 起）</strong>｜🔴 <strong>本季度最关键的一周</strong>｜<strong>2026 年三季报披露截止日 10-31</strong>（按上交所定期报告披露规则，公司级）｜重要性 <strong>最高</strong>｜影响：<strong>A 节两个核验信号（单季毛利率能否守住 15.68%、单季营收同比能否守住 +11.72%）在这一周揭晓</strong>；同时决定 K 节三情景中哪一条成立</li>
+<li><strong>W11（2026-11-02 起）</strong>｜本周无已知事件｜三季报后的卖方研报集中修正窗口，可观察 J 节券商预测是否上调/下调</li>
+<li><strong>W12（2026-11-09 起）</strong>｜本周无已知事件</li>
+<li><strong>W13（2026-11-16 起）</strong>｜本周无已知事件</li>
+</ul>
+<p><strong>待定时点（有事件、无确切日期，不占周位）</strong>：</p>
+<ul>
+<li><strong>2026 年中期分红派息</strong>——每 10 股派 0.5 元方案已于 2026-08-20 公告，<strong>股权登记日与派息日待公司后续公告</strong>（库内公告标题未含日期，置信度：高）</li>
+<li><strong>国家大基金后续减持</strong>——若持股比例跨越 5% 或触发披露阈值须公告，<strong>时点不可预判</strong>（见 F 节③）</li>
+<li><strong>2025 年股票期权激励计划的行权与股份支付摊销节奏</strong>——<strong>库内公告标题不含行权条件与摊销安排</strong>（信息缺口）</li>
+</ul>
+<div class="callout">⚠️ <strong>本节最该注意的结构性事实</strong>：库内事件日历返回的 26 条<strong>没有一条是公司自身事件</strong>，全部由概念标签（CPO / 芯片 / AIDC / 机器人 / 无人驾驶 / 苹果 / 存储 / AI / 绿电）匹配而来。这意味着<strong>未来 13 周里，能真正改变这家公司报表的日程只有一个：三季报</strong>（置信度：高）。其余全是可能影响板块情绪、但不影响其订单与毛利率的行业活动。<strong>W1~W5 的密集事件容易制造「催化剂很多」的错觉，而 W6~W13 的空白才是这只票真实的事件密度。</strong></div>
+<p><strong>信息缺口</strong>：三季报预约披露日期在库内事件日历与公开检索中<strong>均未查到</strong>。影响：A 节两个核验信号的确切时点不确定，只知道最迟 2026-10-31。补法：跟踪上交所披露的定期报告预约时间表，或在 10 月中旬重跑本调研。</p>
+<h2>J. 逻辑链</h2>
+<p>把 B–I 的事实串成一条可证伪的链。<strong>每一环标置信度，最弱的一环单独点出。</strong></p>
+<p><strong>第 1 环（置信度：高）</strong> 因为 <strong>全球先进封装产能持续缺口、日月光年内三次提价最高超 20%、头部客户锁定产能排期至 2026 年底之后</strong>（F/E 节联网双源），且 <strong>长电 2026 年固定资产投资预算约 100 亿元、较上年 85 亿元大幅上调</strong>（联网双源）， → 所以 <strong>封测环节在 2026 年处于卖方市场窗口，议价能力从下游临时回流到封测厂</strong>。</p>
+<p><strong>第 2 环（置信度：高，库内硬数据）</strong> 因为第 1 环成立，且库内数据显示 <strong>毛利率四期单调抬升 13.74%→14.15%→14.55%→15.15%</strong>、<strong>2026Q2 单季毛利率推算 15.68%</strong>、<strong>单季净利率 3.16%→5.36%</strong>， → 所以 <strong>议价能力回流已经落到长电自己的报表上，不只是行业新闻</strong>。 → 可观察到的现象（<strong>已观察到 ✅</strong>）：利润增速远超收入增速（H1 净利 +79.41% vs 营收 +4.96%）。</p>
+<p><strong>第 3 环（置信度：中）</strong> 因为 <strong>2026Q1 营收还是 -1.76%、2026Q2 转为 +11.72%</strong>（推算），且 <strong>公司资本开支方向锁定「运算电子 + 汽车电子」</strong>（联网），库内新闻标题称 <strong>「运算电子跃升为第一大业务」</strong>（eastmoney 2026-08-22）， → 所以 <strong>量的拐点也已出现，且由 AI 算力相关的先进封装需求驱动，而非传统消费电子复苏</strong>。 → 可观察到的现象（<strong>部分可观察</strong>）：三季报单季营收同比应维持在 +10% 以上；分部数据中运算电子占比应继续上升。⚠️ <strong>后半句库内无数据可验，只能等三季报全文。</strong></p>
+<p><strong>第 4 环（置信度：中）</strong> 因为第 2、3 环成立，且 <strong>PE(TTM) 68.33 倍低于半导体行业中位数 104.39 倍、在 197 只中排第 45</strong>（库内估值）， → 所以 <strong>估值在行业内不算贵，若盈利改善延续，存在估值不再下杀的支撑</strong>。 → ⚠️ <strong>反面证据同样成立</strong>：PB 4.58 是同池四家最低、ROE 2.93%（半年度）是四家最弱——<strong>便宜是被弱回报率定价出来的，不是错杀</strong>（D 节）。<strong>这一环正反两面都有证据，因此只能给到「中」。</strong></p>
+<p><strong>第 5 环 —— 🔴 这是整条链的命门（置信度：低）</strong> 因为第 1 环是<strong>周期性</strong>的而非<strong>结构性</strong>的（E 节：「护城河不在别人做不了，而在此刻别人也没有产能」）， → 所以 <strong>整条链的存续期 = 先进封装产能紧缺的存续期</strong>。 → 可观察到的证伪现象：<strong>日月光停止提价或转为降价 / 存储合约价涨幅归零 / 三季报单季毛利率跌破 15.68%</strong>。 → ⚠️ <strong>已经出现了预警信号</strong>：2026Q3 DRAM、NAND 合约价涨幅<strong>较 Q2 明显放缓</strong>，含价格上限的长约客户 7 月已逼近协议天花板（2026-08-08 新浪科技，F 节⑤）。</p>
+<p><strong>这条链最弱的一环是第 5 环，而它恰恰是承重墙。</strong> 第 2、3 环的库内数据都是<strong>过去式</strong>（截至 6 月 30 日），第 5 环决定它们能不能延续到未来。<strong>如果先进封装涨价周期在 2026Q4 见顶，那么本报告 A 节的三条驱动会在一个季度内同时失效</strong>——因为它们其实是同一条驱动的三个侧面（行业景气 → 毛利率 → 利润增速）。</p>
+<p><strong>这也解释了 H 节那个反常观察</strong>：为什么业绩预增公告（7-15）之后股价反而三日暴跌超 20%、中报 +79.41% 落地后 8-25 只收 +0.34%。<strong>一个可能的解释是：市场已经在给「周期见顶」定价，而不是在给「利润高增」定价</strong>（置信度：低——这是对市场行为的推测，无法用数据证实，只能作为假说记录下来供后续核对）。</p>
+<p><strong>这条链不依赖的东西（刻意排除）</strong>：不依赖 H 节的资金流与筹码数据（盘面现象，纪律排除）；不依赖 G 节第三类的 14 个概念标签（无营收佐证）；不依赖 I 节 W1~W5 的概念级事件（不改变报表）。</p>
+<h2>K. 三情景推演</h2>
+<p>三个概率加总 100%。<strong>所有触发条件均可用三季报数据或公开价格数据核对</strong>（核验时点见 I 节 W10，最迟 2026-10-31）。</p>
+<ul>
+<li><strong>乐观（25%）</strong>｜<strong>触发</strong>：三季报单季营收同比 <strong>≥ +11.72%</strong>（2026Q2 推算值）<strong>且</strong> 单季毛利率 <strong>≥ 15.68%</strong>（2026Q2 推算值）——即量价齐续，两个信号同时守住｜<strong>路径</strong>：市场确认盈利改善是趋势而非单季波动，卖方 2026 年 22~23 亿元净利预测（J 节）从「预测」变为「大概率兑现」，按当前收盘价推算的 2026 年 PE 从 57.9~64.4 倍被动消化至更低；估值向行业中位数（104 倍）方向修复，波动中枢上移。（置信度：中）</li>
+</ul>
+<ul>
+<li><strong>中性（45%）</strong>｜<strong>触发</strong>：三季报单季营收同比落在 <strong>+5%~+11.72%</strong> 之间，<strong>或</strong> 单季毛利率落在 <strong>15.15%~15.68%</strong> 之间——即改善延续但<strong>斜率放缓</strong>｜<strong>路径</strong>：区间震荡，跟随半导体板块 beta。多空各有依据（多方看毛利率仍在改善、空方看边际减速），股价对行业事件（英伟达/博通财报、CIOE、算力大会，见 I 节）的敏感度高于对公司自身数据的敏感度；H 节「会涨停但不连板」的形态延续。（置信度：中）</li>
+</ul>
+<ul>
+<li><strong>悲观（30%）</strong>｜<strong>触发</strong>：三季报单季毛利率 <strong>跌破 15.15%</strong>（即中报累计水平，意味着改善趋势断裂）<strong>或</strong> 单季营收同比 <strong>转负</strong>，<strong>或</strong> 出现资产减值/存货跌价计提｜<strong>路径</strong>：J 节第 5 环被证伪，68 倍 PE 失去盈利增长支撑，市场重新按 4% 净利率的重资产加工业定价；同时资产负债率已升至 46.22%、100 亿资本开支带来的折旧刚性存在，形成「收入下滑 + 折旧上升」的双向挤压，估值向下重估。（置信度：中）</li>
+</ul>
+<p><strong>为什么悲观概率（30%）给得高于乐观（25%）</strong>：三条独立理由——① F 节⑤存储合约价涨幅放缓已是<strong>已发生</strong>的事实，而乐观情景依赖的产能紧缺延续是<strong>尚未发生</strong>的假设；② H 节「利好出而股价跌」（7 月底三日跌逾 20%）说明市场定价已领先于财报；③ C 节的利润高增有确定的低基数成分（2025Q2 净利仅 2.68 亿），<strong>2026Q3 的同比基数会显著抬高</strong>（2025Q3 单季净利约 4.83 亿元，据库内财务推算：9.54 − 4.71），<strong>同比增速的自然回落几乎是必然的</strong>（置信度：高）。</p>
+<div class="callout">⚠️ <strong>上一条括号里那个数字要专门提醒</strong>：2025Q3 单季净利约 4.83 亿元，而 2025Q2 只有 2.68 亿元——<strong>基数抬高了 80%</strong>。即便 2026Q3 单季净利与 Q2 持平在 5.55 亿元，同比增速也会从 +107% 骤降到 <strong>+15% 左右</strong>（据推算）。<strong>「增速大幅回落」在三季报里几乎一定会发生，它本身不构成利空，但它极可能被解读为利空</strong>（置信度：中）。这是本报告认为读者最容易误判的一个点。</div>
+<h2>L. 决策与风控</h2>
+<p>⚠️ 本节不给目标价、不给评级。所有倾向均为条件式，条件全部来自本报告前文出现过的指标或事件。</p>
+<h3>条件式操作倾向</h3>
+<ol>
+<li><strong>如果</strong> 三季报（最迟 2026-10-31，见 I 节 W10）单季毛利率 <strong>≥ 15.68%</strong> 且单季营收同比 <strong>≥ +11.72%</strong>（均为 2026Q2 推算值），<strong>那么</strong> 可视作 J 节第 5 环暂时未被证伪、K 节乐观情景成立，<strong>转为按趋势跟踪对待，可考虑轻仓试仓</strong>。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> 三季报单季毛利率 <strong>跌破 15.15%</strong>（中报累计水平），<strong>或</strong> 单季营收同比转负，<strong>或</strong> 出现资产减值/存货跌价计提，<strong>那么</strong> J 节整条逻辑链的承重墙已断，<strong>回避</strong>，不因「PE 低于行业中位数」而留恋——D 节已说明那个折价是回报率定价出来的。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> 在三季报披露之前，出现「日月光公开下调先进封装报价」<strong>或</strong> 「存储 DRAM/NAND 合约价环比转跌」（F 节⑤已现放缓迹象）<strong>任一</strong> 公开信息，<strong>那么</strong> 不必等三季报，<strong>观望</strong>——那是 J 节第 5 环的前置证伪信号，比财报早 1~2 个月。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> 国家大基金披露新的减持进展公告（F 节③，当前持股约 5.97%、时点为 2026 年 5 月且未经公司公告核实），<strong>那么</strong> 视作可预期的供给压力兑现，<strong>在事件窗口内观望</strong>，不因短期急跌而加仓。</li>
+</ol>
+<h3>风控要点：这笔判断在什么情况下应当被推翻</h3>
+<p><strong>本报告应当被整体推翻的条件（任一成立即失效，不是止损价）</strong>：</p>
+<ul>
+<li><strong>推翻条件①</strong>：三季报证伪 J 节第 5 环（毛利率跌破 15.15% 或营收同比转负）。→ A 节三条驱动同时失效，因为它们是同一条驱动的三个侧面。</li>
+<li><strong>推翻条件②</strong>：出现本报告未覆盖的重大事项——控股权变更、重大资产重组、监管处罚、审计意见异常。<strong>本报告的库内新闻只覆盖 2026-08-19~08-24 共 6 天</strong>（H 节数据边界），7 月及以前的公司公告未被覆盖，存在盲区。</li>
+<li><strong>推翻条件③</strong>：G 节「运算电子跃升为第一大业务」被三季报分部数据证伪。该说法目前<strong>仅有库内新闻标题与联网研报转述，无库内财务数据支撑</strong>（置信度：中）——如果它不成立，J 节第 3 环（量的拐点由 AI 算力驱动）需要重写。</li>
+<li><strong>推翻条件④</strong>：股份支付费用摊销规模超出预期。2025 年股票期权激励计划已于 2026-08-20 完成授予，<strong>本报告完全无法量化其对后续净利的摊薄</strong>（H 节第 5 条，置信度：低）——这是一个已知的、未被定价进本报告的负向因子。</li>
+</ul>
+<h3>仓位思路</h3>
+<p><strong>仅讲相对概念，不给金额、不给股数。</strong></p>
+<p>在三季报揭晓前（即 I 节 W10 之前），本报告的判断状态是 <strong>「证据不足以支持超出观察级的参与」</strong>（置信度：中）。理由是三条：① J 节命门（第 5 环）当前置信度为<strong>低</strong>，且已有预警信号；② K 节悲观概率（30%）高于乐观（25%）；③ H 节情绪面显示「好消息不涨」，而基本面的下一个真实信息要等到 10 月底。</p>
+<p><strong>若已在观察范围内</strong>，建议的相对仓位量级为 <strong>轻</strong>，且<strong>把仓位决策与 I 节 W10 这一个时点绑定</strong>——在此之前的所有价格波动，本报告无法提供增量判断依据（W1~W5 的密集事件全部是概念级，不改变报表，见 I 节结构性提示）。</p>
+<h2>M. 逻辑自查</h2>
+<h3>这份判断最依赖的假设是哪一条？它错了会怎样？</h3>
+<p><strong>最依赖的假设：先进封装的产能紧缺与提价周期在 2026 年下半年仍未见顶。</strong></p>
+<p>这条假设支撑 J 节第 1 环，而第 1 环支撑第 2、3 环——<strong>A 节的三条核心驱动其实不是三条，是同一条驱动的三个侧面</strong>（行业景气 → 毛利率改善 → 利润高增）。我在 A 节把它们并列写成三条，<strong>这本身就有把单一依赖伪装成多元支撑的嫌疑，在此明确纠正</strong>。</p>
+<p>如果它错了：K 节悲观情景成立，且<strong>三条驱动会在同一个季度同时失效</strong>，而不是逐条走弱。这是本报告风险结构上最不利的特征——<strong>没有分散</strong>。</p>
+<h3>有没有我为了让逻辑好看而忽略的反面证据？</h3>
+<p><strong>有三条，逐条列出</strong>：</p>
+<ol>
+<li><strong>「利好出而股价暴跌」这条证据，我在正文里放得不够重。</strong> 2026-07-28~07-30 三个交易日累计跌幅偏离超 20%（H 节联网），而 7-15 刚发过业绩预增公告。我在 J 节把它写成「一个可能的解释是市场在给周期见顶定价」，<strong>并标为置信度低</strong>——但坦白说，这条观察的分量可能大于我给它的位置。<strong>市场提前于财报定价，历史上比事后诸葛更常正确</strong>。</li>
+</ol>
+<ol>
+<li><strong>营收增速的绝对水平其实很平庸，而我把叙述重心放在了「拐点」上。</strong> 2026H1 营收同比只有 <strong>+4.96%</strong>，去年同期是 <strong>+20.1%</strong>（联网佐证 + 库内推算互相印证）。我在 C 节强调「Q2 单季 +11.72% 是转正」，这没错，但<strong>+11.72% 相对于「AI 算力爆发 + 先进封装缺货」这个叙事而言是偏低的</strong>——如果需求真的那么好，营收增速不该只有这个水平。<strong>这条反面证据我在 C 节写了，但没有在 A 节体现，属于结构性弱化。</strong></li>
+</ol>
+<ol>
+<li><strong>ROE 太弱这件事，被「PE 低于行业中位数」的说法遮盖了。</strong> D 节的 ROE 2.93%（半年度）是同池最弱，PB 4.58 是同池最低——<strong>这两个数字讲的是同一件事：市场认为它赚钱能力弱</strong>。我在 B 节写了「放在行业里属于偏便宜的那一端」，虽然同段做了「不等于好坏结论」的限定，<strong>但这个表述仍然容易被读成利好</strong>。</li>
+</ol>
+<h3>我在本报告中做过的一处自我推翻</h3>
+<p>初稿在 D 节把长鑫科技、中芯国际、寒武纪当作「竞对」直接横向比较毛利率与 ROE。<strong>核对后推翻</strong>：这三家分别是存储 IDM、晶圆代工、AI 芯片设计，<strong>没有一家是封测同行</strong>，毛利率与 ROE 在不同环节之间根本不可比。库内同业对比是按「行业标签 + 市值」取的，「半导体」是一级标签。已改为只读「在半导体大池子里的形态」，并把「取不到真正的封测同业」列为信息缺口。<strong>如果不做这次推翻，D 节会得出「长电 ROE 远低于同行 = 竞争力差」的错误结论，而实际上封测环节的 ROE 天然低于设计环节。</strong></p>
+<h3>信息缺口清单</h3>
+<ol>
+<li><strong>缺分业务营收拆分。</strong> 库内财务不含分部数据，<strong>无法验证「运算电子跃升为第一大业务」</strong>（H 节第 2 条、G 节）。影响：<strong>大</strong>——J 节第 3 环的后半句悬空。补法：查 2026 年半年度报告全文分部信息（库内新闻已给出公告地址）。</li>
+</ol>
+<ol>
+<li><strong>缺经营性现金流与研发费用。</strong> 同上函数不返回。影响：<strong>中</strong>——无法判断 8.45 亿净利的现金含量，而这家公司正处在 100 亿资本开支期，现金流质量比利润表更关键。补法：同上。</li>
+</ol>
+<ol>
+<li><strong>缺封测同业可比数据。</strong> 库内取不到通富微电、华天科技等真正同业。影响：<strong>大</strong>——无法区分毛利率改善是公司 alpha 还是行业 beta（D 节）。补法：三季报季对比 002156、002185 的同期毛利率变动方向。</li>
+</ol>
+<ol>
+<li><strong>缺筹码数据。</strong> 库内资金筹码返回 None——<strong>库内筹码数据仅覆盖关注票，该票暂无</strong>（数据范围问题，非事实缺失）。影响：<strong>中</strong>——无法给出获利盘比例（获利盘比例），因而无法判断上方套牢盘密度与短线获利抛压两面。补法：该票纳入关注池后重跑。</li>
+</ol>
+<ol>
+<li><strong>缺股东户数环比。</strong> 股东户数只有 2026-06-30 的 847,505 户为 None。影响：<strong>中</strong>——无法判断筹码集中还是趋散；且该数据滞后近两个月，未覆盖 7 月底暴跌与 8 月中报窗口。补法：三季报披露股东户数后重算环比。</li>
+</ol>
+<ol>
+<li><strong>缺新闻的完整 60 天窗口。</strong> 库内新闻（近 60 日）返回 20 条但全部集中在 2026-08-19~08-24 共 6 天，条数触顶、更早新闻未覆盖（H 节数据边界）。影响：<strong>大</strong>——7 月底那次三日暴跌 20% 完全是靠联网补上的，<strong>如果不联网，本报告会漏掉本季度最重要的一个市场行为信号</strong>。</li>
+</ol>
+<ol>
+<li><strong>缺三季报预约披露日期。</strong> 库内事件日历与公开检索均未查到。影响：<strong>中</strong>——A 节两个核验信号的确切时点不确定，只知最迟 2026-10-31。补法：跟踪上交所定期报告预约时间表，或 10 月中旬重跑本调研。</li>
+</ol>
+<ol>
+<li><strong>缺股权激励的行权条件与股份支付摊销安排。</strong> 库内仅有公告标题，无正文。影响：<strong>中</strong>——L 节推翻条件④是一个已知却无法量化的负向因子。补法：读 2026-08-20 授予公告与激励计划正文。</li>
+</ol>
+<ol>
+<li><strong>大基金持股数据未经权威口径核实。</strong> F 节③的「2026 年 1–5 月减持 1,072.54 万股、持股降至 5.97%」来自两家财经媒体转述，<strong>非公司权益变动公告</strong>，且时点为 2026 年 5 月可能已过期。影响：<strong>中</strong>。补法：核对公司最新权益变动报告书或定期报告前十大股东表。</li>
+</ol>
+<h3>关于卖方预期与库内数据的冲突核查</h3>
+<p>本报告未发现联网信息与库内数字的直接冲突。<strong>唯一需要说明的口径问题</strong>：库内研报中华创证券的期次字段记为 //而国海、财通记为 /。经交叉验证（净利润（万元） ÷ EPS 三家分别得 17.84/17.90/17.96 亿股，均与总市值 ÷ 收盘价推算的 17.89 亿股及注册资本 178,941.457 万元一致），<strong>判定三家给的都是年度口径预测，华创只是期次标签写法不同</strong>（据推算，置信度：中）。J 节引用时已按年度口径表述并标注。</p>
+<h2>附：卖方预期汇总（库内研报，窗口 90 天）</h2>
+<p>⚠️ <strong>以下全部是别人的预测，不是账上的事实。与本报告 C 节的库内真实财务数字严格分开陈列。</strong></p>
+<p><strong>库内研报总览</strong>：近 90 天 <strong>8 篇研报、来自 7 家机构</strong>。评级全部落在正面区间（ 1 篇 1 篇，其余 6 篇为标准正面评级档），<strong>近 90 天库内无中性或看空评级</strong>。按本报告纪律不复述具体评级用词。</p>
+<p>⚠️ <strong>「8 篇全部正面、零负面」这件事本身要打个折扣读</strong>：卖方研报存在系统性的正面偏差，<strong>没有负面评级不等于没有负面观点，只等于负面观点不写成研报</strong>（置信度：高）。</p>
+<p><strong>逐条预测</strong>（盈利预测字段直取；净利润（万元）单位万元，已折算为亿元）：</p>
+<ul>
+<li>〔卖方预期〕来源：<strong>华创证券</strong>研报（库内）· 日期：<strong>2026-08-24</strong> · 观点：预计 2026 年 EPS <strong>1.28 元</strong>、归母净利 <strong>22.83 亿元</strong>（报告内 PE 记为 62.0 倍），2027 年 EPS <strong>1.73 元</strong>、净利 <strong>30.99 亿元</strong>（PE 45.0），2028 年 EPS <strong>2.11 元</strong>、净利 <strong>37.82 亿元</strong>（PE 37.0），评级「强推」· <strong>置信度：低</strong>（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：<strong>国海证券</strong>研报（库内）· 日期：<strong>2026-08-16</strong> · 观点：预计 2026 年 EPS <strong>1.15 元</strong>、归母净利 <strong>20.58 亿元</strong>，2027 年 EPS <strong>1.52 元</strong>、净利 <strong>27.20 亿元</strong>（PE 字段库内为空）· <strong>置信度：低</strong></li>
+<li>〔卖方预期〕来源：<strong>财通证券</strong>研报（库内）· 日期：<strong>2026-08-13</strong> · 观点：预计 2026 年 EPS <strong>1.23 元</strong>、归母净利 <strong>22.09 亿元</strong>（PE 63.3），2027 年 EPS <strong>1.60 元</strong>、净利 <strong>28.58 亿元</strong>（PE 48.9），2028 年 EPS <strong>1.92 元</strong>、净利 <strong>34.28 亿元</strong>（PE 40.8）· <strong>置信度：低</strong></li>
+<li>〔卖方预期〕来源：<strong>中邮证券</strong>研报（库内，标题《先进封装，芯连万象》）· 日期：<strong>2026-07-03</strong> · 观点：库内仅有标题与 PDF 地址，无结构化预测字段 · <strong>置信度：低</strong></li>
+</ul>
+<p><strong>三家 2026 年净利预测区间：20.58 亿~22.83 亿元</strong>，中枢约 21.8 亿元（据推算）。作为对照，<strong>库内真实数据</strong>：2025 全年净利 15.65 亿元、2026H1 净利 8.45 亿元。若要达到卖方中枢，<strong>2026 下半年需实现约 13.4 亿元净利</strong>（据推算），即<strong>下半年要比上半年再多赚约 58%</strong>（置信度：高，纯算术）。</p>
+<p>⚠️ <strong>这个算术结果本身就是对卖方预期的一次压力测试</strong>：2026Q2 单季净利 5.55 亿元，要达成下半年 13.4 亿元，意味着 Q3、Q4 平均单季需达 <strong>6.7 亿元</strong>，即<strong>在 Q2 已经环比 +91% 的高基数上还要再环比 +21%</strong>（据推算）。<strong>这不是不可能，但它要求 J 节第 5 环（产能紧缺延续）不仅成立、还要加速</strong>（置信度：中）。</p>
+<p><strong>按今日收盘价 74.05 元的推算 PE</strong>（据推算，非目标价、非估值建议，仅为口径换算）：对应三家 2026 年 EPS 预测分别为 <strong>57.9 / 60.2 / 64.4 倍</strong>；对应 2027 年 EPS 预测分别为 <strong>42.8 / 46.3 / 48.7 倍</strong>。</p>
+<h2>联网来源清单</h2>
+<p>本报告联网部分仅用于政策 / 产业链景气 / 市场预期差 / 事件时点四类，来源如下：</p>
+<ul>
+<li><a href="https://finance.sina.com.cn/stock/t/2026-08-04/doc-inimeefm2021533.shtml" target="_blank" rel="noopener">先进封装产能缺口持续！全球封测双雄 Q2 超预期、A 股封测竞速突围（新浪财经，2026-08-04）</a></li>
+<li><a href="https://m.sohu.com/a/1058755827_166680" target="_blank" rel="noopener">先进封装产能缺口持续（搜狐转载，2026-08）</a></li>
+<li><a href="https://finance.sina.com.cn/jjxw/2026-05-09/doc-inhxhkfi1560828.shtml" target="_blank" rel="noopener">长电科技：2026 年固定资产投资预算约 100 亿元重点布局先进封装产线（新浪财经，2026-05-09）</a></li>
+<li><a href="https://view.inews.qq.com/a/20260510A06DOY00" target="_blank" rel="noopener">长电科技：上调固定资产投资预算至 100 亿元海内外同步加码先进封装（腾讯新闻，2026-05-10）</a></li>
+<li><a href="https://m.21jingji.com/article/20260626/herald/89c4e544c4fc53a5fab8a5ed9d2b7a27.html" target="_blank" rel="noopener">78 亿元投建临港工厂，长电科技为何再扩先进封测产能？（21 财经，2026-06-26）</a></li>
+<li><a href="https://www.eet-china.com/news/202408127267.html" target="_blank" rel="noopener">长电科技收购晟碟半导体 80% 股权已获得审批（电子工程专辑，2024-08-12）</a></li>
+<li><a href="https://www.21jingji.com/article/20240811/herald/00a41765cec6acc24929568dfb963bdd.html" target="_blank" rel="noopener">布局存储封测，长电科技 44 亿元收购迎来新进展（21 经济网，2024-08-11）</a></li>
+<li><a href="https://caifuhao.eastmoney.com/news/20260628101408612246330" target="_blank" rel="noopener">长电科技收购晟碟半导体：补齐存储封测版图（东方财富财富号，2026-06-28）</a></li>
+<li><a href="https://paper.cnstock.com/html/2026-07/31/content_2250564.htm" target="_blank" rel="noopener">江苏长电科技股份有限公司股票交易价格异常波动公告（上海证券报，2026-07-31）</a></li>
+<li><a href="http://big5.sse.com.cn/site/cht/www.sse.com.cn/disclosure/listedinfo/announcement/c/new/2026-07-31/600584_20260731_WM4H.pdf" target="_blank" rel="noopener">股票交易价格异常波动公告临 2026-034（上交所，2026-07-31）</a></li>
+<li><a href="https://finance.sina.com.cn/tech/roll/2026-08-08/doc-inimrkxm6242640.shtml" target="_blank" rel="noopener">存储涨价天花板到了！DRAM、NAND 涨幅双双放缓（新浪科技，2026-08-08）</a></li>
+<li><a href="https://news.qq.com/rain/a/20260624A0A70400" target="_blank" rel="noopener">减持与增持之间，国家大基金在谋划什么（腾讯新闻，2026-06-24）</a></li>
+<li><a href="https://caifuhao.eastmoney.com/news/20260530212327118477370" target="_blank" rel="noopener">深科技、通富微电与长电科技：国家大基金投入与退出情况（东方财富财富号，2026-05-30）</a></li>
+<li><a href="http://stock.finance.sina.com.cn/stock/go.php/vReport_Show/kind/lastest/rptid/830790130863/index.phtml" target="_blank" rel="noopener">长电科技（600584）：运算 + 汽车电子引领增长盈利能力持续改善（新浪财经研报转载）</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-08-25），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>PE68倍已透支利润拐点</li>
+      <li>存储合约价涨幅已放缓</li>
+      <li>Q3同比基数抬高80%</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>扣非净利</dt><dd>扣除非经常性损益后的净利润。剔除卖资产、政府补助、公允价值变动等一次性项目，更接近主业真实盈利。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>BLUF</dt><dd>Bottom Line Up Front，结论先行——把最重要的判断放在最前面。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/t/2026-08-04/doc-inimeefm2021533.shtml" target="_blank" rel="noopener">先进封装产能缺口持续！全球封测双雄 Q2 超预期、A 股封测竞速突围（新浪财经，2026-08-04）</a> <em>2026-08-04</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.sohu.com/a/1058755827_166680" target="_blank" rel="noopener">先进封装产能缺口持续（搜狐转载，2026-08）</a> <em>2026-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/jjxw/2026-05-09/doc-inhxhkfi1560828.shtml" target="_blank" rel="noopener">长电科技：2026 年固定资产投资预算约 100 亿元重点布局先进封装产线（新浪财经，2026-05-09）</a> <em>2026-05-09</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://view.inews.qq.com/a/20260510A06DOY00" target="_blank" rel="noopener">长电科技：上调固定资产投资预算至 100 亿元海内外同步加码先进封装（腾讯新闻，2026-05-10）</a> <em>2026-05-10</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.21jingji.com/article/20260626/herald/89c4e544c4fc53a5fab8a5ed9d2b7a27.html" target="_blank" rel="noopener">78 亿元投建临港工厂，长电科技为何再扩先进封测产能？（21 财经，2026-06-26）</a> <em>2026-06-26</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.eet-china.com/news/202408127267.html" target="_blank" rel="noopener">长电科技收购晟碟半导体 80% 股权已获得审批（电子工程专辑，2024-08-12）</a> <em>2024-08-12</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.21jingji.com/article/20240811/herald/00a41765cec6acc24929568dfb963bdd.html" target="_blank" rel="noopener">布局存储封测，长电科技 44 亿元收购迎来新进展（21 经济网，2024-08-11）</a> <em>2024-08-11</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://caifuhao.eastmoney.com/news/20260628101408612246330" target="_blank" rel="noopener">长电科技收购晟碟半导体：补齐存储封测版图（东方财富财富号，2026-06-28）</a> <em>2026-06-28</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://paper.cnstock.com/html/2026-07/31/content_2250564.htm" target="_blank" rel="noopener">江苏长电科技股份有限公司股票交易价格异常波动公告（上海证券报，2026-07-31）</a> <em>2026-07-31</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://big5.sse.com.cn/site/cht/www.sse.com.cn/disclosure/listedinfo/announcement/c/new/2026-07-31/600584_20260731_WM4H.pdf" target="_blank" rel="noopener">股票交易价格异常波动公告临 2026-034（上交所，2026-07-31）</a> <em>2026-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/tech/roll/2026-08-08/doc-inimrkxm6242640.shtml" target="_blank" rel="noopener">存储涨价天花板到了！DRAM、NAND 涨幅双双放缓（新浪科技，2026-08-08）</a> <em>2026-08-08</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://news.qq.com/rain/a/20260624A0A70400" target="_blank" rel="noopener">减持与增持之间，国家大基金在谋划什么（腾讯新闻，2026-06-24）</a> <em>2026-06-24</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://caifuhao.eastmoney.com/news/20260530212327118477370" target="_blank" rel="noopener">深科技、通富微电与长电科技：国家大基金投入与退出情况（东方财富财富号，2026-05-30）</a> <em>2026-05-30</em></li>
+      <li><span class="src-tag src-research">研究</span> <a href="http://stock.finance.sina.com.cn/stock/go.php/vReport_Show/kind/lastest/rptid/830790130863/index.phtml" target="_blank" rel="noopener">长电科技（600584）：运算 + 汽车电子引领增长盈利能力持续改善（新浪财经研报转载）</a></li>
+      <li><span class="src-tag src-media">媒体</span> 库内事件日历事件项，事件类型=policy、importance=8、event_date=2026-09-01 <em>2026-09-01</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内事件日历，importance=7 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 2026-06-24 腾讯新闻、2026-05-30 东方财富财富号 <em>2026-06-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内事件日历，事件类型=policy、importance=7 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 2026-08-08 新浪科技「存储涨价天花板到了」 <em>2026-08-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2026-07-31 上海证券报刊登的异动公告原文引述 <em>2026-07-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2026-07-31 上海证券报刊登的公司异动公告原文引述 <em>2026-07-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2026-07-31 上海证券报、上交所公告编号临 2026-034，双源 <em>2026-07-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 2026-08-04 新浪财经/搜狐 <em>2026-08-04</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 2026-05-09/05-10 新浪财经、腾讯新闻 <em>2026-05-09</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 2026-08-04 新浪财经、搜狐 <em>2026-08-04</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 2024-08 电子工程专辑/21 经济网 + 2026-06-28 东方财富财富号 <em>2024-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 2026-05-09/05-10 新浪财经、2026-05-10 腾讯新闻，双源 <em>2026-05-09</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 2024-08 电子工程专辑、2026-06-28 东方财富财富号，双源 <em>2024-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 2026-05-09 新浪财经 <em>2026-05-09</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 库内公告：2026-08-20「关于香港全资子公司变更记账本位币的公告」，说明确有外币记账主体 <em>2026-08-20</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 2026-06-26 21 财经/东方财富，单源 <em>2026-06-26</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 2026-08-08 新浪科技，F 节⑤ <em>2026-08-08</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-08-25 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
