@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>指南针（300803.SZ） · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>指南针（300803.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-08-25（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 软件开发</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 参股券商 · 互联网金融 · AI应用</span>
+      <span><b>来源</b> 44 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    指南针（300803）主要做的是证券工具型软件终端为载体，以互联网为工具，向投资者提供及时、专业的金融数据分析和证券投资咨询服务。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——极高估值撞上强景气，中报 8-27 定生死。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：极高估值撞上强景气，中报 8-27 定生死。支撑在于同赛道景气强，同花顺H1净利同比+75%~95%；券商公募双牌照，麦高全资并表已增资至17亿；29亿定增终止，摊薄压力出清。主要风险是PE244是行业中位93.92的2.6倍，无容错空间；Q1表观净利同比-19.80%，增收不增利；7月两融单月缩4090亿，Q3交投滞后承压。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>同赛道景气强，同花顺H1净利同比+75%~95%</li>
+      <li>券商公募双牌照，麦高全资并表已增资至17亿</li>
+      <li>29亿定增终止，摊薄压力出清</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据基准：行情 2026-08-25 16:22（收盘）· 估值 2026-08-24 · 财务截至 2026Q1 数据来源：本地库库内取数（票名/财务/估值/行情/概念/资金筹码）+ 联网补政策与产业信息</div>
+<h2>A. 一屏结论（BLUF）</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：极高估值撞上强景气，中报 8-27 定生死。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>同业景气度处于强扩张区间</strong>——同行业龙头同花顺（300033）2026H1 库内净利 9.52 亿元、ROE 11.10%，其业绩预告归母净利同比 +75%~+95%，官方归因「资本市场交投活跃，金融信息服务需求增加」（来源：中财网 2026-07-19 业绩预告 / 证券之星 2026-07-20；库内同业对比数值落在预告区间内，交叉验证成立）。指南针与同花顺同属零售端金融信息服务，景气同源。（置信度：高）</li>
+<li><strong>「券商 + 公募」双牌照协同已进入兑现期</strong>——麦高证券为<strong>全资</strong>子公司（非「参股」），2025 年经纪佣金收入同比 +110.34% 至 4.87 亿元、年末客户托管资产 1011.5 亿元（较 2024 年末 662.4 亿元 +52.72%）（来源：慧博投研研报摘要 / 证券之星公告 2026-07-20）。库内 2026Q1 营收 7.10 亿元、同比 +30.96%，规模已达 2025 全年半年报口径（9.35 亿元）的 76%。（置信度：中）</li>
+<li><strong>资本压力解除</strong>——29.05 亿元定增已于 2025-10-31 公告终止并撤回申请，理由是麦高证券已扭亏且盈利爬坡、无需依赖外部融资（来源：财联社 2188659 / 北京商报 2025-11-02 / 每日经济新闻 2025-11-03，三源一致）。改由自有资金增资 2 亿元，麦高注册资本 15 亿→17 亿元（库内公告 2026-07-20；工商变更 2026-08-14 完成）。摊薄风险出清。（置信度：高）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>估值极端</strong>——库内 PE(TTM) 244.14、PB 17.08（2026-08-24），行业 PE 中位数 93.92，前者是后者的 2.6 倍。任何低于预期的数字都缺乏估值缓冲。（置信度：高）</li>
+<li><strong>表观利润已经在下滑</strong>——库内 2026Q1 归母净利 1.11 亿元、同比 <strong>−19.80%</strong>，与营收 +30.96% 形成「增收不增利」。（置信度：高）</li>
+<li><strong>上游流动性刚经历史诗级收缩</strong>——2026 年 7 月沪深北两融余额单月净减 4090.69 亿元，为「924 行情」以来最大单月降幅、A 股史上第二大（仅次于 2015 年 7 月的 −7093 亿元）（来源：财联社 2444275 / 东方财富 2026-08-05 / 新浪财经 2026-08-03，三源一致）。零售交投是本公司两块主业的共同上游。（置信度：高）</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ol>
+<li><strong>2026-08-27 中报</strong>（库内事件日历交易所官方披露计划，重要性 7）——看两件事：<strong>扣非归母净利同比增速</strong>、<strong>营收中麦高证券口径的占比与增速</strong>。</li>
+<li><strong>9 月两融余额能否站回 7 月缩表前水平</strong>——8 月 3–13 日已回升 731.92 亿元至 26757.18 亿元（来源：上海证券报 2026-08-18），但只收复了 7 月缺口的约 18%（据两条来源数字推算）。</li>
+</ol>
+<p><strong>这份判断最可能错在哪</strong>：我把「中报是二元事件」当成了核心矛盾，但如果市场此刻定价的根本不是中报、而是「小东财」牌照故事的长期想象空间，那么中报数字好坏对股价的解释力会远低于我的预期——这种情况下 PE 244 是共识而非风险，我的震荡判断会显得过于保守。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>名称/代码</strong>：指南针（300803）· 深交所创业板 · 上市状态 'L'（正常上市，未退市）</li>
+<li><strong>上市日期</strong>：2019-11-18（至今约 6 年 9 个月）</li>
+<li><strong>行业归属</strong>（库内）：软件服务</li>
+<li><strong>员工人数</strong>：3783 人 · 注册资本 60979.1915 万元（约 6.098 亿元）</li>
+<li><strong>主营业务</strong>（库内原文）：「证券工具型软件终端为载体，以互联网为工具，向投资者提供及时、专业的金融数据分析和证券投资咨询服务」</li>
+<li><strong>公司简介要点</strong>（库内原文摘）：中国首家定位于个人投资者金融服务的股份制企业；业务涵盖证券、期货、外汇、基金四大领域；首家同时获得国家统计局、上交所、深交所、大商所数据权威授权的金融服务企业；产品含 TopView 数据、Level-2 行情、雷达系列、新赢富 XBRL 投资辅助决策系统等</li>
+<li><strong>经营范围关键许可项</strong>（库内原文摘）：证券投资咨询 · 互联网信息服务 · 第一类增值电信业务 · 出版物零售 · 广播电视节目制作经营</li>
+</ul>
+<p><strong>当前行情</strong>（库内行情，唯一行情事实源）</p>
+<ul>
+<li>股价 <strong>79.86 元</strong> · 当日 <strong>−0.50%</strong> · 成交额 <strong>7.10 亿元</strong> · 日内最高 +0.67% / 最低 −1.22% · 数据时点 <strong>16:22</strong>（已收盘，即 2026-08-25 收盘值）</li>
+</ul>
+<p><strong>估值</strong>（库内估值，数据时点 2026-08-24）</p>
+<ul>
+<li>PE(TTM) <strong>244.14</strong> · PB <strong>17.08</strong> · 总市值 <strong>489.42 亿元</strong> · 换手率 <strong>1.74%</strong> · 股息率：库中无数据（股息率为空）</li>
+<li>同行业（软件服务）在市 <strong>280</strong> 只 · 行业 PE 中位数 <strong>93.92</strong> · 本票 PE 由小到大第 <strong>118</strong> 位</li>
+</ul>
+<div class="callout">⚠️ <strong>口径说明（重要，别误读成分位数）</strong>：行业内 PE 排名的排名分母只含<strong>有正 PE 的</strong>同行业公司，而同行数量 280 是在市总数（含亏损、无 PE、不参与排名者）。因此「118 / 280」<strong>不是</strong> 42% 分位。可靠的结论只有两条：① 有 117 家同行业公司 PE 低于指南针；② 指南针 PE(TTM) 244.14 是行业中位数 93.92 的 <strong>2.6 倍</strong>（据库内两数推算）。（置信度：高）</div>
+<p><strong>A/H 溢价</strong>：库内 A/H 对照返回 None——该票非 A+H 两地上市，无跨市场估值参照系。</p>
+<p><strong>估值口径小结</strong>：软件服务板块整体处于高估值状态（中位 PE 93.92 本身已远高于全市场），而指南针在这样一个高估值行业里仍显著高于中位。这<strong>只是估值贵贱的陈述，不构成好坏判断</strong>（置信度：高）。</p>
+<h2>C. 财务健康</h2>
+<p>近 4 期（库内财务，累计口径，新→旧；金额单位亿元）：</p>
+<ul>
+<li><strong>2026Q1</strong>（2026-03-31，公告 2026-04-25）· 营收 <strong>7.10</strong>（同比 <strong>+30.96%</strong>）· 归母净利 <strong>1.11</strong>（同比 <strong>−19.80%</strong>）· ROE 3.93% · 毛利率 <strong>89.98%</strong> · 净利率 21.31% · EPS 0.18 · 资产负债率 <strong>84.78%</strong></li>
+<li><strong>2025 年报</strong>（2025-12-31，公告 2026-01-31）· 营收 <strong>21.46</strong>（同比 <strong>+40.39%</strong>）· 归母净利 <strong>2.28</strong>（同比 <strong>+118.74%</strong>）· ROE 9.05% · 毛利率 87.44% · 净利率 14.65% · EPS 0.38 · 资产负债率 81.91%</li>
+<li><strong>2025Q1–Q3</strong>（2025-09-30，公告 2025-10-25）· 营收 <strong>14.02</strong>（同比 <strong>+80.54%</strong>）· 归母净利 <strong>1.16</strong>（同比 <strong>+205.48%</strong>）· ROE 4.69% · 毛利率 87.08% · 净利率 11.87% · EPS 0.19 · 资产负债率 81.09%</li>
+<li><strong>2025H1</strong>（2025-06-30，公告 2025-08-28）· 营收 <strong>9.35</strong>（同比 <strong>+71.55%</strong>）· 归母净利 <strong>1.43</strong>（同比 <strong>+391.17%</strong>）· ROE 5.84% · 毛利率 88.38% · 净利率 20.40% · EPS 0.24 · 资产负债率 80.23%</li>
+</ul>
+<p><strong>趋势判断（不是罗列，是拐点在哪）</strong></p>
+<ol>
+<li><strong>营收侧仍在高速扩张，但增速在回落</strong>：同比从 2025H1 的 +71.55% → 2025Q1–Q3 的 +80.54% → 2025 全年 +40.39% → 2026Q1 的 +30.96%。<strong>扩张仍在，但一阶导已转负</strong>（置信度：高）。绝对规模的对照更有说服力：2026 年<strong>单个一季度</strong>营收 7.10 亿元，已相当于 2025 年<strong>整个上半年</strong> 9.35 亿元的 76%（据库内两数推算）。</li>
+<li><strong>利润侧出现明确拐点，且方向向下</strong>：归母净利同比从 +391.17% → +205.48% → +118.74% → <strong>−19.80%</strong>。这是本报告最刺眼的一个数字（置信度：高）。</li>
+<li><strong>拐点的成因需要拆开看，否则会误判</strong>：据联网信息，2026Q1 表观净利下滑主因是<strong>去年同期高基数</strong>——2025Q1 因先锋基金纳入合并报表形成商誉并确认 <strong>6554 万元非经常性投资收益</strong>；剔除后 2026Q1 扣非归母净利 <strong>1.10 亿元</strong>，较上年同期 0.72 亿元 <strong>+52.48%</strong>（来源：同花顺财经 2026-04-24 / 九方智投研报点评 2026-04-25 / 新浪财经 2026-04-24，三源口径一致）。⚠️ <strong>这三个数字来自联网、不在库内</strong>，库内财务只提供表观归母净利，不提供扣非值。（置信度：中——多源一致但非库内硬数据）</li>
+<li><strong>费用是真实的压力项</strong>：据联网，2026Q1 管理费用同比 +39% 至 1.7 亿元、管理费用率升 1 个百分点至 24%，主要系麦高证券业务及管理费增加；销售、管理、财务三项费用合计 4.98 亿元、占营收 <strong>70.19%</strong>（来源：股百科 300803 一季报解析 / 九方智投研报点评）。<strong>这是单源方向、双源数值部分重合，置信度：低</strong>。若属实，则本公司是典型的「高毛利、高费用」结构——毛利率近 90% 而净利率只有 21%，中间近 70 个百分点被费用吃掉（据库内毛利率 89.98%、净利率 21.31% 推算差额 68.67pp，置信度：高）。</li>
+<li><strong>资产负债率高达 84.78% 且逐期抬升</strong>（80.23% → 81.09% → 81.91% → 84.78%）——<strong>不要按普通软件公司理解这个数字</strong>。麦高证券是并表的全资券商子公司，券商的客户结算备付金、代理买卖证券款等在会计上计入负债，托管客户资产扩张会机械推高合并报表负债率。库内数据无法拆分负债构成，<strong>无法据此判断是否存在偿债风险</strong>（置信度：中——机制判断有据，具体拆分缺数据）。</li>
+<li><strong>毛利率极其稳定且高</strong>：87.08%~89.98% 四期窄幅波动，说明产品定价能力未受侵蚀（置信度：高）。</li>
+</ol>
+<p><strong>信息缺口</strong>：库中无 2026Q2 / 2026H1 财报（库内财务最新期为 2026Q1）。影响：C 节的全部利润趋势判断只建立在单个季度上，若 Q2 反转本报告的核心结论会失效。补法：<strong>2026-08-27 中报披露后重跑本调研</strong>（见 I 节 W1）。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比同行业前 3 大市值公司（每行：代码 · 名称 · 市值 · PE(TTM) · PB · 财报期 · 营收 · 净利 · ROE）：</p>
+<ul>
+<li><strong>300033 · 同花顺</strong> · 市值 1631.12 亿元 · PE 44.62 · PB 21.26 · 2026-06-30 · 营收 26.46 亿元 · 净利 9.52 亿元 · ROE 11.10%</li>
+<li><strong>688111 · 金山办公</strong> · 市值 1082.54 亿元 · PE 30.01 · PB 7.18 · 2026-06-30 · 营收 33.13 亿元 · 净利 25.18 亿元 · ROE 18.03%</li>
+<li><strong>300442 · 润泽科技</strong> · 市值 1024.83 亿元 · PE 19.70 · PB 7.17 · 2026-03-31 · 营收 18.40 亿元 · 净利 5.82 亿元 · ROE 4.17%</li>
+<li><strong>300803 · 指南针</strong>（本票） · 市值 489.42 亿元 · PE 244.14 · PB 17.08 · 2026-03-31 · 营收 7.10 亿元 · 净利 1.11 亿元 · ROE 3.93%</li>
+</ul>
+<p><strong>位置判断</strong></p>
+<ol>
+<li><strong>只有同花顺是真正的可比公司</strong>。金山办公是办公软件、润泽科技是 IDC/算力基础设施，与指南针的零售金融信息服务几乎无业务重叠——它们同处「软件服务」行业分类，但<strong>行业分类不等于赛道相同</strong>（置信度：高）。</li>
+<li><strong>对同花顺：市值只有其 30%，PE 却是其 5.5 倍</strong>（489.42/1631.12 = 30.0%；244.14/44.62 = 5.47 倍，据库内数字推算）。同一赛道、同一景气周期，估值差 5 倍以上。这个差距只能由两种解释之一支撑：① 市场认为指南针的<strong>利润基数被短期压制</strong>（费用投入期 + 去年非经常高基数），未来利润弹性远大于同花顺；② 市场给「券商 + 公募双牌照」这个同花顺不具备的结构付了溢价。<strong>哪一种为真，决定了这只票是被错杀还是被高估</strong>（置信度：中）。</li>
+<li><strong>盈利效率明显落后</strong>：ROE 3.93%（2026Q1）vs 同花顺 11.10%、金山办公 18.03%（均为 2026H1 口径，⚠️ 期次不同、指南针为单季累计口径，<strong>不完全可比</strong>）。即使考虑口径差，指南针的 ROE 在四家中最低（置信度：中）。</li>
+<li><strong>PB 17.08 位列四家第二</strong>，仅次于同花顺 21.26——说明市场对其净资产的定价并不比同花顺便宜多少，估值贵主要贵在<strong>利润端</strong>而非资产端（置信度：高）。</li>
+</ol>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式拆解</strong>（据库内主营 + 经营范围 + 联网信息）：</p>
+<p>「一体两翼」结构——金融信息服务（软件终端订阅收费）为主体，证券服务（麦高证券）与公募基金服务（先锋基金）为两翼；公司在收购先锋基金时明确表述过这一格局（来源：财联社/新浪财经 2025-02，两源一致，置信度：中）。</p>
+<p>变现链条：<strong>卖软件获客 → 客户开户导流至麦高证券 → 经纪佣金 + 两融利息 → 再向公募基金代销与自有基金产品延伸</strong>。这是「东方财富模式」的复刻路径，多家媒体直接以「复刻东方财富模式」「小东财」为标题描述（来源：新浪财经 2025-02-20 / 天风财经 / 36氪，三源一致，置信度：中）。</p>
+<p><strong>护城河诚实分级</strong></p>
+<ul>
+<li><strong>结构性护城河（成立，置信度：中高）</strong>：<strong>牌照</strong>。公司同时持有证券投资咨询牌照（库内经营范围明载）、证券公司牌照（麦高证券，全资）、公募基金牌照（先锋基金，控股）。券商与公募牌照在中国是稀缺行政许可，新设审批极严，这是不可用钱短期买到的壁垒。此外库内简介提到「首家同时获得国家统计局、上交所、深交所、大商所数据权威授权」，属于数据源准入优势（<strong>⚠️ 该表述来自公司自述的库内简介，未经独立核实，置信度：低</strong>）。</li>
+<li><strong>阶段性优势（成立，置信度：中）</strong>：<strong>存量付费用户的转化漏斗</strong>。软件终端积累的付费个人投资者可低成本导流开户，这解释了麦高证券客户托管资产 2025 年 +52.72% 的高增速。但这个优势的持续性取决于软件端能否持续获客，而获客成本正体现为畸高的销售费用。</li>
+<li><strong>无明显护城河的部分（置信度：中）</strong>：<strong>金融信息服务产品本身</strong>。TopView、Level-2、技术指标类产品的数据源是交易所公开授权数据，同花顺、东方财富、大智慧均可获得；产品差异主要在界面与营销，不在数据独占性。库内毛利率近 90% 说明当前定价权仍在，但这是<strong>订阅制商业模式的普遍特征</strong>，不必然等于竞争壁垒。</li>
+</ul>
+<p><strong>商业模式的软肋（置信度：高）</strong>：整条链的收入——软件订阅、经纪佣金、两融利息、基金代销——<strong>全部与散户交投活跃度同向</strong>。这不是一个有对冲的组合，而是同一个 beta 上了四次杠杆。牛市里营收爆发力极强（2025Q1–Q3 营收 +80.54% 是证据），熊市里四条腿会一起收缩。</p>
+<h2>F. 政策与监管</h2>
+<p>库内无政策数据，本节全部来自联网，每条标注来源与日期。</p>
+<ol>
+<li><strong>公募基金费率改革收官（方向：利空销售端收入，置信度：中高）</strong></li>
+</ol>
+<p>2025-12-31 证监会修订并更名《公开募集证券投资基金销售费用管理规定》，<strong>自 2026-01-01 起实施</strong>，标志三阶段公募费率改革收官。第三阶段主要调降认申购费等<strong>销售环节</strong>费率，每年为投资者让利约 <strong>300 亿元</strong>；三阶段累计每年让利超 <strong>500 亿元</strong>（来源：中国证券业协会投资者之家 2026-01-06 / 界面新闻 / 新华社经济参考报 2026-01-05，三源一致）。 <strong>传导链条</strong>：销售环节费率下调 → 基金代销尾随佣金与申购费收入承压 → 直接压制指南针「公募两翼」中的代销收入与先锋基金的管理费空间。⚠️ 但库内无该公司基金代销收入的分部数据，<strong>无法量化影响幅度</strong>（置信度：低）。</p>
+<ol>
+<li><strong>《推动公募基金高质量发展行动方案》持续落地（方向：中性偏结构性，置信度：中）</strong></li>
+</ol>
+<p>2025-05-07 证监会印发；截至 2026 年 3 月底已注册 131 只新模式浮动费率基金，12 家基金公司集中调整旗下 195 只产品业绩比较基准，公募基金管理规模增至 <strong>37.5 万亿元</strong>（来源：上海市委金融办 2026-05-07 / 2026-07-14 两篇通报，同一发布方两个时点）。⚠️ <strong>同一发布主体的两篇稿件不构成真正的独立双源，置信度下调至低</strong>。 <strong>传导链条</strong>：行业规模扩张对新进入的中小公募（先锋基金）是增量池，但浮动费率与业绩基准约束抬高了运营门槛，对缺乏投研积淀的小基金公司偏不利。</p>
+<ol>
+<li><strong>市场流动性政策环境（方向：先紧后松，置信度：高）</strong></li>
+</ol>
+<p>2026 年 7 月沪深北两融余额单月净减 <strong>4090.69 亿元</strong>，创「924 行情」以来最大单月降幅、A 股史上第二大（仅次于 2015 年 7 月 −7093 亿元），压力集中于 AI、半导体、硬件设备、算力等拥挤交易板块，被定性为<strong>科技板块过热后的结构性去杠杆</strong>而非系统性失控（来源：财联社 2444275 / 东方财富 2026-08-05 / 新浪财经 2026-08-03，三源一致）。 8 月出现修复：8 月 3–13 日两融余额连续 8 个交易日回升，从 26025.27 亿元升至 <strong>26757.18 亿元</strong>，累计 +731.92 亿元；8 月 12 日全市场成交额 <strong>21672 亿元</strong>、逾 4100 只个股上涨；8 月 31 个申万一级行业中 29 个获融资净流入（来源：上海证券报 2026-08-18 / 新浪新闻 2026-08-12，两源）。 <strong>传导链条</strong>：两融与成交额 → 券商经纪佣金与两融利息 → 麦高证券收入；同时散户活跃度 → 软件终端销售。<strong>8 月回补量仅约覆盖 7 月缺口的 18%（据 731.92/4090.69 推算），流动性尚未回到 7 月前水平</strong>（置信度：中）。</p>
+<p><strong>未发现</strong>与本公司直接相关的负面监管事项（如处罚、立案、警示函）——⚠️ 但这是<strong>联网未搜到</strong>，不等于不存在，库内新闻近 60 天也无此类记录（置信度：中）。</p>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 6 个同花顺概念标签，<strong>逐个分级</strong>：</p>
+<ol>
+<li><strong>互联网金融（885456.TI）— 真有业务</strong>。库内主营原文「以互联网为工具，向投资者提供及时、专业的金融数据分析和证券投资咨询服务」直接构成佐证；经营范围含「互联网信息服务」「第一类增值电信业务」许可。这是公司业务本体，不是沾边。（置信度：高）</li>
+</ol>
+<ol>
+<li><strong>参股券商（885620.TI）— 真有业务，但标签措辞严重低估实际关联度</strong>。⚠️ 实际情况是<strong>全资控股</strong>而非「参股」：库内新闻两条公告标题原文均为「关于向<strong>全资子公司</strong>麦高证券有限责任公司增资的公告」（2026-07-20）与「<strong>全资子公司</strong>麦高证券有限责任公司披露 2026 年半年度未经审计非合并财务报表的提示性公告」（2026-07-17）。增资后麦高注册资本由 15 亿元变更为 17 亿元（来源：证券之星公告转载 2026-07-20），工商变更已于 2026-08-14 完成（库内公告标题）。<strong>「参股」类标签通常对应权益法核算的小额持股、不并表；此处是 100% 并表，券商损益全额进合并报表</strong>——按标签理解会低估波动传导（置信度：高）。</li>
+</ol>
+<ol>
+<li><strong>AI 应用（886108.TI）— 仅概念标签，未见营收佐证</strong>。库内公司档案的主营业务、公司简介、经营范围三段文字<strong>通篇未出现「人工智能」「AI」「大模型」字样</strong>；库内财务无分部数据。同业同花顺在其 2026H1 业绩预告中明确写了「推进人工智能技术与业务融合」（来源：中财网 2026-07-19），指南针未见对等表述。⚠️ 该标签是本票库内事件日历中 5 条事件（Fable 5.1、GPT-6、Meta Connect、工业互联网大会、浦江论坛）的唯一匹配来源——也就是说，<strong>I 节里那些 AI 事件对本票的传导是「概念情绪」级别，不是「业务订单」级别</strong>（置信度：高）。</li>
+</ol>
+<ol>
+<li><strong>沪深 300 样本股（883300.TI）— 未能核实，信息缺口</strong>。联网检索未找到指南针被纳入沪深 300 指数的独立确认；库内也无指数成分表可交叉验证。若属实，则被动指数资金配置构成一层估值支撑；若标签过时或错误，则该支撑不存在。<strong>判定：单一来源（同花顺标签）未交叉验证，置信度：低</strong>。补法：查中证指数公司官方成分股公告。</li>
+</ol>
+<ol>
+<li><strong>深股通（885694.TI）／融资融券（885338.TI）— 均为交易属性标签，非业务标签</strong>。前者表示可被北向资金交易，后者表示可融资融券。二者不涉及公司经营内容，但<strong>融资融券标的身份意味着本票自身的股价会受 F 节所述两融去杠杆周期直接影响</strong>——这是一层容易被忽略的自反关系（置信度：高）。</li>
+</ol>
+<p><strong>产业链位置</strong></p>
+<ul>
+<li><strong>上游</strong>：交易所与官方数据源（上交所、深交所、大商所、国家统计局的数据授权，库内简介）。议价能力<strong>在上游</strong>——数据授权是行政许可，价格与准入非本公司可议。</li>
+<li><strong>中游（公司所在）</strong>：数据加工 + 软件终端 + 投顾服务 + 券商通道 + 公募产品。近 90% 毛利率说明中游加工环节的定价权强。</li>
+<li><strong>下游</strong>：<strong>个人投资者（散户）</strong>。议价能力<strong>在公司一侧</strong>（订阅制、产品差异化定价），但需求量完全由市场行情决定——<strong>下游是「弱议价、强周期」的客户结构</strong>（置信度：中高）。</li>
+<li><strong>关键结论</strong>：公司的护城河在中游，但收入的方差来自下游。牌照解决的是「能不能做」，解决不了「今年散户想不想交易」。</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<p><strong>近 60 天新闻</strong>（库内新闻，共 7 条，按重要性挑选）</p>
+<ol>
+<li><strong>2026-08-14 · 指南针：关于全资子公司变更注册资本并完成工商变更登记的公告</strong>（来源库内公告公告，情感 0.0 = 噪音其他）——7 月宣布的 2 亿元增资完成工商登记，麦高注册资本落定 17 亿元。<strong>对基本面有实质影响但幅度可测</strong>：增资是券商展业资本金基础，直接决定两融、自营等业务规模上限。（置信度：中高）</li>
+<li><strong>2026-07-20 · 指南针：关于向全资子公司麦高证券有限责任公司增资的公告</strong>——同一事件的源头。<strong>实质影响：是，且是本季度最重要的公司行为</strong>。</li>
+<li><strong>2026-07-20 · 指南针：第十四届董事会第十九次会议决议公告</strong>——增资议案的董事会程序文件。程序性，无独立实质影响。</li>
+<li><strong>2026-07-17 · 指南针：麦高证券有限责任公司 2026 年半年度未经审计非合并财务报表</strong> ＋同日的提示性公告——<strong>这是本报告认为被低估的一条</strong>：公司在中报前 40 天单独披露了券商子公司的半年度报表。⚠️ 库内新闻只有标题、无财务数字；联网检索（中财网、紫荆网、新浪等多个转载页）<strong>均未能取到具体营收/净利数字</strong>，WebFetch 目标页内容为空。<strong>这意味着中报最大的一块拼图，本报告拿不到——见 M 节信息缺口</strong>（置信度：高，指的是「缺口存在」这件事）。</li>
+<li><strong>2026-07-31 · 金融科技概念异动拉升恒银科技直线涨停</strong>（来源 cls，情感 +0.8 = 噪音其他）——板块级异动，<strong>非本公司事件</strong>。⚠️ 标题中的行情描述指的是恒银科技、且是 2026-07-31 09:43 的<strong>发稿时点旧快照</strong>，与本票无关，不可用于推断指南针当时或当前股价。</li>
+<li><strong>2026-07-29 · 互联金融板块异动拉升兆日科技 20cm 涨停</strong>（来源 cls，情感 +0.6，噪音其他）——同上，板块联动噪音，⚠️ 涨幅描述属兆日科技 2026-07-29 13:20 的发稿时点旧快照。</li>
+</ol>
+<p><strong>新闻面小结</strong>：近 60 天<strong>零负面事件、零业绩预告、零监管事项</strong>；实质性信息全部集中在「给券商子公司加资本金」这一条主线上。7 条新闻中 5 条为公司自身公告（均为 100.0），2 条为板块噪音。（置信度：高）</p>
+<p><strong>涨停史</strong>（库内涨停记录，近 180 日）</p>
+<ul>
+<li><strong>近 180 日无任何涨停记录</strong>（返回空列表）。这本身是有价值的信息：过去半年这只票<strong>没有进入过游资/情绪面的主升浪</strong>，其股价走势是资金缓慢定价的结果，而非题材脉冲。这与「PE 244」并置时含义更强——<strong>这个高估值不是一次情绪暴涨打出来的，而是长期共识堆出来的</strong>（置信度：中高）。</li>
+</ul>
+<p><strong>资金与筹码</strong>（库内资金筹码）</p>
+<div class="callout">⚠️ <strong>纪律声明</strong>：以下三块是<strong>盘面与筹码现象，不是基本面证据</strong>。它们只作本节情绪面佐证，<strong>不进入 J 节逻辑链</strong>，也<strong>不单独驱动 L 节任何操作结论</strong>。</div>
+<ul>
+<li><strong>资金流</strong>（近 20 个交易日，2026-07-28 至 2026-08-24）：整体净流入 <strong>+8.49 亿元</strong>，但<strong>特大单（主力）净流出 −2.56 亿元</strong>；净流入天数 9 天 / 净流出 11 天。</li>
+</ul>
+<p><strong>解读</strong>：这是一组<strong>方向背离</strong>的读数——总量在流入而主力资金在流出，意味着承接方是中小单。同时净流出天数多于净流入天数（11 : 9），说明 8.49 亿元的总净流入靠少数几天的大额流入撑起，日常状态偏流出。（置信度：中——数据为真，行为归因为推断）</p>
+<ul>
+<li><strong>筹码分布</strong>（数据时点 <strong>2026-08-07</strong>）：获利盘比例 <strong>66.06%</strong> · 加权平均成本 <strong>84.28 元</strong> · 成本 15 分位 78.00 元 · 50 分位 <strong>81.90 元</strong> · 85 分位 91.00 元。</li>
+</ul>
+<p>⚠️ <strong>必须注意时间差</strong>：这是 8-07 的筹码快照，而当前价（8-25 收盘）是 <strong>79.86 元</strong>，已<strong>低于</strong>加权平均成本 84.28 元、也低于成本 50 分位 81.90 元，接近 15 分位 78.00 元（据库内两组数字对比推算，置信度：中——两个数据时点相隔 18 天，中间的筹码搬家未被观测）。 <strong>两面读法（按纪律都要写）</strong>：66.06% 的获利盘意味着<strong>上方套牢盘相对稀薄、反弹阻力小</strong>；但同时意味着<strong>三分之二的持仓者处于浮盈状态，短线获利了结的抛压基数大</strong>。而若以 8-07 的成本结构对照当前价，则含义反转——当前价已跌破 50 分位成本，<strong>过半筹码转为浮亏</strong>，这类结构下杀跌容易引发被动止损，但也常对应阶段性的成本密集支撑区（78–82 元区间）。</p>
+<ul>
+<li><strong>股东户数</strong>（截至 <strong>2026-03-31</strong>）：13.1581 万户，较 2025-12-31 的 13.6653 万户 <strong>减少 3.70%</strong>。</li>
+</ul>
+<p><strong>解读</strong>：户数下降 = 户均持股上升 = <strong>筹码趋于集中</strong>（置信度：中）。⚠️ <strong>该数据为季度披露、天然滞后近 5 个月</strong>，反映的是 Q1 状态，与 7 月去杠杆后的当前筹码结构可能已完全不同。中报（8-27）会更新至 6-30 口径。</p>
+<h2>I. 未来 13 周事件日历</h2>
+<p>来源：库内事件日历（近 120 日）（6 条）+ 联网补充。⚠️ 库内 6 条事件中，<strong>5 条的匹配理由是「概念 886108.TI（AI 应用）」</strong>——按 G 节分级，该标签<strong>仅概念标签、未见营收佐证</strong>，故这些事件对本票的传导仅为<strong>板块情绪级</strong>，不构成业务催化。</p>
+<ul>
+<li><strong>W1（2026-08-24 起）</strong>：<strong>指南针 2026 中报披露</strong> · 公司事件 · 重要性 <strong>高（库内 importance 7）</strong> · 日期 <strong>2026-08-27</strong>（交易所官方披露计划，改期会自动跟随更新）· 影响：<strong>本季度唯一决定性事件</strong>，验证 C 节的利润拐点是「高基数假象」还是「真实恶化」；同时首次给出麦高证券并表口径的半年度贡献、更新至 6-30 的股东户数</li>
+<li><strong>W2（2026-08-31 起）</strong>：Anthropic 新一代模型 Fable 5.1 预计 8 月底前发布（已灰度测试）· 公司事件 · 重要性中（库内 importance 7，但按 AI 标签仅情绪级折算）· 2026-08-31 · 影响：A 股 AI 应用板块情绪带动，<strong>对本票无业务传导</strong>；同周 8 月收官，可观测月度成交额与两融余额能否延续 8 月上旬修复</li>
+<li><strong>W3（2026-09-07 起）</strong>：2026 全球工业互联网大会 9-08 沈阳开幕（主题「AI+制造」）· 行业会议 · 重要性低（库内 importance 6，工业软件方向，与本票赛道不重合）· 2026-09-08；2026 浦江创新论坛（第十九届）9-11 至 9-14 上海，含 AI 赋能科学研究专题 · 行业会议 · 重要性低 · 2026-09-11 · 影响：均为 AI 概念情绪事件，<strong>与零售金融信息服务无直接关联</strong></li>
+<li><strong>W4（2026-09-14 起）</strong>：OpenAI 下一代大模型 GPT-6（代号 Astra）预计 9 月发布（日期未官宣）· 公司事件 · 重要性中（库内 importance 8，为库内 6 条中最高，但传导路径仍是概念情绪）· 2026-09-15 · 影响：若落地会点燃 A 股 AI 应用、算力板块热度，本票可能被动跟随「AI 应用」标签波动</li>
+<li><strong>W5（2026-09-21 起）</strong>：Meta Connect 2026 开发者大会 9-23 至 9-24（美国加州）· 行业会议 · 重要性低（库内 importance 7，指向 AI 眼镜/MR 消费电子，与本票无关）· 2026-09-23 · 影响：<strong>对本票基本面零传导</strong>，仅可能通过 AI 应用板块情绪外溢</li>
+<li><strong>W6（2026-09-28 起）</strong>：国庆节休市（按惯例 10-01 起放假，具体安排以交易所公告为准，⚠️ 未从库内或联网独立确认 2026 年具体日历）· 市场事件 · 重要性中 · 影响：<strong>节前交投缩量是零售端软件销售与经纪佣金的季节性淡季</strong>，且长假期间外部风险无法定价</li>
+<li><strong>W7（2026-10-05 起）</strong>：国庆假期后半段 + 节后首个交易日开启 · 市场事件 · 重要性中 · 影响：节后首周资金回补节奏是四季度散户活跃度的第一个读数</li>
+<li><strong>W8（2026-10-12 起）</strong>：三季报预约披露安排陆续明确；9 月金融与经济数据发布窗口 · 市场事件 · 重要性中 · 影响：确认指南针三季报具体日期；宏观流动性数据影响券商板块整体估值</li>
+<li><strong>W9（2026-10-19 起）</strong>：<strong>指南针 2026 三季报（预计）</strong> · 公司事件 · 重要性高 · 影响：⚠️ <strong>日期为推算而非确认</strong>——库内财务显示 2025 年三季报公告日为 <strong>2025-10-25</strong>，据此推测 2026 年同期。这将是验证 K 节三情景的<strong>第二个决定性数据点</strong>，尤其检验 7 月去杠杆对 Q3 交投的滞后影响</li>
+<li><strong>W10（2026-10-26 起）</strong>：创业板三季报法定披露截止（10-31）· 市场事件 · 重要性中 · 影响：若指南针未在 W9 披露则必落此周；全行业三季报出齐后可横向对比同花顺，检验 D 节的估值差异是否收敛</li>
+<li><strong>W11（2026-11-02 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-11-09 起）</strong>：本周无已知事件</li>
+<li><strong>W13（2026-11-16 起）</strong>：本周无已知事件（⚠️ 2026-11-18 为公司上市 7 周年，无实质意义，仅作时间锚）</li>
+</ul>
+<p><strong>日历小结</strong>：13 周内真正有基本面信息量的只有 <strong>W1（8-27 中报）</strong> 和 <strong>W9/W10（三季报）</strong> 两个时点，中间 W2–W8 的六周是<strong>数据真空期</strong>——期间的股价波动将主要由板块情绪与流动性驱动，而非公司信息（置信度：高）。</p>
+<h2>J. 逻辑链</h2>
+<p><strong>主链（可证伪）</strong></p>
+<div class="callout"><strong>因为</strong>〔事实 1〕库内 2026Q1 营收 7.10 亿元、同比 +30.96%，单季规模已达 2025 上半年 9.35 亿元的 76%（库内财务）； <strong>且</strong>〔事实 2〕同赛道龙头同花顺 2026H1 库内净利 9.52 亿元、ROE 11.10%（库内同业对比），其业绩预告归因于「资本市场交投活跃、金融信息服务需求增加」（来源：中财网 2026-07-19），证明<strong>整个赛道 2026 上半年处于强景气</strong>； <strong>且</strong>〔事实 3〕麦高证券为全资并表子公司、2025 年经纪佣金 +110.34%、客户托管资产 1011.5 亿元（+52.72%，来源：慧博投研/证券之星），且公司在 2026-07-20 用<strong>自有资金</strong>追加 2 亿元资本金（库内公告，2026-08-14 工商完成）； <strong>所以</strong>〔推论〕指南针 2026H1 的<strong>扣非</strong>盈利能力大概率同步扩张，2026Q1 表观净利 −19.80% 主要是 2025Q1 那笔 6554 万元非经常性投资收益造成的高基数假象； <strong>如果</strong>该推论成立，<strong>应该能观察到</strong>：8-27 中报中 ①扣非归母净利同比增速显著为正（参照 2026Q1 的 +52.48%）②证券业务分部收入占比与增速双升 ③表观归母净利同比增速<strong>低于</strong>扣非增速（差额即去年非经常项的回吐）。</div>
+<p><strong>分环置信度</strong></p>
+<ul>
+<li>环 1（营收扩张事实）：<strong>高</strong>——库内硬数据</li>
+<li>环 2（赛道景气事实）：<strong>高</strong>——库内数据与联网预告双向交叉验证</li>
+<li>环 3（券商子公司扩张事实）：<strong>中</strong>——数字来自联网研报摘要与公告转载，非库内；但增资与工商变更两条公告在库内可确认</li>
+<li>环 4（「高基数假象」推论）：<strong>中</strong>——三个独立联网来源口径一致，但扣非数字不在库内，无法用库内取数复核</li>
+<li>环 5（可观测现象）：<strong>待验</strong>——8-27 揭晓</li>
+</ul>
+<p><strong>⚠️ 最弱的一环 = 环 4，它是整条链的命门。</strong></p>
+<p>理由：环 4 承担了「把 −19.80% 解释成好事」的全部重量，而它依赖的两个关键数字（2025Q1 非经常性收益 6554 万元、2026Q1 扣非净利 1.10 亿元）<strong>全部来自联网、一个都不在库内</strong>。按本报告的取数纪律，联网数字的置信度上限就是「中」。如果这个解释是错的——比如非经常项金额被媒体误传、或者扣非增长在 Q2 已经失速——那么 −19.80% 就是<strong>真实的盈利恶化</strong>，而 PE 244 的估值在真实恶化面前没有任何缓冲。</p>
+<p><strong>反向链（同样成立，必须并列）</strong></p>
+<div class="callout"><strong>因为</strong>〔事实 A〕库内 PE(TTM) 244.14 为行业中位 93.92 的 2.6 倍、PB 17.08（库内估值）； <strong>且</strong>〔事实 B〕2026 年 7 月两融余额单月净减 4090.69 亿元、为 A 股史上第二大单月去杠杆，8 月仅回补约 18%（来源：财联社/东方财富/新浪，三源一致 + 上海证券报 2026-08-18）； <strong>且</strong>〔事实 C〕公司四条收入腿（软件订阅、经纪佣金、两融利息、基金代销）<strong>全部同向依赖散户交投</strong>，无内部对冲（G 节推论）； <strong>所以</strong>〔推论〕7 月流动性收缩对本公司的收入影响会<strong>滞后体现在 Q3</strong>，而中报（覆盖 1–6 月）恰好<strong>照不到这一段</strong>； <strong>如果</strong>该推论成立，<strong>应该能观察到</strong>：即使 8-27 中报数据亮眼，Q3 单季（W9/W10 三季报）的营收环比增速将明显回落。</div>
+<p>这条链把「中报好」与「后市好」拆开了——<strong>中报是后视镜，7 月去杠杆是挡风玻璃</strong>（置信度：中）。</p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜<strong>触发</strong>：8-27 中报扣非归母净利同比增速 &gt;50%（参照 2026Q1 的 +52.48%）<strong>且</strong>表观归母净利同比为正 <strong>且</strong> 9 月两融余额回升至 27000 亿元以上（对照 8-13 的 26757.18 亿元）｜<strong>路径</strong>：市场确认「高基数假象」解释成立、赛道景气延续至 Q3，PE 244 被解读为「利润释放前的暂时读数」而非泡沫；估值向同花顺方向收敛的逻辑被激活，股价重回 8-07 筹码加权成本 84.28 元上方，成本 85 分位 91.00 元成为下一个博弈位</li>
+<li><strong>中性（50%）</strong>｜<strong>触发</strong>：8-27 中报扣非增速为正但落在 +20%~+50% 区间，或表观归母净利同比仍为负而扣非为正（即「结构性改善但账面难看」）｜<strong>路径</strong>：多空各取所需，股价在 H 节筹码成本密集区（成本 15 分位 78.00 元 ~ 50 分位 81.90 元）宽幅震荡；W2–W8 六周数据真空期内，波动由「AI 应用」标签的板块情绪与两融修复节奏主导，而非公司基本面；方向等待 W9/W10 三季报再定</li>
+<li><strong>悲观（25%）</strong>｜<strong>触发</strong>：8-27 中报扣非归母净利同比增速 &lt;20%（意味着 Q2 单季扣非环比失速），<strong>或</strong>中报出现商誉减值（先锋基金并表形成的商誉是明确的减值敞口），<strong>或</strong> 9 月两融余额跌回 26000 亿元下方（重新逼近 8-03 的 26025.27 亿元起点）｜<strong>路径</strong>：「高基数假象」解释被证伪，−19.80% 被重新定价为真实恶化；PE 244 在真实盈利下滑面前无缓冲，估值向行业中位 93.92 方向压缩的通道打开；下方参照位为成本 15 分位 78.00 元，跌破后无库内筹码数据可作支撑参考</li>
+</ul>
+<p>概率合计 100%。</p>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong></p>
+<ol>
+<li><strong>如果</strong> 2026-08-27 中报显示扣非归母净利同比增速 &gt;50%（对照 2026Q1 的 +52.48%）<strong>且</strong>证券业务分部收入同比增速高于公司整体营收增速 30.96%，<strong>那么</strong>可视为 J 节主链环 4 被验证，<strong>小仓位试仓</strong>；反之若扣非增速 &lt;20%，<strong>那么回避</strong>。</li>
+<li><strong>如果</strong>中报披露后股价仍未收复 8-07 筹码加权平均成本 <strong>84.28 元</strong>（库内资金筹码），<strong>且</strong>近 20 日特大单资金由当前的 −2.56 亿元继续扩大净流出，<strong>那么观望</strong>——不参与数据真空期（W2–W8）的情绪博弈。</li>
+<li><strong>如果</strong>中报出现商誉减值计提（先锋基金并表商誉），<strong>或</strong> 2026H1 营收同比增速跌破 2026Q1 的 30.96%，<strong>那么减仓</strong>——这两条中任意一条成立，都意味着本报告 J 节主链的前提事实（营收扩张 + 利润被非经常项掩盖）不再成立。</li>
+</ol>
+<p><strong>这笔判断在什么情况下应当被整个推翻</strong></p>
+<ul>
+<li><strong>推翻条件 1（针对主链）</strong>：中报披露的 2025H1 非经常性损益金额与联网所述的「2025Q1 · 6554 万元」量级严重不符。这会直接抽掉 J 节环 4 的地基——那意味着本报告对 −19.80% 的全部解释都建立在一个错误数字上。</li>
+<li><strong>推翻条件 2（针对赛道景气外推）</strong>：中报显示指南针 2026H1 营收同比增速显著低于同花顺同期水平。这会证伪「同赛道景气同源」的类比，说明公司在景气周期中正在丢失份额——<strong>这比利润数字难看严重得多</strong>，因为它否定的是逻辑而非当期结果。</li>
+<li><strong>推翻条件 3（针对估值容忍）</strong>：若 W9/W10 三季报显示 Q3 单季营收环比转负，则 J 节反向链（7 月去杠杆滞后传导）成立，PE 244 将失去「高增长换高估值」的唯一支撑。</li>
+</ul>
+<p><strong>仓位思路</strong></p>
+<ul>
+<li>中报（W1）落地前：<strong>不参与</strong>。8-27 是一个二元事件，且本报告最关键的输入（扣非数字、麦高证券半年度报表数字）恰恰是拿不到的那部分——在信息劣势下押注二元事件，是把调研变成赌博。</li>
+<li>中报落地后若触发条件 1：<strong>轻仓</strong>。理由是即便逻辑被验证，PE 244.14 / PB 17.08 的估值意味着容错空间极小；本报告的乐观情景概率也只有 25%。</li>
+<li>任何情况下：<strong>不重仓</strong>。G 节已论证四条收入腿是同一个 beta 的四重杠杆，这类标的的组合权重本身就应当被压制。</li>
+</ul>
+<h2>M. 逻辑自查</h2>
+<p><strong>1. 这份判断最依赖的假设是哪一条？它错了会怎样？</strong></p>
+<p>最依赖的是：<strong>「2026Q1 归母净利 −19.80% 是去年同期非经常性收益造成的高基数假象，主业实际在加速」</strong>。</p>
+<p>它错了的后果是<strong>结论级的</strong>，不是细节级的：整份报告对 C 节利润拐点的定性会从「假象」翻转为「真实恶化」，J 节主链断裂，K 节三情景概率需要向悲观侧大幅重排，L 节的试仓条件全部失效。而在 PE 244.14 的估值上，一个真实的盈利下滑没有任何缓冲垫。</p>
+<p>更要命的是，<strong>这个假设我无法用库内数据自证</strong>——库内财务只给表观归母净利，不给扣非值和非经常性损益明细。我用了三个独立联网来源交叉验证（口径一致），但按本报告的取数纪律，这最多值「中」置信度。</p>
+<p><strong>2. 有没有为了让逻辑好看而忽略的反面证据？</strong></p>
+<p>有，我在写作过程中警觉到并做了修正，如实记录如下：</p>
+<ul>
+<li><strong>初稿倾向于把「同花顺 +75%~95%」直接外推到指南针</strong>。这是错的：同花顺 2026H1 基数是正常的，而指南针 2025H1 净利 1.43 亿元里已经含了 6554 万元的非经常性收益（据联网），基数结构完全不同。直接外推会得到一个<strong>明显偏乐观且方向可能相反</strong>的中报预期——表观同比甚至可能是负的，而这恰恰是最容易引发市场负面反应的形态。已在 A 节与 J 节改为拆分口径表述。</li>
+<li><strong>我一度想把「近 180 日无涨停」写成利多</strong>（未被爆炒、估值扎实）。但同一事实的另一面是：这只票在过去半年的行情中<strong>没有获得过情绪面的额外关注</strong>，PE 244 完全是长期共识堆积的结果——这意味着<strong>没有「情绪退潮」这个便宜的下跌解释</strong>，如果它跌，跌的就是共识本身。已在 H 节写成中性偏警示。</li>
+<li><strong>资金流的背离我差点漏掉</strong>：net_mf_sum_yi = +8.49 单看是净流入、像利多；但特大单净额（亿元） −2.56（主力净流出）与净流出天数 11 &gt; 净流入天数 9 是相反方向。只报总量会得出反向结论。已在 H 节并列写出，并按 skill 纪律<strong>未让它进入 J 节逻辑链</strong>。</li>
+<li><strong>筹码数据的时间差我最初误用了</strong>：获利盘比例 66.06% 是 <strong>2026-08-07</strong> 的快照，而当前价 79.86 元（8-25 收盘）已跌破该时点的成本 50 分位 81.90 元。若不标时点直接说「66% 获利盘」，会给出与当前实际筹码状态相反的印象。已在 H 节显式写明 18 天时间差与两种读法。</li>
+</ul>
+<p><strong>3. 信息缺口清单</strong></p>
+<ul>
+<li><strong>缺口 1（最严重）</strong>：<strong>库中无 2026Q2 / 2026H1 财报</strong>，库内财务最新期为 2026Q1（公告日 2026-04-25）。</li>
+</ul>
+<p><strong>影响</strong>：C 节全部利润趋势判断、J 节主链、K 节三情景的锚都建立在单个季度上。 <strong>补法</strong>：<strong>2026-08-27 中报披露后立即重跑本调研</strong>（I 节 W1）。这是本报告最短的保鲜期——<strong>两天后即需刷新</strong>。</p>
+<ul>
+<li><strong>缺口 2（可定位但取不到）</strong>：<strong>麦高证券 2026 年半年度非合并财务报表的具体数字拿不到</strong>。库内新闻于 2026-07-17 记录了该披露的两条公告<strong>标题</strong>，但库不存正文数字；联网检索（中财网 p20260717000988/989、紫荆网转载等多个页面）均未返回营收/净利数值，对目标页的 WebFetch 返回空内容。</li>
+</ul>
+<p><strong>影响</strong>：这是中报最大的一块拼图——券商子公司的半年度盈利本可作为并表业绩的<strong>前瞻指标</strong>，在 8-27 前提供一次抢跑校验的机会。缺了它，本报告对中报的判断只能停留在「二元事件」层面，无法收敛。 <strong>补法</strong>：直接读巨潮资讯网（cninfo）该公告 PDF 原文；或等 8-27 中报并表数据。</p>
+<ul>
+<li><strong>缺口 3</strong>：<strong>扣非归母净利与非经常性损益明细不在库内</strong>。库内财务的字段集不含扣非值。</li>
+</ul>
+<p><strong>影响</strong>：J 节命门（环 4）无法用库内取数复核，只能依赖联网三源。 <strong>补法</strong>：若后续要长期跟踪本票，建议在库侧补库内财务的扣非字段——这是一个对所有「表观利润被一次性损益扰动」的标的都通用的缺口，不止本票。</p>
+<ul>
+<li><strong>缺口 4</strong>：<strong>「沪深 300 样本股」概念标签无法核实</strong>（G 节第 4 条）。库内无指数成分表，联网未找到独立确认。</li>
+</ul>
+<p><strong>影响</strong>：若属实，被动指数资金构成一层估值支撑；若不实，K 节乐观情景少一个支撑因素。 <strong>补法</strong>：查中证指数有限公司官网的沪深 300 指数成分股调整公告。</p>
+<ul>
+<li><strong>缺口 5</strong>：<strong>先锋基金的当前精确持股比例存在多源冲突</strong>。联网所得为一条时间序列上的递进：2025-02 收购 22.5050% 股权后合计持股 61.7026% 并取得控股权、纳入合并报表（来源：每日经济新闻 2025-02-18 / 财联社 / 新浪财经 2025-02-20）；2025-03-18 有报道称「已集齐先锋基金股权，持股比超 95%」（来源：新浪财经）；而 2026 年的研报摘要表述为「持股 90%」。<strong>三个数字对应三个时点还是存在误报，本报告无法判定</strong>（置信度：低）。</li>
+</ul>
+<p><strong>影响</strong>：不改变「已控股并表、持有公募牌照」这一定性结论，但影响少数股东损益的量级估算。 <strong>补法</strong>：查 2026 年中报的合并范围附注。</p>
+<ul>
+<li><strong>缺口 6（已核实为「本就没有」，非遗漏）</strong>：库内 A/H 对照返回 None——该票非 A+H 两地上市，无跨市场估值参照系。库内涨停记录返回空列表——近 180 日确实无涨停记录，不是数据缺失。二者均已在正文相应位置写明，此处登记以免被误读为漏查。</li>
+</ul>
+<ul>
+<li><strong>缺口 7</strong>：<strong>券商研报覆盖极其稀薄</strong>。库内研报显示近 90 天窗口内仅 <strong>2 篇研报、来自 1 家机构</strong>（华西证券），且研报标题字段为空。489 亿元市值的公司只有一家机构在近 90 天内出具报告，意味着<strong>卖方共识本身就是薄的</strong>，任何单一机构的观点变动都可能被放大。（置信度：高）</li>
+</ul>
+<h3>附：卖方观点（库内研报，近 90 天窗口）</h3>
+<p>覆盖情况：2 篇研报 · 1 家机构 · 评级分布为最高档正面评级 2 篇（本报告按纪律不复述评级用语，亦不采纳）。</p>
+<ul>
+<li>〔卖方预期〕来源：华西证券研报（库内）· 日期：2026-07-11 · 观点：预测 2026 年度 EPS 0.66 元、归母净利 40246.266 万元（约 4.02 亿元）· 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：华西证券研报（库内）· 日期：2026-07-11 · 观点：预测 2027 年度 EPS 0.73 元、归母净利 44514.81 万元（约 4.45 亿元）· 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：华西证券研报（库内）· 日期：2026-06-20 · 观点：预测 2026 年度 EPS 0.60 元、归母净利 36587.515 万元（约 3.66 亿元）· 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：华西证券研报（库内）· 日期：2026-06-20 · 观点：预测 2027 年度 EPS 0.82 元、归母净利 50002.937 万元（约 5.00 亿元）· 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：联网检索所得的机构盈利预测汇总（未指明具体机构）· 日期：2026 年（具体日期未明确）· 观点：下修 2026 年归母净利预测至 3.6 亿元、同比 +57%，新增 2028 年预测 5.8 亿元、同比 +21% · 置信度：低（卖方预期非事实；来源为搜索结果汇总，未指明发布机构与准确日期，单源未交叉验证）</li>
+</ul>
+<p><strong>⚠️ 对卖方预期的一处观察（这是本报告的判断，不是卖方的话）</strong>：同一家机构（华西证券）在 20 天内（06-20 → 07-11）把 <strong>2026 年预测上调</strong>（EPS 0.60 → 0.66）的同时把 <strong>2027 年预测下调</strong>（EPS 0.82 → 0.73）。这个组合的含义是「短期更好、中期更弱」，即预期中的增长被前移而非增厚。（置信度：中——数据为库内硬记录，含义解读为推断）</p>
+<p>另需注意：卖方预测的 2026 年 EPS 0.66 元对应当前股价 79.86 元（库内行情）为约 121 倍前瞻市盈率（据两数推算）；即便按最乐观的 2027 年 EPS 0.82 元计算，也约 97 倍（据两数推算）。<strong>这两个数字是根据卖方预测推算的，不是事实，且卖方预测本身置信度为低</strong>——列出它们只为说明一件事：<strong>即使完全采信卖方最乐观的盈利预测，当前估值仍显著高于行业 PE 中位数 93.92</strong>（置信度：中）。</p>
+<h3>附：数据引用来源</h3>
+<p><strong>库内</strong>（库内取数）：库内公司档案 · 库内财务 · 库内估值 · 库内行情 · 库内概念标签 · 库内涨停记录 · 库内新闻 · 库内同业对比 · 库内事件日历 · 库内研报 · 库内 A/H 对照（返回 None，见缺口 6）· 库内资金筹码 —— 12 个取数点全部调用，库内 A/H 对照与库内涨停记录的空返回已在正文写明理由。</p>
+<p><strong>联网来源</strong>：</p>
+<ul>
+<li><a href="https://www.hibor.com.cn/wap_detail.aspx?id=5164587" target="_blank" rel="noopener">慧博投研 · 指南针研报摘要</a></li>
+<li><a href="https://wap.stockstar.com/detail/SN2026072000028403" target="_blank" rel="noopener">证券之星 · 指南针向全资子公司麦高证券增资的公告（2026-07-20）</a></li>
+<li><a href="https://finance.sina.com.cn/stock/relnews/cn/2025-02-20/doc-inemarzs2642354.shtml" target="_blank" rel="noopener">新浪财经 · 复刻东方财富模式？指南针拿下先锋基金控股权（2025-02-20）</a></li>
+<li><a href="https://m.nbd.com.cn/articles/2025-02-18/3756088.html" target="_blank" rel="noopener">每日经济新闻 · 指南针收购先锋基金 22.5050% 股权（2025-02-18）</a></li>
+<li><a href="https://www.cls.cn/detail/2188659" target="_blank" rel="noopener">财联社 · 历时 3 年，指南针因何终止定增？原募资 29 亿拟投麦高证券</a></li>
+<li><a href="https://www.bbtnews.com.cn/2025/1102/574638.shtml" target="_blank" rel="noopener">北京商报 · 指南针喊停用于增资麦高证券的 29 亿定增计划（2025-11-02）</a></li>
+<li><a href="https://www.nbd.com.cn/articles/2025-11-03/4127892.html" target="_blank" rel="noopener">每日经济新闻 · 终止 29 亿定增（2025-11-03）</a></li>
+<li><a href="https://m.10jqka.com.cn/20260424/c676265880.shtml" target="_blank" rel="noopener">同花顺财经 · 指南针 2026 年第一季度净利润 1.11 亿元同比下降 19.80%（2026-04-24）</a></li>
+<li><a href="https://www.9fzt.com/detail/sz_300803_10_830463720224.html" target="_blank" rel="noopener">九方智投 · 指南针 2026 年一季报点评（2026-04-25）</a></li>
+<li><a href="https://www.aigbk.com/article/compass_300803_2026_q1_earnings_report_revenue_up_profit_down/" target="_blank" rel="noopener">股百科 · 指南针 2026 年一季报增收不增利解析</a></li>
+<li><a href="https://www.cfi.net.cn/p20260719000637.html" target="_blank" rel="noopener">中财网 · 同花顺 2026 年半年度业绩预告（2026-07-19）</a></li>
+<li><a href="https://stock.stockstar.com/RB2026072000027052.shtml" target="_blank" rel="noopener">证券之星 · 同花顺披露 2026 年半年度业绩预告（2026-07-20）</a></li>
+<li><a href="https://m.cls.cn/detail/2444275" target="_blank" rel="noopener">财联社 · 融资余额单月下降超 4000 亿（2026-08-03）</a></li>
+<li><a href="https://finance.eastmoney.com/a/202608053831837660.html" target="_blank" rel="noopener">东方财富 · 惊魂七月！两融余额蒸发 4000 亿元（2026-08-05）</a></li>
+<li><a href="https://paper.cnstock.com/html/2026-08/18/content_2256192.htm" target="_blank" rel="noopener">上海证券报 · 8 月以来两融余额回升 700 多亿元（2026-08-18）</a></li>
+<li><a href="https://www.sac.net.cn/tzzzj/zxsd/xscyw/202601/t20260106_80711.html" target="_blank" rel="noopener">中国证券业协会投资者之家 · 公募基金费率改革收官（2026-01-06）</a></li>
+<li><a href="https://m.jiemian.com/article/13835385.html" target="_blank" rel="noopener">界面新闻 · 公募费率改革收官，每年让利超 500 亿元</a></li>
+<li><a href="https://jrj.sh.gov.cn/ZXYW178/20260714/3164bfe3505d4d3c97347dd464544b2e.html" target="_blank" rel="noopener">上海市委金融办 · 公募费率改革三周年（2026-07-14）</a></li>
+<li><a href="https://www.cfi.net.cn/p20260717000988.html" target="_blank" rel="noopener">中财网 · 指南针：麦高证券 2026 年半年度未经审计非合并财务报表（2026-07-17）</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-08-25），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>PE244是行业中位93.92的2.6倍，无容错空间</li>
+      <li>Q1表观净利同比-19.80%，增收不增利</li>
+      <li>7月两融单月缩4090亿，Q3交投滞后承压</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>扣非净利</dt><dd>扣除非经常性损益后的净利润。剔除卖资产、政府补助、公允价值变动等一次性项目，更接近主业真实盈利。</dd><dt>非经常性损益</dt><dd>与主营业务无关、偶发的收益或损失，如处置资产、政府补助、金融资产公允价值变动。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>商誉</dt><dd>收购时溢价支付的部分记在账上的资产。被收购方业绩不达预期时要计提减值、直接冲减利润。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>融资余额</dt><dd>投资者借钱买股尚未偿还的金额。上升代表杠杆资金在加仓，也意味着回撤时的被动抛压更大。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>业绩预告</dt><dd>上市公司在正式财报前发布的盈利区间预告，达到规定变动幅度时强制披露。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>BLUF</dt><dd>Bottom Line Up Front，结论先行——把最重要的判断放在最前面。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.hibor.com.cn/wap_detail.aspx?id=5164587" target="_blank" rel="noopener">慧博投研 · 指南针研报摘要</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://wap.stockstar.com/detail/SN2026072000028403" target="_blank" rel="noopener">证券之星 · 指南针向全资子公司麦高证券增资的公告（2026-07-20）</a> <em>2026-07-20</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/relnews/cn/2025-02-20/doc-inemarzs2642354.shtml" target="_blank" rel="noopener">新浪财经 · 复刻东方财富模式？指南针拿下先锋基金控股权（2025-02-20）</a> <em>2025-02-20</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.nbd.com.cn/articles/2025-02-18/3756088.html" target="_blank" rel="noopener">每日经济新闻 · 指南针收购先锋基金 22.5050% 股权（2025-02-18）</a> <em>2025-02-18</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2188659" target="_blank" rel="noopener">财联社 · 历时 3 年，指南针因何终止定增？原募资 29 亿拟投麦高证券</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.bbtnews.com.cn/2025/1102/574638.shtml" target="_blank" rel="noopener">北京商报 · 指南针喊停用于增资麦高证券的 29 亿定增计划（2025-11-02）</a> <em>2025-11-02</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.nbd.com.cn/articles/2025-11-03/4127892.html" target="_blank" rel="noopener">每日经济新闻 · 终止 29 亿定增（2025-11-03）</a> <em>2025-11-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.10jqka.com.cn/20260424/c676265880.shtml" target="_blank" rel="noopener">同花顺财经 · 指南针 2026 年第一季度净利润 1.11 亿元同比下降 19.80%（2026-04-24）</a> <em>2026-04-24</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.9fzt.com/detail/sz_300803_10_830463720224.html" target="_blank" rel="noopener">九方智投 · 指南针 2026 年一季报点评（2026-04-25）</a> <em>2026-04-25</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.aigbk.com/article/compass_300803_2026_q1_earnings_report_revenue_up_profit_down/" target="_blank" rel="noopener">股百科 · 指南针 2026 年一季报增收不增利解析</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.cfi.net.cn/p20260719000637.html" target="_blank" rel="noopener">中财网 · 同花顺 2026 年半年度业绩预告（2026-07-19）</a> <em>2026-07-19</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://stock.stockstar.com/RB2026072000027052.shtml" target="_blank" rel="noopener">证券之星 · 同花顺披露 2026 年半年度业绩预告（2026-07-20）</a> <em>2026-07-20</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.cls.cn/detail/2444275" target="_blank" rel="noopener">财联社 · 融资余额单月下降超 4000 亿（2026-08-03）</a> <em>2026-08-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.eastmoney.com/a/202608053831837660.html" target="_blank" rel="noopener">东方财富 · 惊魂七月！两融余额蒸发 4000 亿元（2026-08-05）</a> <em>2026-08-05</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://paper.cnstock.com/html/2026-08/18/content_2256192.htm" target="_blank" rel="noopener">上海证券报 · 8 月以来两融余额回升 700 多亿元（2026-08-18）</a> <em>2026-08-18</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.sac.net.cn/tzzzj/zxsd/xscyw/202601/t20260106_80711.html" target="_blank" rel="noopener">中国证券业协会投资者之家 · 公募基金费率改革收官（2026-01-06）</a> <em>2026-01-06</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.jiemian.com/article/13835385.html" target="_blank" rel="noopener">界面新闻 · 公募费率改革收官，每年让利超 500 亿元</a></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://jrj.sh.gov.cn/ZXYW178/20260714/3164bfe3505d4d3c97347dd464544b2e.html" target="_blank" rel="noopener">上海市委金融办 · 公募费率改革三周年（2026-07-14）</a> <em>2026-07-14</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cfi.net.cn/p20260717000988.html" target="_blank" rel="noopener">中财网 · 指南针：麦高证券 2026 年半年度未经审计非合并财务报表（2026-07-17）</a> <em>2026-07-17</em></li>
+      <li><span class="src-tag src-disc">披露</span> 中财网 2026-07-19 业绩预告 / 证券之星 2026-07-20 <em>2026-07-19</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内同业对比数值落在预告区间内，交叉验证成立 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 慧博投研研报摘要 / 证券之星公告 2026-07-20 <em>2026-07-20</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社 2188659 / 北京商报 2025-11-02 / 每日经济新闻 2025-11-03，三源一致 <em>2025-11-02</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社 2444275 / 东方财富 2026-08-05 / 新浪财经 2026-08-03，三源一致 <em>2026-08-05</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 上海证券报 2026-08-18 <em>2026-08-18</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-research">研究</span> 同花顺财经 2026-04-24 / 九方智投研报点评 2026-04-25 / 新浪财经 2026-04-24，三源口径一致 <em>2026-04-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-research">研究</span> 股百科 300803 一季报解析 / 九方智投研报点评 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社/新浪财经 2025-02，两源一致，置信度：中 <em>2025-02</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2025-02-20 / 天风财经 / 36氪，三源一致，置信度：中 <em>2025-02-20</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 中国证券业协会投资者之家 2026-01-06 / 界面新闻 / 新华社经济参考报 2026-01-05，三源一致 <em>2026-01-06</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 上海市委金融办 2026-05-07 / 2026-07-14 两篇通报，同一发布方两个时点 <em>2026-05-07</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 上海证券报 2026-08-18 / 新浪新闻 2026-08-12，两源 <em>2026-08-18</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 证券之星公告转载 2026-07-20 <em>2026-07-20</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 中财网 2026-07-19 <em>2026-07-19</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社/东方财富/新浪，三源一致 + 上海证券报 2026-08-18 <em>2026-08-18</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 每日经济新闻 2025-02-18 / 财联社 / 新浪财经 2025-02-20 <em>2025-02-18</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 库内公告 2026-07-20 <em>2026-07-20</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 工商变更 2026-08-14 完成 <em>2026-08-14</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2026-03-31，公告 2026-04-25 <em>2026-03-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2025-12-31，公告 2026-01-31 <em>2025-12-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2025-09-30，公告 2025-10-25 <em>2025-09-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2025-06-30，公告 2025-08-28 <em>2025-06-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 库内公告，2026-08-14 工商完成 <em>2026-08-14</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公告日 2026-04-25 <em>2026-04-25</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-08-25 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
