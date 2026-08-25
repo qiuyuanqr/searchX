@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>金山办公（688111.SH） · 调研报告</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
+    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
+    --card:#fbf9f4; --accent-bg:#efeadd;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
+      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
+      --card:#1c1913; --accent-bg:#211d15;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
+    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>金山办公（688111.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-08-25（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 软件开发</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 云办公 · 智谱AI · 云计算 · 鸿蒙概念 · 腾讯概念 · 信创 · 小米概念 · AI智能体</span>
+      <span><b>来源</b> 11 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    金山办公（688111）主要做的是WPS Office 办公软件产品及服务的设计研发及销售推广。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——表观 PE 30 倍是一次性投资收益制造的假象，主业正处「营收加速、利润率压缩」的错位期。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：表观 PE 30 倍是一次性投资收益制造的假象，主业正处「营收加速、利润率压缩」的错位期。支撑在于营收增速四期单调升至24.69%；WPS365连续六季增速超60%；信创2027硬节点集中交付期。主要风险是PE30倍系一次性投资收益虚化；Q2单季营收+25%而净利-6%；特大单净流出10.41亿户数+34%。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>营收增速四期单调升至24.69%</li>
+      <li>WPS365连续六季增速超60%</li>
+      <li>信创2027硬节点集中交付期</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据时点：2026-08-25 收盘（库内行情数据时点=15:00）｜估值口径日 20260825｜财报最新期 2026H1（披露日 20260820） 数据源：库内取数库内取数 + 联网补充（政策/产业链/预期差/事件时点四类，均标来源与日期）</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：表观 PE 30 倍是一次性投资收益制造的假象，主业正处「营收加速、利润率压缩」的错位期。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>营收增速连续四期抬升</strong>：15.21%（2025Q3累计）→ 15.78%（2025年报）→ 23.95%（2026Q1）→ 24.69%（2026H1），Q2 单季营收同比 +25.4%（据 H1 与 Q1 累计数推算），是四期里最快的一季（置信度：高，库内财务）</li>
+<li><strong>信创 2026–2027 处集中交付窗口</strong>：国资委 79 号文要求央国企 2027 年底前完成信创国产化替代，2026–2027 是放量交付期；库内公司档案明确记载 WPS Office Linux 版已全面适配龙芯/飞腾/兆芯/申威及国产操作系统、覆盖 30 多个省市自治区政府与 400 多个市县级政府，是库内有主营佐证的真实业务（置信度：中，政策端为联网单一口径）</li>
+<li><strong>机构侧与海外侧仍在高增</strong>：WPS 365 连续六个季度收入增速超 60%、海外个人业务收入 2.82 亿元同比 +53.67%、海外年度付费个人用户 285 万同比 +63.39%（置信度：中，联网数据，库内无营收分部拆分可交叉）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>利润的「退潮」已被券商自己写进预测</strong>：同一批券商 2026 年 EPS 预测 6.86–8.15 元，2027 年却降到 5.55–5.74 元——<strong>明年预测低于今年</strong>，说明连卖方也认为今年利润里有一块明年不会重来（置信度：高，库内研报库内 8 条预测）</li>
+<li><strong>Q2 单季净利同比转负</strong>：营收 +25.4% 的同时，Q2 单季净利约 3.23 亿元、同比约 -6.3%，单季毛利率约 83.3%（Q1 为 86.59%）——增收不增利（置信度：中，据库内财务累计数推算；该推算值落在公司 7 月 28 日业绩预告隐含的 Q2 区间 1.21–5.24 亿元之内，已交叉验证）</li>
+<li><strong>筹码与资金双弱</strong>：近 20 日主力资金净流出 2.78 亿元、其中特大单净流出 10.41 亿元、仅 8/20 天净流入；股东户数从 45,543 户（20260331）增至 61,128 户（20260630）、环比 +34.2%，筹码明显趋散（置信度：高，库内资金筹码）</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ul>
+<li><strong>信号一（10 月下旬，三季报）</strong>：2026 年前三季<strong>扣非</strong>净利与<strong>单季</strong>净利率。若 Q3 单季净利率回到 25% 以上（对标 2025Q2 推算的 25.4%），说明 Q2 的利润率压缩是阶段性投入；若继续落在 20% 以下，则是趋势性的。</li>
+<li><strong>信号二（持续可核）</strong>：当前股价 234.75 元对筹码 50% 成本线 250.80 元的关系（现低 6.4%）。站回 250.80 元之上并伴随主力资金转为净流入（由负转正），才算资金面确认。</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong>：我把「Q2 单季利润率下滑」定性成经营性压缩，但它可能只是 AI 投入的<strong>前置性</strong>支出（研发/算力先花、订阅收入后确认）。若如此，则利润率压缩是主动选择而非能力衰减，我的偏谨慎结论会在 Q3–Q4 被推翻。另外我对 Q2 单季数是<strong>用累计数相减推算</strong>的，公司未单独披露单季表，若有会计追溯调整则推算失真。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>公司名称</strong>：金山办公（库内公司档案）｜代码 688111｜科创板｜上市状态（正常上市，非退市）</li>
+<li><strong>上市时间</strong>：2019-11-18，至今约 6.8 年</li>
+<li><strong>所属行业</strong>：软件服务（库内行业口径，非申万分类）</li>
+<li><strong>员工人数</strong>：6,048 人｜注册资本 46,337.21 万元（约 4.63 亿股）</li>
+<li><strong>主营业务</strong>：WPS Office 办公软件产品及服务的设计研发及销售推广（库内公司档案原文）</li>
+<li><strong>业务构成</strong>（据公司简介原文）：产品端为 WPS Office 与金山词霸，覆盖 Windows / Linux / MacOS / Android / iOS；服务端为基于产品及文档的增值服务与互联网广告推广服务</li>
+</ul>
+<p><strong>客户与渠道基础（均引自库内公司档案，注意该段披露基准为 2018 年 12 月，已过时 7 年多，仅可作定性参考）</strong>：主要产品月活超 3.10 亿（桌面版 1.20 亿 / 移动版 1.81 亿）；移动版覆盖全球 220 多个国家和地区；政府侧覆盖 30 多个省市自治区、400 多个市县级政府；央企 96 家中已服务 82 家（85.41%）；五大国有商业银行全覆盖、12 家全国性股份行覆盖 11 家（91.67%）。</p>
+<p><strong>当前行情（库内行情，唯一行情事实源）</strong></p>
+<ul>
+<li>现价 <strong>234.75 元</strong>｜当日涨跌 <strong>+0.62%</strong>｜当日最高 +1.59% / 最低 -0.99%｜成交额 <strong>11.1 亿元</strong>｜数据时点 <strong>15:00（当日收盘）</strong>｜来源 realtime</li>
+</ul>
+<p><strong>当前估值（库内估值，交易日 20260825）</strong></p>
+<ul>
+<li>PE(TTM) <strong>30.20 倍</strong>｜PB <strong>7.22 倍</strong>｜股息率 <strong>0.3819%</strong>｜总市值 <strong>1,089.27 亿元</strong>｜换手率 <strong>1.0244%</strong></li>
+<li>行业（软件服务）同业 <strong>280 只</strong>，行业 PE 中位数 <strong>90.24 倍</strong>，本股 PE 在行业内排第 <strong>9 便宜</strong></li>
+</ul>
+<div class="callout">⚠️ <strong>这个「行业第 9 便宜」是本报告最重要的一处陷阱，必须当场拆穿</strong>（置信度：高）： 用库内数据反推，PE(TTM) 30.20 对应的 TTM 净利约 36.07 亿元（= 2025 年报 18.36 亿 − 推算的 2025H1 7.47 亿 + 2026H1 25.18 亿；1,089.27 / 36.07 = 30.2，与库内 PE(TTM) <strong>精确吻合</strong>，说明推算口径正确）。而这 36.07 亿里含 2026Q1 的大额一次性投资收益（详见 C 节）。 换三把尺子量同一个市值： - 用 <strong>2025 年报真实净利 18.36 亿</strong> → PE 约 <strong>59.3 倍</strong> - 用<strong>券商自己的 2026 年预测</strong>（31.81 / 34.93 / 37.80 亿）→ PE 约 <strong>28.8–34.2 倍</strong> - 用<strong>券商自己的 2027 年预测</strong>（25.77 / 26.41 / 26.64 亿）→ PE 约 <strong>40.9–42.3 倍</strong>（与研报自列的 pe 40.6 / 41.0 / 43.31 相互印证） 也就是说，<strong>表观 30.2 倍是「今年含一次性收益」的口径；换成券商认为的可持续口径，估值在 41 倍上下</strong>。行业排名第 9 便宜这个位置，很大程度是会计口径给出的，不是经营带来的。</div>
+<p><strong>A/H 溢价</strong>：库内 A/H 对照返回空——非两地上市票，本节不涉及。</p>
+<h2>C. 财务健康</h2>
+<p>库内财务（近 4 期），<strong>均为累计口径</strong>（亿元，新→旧）：</p>
+<ul>
+<li><strong>2026H1（截止 20260630，披露 20260820）</strong>｜营收 <strong>33.13</strong>（同比 <strong>+24.69%</strong>）｜净利 <strong>25.18</strong>（同比 <strong>+236.94%</strong>）｜ROE <strong>18.03%</strong>｜毛利率 <strong>84.90%</strong>｜净利率 <strong>75.99%</strong>｜资产负债率 <strong>27.79%</strong>｜EPS <strong>5.44</strong></li>
+<li><strong>2026Q1（截止 20260331，披露 20260424）</strong>｜营收 <strong>16.13</strong>（<strong>+23.95%</strong>）｜净利 <strong>21.95</strong>（<strong>+444.97%</strong>）｜ROE <strong>15.69%</strong>｜毛利率 <strong>86.59%</strong>｜净利率 <strong>136.07%</strong>｜资产负债率 <strong>25.16%</strong>｜EPS <strong>4.74</strong></li>
+<li><strong>2025 年报（截止 20251231，披露 20260326）</strong>｜营收 <strong>59.29</strong>（<strong>+15.78%</strong>）｜净利 <strong>18.36</strong>（<strong>+11.63%</strong>）｜ROE <strong>15.17%</strong>｜毛利率 <strong>85.95%</strong>｜净利率 <strong>30.73%</strong>｜资产负债率 <strong>29.20%</strong>｜EPS <strong>3.97</strong></li>
+<li><strong>2025 前三季（截止 20250930，披露 20251028）</strong>｜营收 <strong>41.78</strong>（<strong>+15.21%</strong>）｜净利 <strong>11.78</strong>（<strong>+13.32%</strong>）｜ROE <strong>10.04%</strong>｜毛利率 <strong>85.55%</strong>｜净利率 <strong>27.85%</strong>｜资产负债率 <strong>27.08%</strong>｜EPS <strong>2.55</strong></li>
+</ul>
+<p><strong>四条趋势判断</strong></p>
+<p><strong>① 营收：明确在加速，这是本报告里最扎实的正面事实（置信度：高）</strong> 同比增速 15.21% → 15.78% → 23.95% → 24.69%，四期单调抬升，且增速台阶发生在 2026 年，与「AI 功能带动付费转化」的叙事时间上对得上。</p>
+<p><strong>② 净利：2026 年这两期的净利数字不能按常规读（置信度：高）</strong> 2026Q1 净利率 <strong>136.07%</strong>——净利润超过营业收入，这在正常经营中不可能出现，只能来自营业外/投资性损益。库内 2026-07-21 的一条董秘问答记录（库内新闻 event_id 33261）标题即为投资者原话「一季报营业收入 16 亿元，一季报净利润确 21 亿元，这是怎么回事」，说明这个异常当时就被市场注意到了。 库内 2026-08-24 信达证券研报标题《投资收益驱动利润高增，AI 商业化加速推进》（库内研报）从卖方口径确认了同一件事。 联网交叉（≥2 独立来源）：公司作为 LP 出资的基金投资了智谱 AI，智谱 AI 于 2026 年 1 月在港交所挂牌，上市后股价上涨形成账面收益，需在上市当季计入投资收益；2026Q1 投资收益约 19.37 亿元（上年同期约 6,859.59 万元），其中对联营/合营企业投资收益 18.62 亿元，属一次性会计重估（来源：新浪财经 2026-04-23《金山办公一季度净利润同比增逾 4 倍，投资收益成幕后推手》、新浪财经 2026-04-24《旗下基金押中智谱金山办公 Q1 利润增超 4 倍》）。公司在中报口径下给出的<strong>经调整归母净利润为 10 亿–11.74 亿元、同比 +18.03%–38.55%</strong>（来源：搜狐财经 2026-07-29；IT之家 2026-08-20 报道 H1 归母 25.18 亿 / 同比 +236.94%、扣非 24.87 亿 / 同比 +241.99%）。</p>
+<div class="callout">⚠️ 此处有一处<strong>库内外冲突需读者知情</strong>：联网报道的「扣非归母 24.87 亿 / +241.99%」意味着这笔投资收益在扣非口径下<strong>并未被扣除</strong>（投资收益属经常性损益的判定），而公司另行给出的「经调整净利 10–11.74 亿」才是剔除后的口径。库内财务只有归母净利、无扣非与经调整字段。<strong>本报告后续一律以「经调整 10–11.74 亿」作为主业利润的参照系，并明确标注它来自公司口径而非库内。</strong></div>
+<p><strong>③ 拆出单季：这是本节最关键的一步（置信度：中，全部为推算）</strong> 用累计数相减 + 同比增速反推上年同期：</p>
+<ul>
+<li>2026Q2 单季｜营收约 <strong>17.00 亿</strong>｜净利约 <strong>3.23 亿</strong>｜净利率约 <strong>19.0%</strong>｜毛利率约 <strong>83.3%</strong></li>
+<li>2025Q2 单季（反推）｜营收约 <strong>13.56 亿</strong>｜净利约 <strong>3.45 亿</strong>｜净利率约 <strong>25.4%</strong></li>
+<li><strong>2026Q2 同比：营收 +25.4%，净利 −6.3%</strong></li>
+</ul>
+<div class="callout">交叉验证：公司 2026-07-28 业绩预告（库内新闻 event_id 33699 有该公告存在的记录）隐含的 Q2 单季净利区间为 1.21–5.24 亿元、环比降 76%–94%（来源：观点网 2026-07-29、新浪财经 2026-07-30）。我推算的 3.23 亿落在该区间中部，口径可信。</div>
+<p><strong>含义</strong>：主业在「用毛利率和费用换增长」。毛利率从 Q1 的 86.59% 掉到 Q2 单季约 83.3%（累计口径 84.90%，已低于 2025 全年的 85.95%），是四期里第一次出现明确的毛利率下台阶。联网信息显示 2026Q1 研发费用 9.42 亿元、同比 +14%，主要投向 AI（来源：SmartHey 2026 年 Q1 财报解读，<strong>单源未交叉验证·置信度低</strong>）。</p>
+<p><strong>④ 资产负债表：健康，无隐忧（置信度：高）</strong> 资产负债率四期在 25.16%–29.20% 之间窄幅波动，无加杠杆迹象；毛利率长期稳定在 84%–87% 的软件业高位区间。这家公司的问题<strong>不在偿债或资产质量</strong>，只在利润的成色与估值的口径。</p>
+<p><strong>信息缺口</strong>：库中无营收分部数据（个人订阅 / 机构订阅 WPS 365 / 授权业务的各自收入与增速），也无扣非、经调整、递延收入（合同负债）、经营性现金流字段。影响：无法在库内独立验证「哪一块在减速、哪一块在加速」，B/G/J 节的结构性判断只能依赖联网数据，可靠性降一档。补法：三季报披露后（预计 10 月下旬，见 I 节 W9–W10）重跑本调研；若需分部数据，须直接读中报 PDF（库内新闻 event_id 40792 已给出 cninfo 链接）。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比（取 3 家），同属「软件服务」行业。⚠️ <strong>四家的财报截止期不一致，横比时须知情</strong>：</p>
+<ul>
+<li><strong>金山办公（688111）</strong>｜市值 <strong>1,089.27 亿</strong>｜PE(TTM) <strong>30.20</strong>｜PB <strong>7.22</strong>｜财报期 20260630｜营收 <strong>33.13 亿</strong>｜净利 <strong>25.18 亿</strong>｜ROE <strong>18.03%</strong></li>
+<li><strong>同花顺（300033）</strong>｜市值 <strong>1,621.79 亿</strong>｜PE(TTM) <strong>44.37</strong>｜PB <strong>21.14</strong>｜财报期 20260630｜营收 <strong>26.46 亿</strong>｜净利 <strong>9.52 亿</strong>｜ROE <strong>11.10%</strong></li>
+<li><strong>润泽科技（300442）</strong>｜市值 <strong>1,027.29 亿</strong>｜PE(TTM) <strong>19.75</strong>｜PB <strong>7.19</strong>｜财报期 <strong>20260331</strong>｜营收 <strong>18.40 亿</strong>｜净利 <strong>5.82 亿</strong>｜ROE <strong>4.17%</strong></li>
+<li><strong>科大讯飞（002230）</strong>｜市值 <strong>945.22 亿</strong>｜PE(TTM) <strong>108.09</strong>｜PB <strong>4.14</strong>｜财报期 20260630｜营收 <strong>116.23 亿</strong>｜净利 <strong>−2.04 亿</strong>（亏损）｜ROE <strong>−0.98%</strong></li>
+</ul>
+<p><strong>位置判断（置信度：中）</strong></p>
+<p><strong>一、这三家不是同一门生意，「软件服务」是个过宽的口袋。</strong> 同花顺是金融信息终端（订阅+导流），润泽科技本质是 IDC/智算中心（重资产），科大讯飞是 AI 技术+硬件的综合体。真正与金山办公同构的（高毛利、订阅制、C+B 双轮的通用软件）在这三家里<strong>一家都没有</strong>。所以下面的横比只在财务特征层面成立，不在竞争层面成立。</p>
+<p><strong>二、金山办公的相对优势是「盈利质量的稳定性」，劣势是「体量增长的天花板感」。</strong> 四家里只有它同时具备：毛利率 84.90%（软件业高位）、ROE 18.03%（四家最高）、资产负债率 27.79%（轻资产）、且净利为正。科大讯飞营收是它的 3.5 倍却在亏损，润泽 ROE 只有 4.17%，同花顺 PB 高达 21.14 倍（市场给它的是「几乎无资本消耗的现金牛」定价）。</p>
+<p><strong>三、但金山办公的 ROE 18.03% 同样被一次性收益抬高了。</strong> 2025 年报 ROE 是 15.17%、2025 前三季是 10.04%。若按公司口径的经调整净利 10–11.74 亿倒推，H1 的「经营性 ROE」会明显低于 18.03%，大概率落回同花顺 11.10% 的量级附近（置信度：低，此为推断，库内无经调整净资产收益率字段）。</p>
+<p><strong>四、PB 7.22 倍是本节最诚实的估值参照。</strong> PB 不受一次性利润扰动（一次性收益进了净资产，反而抬高分母、压低 PB）。金山办公 PB 7.22 与润泽科技 7.19 几乎相同，但金山办公 ROE 是润泽的 4 倍多——<strong>从「PB/ROE」的角度看，它相对润泽是便宜的</strong>；相对同花顺（PB 21.14 / ROE 11.10%）则明显便宜。这是本报告能找到的、最不受会计口径干扰的一条正面估值证据（置信度：中）。</p>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>：产品（WPS Office / 金山词霸，多平台）+ 服务（文档增值服务、互联网广告推广），近年重心向订阅制迁移（个人订阅 + 机构 WPS 365）。毛利率长期 84%–87%，是典型的软件许可/订阅结构（置信度：高，库内财务 + 库内公司档案）。</p>
+<p><strong>护城河分级（诚实分档）</strong></p>
+<p><strong>结构性护城河 · 存在，但只在「党政信创」这一格（置信度：中）</strong> 库内公司档案明确记载：WPS Office Linux 版全面支持龙芯、飞腾、兆芯、申威等国产整机平台与国产操作系统，并在「十二五」「十三五」核高基多项重大示范工程中完成系统适配与应用推广。这类适配是<strong>多年积累 + 认证壁垒 + 政企采购路径依赖</strong>的组合，新进入者短期无法复制，属于结构性的。它同时被政策端强化（见 F 节）。</p>
+<p><strong>阶段性优势 · 用户规模与文件格式惯性（置信度：中）</strong> 月活规模（公司简介载 2018 年底超 3.10 亿，数据陈旧）、跨平台覆盖、以及办公文档格式的使用惯性，构成迁移成本。但这是<strong>阶段性</strong>而非结构性——因为它依赖「用户还在用传统文档形态办公」这个前提，而 AI 原生的工作方式正在动摇这个前提（见下）。</p>
+<p><strong>无护城河的一格 · C 端付费的 AI 增值（置信度：中）</strong> 个人订阅的增值点（AI 写作、排版、数据分析、PPT 生成）本身没有独占性——同样的能力，通用大模型助手可以免费或极低价提供。联网信息显示 WPS 个人版 2025 年收入 36.26 亿元、占总营收六成以上，但增速已从 2024 年的 18% 降至 10.42%；36氪与新浪财经 2026-06-24 均刊发《豆包收费版，正把 WPS 逼近死角》一文，指出 C 端高频刚需正被通用 AI 助手覆盖（来源：36氪 2026-06-24、新浪财经 2026-06-24，两处为同一篇稿件的双平台转载，<strong>实质仍属单一信源·置信度低</strong>）。</p>
+<p><strong>汇总判断</strong>：<strong>B 端有结构性护城河、C 端没有，而 C 端是营收大头</strong>（置信度：中）。这正好解释了 C 节看到的「营收加速但毛利率下台阶」——增长的边际贡献越来越多来自需要投入（销售 + 算力）的 B 端与海外，而毛利最高、最省力的 C 端存量在减速。</p>
+<h2>F. 政策与监管</h2>
+<p>库内无政策字段，本节全部为联网信息，逐条带来源与日期。</p>
+<p><strong>① 央国企信创替代的 2027 年硬节点（利好 · 传导直接 · 置信度：中）</strong> 国资委 79 号文要求中央企业与地方国企在 2027 年底前完成信息化系统的信创国产化替代，2026–2027 是集中交付与放量的关键阶段（来源：多家行业媒体综述，2026-08 检索；另有新浪财经 2026-08-19《信创万亿空间可期？2027 年考核节点临近，国产操作系统订单加速释放》佐证同一时间窗）。 <strong>传导链条</strong>：2027 硬考核 → 2026–2027 党政与央国企集中采购国产操作系统 → 操作系统必须配套国产办公套件 → WPS Office Linux 版（已适配四大国产芯片平台）中标 → 计入机构侧授权/订阅收入。 <strong>已在库内看到的对应事实</strong>：库内公司档案载政府侧覆盖 30 多个省市自治区、400 多个市县级政府；央企 96 家覆盖 82 家。这条政策不是给它开新市场，而是<strong>给它的存量客户上强制升级的发条</strong>。</p>
+<p><strong>② 党政机关核心业务信创采购比例要求 + 政府采购国产 20% 价格扣除（利好 · 置信度：低，单源）</strong> 有综述称党政机关核心业务信创采购占比不低于 85%、国企不低于 65%，且政府采购中本国产品可享 20% 价格扣除优惠（来源：搜狐 2026 年信创采购解读文，<strong>单源未交叉验证</strong>）。<strong>具体比例数字本报告不作为判断依据</strong>，仅记录方向。</p>
+<p><strong>③ 算力基础设施行动方案 9 月 1 日起执行（中性偏无关 · 置信度：中）</strong> 库内事件日历库内条目：《2026-2028 年全国算力基础设施建设行动方案》2026-09-01 正式执行，要求央国企新建智算中心国产算力硬件采购占比不低于 75%，重要性 8。 <strong>但必须说清楚</strong>：这条是通过「信创」概念标签匹配到本股的，其直接受益方是<strong>国产 AI 芯片、服务器、光模块厂商</strong>，金山办公是软件应用层、不在这条政策的采购清单里。<strong>对本股是情绪面联动，不是基本面传导</strong>（置信度：中）。</p>
+<p><strong>④ 未见针对性监管风险（置信度：低）</strong> 本轮检索未发现针对办公软件行业的负面监管动向。<strong>这条判断置信度标低，因为「没搜到」不等于「不存在」</strong>——数据安全、AI 内容合规、政企采购反腐等方向都可能产生本报告未覆盖的监管变量。</p>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 21 个同花顺概念标签，<strong>逐个分级</strong>（分级依据：是否有库内公司档案主营描述或库内财报数据佐证）：</p>
+<p><strong>第一类 · 真有业务，有库内佐证</strong></p>
+<ul>
+<li><strong>云办公（885881.TI）</strong>：主营即 WPS Office 及基于文档的增值服务，主营业务直接佐证（置信度：高）</li>
+<li><strong>信创（886013.TI）</strong>：公司简介明确记载 Linux 版适配龙芯/飞腾/兆芯/申威及国产操作系统、参与核高基工程（置信度：高）</li>
+</ul>
+<p><strong>第二类 · 有业务事实，但库内无营收拆分佐证</strong></p>
+<ul>
+<li><strong>AI 应用（886108.TI）/ 人工智能（885728.TI）/ AI 智能体（886099.TI）/ 中国 AI 50（886102.TI）</strong>：库内三篇 2026-08-24 研报标题均点名 AI（开源证券《2026Q2 收入增长提速，AI 产品体系持续升级》、山西证券《上半年营收加速增长，AI 转型持续深化》、信达证券《投资收益驱动利润高增，AI 商业化加速推进》），联网信息载公司已推出灵犀专业版与 WPS Comate（来源：中关村在线 2026 年报道）。<strong>但库内财务无 AI 营收单列，无法验证 AI 已贡献多少收入</strong>——属「业务真实存在、贡献规模未知」（置信度：中）</li>
+<li><strong>云计算（885362.TI）</strong>：WPS 365 与云端文档服务构成实质关联，但同样无独立营收佐证（置信度：中）</li>
+</ul>
+<p><strong>第三类 · 特殊——不是业务，是财务投资，且已经兑现</strong></p>
+<ul>
+<li><strong>智谱 AI（886090.TI）</strong>：这个标签在本股上<strong>不代表业务合作，代表股权投资</strong>。公司作为 LP 出资的基金持有智谱 AI，其 2026 年 1 月港股上市带来的账面收益，正是 2026Q1 那 19.37 亿元投资收益的来源（来源：新浪财经 2026-04-23 / 2026-04-24，两篇独立报道交叉确认）。<strong>这是本报告里唯一一个「已经兑现完毕」的概念标签——它的价值已经落进 2026Q1 的利润表，不是未来的期权，而是过去的一次性事件</strong>（置信度：高）</li>
+</ul>
+<p><strong>第四类 · 仅概念标签，未见营收佐证</strong></p>
+<ul>
+<li><strong>华为概念（885806.TI）/ 鸿蒙概念（885923.TI）</strong>：公司简介提到支持国产整机平台与国产操作系统，与鸿蒙生态存在适配层面的关联，但库内无任何鸿蒙相关营收或合同佐证（置信度：低）</li>
+<li><strong>小米概念（885785.TI）/ 腾讯概念（885779.TI）/ DeepSeek 概念（886100.TI）</strong>：库内无任何主营或财务佐证，<strong>属纯标签</strong>（置信度：低）</li>
+</ul>
+<p><strong>第五类 · 交易属性/指数标签，与业务无关</strong></p>
+<ul>
+<li>上证 50 样本股（883301.TI）、上证 180 成份股（883302.TI）、沪深 300 样本股（883300.TI）、沪股通（885520.TI）、融资融券（885338.TI）、同花顺漂亮 100（885916.TI）——这些描述的是它的<strong>流动性与指数被动资金属性</strong>，不是业务。意义在于：作为三大宽基成份股，它同时承接指数基金的被动买卖，个股走势会被大盘 beta 显著影响。</li>
+</ul>
+<p><strong>第六类 · ⚠️ 会误导的「业绩标签」</strong></p>
+<ul>
+<li><strong>2026 一季报预增（886109.TI）/ 2026 中报预增（886110.TI）</strong>：这两个标签<strong>事实成立但成因误导</strong>——预增的成因是智谱 AI 上市带来的一次性投资收益，不是主业爆发（详见 C 节）。看到这两个标签就理解成「业绩拐点」，是本股当前最容易犯的错（置信度：高）</li>
+</ul>
+<p><strong>产业链位置</strong></p>
+<ul>
+<li><strong>上游</strong>：算力/云资源（AI 功能需推理算力，构成新增成本项，对应 Q2 毛利率下台阶）、国产芯片与操作系统厂商（适配对象，非采购关系）。议价能力：算力侧对上游议价能力<strong>弱</strong>（算力是卖方市场）。</li>
+<li><strong>本环节</strong>：通用办公软件层。这是国产软件里少数已形成规模、且现金流为正的环节。</li>
+<li><strong>下游</strong>：C 端个人付费用户（占营收六成以上，增速在放缓）、B 端党政央国企（政策驱动、账期长但确定性高）、B 端一般企业与海外用户（增速最快）。议价能力：<strong>对 C 端弱</strong>（用户随时可换免费替代品），<strong>对党政 B 端强</strong>（信创名录准入 + 适配壁垒 + 强制替代节点）。</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<h3>新闻（库内新闻，近 60 日共 12 条，按重要性挑选）</h3>
+<ol>
+<li><strong>2026-08-19 18:02｜《金山办公 2026 年半年度报告》（公告，cninfo）</strong>——本报告 C 节全部财务数据的原始出处。对基本面有实质影响：它同时公布了「净利 +236.94%」和「Q2 单季转弱」两个方向相反的事实。</li>
+<li><strong>2026-08-19 17:51｜《金山办公：2026 年半年度净利润同比增长 236.94%》（财联社，情绪分 +0.7）</strong>——快讯只取了同比增速这一个数字。<strong>这正是市场最容易被误读的一条</strong>：+236.94% 与「Q2 单季净利同比 −6.3%」在同一份报告里，快讯口径只呈现了前者。</li>
+<li><strong>2026-08-19 18:02｜《2026 年度&quot;提质增效重回报&quot;专项行动方案的半年度评估报告》（公告）</strong>——上交所倡导的股东回报专项方案的中期评估，与下面的回购动作同属股东回报主线，对基本面无直接影响，属治理层面的正面信号（置信度：低）。</li>
+<li><strong>2026-08-04 18:01 与 2026-07-23 18:01｜《关于以集中竞价交易方式回购公司股份的进展公告》（两条，情绪分均 +0.3）</strong>——<strong>60 日内两次回购进展公告，说明回购在持续执行中</strong>。这是当前基本面上少数确定的、公司自身出手的托底动作（置信度：中，库内仅有公告存在的记录，无回购金额/股数字段）。</li>
+<li><strong>2026-07-28 18:01｜《2026 年半年度业绩预告的自愿性披露公告》</strong>——即联网交叉到的那份预告（H1 净利 23.16–27.19 亿 / +209.98%–263.89%，隐含 Q2 单季 1.21–5.24 亿、环比降 76%–94%）。<strong>注意：公司选择&quot;自愿性披露&quot;，且预告里就已经把 Q2 环比大降摆了出来</strong>，属于主动风险披露（置信度：中）。</li>
+<li><strong>2026-07-21 17:30｜董秘问答：投资者问&quot;一季报营业收入 16 亿元，一季报净利润确 21 亿元，这是怎么回事&quot;（情绪分 +0.5）</strong>——库内留存的、市场对这次利润异常最直接的一次质询记录。它证明<strong>这个疑问在 7 月就已经在散户层面扩散</strong>，不是本报告的新发现。</li>
+<li><strong>2026-08-19 18:02｜《关于修改公司章程及办理市场主体变更登记的公告》+《公司章程（2026 年 8 月修订）》+ 2026-07-28《关于完成市场主体变更登记并换发营业执照的公告》（三条）</strong>——治理性文件变更，对基本面无实质影响（置信度：高）。</li>
+<li><strong>2026-08-19 18:02｜《关于召开 2026 年半年度业绩说明会的公告》</strong>——<strong>这是未来最近的一个可核验事件点</strong>，但库内只记录了公告的存在，<strong>未载具体召开日期</strong>（见 I 节 W1/W2 与 M 节信息缺口）。</li>
+</ol>
+<p><strong>新闻面整体判断</strong>：60 日内 12 条中，10 条是常规公告多为「噪音其他」，<strong>无任何重大负面事件、无监管问询、无减持公告、无商誉或诉讼事项</strong>（置信度：高）。消息面本身是干净的——<strong>这只票当前的问题不在消息面，在财务口径与筹码结构。</strong></p>
+<h3>涨停史（库内涨停记录，近 180 日）</h3>
+<p><strong>近 180 日无任何涨停记录</strong>（置信度：高）。含义：这不是一只被游资炒作的情绪票，它的定价主要由机构与指数被动资金主导。作为上证 50 / 上证 180 / 沪深 300 三大宽基成份股，这与它的属性一致。<strong>推论</strong>：不要用「题材催化 → 涨停 → 连板」的框架去看它；9 月那一堆 AI 大会（见 I 节）对它的影响更可能是<strong>板块 beta 的小幅带动</strong>，而非个股级别的爆发（置信度：中）。</p>
+<h3>资金与筹码（库内资金筹码）</h3>
+<div class="callout">⚠️ 纪律声明：以下是<strong>盘面与筹码现象，不是基本面证据</strong>。它们只用于佐证当前情绪位置，<strong>不进 J 节逻辑链，也不单独构成任何操作结论</strong>。</div>
+<p><strong>主力资金（近 20 个交易日，20260729–20260825）</strong></p>
+<ul>
+<li>全口径净流入 <strong>−2.78 亿元</strong>（净流出）</li>
+<li><strong>特大单净流入 −10.41 亿元</strong>（净流出 10.41 亿，绝对额是全口径的 3.7 倍）</li>
+<li>净流入天数 <strong>8/20</strong>，净流出 12 天</li>
+</ul>
+<p>判断：<strong>特大单流出远大于全口径流出，意味着大资金在减、中小资金在接</strong>（置信度：中）。这与下面股东户数的变化方向完全一致，两条独立数据互相印证。</p>
+<p><strong>筹码分布（筹码分布，数据日 20260807）</strong></p>
+<ul>
+<li>获利盘比例 <strong>60.28%</strong>｜加权平均成本 <strong>253.67 元</strong>｜15% 成本线 <strong>220.40 元</strong>｜50% 成本线 <strong>250.80 元</strong>｜85% 成本线 <strong>277.40 元</strong></li>
+</ul>
+<div class="callout">⚠️ <strong>该筹码数据的时点是 2026-08-07，距今约 13 个交易日，已陈旧</strong>（置信度声明：以下解读为推断，置信度中）。以 8 月 7 日的价位看，60.28% 的筹码处于盈利。但<strong>当前价 234.75 元已经低于 50% 成本线 250.80 元（低 6.4%）、也低于加权平均成本 253.67 元（低 7.5%）</strong>——按当前价位重新映射，实际获利盘应显著低于 60.28%，大致落在 15% 成本线（220.40）与 50% 成本线（250.80）之间对应的区间。</div>
+<p><strong>这个位置的两面必须都写清楚</strong>：</p>
+<ul>
+<li><strong>一面（偏多）</strong>：多数持仓者处于浮亏状态，<strong>意味着上方短线获利抛压很轻</strong>，不存在「一反弹就有人跑」的结构；且现价距 15% 成本线 220.40 元还有约 6.1% 的空间，下方存在一层密集成本支撑。</li>
+<li><strong>另一面（偏空）</strong>：<strong>低获利盘同时意味着上方 250.80–277.40 元是一整片深套区</strong>，任何反弹到 250 元一线都会遭遇解套抛压；且被套的是 8 月初刚进场的资金，套牢时间短、割肉意愿相对更强。</li>
+</ul>
+<p><strong>股东户数（股东户数，季度数据，天然滞后）</strong></p>
+<ul>
+<li>截止 <strong>20260630：61,128 户</strong>｜上期 20260331：45,543 户｜<strong>环比 +34.2%</strong></li>
+</ul>
+<p>判断：一个季度内股东户数增加超三分之一，是<strong>筹码显著分散</strong>的强信号（置信度：高）。户数增加 = 户均持股下降 = 筹码从少数手里散到多数手里。结合特大单净流出 10.41 亿，两条数据指向同一件事：<strong>2026 年二季度，大资金在派发，散户在承接</strong>。而这个二季度，恰好就是 Q1 那份「净利 +445%」财报公布之后的那个季度（Q1 报披露日 20260424）。 ⚠️ <strong>该数据截止 6 月 30 日，已滞后近两个月，无法反映 7–8 月的最新变化</strong>。</p>
+<h2>I. 未来 13 周事件日历</h2>
+<p>数据来源：库内事件日历（近 120 日）库内 13 条（<strong>全部为概念匹配的行业/宏观事件，无一条是金山办公的公司自身事件</strong>——这个事实本身值得注意，见 M 节）+ 联网与库内公告日规律补充。</p>
+<ul>
+<li><strong>W1（2026-08-24 起）</strong>
+<ul>
+<li><strong>2026-08-29</strong>｜鸿蒙生态大会 2026（HEC·2026）在深圳开幕，8/29–30｜会议｜重要性高（库内 7）｜匹配：鸿蒙概念 885923.TI｜<strong>影响</strong>：对本股属情绪面联动，G 节已定性「仅概念标签、无营收佐证」，<strong>不应据此调整基本面判断</strong></li>
+<li><strong>待定</strong>｜2026 年半年度业绩说明会（8/19 已公告将召开，<strong>库内未载具体日期</strong>）｜公司事件｜重要性高｜<strong>影响</strong>：这是管理层第一次正面回应「Q2 单季利润率为何下滑」的场合，是 A 节信号一的<strong>提前预演</strong></li>
+</ul></li>
+<li><strong>W2（2026-08-31 起）</strong>
+<ul>
+<li><strong>2026-08-31</strong>｜Anthropic 新一代模型 Fable 5.1 预计发布（已灰度）｜公司事件｜重要性中高（库内 7）｜匹配：AI 应用 886108.TI｜<strong>影响</strong>：海外模型迭代对 A 股 AI 应用板块的情绪带动，间接</li>
+<li><strong>2026-09-01</strong>｜《2026-2028 年全国算力基础设施建设行动方案》正式执行｜政策｜重要性高（库内 8）｜匹配：信创 886013.TI｜<strong>影响</strong>：F 节③已说明——<strong>直接受益方是国产算力硬件，本股不在采购链上</strong>，对本股是板块情绪而非订单</li>
+<li><strong>2026-09-01</strong>｜第四届设计自动化产业峰会（IDAS 2026 EDA 峰会）上海，9/1–2｜会议｜重要性中（库内 6）｜匹配：信创｜<strong>影响</strong>：国产 EDA 主题，与本股业务无交集</li>
+</ul></li>
+<li><strong>W3（2026-09-07 起）</strong>
+<ul>
+<li><strong>2026-09-07</strong>｜华为鸿蒙 7 / Mate XT 2 全场景新品发布会（14:30）｜公司事件｜重要性高（库内 8）｜匹配：华为概念 885806.TI｜<strong>影响</strong>：鸿蒙 7 若带来新的办公套件适配需求，理论上与本股有弱关联，但库内无佐证，按情绪面处理</li>
+<li><strong>2026-09-08</strong>｜2026 全球工业互联网大会（沈阳，主题「AI+制造」）｜会议｜重要性中（库内 6）｜匹配：AI 应用｜<strong>影响</strong>：弱</li>
+<li><strong>2026-09-08</strong>｜小米 18 Fold 折叠屏发布（首发玄戒 O3）｜公司事件｜重要性中（库内 6）｜匹配：小米概念 885785.TI｜<strong>影响</strong>：G 节已定性为纯标签，<strong>对本股无实质影响</strong></li>
+<li><strong>2026-09-10</strong>｜2026 杭州国际人工智能与机器人创新博览会，9/10–12｜会议｜重要性中高（库内 7）｜匹配：人工智能｜<strong>影响</strong>：人形机器人主线，与本股无交集</li>
+<li><strong>2026-09-11</strong>｜2026 浦江创新论坛（上海，9/11–14，含 AI 赋能科研专题）｜会议｜重要性中（库内 6）｜匹配：人工智能｜<strong>影响</strong>：可观察 AI 政策方向，弱</li>
+</ul></li>
+<li><strong>W4（2026-09-14 起）</strong>
+<ul>
+<li><strong>2026-09-15</strong>｜OpenAI 下一代大模型 GPT-6（代号 Astra）预计发布，<strong>日期未官宣</strong>｜公司事件｜重要性高（库内 8）｜匹配：AI 应用｜<strong>影响</strong>：若落地会带动 A 股 AI 应用板块热度；对本股是 beta 不是 alpha</li>
+<li><strong>2026-09-17</strong>｜2026 华为全联接大会（上海，9/17–19）｜会议｜重要性高（库内 8）｜匹配：华为概念｜<strong>影响</strong>：昇腾生态与国产算力进展，本股属外围</li>
+</ul></li>
+<li><strong>W5（2026-09-21 起）</strong>
+<ul>
+<li><strong>2026-09-22</strong>｜2026 云栖大会（杭州，9/22–24，阿里主办）｜会议｜重要性高（库内 8）｜匹配：云计算 885362.TI｜<strong>影响</strong>：<strong>这是 9 月这批会议里与本股关联相对最实的一个</strong>——通义大模型与云产品动向直接关系到「通用 AI 助手是否进一步侵蚀 WPS 个人版付费场景」（E 节风险）。<strong>建议把它当风险观察点看，而不是催化点</strong>（置信度：中）</li>
+<li><strong>2026-09-23</strong>｜Meta Connect 2026（美国加州，9/23–24）｜会议｜重要性中高（库内 7）｜匹配：AI 应用｜<strong>影响</strong>：AI 眼镜/MR 方向，与本股无交集</li>
+</ul></li>
+<li><strong>W6（2026-09-28 起）</strong>：本周无已知事件（含中秋/国庆假期前最后一个完整交易周，注意节前流动性收缩）</li>
+<li><strong>W7（2026-10-05 起）</strong>：本周无已知事件（国庆长假区间，A 股休市多日）</li>
+<li><strong>W8（2026-10-12 起）</strong>：本周无已知事件。<strong>观察点</strong>：三季报预约披露日通常在此期间前后由上交所更新，届时可确认 W9/W10 的具体日期</li>
+<li><strong>W9（2026-10-19 起）</strong>：<strong>三季报披露窗口（推断）</strong>｜财报｜重要性 <strong>最高</strong>｜依据：库内财务显示 2025 年三季报公告日为 <strong>20251028</strong>，若沿用同一节奏，2026 年三季报大概率落在 10 月下旬（置信度：中，为库内历史规律推断，<strong>非公司公告</strong>）｜<strong>影响</strong>：验证 A 节信号一——这是第一份能看清「剔除一次性收益后主业到底什么增速」的完整报告</li>
+<li><strong>W10（2026-10-26 起）</strong>：<strong>三季报披露窗口（推断，与 W9 二选一，10-28 恰落在本周）</strong>｜财报｜重要性 <strong>最高</strong>｜<strong>影响</strong>：同上。同时，Q3 的同比基数（2025Q3 累计净利 11.78 亿）不含一次性收益，<strong>届时&quot;前三季净利同比&quot;仍会因 Q1 那笔收益而显得极高，需自行剔除才能读懂</strong></li>
+<li><strong>W11（2026-11-02 起）</strong>：本周无已知事件。<strong>观察点</strong>：三季报后的券商更新报告集中发布期，可用库内研报复查 2027 年 EPS 预测是否被下修（A 节风险一的核验窗口）</li>
+<li><strong>W12（2026-11-09 起）</strong>：本周无已知事件。<strong>观察点</strong>：三季报披露的股东户数（截止 20260930）将更新，可核验 H 节「筹码趋散」是否延续（置信度：中）</li>
+<li><strong>W13（2026-11-16 起）</strong>：本周无已知事件</li>
+</ul>
+<p><strong>关于日历的两点提示</strong>：</p>
+<ol>
+<li><strong>库内 13 条事件全部由概念标签匹配而来，没有一条是金山办公自身的事件</strong>。其中真正与本股基本面有传导关系的只有云栖大会（且是风险向），其余多为板块情绪联动。<strong>未来 13 周，这只票的定价几乎完全取决于三季报，而不是这些会议</strong>（置信度：中高）。</li>
+<li><strong>信息缺口</strong>：库中无解禁数据、无股东大会安排、无三季报确切预约日、无业绩说明会具体日期。影响：W1、W9–W10 三个最关键的时点只能给窗口不能给确切日。补法：三季报预约披露表通常在 9 月由上交所公布，届时可核实；业绩说明会日期见库内新闻 event_id 40787 对应的 cninfo 公告原文。</li>
+</ol>
+<h2>J. 逻辑链</h2>
+<p>把 B–I 串成一条可证伪的链。<strong>每一环标置信度，最弱一环单独点名。</strong></p>
+<p><strong>第 1 环（置信度：高）</strong> 因为库内财务显示 2026Q1 净利率 <strong>136.07%</strong>（净利超过营收），且库内研报库内 2026-08-24 信达证券研报标题直书《投资收益驱动利润高增》，<strong>所以 2026 年的利润表含一笔非经营性的大额收益</strong>。 → 可观察到的推论：这笔收益应在会计上有明确的一次性来源。<strong>已验证</strong>：联网双源确认为智谱 AI 港股上市带来的基金投资账面重估（19.37 亿元，2026Q1）。</p>
+<p><strong>第 2 环（置信度：高）</strong> 因为该收益是一次性的，<strong>所以以含它的 TTM 净利计算的 PE(TTM) 30.20 倍不代表可持续估值水平</strong>。 → 可观察到的推论：如果这条成立，<strong>券商对 2027 年的利润预测应当低于 2026 年</strong>（因为 2027 年不会再有这笔收益）。<strong>已验证</strong>：库内研报 8 条预测中，2026 年 EPS 为 6.86 / 8.15 / 7.53 元，2027 年降至 5.69 / 5.74 / 5.55 元——<strong>三家券商无一例外，全部预测明年利润低于今年</strong>。这是全报告最强的一处交叉验证：它不需要我做任何假设，是卖方自己的数字在承认利润要退潮。 → 由此得到可持续口径的估值：当前 1,089.27 亿市值 / 券商 2027 年预测净利 25.77–26.64 亿 = <strong>PE 约 40.9–42.3 倍</strong>。</p>
+<p><strong>第 3 环（置信度：中，全部基于推算）</strong> 因为 Q2 单季营收同比 +25.4% 而单季净利同比 −6.3%、单季毛利率从 86.59% 降至约 83.3%，<strong>所以主业当前处于「用利润率换增长」的阶段</strong>。 → 可观察到的推论：如果这条成立，增长的边际来源应当是<strong>需要投入的业务</strong>（B 端、海外、AI 算力），而非省力的存量 C 端。<strong>部分验证</strong>：联网显示 WPS 365 连续六季增速超 60%、海外个人收入 +53.67%，而 C 端个人版 2025 年增速已从 18% 降至 10.42%（来源：网易科技 2026-08 半年报报道、腾讯新闻 2026-03-26 年报报道）。方向吻合，但<strong>库内无分部数据可独立核实，这是验证链上的薄弱处</strong>。</p>
+<p><strong>第 4 环（置信度：中）</strong> 因为 ① 表观估值便宜是会计造成的、② 主业利润率在压缩、③ 明年利润预测本身就要下台阶，<strong>所以持有这只票的资金结构应当出现分歧</strong>。 → 可观察到的推论：应能看到大资金减持、筹码分散。<strong>已验证</strong>：近 20 日特大单净流出 <strong>10.41 亿元</strong>（全口径仅流出 2.78 亿，说明大单出、小单进）；股东户数 20260331→20260630 从 45,543 增至 61,128 户、<strong>环比 +34.2%</strong>；当前价 234.75 元已跌破筹码 50% 成本线 250.80 元。三条独立数据同向。</p>
+<p><strong>第 5 环 · 反向制衡（置信度：中）</strong> 但同时，因为 ① 营收增速四期单调抬升至 24.69%、② 毛利率仍在 84.90% 的高位、③ 资产负债率仅 27.79%、④ PB 7.22 倍对应 ROE 显著高于同市值同行、⑤ 回购在 60 日内两度公告进展、⑥ 信创 2027 硬节点带来的央国企替代放量，<strong>所以下行空间同样受限</strong>。 → 可观察到的推论：股价不应出现趋势性单边下跌，而应在成本密集区间震荡。<strong>部分验证</strong>：当前价位于筹码 15% 成本线（220.40）与 50% 成本线（250.80）之间，正是成本密集带。</p>
+<p><strong>链条结论</strong>：<strong>估值的「便宜」是假的，主业的「加速」是真的，利润的「退潮」也是真的</strong>。三者叠加 → 未来 13 周更可能是等待三季报证伪/证实的震荡格局，而非趋势性行情（置信度：中）。</p>
+<p><strong>⚠️ 最弱的一环 = 第 3 环。</strong> 它是整条链的命门，原因有三：</p>
+<ol>
+<li>它<strong>全部建立在推算之上</strong>——公司没有披露单季数据，我是用「H1 累计 − Q1 累计」和「用同比增速反推上年同期」两步得出的。任何一处会计追溯调整都会让推算失真。</li>
+<li>它的<strong>因果方向无法从数据本身判定</strong>。「营收 +25% 而净利 −6%」这个事实是硬的，但它可以有两种完全相反的解读：<strong>（a）能力衰减</strong>——C 端被通用 AI 侵蚀，只能靠打折和堆销售换增长；<strong>（b）主动投入</strong>——AI 算力与研发前置投入，收入递延到后续季度确认。<strong>本报告倾向于两者兼有，但无法定量拆分。</strong></li>
+<li>它的<strong>验证材料只有联网信源</strong>（分部增速），而库内无分部数据可作独立交叉。</li>
+</ol>
+<p>若第 3 环被证伪（即 Q3 单季净利率回升至 25% 以上），则本报告的谨慎基调整体失效，K 节的乐观情景概率应显著上调。</p>
+<h2>K. 三情景推演</h2>
+<p>未来 13 周（至 2026-11-22），三个概率加总 100%。触发条件全部可用数据核对。</p>
+<ul>
+<li><strong>乐观（25%）</strong>｜<strong>触发</strong>：三季报（W9–W10）显示 Q3 单季净利率回到 25% 以上（对标 2025Q2 推算的 25.4%），且前三季累计营收同比维持在 24% 以上；同时库内资金筹码的近 20 日由负转正｜<strong>路径</strong>：市场确认 Q2 的利润率下滑是 AI 投入的前置性支出而非能力衰减，J 节第 3 环被证伪，估值从「含一次性收益的 30 倍」重新锚定到「可持续 41 倍但增速匹配」的框架上；股价先修复至筹码加权均本 253.67 元一线，站稳后向 85% 成本线 277.40 元的深套区试压</li>
+<li><strong>中性（50%）</strong>｜<strong>触发</strong>：三季报显示 Q3 单季净利率落在 19%–25% 区间（即既未继续恶化也未明显修复），累计营收同比维持 20%–25%；主力资金维持小幅净流出、股东户数（截止 20260930）继续小幅增加｜<strong>路径</strong>：多空各有依据、谁也说服不了谁——上有 250.80 元的 50% 成本线解套抛压、下有 220.40 元的 15% 成本密集支撑，股价在这一带区间震荡，跟随沪深 300 的 beta 波动（本股为三大宽基成份股，被动资金占比不低）；9 月那批 AI 大会（W2–W5）带来短促的板块情绪脉冲，但因近 180 日无涨停记录所示的「非游资票」属性，脉冲幅度有限</li>
+<li><strong>悲观（25%）</strong>｜<strong>触发</strong>：三季报显示 Q3 单季净利率跌破 19%（低于 Q2 推算值），或前三季累计营收同比回落至 20% 以下；或 W11 期间券商集中下修 2027 年 EPS 预测（当前一致区间 5.55–5.74 元）｜<strong>路径</strong>：J 节第 3 环从「利润率压缩」升级为「增长与利润双降」，叠加 2027 年利润本就要退潮的预期，市场按可持续口径的 41 倍 PE 重新定价一个增速放缓的资产；股价下破 15% 成本线 220.40 元，进入无成本支撑区</li>
+</ul>
+<p><strong>三个情景的分水岭只有一个，就是三季报的单季净利率。</strong> 其余变量（AI 大会、政策、鸿蒙、GPT-6）都只影响震荡的幅度，不影响方向。</p>
+<h2>L. 决策与风控</h2>
+<h3>条件式操作倾向</h3>
+<ol>
+<li><strong>如果</strong>三季报（预计 2026-10 下旬，见 I 节 W9–W10）披露的 Q3 单季净利率<strong>低于 19%</strong>（即低于 Q2 推算值，库内财务下期数据可直接核算），<strong>那么回避</strong>——这意味着 J 节第 3 环的「能力衰减」解读被证实，利润率压缩是趋势而非阶段。</li>
+<li><strong>如果</strong>三季报显示 Q3 单季净利率<strong>回升至 25% 以上</strong>，且届时库内资金筹码的近 20 日主力净流入由当前的 −2.78 亿转正，<strong>那么可考虑轻仓试仓</strong>——两个条件必须<strong>同时</strong>满足（一个是基本面证伪、一个是资金面确认），只满足其一仍属观望。</li>
+<li><strong>如果</strong>在三季报披露之前（W1–W8），股价上行触及筹码 50% 成本线 <strong>250.80 元</strong>（现价 234.75 元，需上涨约 6.8%）而基本面无新增信息，<strong>那么观望不追</strong>——那一带是 H 节点明的深套解套区，且届时利润成色仍未被三季报检验，属于「用未验证的预期买入已抬高的价格」。</li>
+<li><strong>如果</strong>已持有且股价下破筹码 15% 成本线 <strong>220.40 元</strong>（现价下方约 6.1%），<strong>那么减仓</strong>——该位置以下库内筹码数据显示无成本密集支撑（是本次取到的最低成本档位）。</li>
+</ol>
+<p><strong>以上四条的触发条件全部来自本报告出现过的库内数据（库内财务单季推算口径、库内资金筹码的与 / ），三个月后可逐条回查核对。</strong></p>
+<h3>风控要点 · 这笔判断在什么情况下应当被推翻</h3>
+<ul>
+<li><strong>推翻条件一（最重要）</strong>：公司在半年度业绩说明会（W1，日期待定）或三季报中给出「Q2 利润率下滑系一次性投入/收入递延确认」的具体拆解，且数据可验证。<strong>若成立，本报告 A 节风险二、J 节第 3 环、K 节的概率分配全部作废，需立即重跑。</strong></li>
+<li><strong>推翻条件二</strong>：出现新的大额投资收益事件（公司作为 LP 的其他基金项目退出/上市）。这会再次扰乱利润表口径，使一切基于 PE 的判断失效——<strong>注意这是有先例的风险，2026Q1 已经发生过一次</strong>。</li>
+<li><strong>推翻条件三</strong>：本报告的单季推算被证伪。若公司披露的单季数据与我推算的「Q2 营收 17.00 亿 / 净利 3.23 亿」出入超过 10%，则 C 节第 3 条起的全部推论需重做。</li>
+<li><strong>推翻条件四</strong>：出现库内未覆盖的重大事项（大额减持、商誉减值、监管问询、核心管理层变动）。库内新闻近 60 日为零，但这是「未发生」不是「不会发生」。</li>
+</ul>
+<h3>仓位思路</h3>
+<ul>
+<li>在三季报（W9–W10）披露前，<strong>本报告不支持任何超过「轻」的仓位定位</strong>——理由是全部核心分歧（利润成色）都要等那份报告才能解决，此前的任何仓位都是在对一个未知答案下注。</li>
+<li>三季报若指向乐观情景，仓位可考虑上调至「中」；若指向悲观情景，应回到「不参与」。</li>
+<li><strong>本节不给任何具体金额、股数、目标价位或评级。</strong> 上文出现的 220.40 / 250.80 / 277.40 元三个数字，是库内资金筹码返回的<strong>筹码成本分位线</strong>，是对现有持仓者成本分布的客观描述，<strong>不是价格预测、不是目标价</strong>。</li>
+</ul>
+<h2>M. 逻辑自查</h2>
+<h3>这份判断最依赖的假设是哪一条？它错了会怎样？</h3>
+<p><strong>最依赖的假设</strong>：「2026Q1 那 19.37 亿元投资收益是一次性的，不会重来」。</p>
+<p>整份报告的谨慎基调——B 节拆穿 PE 陷阱、C 节的口径切换、J 节的第 2 环、K 节的三情景——全部建立在这一条上。</p>
+<p><strong>它错了会怎样</strong>：如果金山办公作为 LP 参与的基金池里还有多个类似智谱 AI 的项目排队上市，那么「投资收益」就不是一次性事件，而是一条<strong>可重复的、被市场系统性低估的第二增长曲线</strong>。那样的话，PE(TTM) 30.20 倍不但不是陷阱，反而是低估——因为市场只按办公软件给它定价，没有给这块投资能力任何估值。</p>
+<p><strong>我为什么仍然按「一次性」处理</strong>：① 会计上，被投企业上市当季的公允价值重估本就是一次性确认；② 三家券商 2027 年 EPS 预测全部低于 2026 年，说明<strong>专业分析师也按一次性处理</strong>；③ 库内无任何关于该基金池其他持仓的数据。<strong>但我承认这一条我没有能力独立验证——这是本报告最大的单点风险。</strong></p>
+<h3>有没有我为了让逻辑好看而忽略的反面证据？</h3>
+<p><strong>有三条，必须写出来。</strong></p>
+<p><strong>反面证据一：营收加速是硬事实，而我在语气上淡化了它。</strong> 15.21% → 15.78% → 23.95% → 24.69% 四期单调抬升，且 Q2 单季 +25.4% 是四期最快。这是<strong>没有任何会计口径可以粉饰</strong>的经营指标。我在 J 节把它放在第 5 环（反向制衡）而不是第 1 环，某种程度上是为了让「拆穿估值陷阱」这条主线更醒目。<strong>如果只看营收这一个指标，这家公司正处在近三年最好的状态。</strong></p>
+<p><strong>反面证据二：Q2 单季净利同比 −6.3% 的分母也不干净。</strong> 我用来对比的 2025Q2 单季净利 3.45 亿，是我从 2025H1（反推自同比增速）减去 2025Q1（同样反推）得到的——<strong>两次反推的误差会在相减时放大</strong>。3.23 亿 vs 3.45 亿这个 −6.3% 的差距，在推算误差范围内可能并不显著。<strong>我在 A 节把它列为核心风险二，严格说证据强度只够「中」而不够「高」，这一点已在标注中体现，但读者应知道这个数字的脆弱性。</strong></p>
+<p><strong>反面证据三：回购在持续，我给的权重偏低。</strong> 60 日内两次回购进展公告 + 「提质增效重回报」专项行动方案的半年度评估，说明公司在真金白银托底。我把它归入 H 节「消息面」而非 J 节逻辑链，理由是库内无回购金额与股数字段（无法定量）。<strong>但「公司自己在买」与「特大单在卖 10.41 亿」是一组矛盾信号，我在报告里只强调了后者。</strong></p>
+<h3>信息缺口清单</h3>
+<p><strong>缺口一 · 分部营收数据（影响：大）</strong> 库中无个人订阅 / 机构订阅（WPS 365）/ 软件授权 / 海外的各自收入与增速。 <strong>影响</strong>：E 节「C 端无护城河、B 端有护城河」与 J 节第 3 环的验证，全部只能依赖联网报道，无法用库内数据独立交叉。这是本报告可靠性最低的一块。 <strong>补法</strong>：直接读中报 PDF（库内新闻 event_id 40792，cninfo 链接已在库内）；或三季报后重跑本调研。</p>
+<p><strong>缺口二 · 扣非 / 经调整 / 现金流 / 合同负债（影响：大）</strong> 库内财务只提供归母净利，无扣非、无经调整、无经营性现金流、无合同负债（递延收入）。 <strong>影响</strong>：<strong>合同负债的缺失尤其要命</strong>——对订阅制公司而言，它是「已收钱但未确认收入」的先行指标，是判断「Q2 利润率下滑到底是投入前置还是需求走弱」的最直接证据。有它，J 节第 3 环的两种解读当场就能分开。 <strong>补法</strong>：中报 PDF 的合并资产负债表可查；后续可考虑把该字段纳入库内取数。</p>
+<p><strong>缺口三 · 解禁 / 股东大会 / 三季报确切预约日 / 业绩说明会日期（影响：中）</strong> 库内事件日历返回的 13 条<strong>全部是概念匹配的行业事件，无一条公司自身事件</strong>。 <strong>影响</strong>：I 节最关键的三个时点（W1 业绩说明会、W9–W10 三季报）只能给窗口不能给日期；且<strong>无法排除本报告未覆盖的解禁风险</strong>。 <strong>补法</strong>：上交所官网公司信息页可查预约披露表与解禁安排；业绩说明会日期见库内新闻 event_id 40787 对应公告原文。</p>
+<p><strong>缺口四 · 筹码数据陈旧（影响：中）</strong> 库内资金筹码数据日为 <strong>20260807</strong>，距报告日 13 个交易日；股东户数截止 <strong>20260630</strong>，滞后近两个月。 <strong>影响</strong>：H 节的 60.28% 获利盘、61,128 户股东数都是过去时。当前价已跌破 50% 成本线，实际获利盘应显著更低——<strong>我已在 H 节按现价重新映射并做了两面陈述，但那是推断不是数据。</strong> <strong>补法</strong>：等待下一期筹码更新与三季报股东户数（预计 W12，见 I 节）。</p>
+<p><strong>缺口五 · 一次性投资收益的完整口径（影响：大，且无法从库内补）</strong> 库内无投资收益科目、无长期股权投资明细、无对外投资基金的持仓清单。19.37 亿元这个数字<strong>完全来自联网</strong>（虽有双源交叉）。 <strong>影响</strong>：直接决定「最依赖的假设」是否成立（见本节第一问）。 <strong>补法</strong>：中报 PDF 的合并利润表「投资收益」科目与附注可查；基金持仓明细通常不完整披露，这一块可能<strong>永久性缺失</strong>——读者须知道，这条风险大概率无法被彻底消除。</p>
+<p><strong>缺口六 · 库内公司档案的经营描述基准年份为 2018（影响：中）</strong> B 节引用的月活 3.10 亿、政府/央企覆盖率等，都是 7 年多前的披露口径。 <strong>影响</strong>：这些数字只能作定性参考（「它在政企侧有深厚基础」），<strong>不能用作任何定量判断</strong>。我已在 B 节明确标注。 <strong>补法</strong>：最新用户数据见公司年报与投资者关系材料。</p>
+<h3>一处需要向读者声明的口径选择</h3>
+<p>本报告 12 个库内取数<strong>全部调用</strong>，其中库内 A/H 对照返回空（非 A+H 两地上市票，属正常），库内涨停记录返回空数组（近 180 日无涨停记录，<strong>这个&quot;空&quot;本身是有信息量的结论，已写入 H 节</strong>）。库内基础资料未调用——因调用方已给定确切 6 位代码 688111，无需名称反查。</p>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-08-25），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>PE30倍系一次性投资收益虚化</li>
+      <li>Q2单季营收+25%而净利-6%</li>
+      <li>特大单净流出10.41亿户数+34%</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>商誉</dt><dd>收购时溢价支付的部分记在账上的资产。被收购方业绩不达预期时要计提减值、直接冲减利润。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>业绩预告</dt><dd>上市公司在正式财报前发布的盈利区间预告，达到规定变动幅度时强制披露。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> 搜狐财经 2026-07-29 <em>2026-07-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> IT之家 2026-08-20 报道 H1 归母 25.18 亿 / 同比 +236.94%、扣非 24.87 亿 / 同比 +241.99% <em>2026-08-20</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 观点网 2026-07-29、新浪财经 2026-07-30 <em>2026-07-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> SmartHey 2026 年 Q1 财报解读，单源未交叉验证·置信度低 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 36氪 2026-06-24、新浪财经 2026-06-24，两处为同一篇稿件的双平台转载，实质仍属单一信源·置信度低 <em>2026-06-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 多家行业媒体综述，2026-08 检索 <em>2026-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 另有新浪财经 2026-08-19《信创万亿空间可期？2027 年考核节点临近，国产操作系统订单加速释放》佐证同一时间窗 <em>2026-08-19</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 搜狐 2026 年信创采购解读文，单源未交叉验证 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 中关村在线 2026 年报道 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-04-23 / 2026-04-24，两篇独立报道交叉确认 <em>2026-04-23</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 网易科技 2026-08 半年报报道、腾讯新闻 2026-03-26 年报报道 <em>2026-08</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-08-25 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
