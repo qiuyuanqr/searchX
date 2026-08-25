@@ -218,6 +218,48 @@ test("时间状语落在动词后面的行情陈述不算红线（当前 / 现�
   expect(r.blocking).toEqual([]);
 });
 
+// 2026-08-25 从 688008 存量实测抓出的第四类误报：BAND_PRICE_RE 一个豁免都没有
+// （TRIGGER 那条有基准价 / 商品价三层），于是 M 节带来源的回购均价被当成三情景预测区间。
+// SKILL §4.9 括号里白纸黑字：「客观披露价如回购区间、市值反算依据可保留」。
+test("回购均价区间是客观披露 → 不报（§4.9 明文豁免）", () => {
+  const r = checkFormat({
+    reportHtml: stockHtml("后续 7-29~7-31 已回购 70.50 万股、均价 192.18~210 元区间，来源：新浪财经 2026-08-03"),
+    type: "股票",
+  });
+  expect(r.blocking).toEqual([]);
+});
+
+// 守卫⓪：「均价」从商品主语表里拿掉之后，商品价不能跟着变误报——它由主语（金价）与
+// 每单位后缀（美元/盎司）两条判据兜着。句子取自存量原文。
+// 变异验证：把 COMMODITY_SUBJ_RE 里的「金价」也删掉，本用例变红。
+test("商品价不靠「均价」也放行（金价主语 / 每单位后缀兜底）", () => {
+  for (const s of [
+    "支撑在于 Q2 金价均价同比 +37%，8/6 突破 4300 美元",
+    "2026Q2 LBMA 午盘金价均价 4,506.29 美元/盎司、同比上行",
+  ]) {
+    expect(checkFormat({ reportHtml: stockHtml(s), type: "股票" }).blocking).toEqual([]);
+  }
+});
+
+// 守卫①：同一句「但不得作为买卖触发条件」——SKILL 那半句必须仍然生效。
+test("回购价一旦当买卖触发条件用，豁免不成立 → 照样报", () => {
+  const r = checkFormat({
+    reportHtml: stockHtml("若跌破回购均价 192.18~210 元区间下沿则减仓"),
+    type: "股票",
+  });
+  expect(r.blocking.join()).toContain("192.18");
+});
+
+// 守卫②：豁免窗口必须够窄。同段提过回购，不等于后面那个情景区间也是回购价——
+// 用「整句有回购就放行」会把这条真红线一起放跑（这正是「加一层保护先问是不是拆了另一层」）。
+test("同句提过回购，不豁免后面的情景预测区间", () => {
+  const r = checkFormat({
+    reportHtml: stockHtml("公司已完成回购，悲观情景下股价在 150–170 元区间宽幅震荡"),
+    type: "股票",
+  });
+  expect(r.blocking.join()).toContain("150");
+});
+
 test("否定式隐私免责不是泄露（每篇都写，误报会让清单失信）", () => {
   const r = checkFormat({ reportHtml: stockHtml("本报告不含任何用户持仓 / 自选 / 账户信息"), type: "股票" });
   expect(r.blocking).toEqual([]);
