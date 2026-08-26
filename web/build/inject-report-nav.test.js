@@ -118,51 +118,40 @@ test("进度条脚本按文档滚动比例更新宽度", () => {
   expect(out).toContain("sx-progress");
 });
 
-test("自动目录骨架：电脑侧栏 + 手机浮层 + 目录按钮", () => {
+test("自动目录骨架：单一迷你横条栏（≡ 浮层已退役），所有宽度都显示", () => {
   const out = injectReportNav(BASE);
   expect(out).toContain('class="sx-toc"');
-  expect(out).toContain('class="sx-nav-btn sx-toc-btn"');
-  expect(out).toContain('class="sx-toc-sheet"');
   expect(out).toContain('aria-label="目录"');
+  expect(out).not.toContain("sx-toc-sheet");   // 手机浮层与 ≡ 按钮已被触摸滑选取代
+  expect(out).not.toContain("sx-toc-btn");
 });
 
-// —— a11y 与焦点管理（audit-2026-07-04 [19]）：复刻首页提交弹窗（feed.js）那套 ——
-test("目录按钮补 aria-haspopup/aria-controls/aria-expanded；浮层补 role=dialog/aria-modal/id", () => {
+test("鱼眼交互：鼠标移动/触摸滑动做阶梯放大，最近一条弹标题气泡", () => {
   const out = injectReportNav(BASE);
-  expect(out).toContain('aria-haspopup="dialog"');
-  expect(out).toContain('aria-controls="sx-toc-sheet"');
-  expect(out).toContain('class="sx-nav-btn sx-toc-btn"');
-  expect(out).toMatch(/class="sx-nav-btn sx-toc-btn"[^>]*aria-expanded="false"/);
-  expect(out).toContain('id="sx-toc-sheet"');
-  expect(out).toMatch(/class="sx-toc-sheet" id="sx-toc-sheet"[^>]*role="dialog"/);
-  expect(out).toContain('aria-modal="true"');
+  expect(out).toContain("bindRail");
+  expect(out).toContain("sx-rail-tip");
+  expect(out).toContain("data-label");
+  expect(out).toContain('addEventListener("mousemove"');
+  expect(out).toContain('addEventListener("touchmove"');
+  // 手指松开跳到最近那节；触摸取消要复位
+  expect(out).toContain('addEventListener("touchend"');
+  expect(out).toContain('addEventListener("touchcancel"');
 });
 
-test("导航脚本：打开浮层记住触发元素并聚焦第一个链接、关闭还原焦点、同步 aria-expanded", () => {
+test("触屏侧布局：窄屏/纯触控把栏移到右缘、气泡换左侧、滑动时不带动页面", () => {
   const out = injectReportNav(BASE);
-  expect(out).toContain("sheetLastFocus = document.activeElement");
-  expect(out).toContain('tocBtn.setAttribute("aria-expanded", "true")');
-  expect(out).toContain('tocBtn.setAttribute("aria-expanded", "false")');
-  expect(out).toContain("sheetLastFocus.focus()");
-  expect(out).toContain("sheetPanel.querySelector(\"a\")");
-});
-
-test("导航脚本：浮层打开时 Tab 被焦点陷阱拦在面板内，不漏到遮罩下的报告正文", () => {
-  const out = injectReportNav(BASE);
-  expect(out).toContain("function trapSheetFocus(e)");
-  expect(out).toContain('e.key === "Tab" && sheet.classList.contains("open")');
-});
-
-test("目录浮层防滑动穿透：面板/遮罩加 overscroll-behavior:contain，且打开时锁整页滚动", () => {
-  const out = injectReportNav(BASE);
-  // 面板内部滚动不外漏 + 遮罩吞手势（touch-action:none）/面板可纵向滚（pan-y）
-  expect(out).toContain("overscroll-behavior:contain");
+  expect(out).toContain("@media (max-width:899px), (hover:none)");
   expect(out).toContain("touch-action:none");
-  expect(out).toContain("touch-action:pan-y");
-  // 浮层打开时锁住整页滚动：html/body 一起锁，脚本里切换 sx-toc-open 类
-  expect(out).toContain("html.sx-toc-open,body.sx-toc-open{overflow:hidden}");
-  expect(out).toContain('document.documentElement.classList.toggle("sx-toc-open"');
-  expect(out).toContain('document.body.classList.toggle("sx-toc-open"');
+  expect(out).toContain("right:6px");
+});
+
+test("排版换装：核心结论上移居中导读、节题拆字母编号、关键发现标签行、区块滚动淡入", () => {
+  const out = injectReportNav(BASE);
+  expect(out).toContain("insertBefore(tldrEl, plainEl)");   // tldr 搬到 plain 之前
+  expect(out).toContain("sx-sec-letter");                    // A–M 节题的等宽字母编号
+  expect(out).toContain(".findings li{background:rgba(180,84,58,.07)");
+  expect(out).toContain("sx-reveal");                        // 滚动淡入（脚本不跑则全可见）
+  expect(out).toContain("IntersectionObserver");
 });
 
 test("外部来源链接补 target=_blank + rel=noopener：点来源不离开报告页", () => {
@@ -170,17 +159,6 @@ test("外部来源链接补 target=_blank + rel=noopener：点来源不离开报
   expect(out).toContain(`a[href^="http"]`);
   expect(out).toContain(`a.target = "_blank"`);
   expect(out).toContain(`a.rel = "noopener"`);
-});
-
-test("目录点击先关浮层（解除滚动锁）再跳转，避免锁滚动状态下平滑滚动被吞", () => {
-  const out = injectReportNav(BASE);
-  expect(out).toContain("closeSheet(); jump(");
-});
-
-test("打开目录浮层时把当前章节滚到面板中部（长目录也一眼见高亮）", () => {
-  const out = injectReportNav(BASE);
-  expect(out).toContain('sheetPanel.querySelector("a.on")');
-  expect(out).toContain("sheetPanel.scrollTop");
 });
 
 test("窄屏下滚阅读时藏浮动按钮、上滚再浮现：脚本切 body.sx-fab-hide + CSS 只在窄屏生效", () => {
@@ -212,13 +190,11 @@ test("目录脚本按固定区块顺序 + 正文 h2 扫描", () => {
   expect(out).toContain("main h2");
 });
 
-test("迷你导航只在够宽且有真悬停能力的设备上显示（触控平板退回 ≡ 浮层）", () => {
+test("迷你横条目录不再按宽度隐藏：基础态常显，窄屏/纯触控只是换到右缘", () => {
   const out = injectReportNav(BASE);
-  expect(out).toContain("@media (min-width:900px) and (hover:hover)");
-  expect(out).toContain("railHtml");            // 桌面端注入的是横条版目录
-  expect(out).toContain("bindRailMagnify");     // 鱼眼放大：离光标越近的条越长
-  expect(out).toContain("sx-rail-tip");         // 最近那条的标题气泡
-  expect(out).toContain("data-label");          // 标题存条目属性，气泡从这里取
+  expect(out).toContain("railHtml");
+  expect(out).not.toContain("@media (min-width:900px) and (hover:hover)");  // 旧的显示门槛已撤
+  expect(out).toContain(".sx-toc{position:fixed; top:0; bottom:0; display:flex");
 });
 
 // CSP：防存储型 XSS。只放行本文件注入的那段导航脚本（按哈希白名单），

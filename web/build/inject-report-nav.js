@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto";
 
-// 构建时给报告副本（web/dist/r/<dir>/index.html）注入站点导航：
-// 一个常驻的「返回档案首页」按钮 + 一个滚动后出现的「回到顶部」按钮，
-// 圆形纸感样式复刻主页 .to-top，并复用报告自身的配色变量（自动适配深色模式）。
+// 构建时给报告副本（web/dist/r/<dir>/index.html）注入站点导航与 2026-08-26 改版的排版换装：
+// 「返回档案首页」+「回到顶部」浮动按钮、迷你横条目录（桌面鼠标鱼眼 / 手机手指滑选）、
+// 阅读进度条、正文区块滚动淡入、A–M 节题拆出等宽字母编号、核心结论上移为居中导读。
 // 注意：只注入到 dist 副本，原始 research/<dir>/report.html（归档/Obsidian 用）保持纯净。
 
-// 导航交互脚本（进度条 / 目录 / 回到顶部）。单独抽出来：CSP 要按它的内容算 sha256 白名单，
+// 导航交互脚本。单独抽出来：CSP 要按它的内容算 sha256 白名单，
 // 只有这段脚本被放行，报告正文里任何其它内联脚本都会被浏览器挡下（见下方 buildCsp）。
 const NAV_SCRIPT = `
 (function(){
@@ -16,11 +16,16 @@ const NAV_SCRIPT = `
   // 外部来源链接一律新标签页打开：点来源不离开报告页（手机上尤其容易丢阅读位置）
   document.querySelectorAll('a[href^="http"]').forEach(function(a){ a.target = "_blank"; a.rel = "noopener"; });
 
-  // 自动目录：固定区块 + 正文 h2，按文档顺序
+  // ── 排版换装（2026-08-26 晚）：把存量报告的正文调整成简报式版面 ──
+  // 核心结论上移到报头之下、作居中导读（新旧报告的 DOM 顺序都是 plain→tldr，统一搬）
+  var tldrEl = document.querySelector(".tldr"), plainEl = document.querySelector(".plain");
+  if (tldrEl && plainEl && plainEl.parentNode) plainEl.parentNode.insertBefore(tldrEl, plainEl);
+
+  // 自动目录：固定区块 + 正文 h2，按（搬动后的）文档顺序
   var secs = [];
   function add(el, label){ if (!el) return; if (!el.id) el.id = "sx-sec-" + secs.length; secs.push({ id: el.id, label: label }); }
-  add(document.querySelector(".plain"), "先说人话");
-  add(document.querySelector(".tldr"), "核心结论");
+  add(tldrEl, "核心结论");
+  add(plainEl, "先说人话");
   add(document.querySelector(".findings"), "关键发现");
   document.querySelectorAll("main h2").forEach(function(h){ add(h, h.textContent.trim()); });
   add(document.querySelector("section.risks"), "风险与争议");
@@ -28,40 +33,45 @@ const NAV_SCRIPT = `
   add(document.querySelector("section.sources"), "来源清单");
 
   function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-  function linksHtml(){ return secs.map(function(s){ return '<a href="#" data-id="' + esc(s.id) + '">' + esc(s.label) + '</a>'; }).join(""); }
-  // 桌面端迷你导航（参照 Codex 的长内容导航）：每节一根等长小横条，标题存 data-label，
-  // 鼠标在栏上移动时由下方 magnify() 做鱼眼放大 + 只给最近那条弹标题。
+
+  // 「A. 一屏结论」式节题拆出等宽字母编号（目录 label 已在上面取好原文，这里改不影响）。
+  // 只动纯文本的 h2——带行内标记的不碰，避免把正文结构改坏。
+  document.querySelectorAll("main h2").forEach(function(h){
+    if (h.childNodes.length === 1 && h.firstChild.nodeType === 3){
+      var m = h.textContent.match(/^([A-Z])[.、．]\\s*(.+)$/);
+      if (m){ h.innerHTML = '<span class="sx-sec-letter">' + m[1] + '</span>' + esc(m[2]); h.classList.add("sx-lettered"); }
+    }
+  });
+
+  // 迷你横条目录（参照 Codex 的长内容导航）：每节一根等长小横条，标题存 data-label。
   function railHtml(){ return secs.map(function(s){ return '<a href="#" data-id="' + esc(s.id) + '" data-label="' + esc(s.label) + '"><i></i></a>'; }).join(""); }
   var aside = document.querySelector(".sx-toc");
   var deskNav = document.querySelector(".sx-toc nav");
-  var sheet = document.querySelector(".sx-toc-sheet");
-  var sheetPanel = sheet.querySelector(".panel");
-  var tocBtn = document.querySelector(".sx-toc-btn");
   if (secs.length){
     deskNav.insertAdjacentHTML("beforeend", railHtml());
-    sheetPanel.insertAdjacentHTML("beforeend", linksHtml());
-    bindRailMagnify();
+    bindRail();
   } else {
-    aside.style.display = "none";   // 没有可索引区块：藏掉目录入口
-    tocBtn.style.display = "none";
+    aside.style.display = "none";   // 没有可索引区块：藏掉目录
   }
-  // 鱼眼放大（参照 Codex）：常态每条等长；鼠标在栏上移动时，离光标越近的条越长、
-  // 线性衰减成阶梯；只有最近那条弹出标题气泡。键盘聚焦某条等效于鼠标指着它。
-  function bindRailMagnify(){
+
+  // 鱼眼放大：常态每条等长；指点（鼠标移动或手指按住滑动）时离光标越近的条越长、
+  // 线性衰减成阶梯；只有最近那条弹出标题气泡。手指松开跳到最近那节；键盘聚焦等效指着它。
+  function bindRail(){
     var links = [].slice.call(deskNav.querySelectorAll("a"));
     if (!links.length) return;
     var tip = document.createElement("span");
     tip.className = "sx-rail-tip";
     aside.appendChild(tip);
     var BASE = 12, EXTRA = 22, RANGE = 90;   // 基础长 / 最大增量 / 影响半径(px)
+    var best = null;
     function setW(a, w){ var i = a.querySelector("i"); if (i) i.style.width = w + "px"; }
-    function onMove(e){
-      var best = null, bestD = Infinity;
+    function onPoint(clientY){
+      var bd = Infinity; best = null;
       links.forEach(function(a){
         var r = a.getBoundingClientRect(), c = r.top + r.height / 2;
-        var d = Math.abs(e.clientY - c);
+        var d = Math.abs(clientY - c);
         setW(a, BASE + EXTRA * Math.max(0, 1 - d / RANGE));
-        if (d < bestD){ bestD = d; best = a; }
+        if (d < bd){ bd = d; best = a; }
       });
       links.forEach(function(a){ a.classList.toggle("near", a === best); });
       if (best){
@@ -73,56 +83,38 @@ const NAV_SCRIPT = `
       }
     }
     function reset(){
+      best = null;
       links.forEach(function(a){ setW(a, BASE); a.classList.remove("near"); });
       tip.classList.remove("show");
     }
-    deskNav.addEventListener("mousemove", onMove);
+    deskNav.addEventListener("mousemove", function(e){ onPoint(e.clientY); });
     deskNav.addEventListener("mouseleave", reset);
+    // 触屏：按住滑动选段（CSS touch-action:none 挡掉页面跟滚），松手跳到最近那节
+    deskNav.addEventListener("touchstart", function(e){ if (e.touches[0]) onPoint(e.touches[0].clientY); }, { passive:true });
+    deskNav.addEventListener("touchmove", function(e){ if (e.touches[0]) onPoint(e.touches[0].clientY); }, { passive:true });
+    deskNav.addEventListener("touchend", function(){ if (best) jump(best.dataset.id); reset(); });
+    deskNav.addEventListener("touchcancel", reset);
     links.forEach(function(a){
-      a.addEventListener("focus", function(){ var r = a.getBoundingClientRect(); onMove({ clientY: r.top + r.height / 2 }); });
+      a.addEventListener("focus", function(){ var r = a.getBoundingClientRect(); onPoint(r.top + r.height / 2); });
       a.addEventListener("blur", reset);
+      a.addEventListener("click", function(e){ e.preventDefault(); jump(a.dataset.id); });
     });
     reset();
   }
   function jump(id){ var t = document.getElementById(id); if (t) t.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }); }
-  // 打开/关闭目录浮层时一并锁/解锁整页滚动，防止滑动穿透到下面的报告页。
-  function lock(on){ document.documentElement.classList.toggle("sx-toc-open", on); document.body.classList.toggle("sx-toc-open", on); }
-  // 焦点管理复刻首页提交弹窗（feed.js）那套：打开前记住触发元素、聚焦浮层第一个链接、
-  // 关闭时还原焦点、aria-expanded 同步开合状态——同站两处浮层交互保持一致。
-  var sheetLastFocus = null;
-  function openSheet(){
-    sheetLastFocus = document.activeElement;
-    sheet.classList.add("open"); lock(true);
-    tocBtn.setAttribute("aria-expanded", "true");
-    // 长目录（面板只显示得下一半）：打开时把当前章节滚到面板中部，读到后半篇也一眼见高亮
-    var on = sheetPanel.querySelector("a.on");
-    if (on) sheetPanel.scrollTop = Math.max(0, on.offsetTop - sheetPanel.clientHeight / 2);
-    var first = sheetPanel.querySelector("a");
-    if (first) first.focus();
+
+  // 正文区块滚动淡入（与首页 bindReveal 同一套约束）：隐藏态只在 JS 启动后才加，
+  // 脚本被挡 / 未加载时内容永远直接可见；「减少动态」用户不启用。
+  if (!reduce && "IntersectionObserver" in window){
+    var blocks = document.querySelectorAll(".tldr, .plain, .findings, main > *, section.risks, .glossary, section.sources");
+    if (blocks.length){
+      document.body.classList.add("sx-reveal");
+      var io = new IntersectionObserver(function(es){ es.forEach(function(x){
+        if (x.isIntersecting){ x.target.classList.add("in"); io.unobserve(x.target); }
+      }); }, { rootMargin: "0px 0px -6% 0px", threshold: 0.02 });
+      blocks.forEach(function(b){ b.classList.add("sx-rv"); io.observe(b); });
+    }
   }
-  function closeSheet(){
-    sheet.classList.remove("open"); lock(false);
-    tocBtn.setAttribute("aria-expanded", "false");
-    if (sheetLastFocus && sheetLastFocus.focus) sheetLastFocus.focus();
-  }
-  // 焦点陷阱：浮层打开时 Tab 不跑出面板（否则会落到遮罩下面的报告正文，同 feed.js trapFocus）
-  function trapSheetFocus(e){
-    var items = sheetPanel.querySelectorAll("a");
-    if (!items.length) return;
-    var first = items[0], last = items[items.length - 1];
-    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-  }
-  document.querySelectorAll(".sx-toc a, .sx-toc-sheet a").forEach(function(a){
-    // 先关浮层（解除整页滚动锁）再跳转：锁着滚动时发起平滑滚动在部分浏览器会被吞掉
-    a.addEventListener("click", function(e){ e.preventDefault(); closeSheet(); jump(a.dataset.id); });
-  });
-  tocBtn.addEventListener("click", openSheet);
-  sheet.addEventListener("click", function(e){ if (e.target === sheet) closeSheet(); });
-  document.addEventListener("keydown", function(e){
-    if (e.key === "Escape") { closeSheet(); return; }
-    if (e.key === "Tab" && sheet.classList.contains("open")) trapSheetFocus(e);
-  });
 
   function spy(){
     var y = window.scrollY + 120, cur = secs.length ? secs[0].id : null;
@@ -130,7 +122,7 @@ const NAV_SCRIPT = `
       var el = document.getElementById(secs[i].id);
       if (el && el.getBoundingClientRect().top + window.scrollY <= y) cur = secs[i].id;
     }
-    document.querySelectorAll(".sx-toc a, .sx-toc-sheet a").forEach(function(a){ a.classList.toggle("on", a.dataset.id === cur); });
+    document.querySelectorAll(".sx-toc a").forEach(function(a){ a.classList.toggle("on", a.dataset.id === cur); });
   }
 
   var lastY = window.scrollY, acc = 0;
@@ -255,15 +247,14 @@ table thead th:first-child{z-index:2; background:var(--paper-2)}
 /* 顶部阅读进度条 */
 .sx-progress{position:fixed; top:0; left:0; right:0; height:3px; z-index:60; background:transparent}
 .sx-progress>i{display:block; height:100%; width:0; background:var(--seal); transition:width .1s linear}
-/* 自动目录：电脑端左侧迷你横条导航（参照 Codex 的长内容导航）——常态是一列等长小横条，
-   鼠标移入后由脚本做鱼眼放大（离光标越近越长），只有最近那条弹出标题气泡；
-   窄屏或纯触控设备隐藏，退回 ≡ 浮层。条长由脚本写行内样式，这里只给基础态。 */
-.sx-toc{position:fixed; top:0; bottom:0; display:none; flex-direction:column; justify-content:center;
+/* 迷你横条目录（参照 Codex 的长内容导航）：常态一列等长小横条；指点（鼠标/手指）时脚本做
+   鱼眼放大，只有最近那条弹标题气泡；手指松开跳段。条长由脚本写行内样式，这里只给基础态。
+   桌面在左缘；窄屏或纯触控设备移到右缘（避开 iOS 左缘返回手势），气泡换到条的左侧。 */
+.sx-toc{position:fixed; top:0; bottom:0; display:flex; flex-direction:column; justify-content:center;
   left:14px; z-index:40; pointer-events:none}
-.sx-toc nav{pointer-events:auto; max-height:78vh; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain;
-  padding:8px 14px 8px 2px}
+.sx-toc nav{pointer-events:auto; max-height:78vh; overflow:hidden; padding:8px 14px 8px 2px}
 .sx-toc .h{display:none}
-.sx-toc a{display:block; padding:4px 8px 4px 0; text-decoration:none; cursor:pointer}
+.sx-toc a{display:block; padding:4px 8px 4px 0; text-decoration:none; cursor:pointer; -webkit-tap-highlight-color:transparent}
 .sx-toc a i{display:block; width:12px; height:2px; border-radius:2px; background:var(--muted); opacity:.45; transition:width .15s ease, opacity .15s, background .15s}
 .sx-toc a.near i{opacity:.95}
 .sx-toc a.on i{background:var(--seal); opacity:1}
@@ -274,35 +265,23 @@ table thead th:first-child{z-index:2; background:var(--paper-2)}
   color:var(--ink); white-space:nowrap; max-width:16em; overflow:hidden; text-overflow:ellipsis;
   opacity:0; transition:opacity .12s ease, top .1s ease}
 .sx-rail-tip.show{opacity:1}
-/* 手机端目录浮层 */
-/* 整张浮层吞掉触摸手势（touch-action:none）：在半透明遮罩上拖动只会被拦下，不会带着下面的报告页一起滚——
-   修复「滑目录时报告页跟着动」。点击遮罩关闭仍正常（tap/click 不受 touch-action 影响）。 */
-.sx-toc-sheet{position:fixed; inset:0; z-index:70; display:none; background:rgba(20,16,10,.42);
-  touch-action:none; overscroll-behavior:contain}
-.sx-toc-sheet.open{display:block}
-/* 面板内部可上下滚（touch-action:pan-y）；overscroll-behavior:contain 让滚到顶/底时不把滚动「漏」给下面的报告页。 */
-.sx-toc-sheet .panel{position:absolute; left:0; right:0; bottom:0; max-height:70vh; overflow-y:auto;
-  overscroll-behavior:contain; -webkit-overflow-scrolling:touch; touch-action:pan-y;
-  background:var(--paper); border-top:1px solid var(--rule); border-radius:16px 16px 0 0; padding:1rem 1.2rem 1.4rem}
-/* 浮层打开时锁住整页滚动（与首页提交弹窗的 modal-lock 同一招），双保险防穿透。
-   标准模式下视口滚动根是 <html>，故 html/body 一起锁，wheel/触控都不漏。 */
-html.sx-toc-open,body.sx-toc-open{overflow:hidden}
-.sx-toc-sheet .grip{width:34px; height:4px; border-radius:2px; background:var(--rule); margin:0 auto .8rem}
-.sx-toc-sheet a{display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.95rem;
-  color:var(--ink-soft); padding:.6rem 0; border-bottom:1px solid var(--rule); text-decoration:none}
-.sx-toc-sheet a.on{color:var(--seal); font-weight:600}
-.sx-toc-btn{bottom:128px; font-size:1.3rem}
-/* 迷你导航靠 hover 展开：只在够宽且有真悬停能力的设备上启用（触控平板仍用 ≡ 浮层） */
-@media (min-width:900px) and (hover:hover){ .sx-toc{display:flex} .sx-toc-btn{display:none} }
+@media (max-width:899px), (hover:none){
+  .sx-toc{left:auto; right:6px}
+  .sx-toc nav{padding:8px 2px 8px 14px; touch-action:none}
+  .sx-toc a{display:flex; justify-content:flex-end; padding:3.5px 0 3.5px 8px}
+  .sx-toc a i{width:10px}
+  .sx-rail-tip{left:auto; right:46px}
+}
 @media (prefers-reduced-motion: reduce){ .sx-nav-btn{transition:none !important} .sx-progress>i{transition:none}
   .sx-toc a i, .sx-rail-tip{transition:none !important} }
-/* ── 2026-08-26 站点改版统一：存量报告的调色板与圆角覆盖到与首页一致 ──
-   老报告的 <style> 里烧着旧纸感配色；这段排在其后、同特异性靠后者胜，把变量与几个组件样式整体盖掉。
-   值要与 .claude/skills/research/templates/report.html（新报告）和 web/src/assets/feed.css 保持同步。 */
+/* ── 2026-08-26 站点改版统一：存量报告的调色板 / 版面覆盖到与首页与设计定稿一致 ──
+   老报告的 <style> 里烧着旧纸感样式；这段排在其后、同特异性靠后者胜，把变量与版面整体盖掉。
+   调色板值要与 .claude/skills/research/templates/report.html（新报告）和 web/src/assets/feed.css 同步。 */
 :root{
-  --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
-  --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+  --paper:#fafafa; --paper-2:#f0efec; --ink:#2b2926; --ink-soft:#6e6a63;
+  --muted:#7d786f; --rule:#e7e6e3; --seal:#b4543a; --seal-soft:#c97a62;
   --card:#ffffff; --accent-bg:#fbeae4;
+  --measure:47rem;   /* 阅读列 42→47rem：改版后两侧留白收一档 */
 }
 @media (prefers-color-scheme: dark){
   :root{
@@ -311,15 +290,40 @@ html.sx-toc-open,body.sx-toc-open{overflow:hidden}
     --card:#242220; --accent-bg:#33261f;
   }
 }
+.wrap{max-width:var(--measure)}   /* 存量报告的 .wrap 写死了旧 measure 的场合也统一吃到新宽度 */
 .seal{background:var(--accent-bg); border:0; border-radius:8px; width:1.7rem; height:1.7rem; font-size:.78rem}
-.plain,.tldr{border-radius:0 12px 12px 0}
-.findings{border-radius:14px; box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05)}
+/* 报头居中（设计定稿：等宽日期行感觉由 .meta 承担，大标题居中，其下是核心结论导读 + 短色条） */
+header.masthead{text-align:center; border-bottom:0; padding-bottom:0; margin-bottom:.6rem}
+header.masthead .kicker{justify-content:center}
+header.masthead h1{font-size:2.2rem; line-height:1.35}
+header.masthead .meta{justify-content:center}
+/* 核心结论（脚本已搬到报头下）：居中灰色导读 + 主色短色条收尾 */
+.tldr{background:transparent; border:0; border-radius:0; padding:0; margin:1.1rem auto 0;
+  max-width:36em; text-align:center; font-size:.98rem; line-height:1.9; color:var(--ink-soft)}
+.tldr .lbl{display:none}
+.tldr::after{content:""; display:block; width:40px; height:2px; border-radius:2px; background:var(--seal); margin:1.9rem auto 0}
+/* 先说人话：去卡片化，小标签 + 正文 */
+.plain{background:transparent; border:0; border-radius:0; padding:0; margin:2.8rem 0 2.4rem; font-size:1.02rem}
+.plain .lbl{color:var(--seal)}
+/* 关键发现：去卡片化，条目改成淡色标签行（设计定稿的 key-tag 样式） */
+.findings{background:transparent; border:0; box-shadow:none; border-radius:0; padding:0; margin-bottom:2.8rem}
+.findings h2{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.72rem;
+  letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); font-weight:600; margin:0 0 .6rem}
+.findings ul{list-style:none; padding:0; margin:0}
+.findings li{background:rgba(180,84,58,.07); border-left:2px solid rgba(180,84,58,.28); border-radius:0 8px 8px 0;
+  padding:.4rem .85rem; margin:.45rem 0; font-size:.9rem; line-height:1.65; color:var(--ink-soft)}
+/* 正文节题：去顶部分隔线；「A. …」式节题由脚本拆出块级等宽字母编号 */
+main h2{border-top:0; padding-top:0}
+.sx-lettered{margin:3rem 0 .9rem; font-size:1.32rem}
+.sx-sec-letter{display:block; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:1.55rem; font-weight:600; color:var(--seal-soft); line-height:1.25; margin-bottom:.1rem}
 .case,.limitation,.correction{border-radius:12px}
+/* 正文区块滚动淡入（脚本挂 body.sx-reveal + 块上 .sx-rv/.in；脚本不跑则全部直接可见） */
+body.sx-reveal .sx-rv{opacity:0; transform:translateY(14px); transition:opacity .5s ease, transform .5s ease}
+body.sx-reveal .sx-rv.in{opacity:1; transform:none}
 </style>
 <div class="sx-progress" aria-hidden="true"><i></i></div>
 <aside class="sx-toc" aria-label="目录"><nav><div class="h">目录</div></nav></aside>
-<button type="button" class="sx-nav-btn sx-toc-btn" aria-label="目录" title="目录" aria-haspopup="dialog" aria-controls="sx-toc-sheet" aria-expanded="false">≡</button>
-<div class="sx-toc-sheet" id="sx-toc-sheet" role="dialog" aria-modal="true" aria-label="目录"><div class="panel"><div class="grip"></div></div></div>
 <a class="sx-nav-btn sx-home" href="${homeHref}" aria-label="返回调研档案首页" title="返回档案首页">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 9.8V19h13V9.8"/></svg>
 </a>
