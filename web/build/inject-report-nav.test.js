@@ -292,3 +292,16 @@ test("连 <html> 都没有的碎片：CSP 插到文档最前面", () => {
   const out = injectReportNav("<main><h1>标题</h1></main>");
   expect(out.startsWith('<meta http-equiv="Content-Security-Policy"')).toBe(true);
 });
+
+// ── 2026-08-26 站点改版：存量报告的配色统一覆盖段 ─────────────────
+// 老报告的 <style> 里烧着旧纸感配色，靠注入段尾部的 :root 覆盖（含暗色）才与首页一致。
+// 这段要是被误删，站上 100+ 篇存量报告会静默退回旧配色——用测试钉住。
+test("注入段带新调色板覆盖（:root 亮/暗 + 组件圆角），且排在报告自身样式之后", () => {
+  const html = "<html><head><style>:root{--seal:#a3361f}</style></head><body><p>x</p></body></html>";
+  const out = injectReportNav(html);
+  expect(out).toContain("--seal:#b4543a");        // 亮色主色 = 首页珊瑚橙
+  expect(out).toContain("--seal:#d97e5c");        // 暗色主色
+  expect(out).toContain(".case,.limitation,.correction{border-radius:12px}");
+  // 覆盖段必须出现在报告自己的 <style> 之后（同特异性靠位置取胜）
+  expect(out.indexOf("--seal:#b4543a")).toBeGreaterThan(out.indexOf("--seal:#a3361f"));
+});

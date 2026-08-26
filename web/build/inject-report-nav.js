@@ -184,14 +184,14 @@ table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling
 table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
   padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
   overflow-wrap:break-word}
-table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap}
 table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
 /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
 table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
   min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
 /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
 table tbody tr:nth-child(even) td:first-child{background:var(--card)}
-table thead th:first-child{z-index:2; background:var(--accent-bg)}
+table thead th:first-child{z-index:2; background:var(--paper-2)}
 /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
 .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
 .sx-nav-btn{position:fixed; right:max(20px, calc((100vw - var(--measure)) / 2 - 56px)); width:44px; height:44px; border-radius:50%;
@@ -243,6 +243,25 @@ html.sx-toc-open,body.sx-toc-open{overflow:hidden}
 .sx-toc-btn{bottom:128px; font-size:1.3rem}
 @media (min-width:1100px){ .sx-toc{display:flex} .sx-toc-btn{display:none} }
 @media (prefers-reduced-motion: reduce){ .sx-nav-btn{transition:none !important} .sx-progress>i{transition:none} .sx-toc a{transition:none} }
+/* ── 2026-08-26 站点改版统一：存量报告的调色板与圆角覆盖到与首页一致 ──
+   老报告的 <style> 里烧着旧纸感配色；这段排在其后、同特异性靠后者胜，把变量与几个组件样式整体盖掉。
+   值要与 .claude/skills/research/templates/report.html（新报告）和 web/src/assets/feed.css 保持同步。 */
+:root{
+  --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+  --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+  --card:#ffffff; --accent-bg:#fbeae4;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+    --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+    --card:#242220; --accent-bg:#33261f;
+  }
+}
+.seal{background:var(--accent-bg); border:0; border-radius:8px; width:1.7rem; height:1.7rem; font-size:.78rem}
+.plain,.tldr{border-radius:0 12px 12px 0}
+.findings{border-radius:14px; box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05)}
+.case,.limitation,.correction{border-radius:12px}
 </style>
 <div class="sx-progress" aria-hidden="true"><i></i></div>
 <aside class="sx-toc" aria-label="目录"><nav><div class="h">目录</div></nav></aside>

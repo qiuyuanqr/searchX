@@ -29,17 +29,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{TITLE}} · 调研报告</title>
 <style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
   :root{
-    --paper:#f4f1ea; --paper-2:#ece7dc; --ink:#1c1a17; --ink-soft:#4a463f;
-    --muted:#8a8377; --rule:#d8d2c4; --seal:#a3361f; --seal-soft:#c25a40;
-    --card:#fbf9f4; --accent-bg:#efeadd;
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
     --measure:42rem;
   }
   @media (prefers-color-scheme: dark){
     :root{
-      --paper:#16140f; --paper-2:#1d1a14; --ink:#ece7da; --ink-soft:#b9b2a2;
-      --muted:#7d766a; --rule:#332f26; --seal:#e0735a; --seal-soft:#c25a40;
-      --card:#1c1913; --accent-bg:#211d15;
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
     }
   }
   *{box-sizing:border-box}
@@ -63,14 +65,14 @@
   table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
     padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
     overflow-wrap:break-word}
-  table thead th{background:var(--accent-bg); color:var(--ink); font-weight:600; white-space:nowrap}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
   table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
   /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
   table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
     min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
   /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
   table tbody tr:nth-child(even) td:first-child{background:var(--card)}
-  table thead th:first-child{z-index:2; background:var(--accent-bg)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
   /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
   .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
   .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
@@ -78,25 +80,27 @@
   header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
   .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
     font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
-  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.55rem; height:1.55rem;
-    border:1.5px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.7rem; font-weight:700;
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
     letter-spacing:0; transform:rotate(-4deg)}
   h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
   .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
     color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
   .meta b{color:var(--ink-soft); font-weight:600}
   /* 先说人话（给完全不懂这行的人，排第一块） */
-  .plain{background:var(--card); border-left:3px solid var(--seal-soft); padding:1rem 1.3rem;
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
     margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
   /* TL;DR（紧跟其后，负上边距收拢两块间距） */
-  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); padding:1.1rem 1.3rem;
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
     margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
   .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
     letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
   .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
     letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
   /* 关键发现 */
-  .findings{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
   .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
     letter-spacing:.04em; color:var(--ink-soft)}
   .findings ul{margin:0; padding-left:1.15rem}
@@ -112,7 +116,7 @@
   a:hover{color:var(--seal-soft)}
   strong{font-weight:600}
   /* 案例块 */
-  .case{background:var(--paper-2); border-radius:6px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
   .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
     font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
   .case p:first-of-type{margin-top:0}
@@ -122,12 +126,12 @@
   /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
   small.src-note{font-size:.82em; color:var(--muted)}
   /* 局限声明 */
-  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
     padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
   .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
     font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
   /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
-  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:6px;
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
     padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
   .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
     font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
