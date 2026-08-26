@@ -165,7 +165,7 @@ fi
 
 # —— 5) 有搁置件就告诉作者（限频） ——
 if [ -n "$PARKED" ]; then
-  alert stocks-import-parked "Stocks→searchX 每日同步：以下报告未过机器质检、已搁置未上线：$PARKED。跑 \`bun run scripts/research-qc.js --dir <目录> \` 看具体条目，处理后删掉 .parked 再 push。"
+  alert stocks-import-parked "Stocks→searchX 每日同步：以下报告未过机器质检、已搁置未上线：$PARKED。跑 \`bun run scripts/research-qc.js --dir <目录> \` 看具体条目。改好后删掉 .parked 再 push；若判定不值得上线（时效已过等），把正文删掉、目录里只留一个 .dropped（内容=report_id），它就不会被重新导入。"
 fi
 
 say "──────── 结束"

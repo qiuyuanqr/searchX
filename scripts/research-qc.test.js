@@ -4,6 +4,9 @@
 // 下面带「变异验证」注释的用例，是把检查改坏后必须变红的那些。
 
 import { test, expect } from "bun:test";
+import { mkdtempSync, mkdirSync, writeFileSync } from "fs";
+import { join } from "path";
+import { tmpdir } from "os";
 import {
   htmlToText, headings, reportNumbers, truthValues, candidates, reconciliationPower,
   checkNumbers, checkCoverage, checkFormat, runQc, renderReport, renderChallenge,
@@ -428,4 +431,121 @@ test("renderChallenge 把未用取数点与待核数字交到核验员手上", (
   expect(c).toContain("k.json");
   expect(c).toContain("9.87");
   expect(c).toContain("绝不许补编");
+});
+
+// ========== 2026-08-26：定价位口径时，从 26 篇搁置存量实测抓出的三类误报 ==========
+// 三类的共同点都是「H 节的客观披露」被当成了操作触发条件。§4.9 的边界是**用途**：
+// 引用新闻标题、行情回顾、筹码套牢带都是在陈述事实，不是在给读者一个买卖指令。
+// 每条误报豁免都配一条守卫——词表式豁免天然会放跑真违规（2026-08-25 两次教训）。
+
+test("H 节引用新闻标题里的价位 → 不报（陈述别人报道了什么，不是触发条件）", () => {
+  for (const s of [
+    "2026-08-24：新闻标题「茅台股价再次站上 1300 元」（发稿时点 11:26，为当日盘中快照）",
+    "2026-08-20：寒武纪股价跌破 1000 元关口（来源：东方财富，发稿时点 14:05）",
+  ]) {
+    expect(checkFormat({ reportHtml: stockHtml(s), type: "股票" }).blocking).toEqual([]);
+  }
+});
+
+test("守卫：同段提到新闻，不豁免后面真正的触发条件", () => {
+  const r = checkFormat({
+    reportHtml: stockHtml("新闻标题「茅台再次站上 1300 元」；若收盘价站上 1400 元则加仓"),
+    type: "股票",
+  });
+  expect(r.blocking.join()).toContain("1400");
+});
+
+test("明确标注的行情回顾 / 旧快照 → 不报（「曾」「历史上」是过去时不是条件）", () => {
+  for (const s of [
+    "历史上曾于 8 月 24 日重新站上 1300 元（置信度：高）",
+    "⚠️ 这是发稿时点的盘中旧快照，股价曾跌破 1000 元；以库内行情为准",
+  ]) {
+    expect(checkFormat({ reportHtml: stockHtml(s), type: "股票" }).blocking).toEqual([]);
+  }
+});
+
+test("守卫：条件句里的「曾」不算过去时，照样报", () => {
+  const r = checkFormat({
+    reportHtml: stockHtml("如果股价曾站上 1300 元后又跌破 1200 元，那么减仓"),
+    type: "股票",
+  });
+  expect(r.blocking.join()).toContain("1200");
+});
+
+test("筹码套牢带 / 密集成交区的价位区间 → 不报（客观筹码分布，同回购区间）", () => {
+  const r = checkFormat({
+    reportHtml: stockHtml("上方 910–1,154 元区间是密集套牢带，反弹到那里会遇到解套抛压"),
+    type: "股票",
+  });
+  expect(r.blocking).toEqual([]);
+});
+
+test("守卫：套牢带一旦当触发条件用 / 同段的情景区间，照样报", () => {
+  expect(
+    checkFormat({ reportHtml: stockHtml("若跌破套牢带下沿 910 元则减仓"), type: "股票" }).blocking.join()
+  ).toContain("910");
+  expect(
+    checkFormat({ reportHtml: stockHtml("上方是密集套牢带，悲观情景下股价在 150–170 元区间震荡"), type: "股票" }).blocking.join()
+  ).toContain("150");
+});
+
+test("H 节事件表与正文引述库内新闻里的价位 → 不报（同属引用别人的报道）", () => {
+  for (const s of [
+    "2026-08-24｜茅台股价再次站上 1300 元（东方财富，情感 +0.7）→ 无基本面增量",
+    "而库内新闻里 8-20 有“股价跌破 1000 元关口”（H 节第 3 条）",
+  ]) {
+    expect(checkFormat({ reportHtml: stockHtml(s), type: "股票" }).blocking).toEqual([]);
+  }
+});
+
+test("守卫：提到新闻不豁免同段的真触发条件", () => {
+  const r = checkFormat({
+    reportHtml: stockHtml("受新闻催化，若收盘价站上 1400 元则加仓"),
+    type: "股票",
+  });
+  expect(r.blocking.join()).toContain("1400");
+});
+
+// 2026-08-26 自审抓到的漏洞：引用/过去时豁免此前只靠「触发词前面有没有条件词」反制，
+// 而真实的触发条件不一定写「如果」——「跌破 42 元则减仓」就没有。于是只要同段提过新闻、
+// 或句中有个「曾」字，一条真红线就被静默放跑。
+// 更根本的判据：**句子给出了操作结论，用途就是指导买卖，任何豁免都不该生效**（§4.9）。
+test("守卫：带操作结论的句子，任何豁免都不生效（不写「如果」也算触发条件）", () => {
+  for (const s of [
+    "受新闻影响，跌破 42.0 元则减仓",
+    "该股曾冲高回落，跌破 42.0 元就回避",
+    "参考发稿时点快照，站上 49.8 元即加仓",
+  ]) {
+    expect(checkFormat({ reportHtml: stockHtml(s), type: "股票" }).blocking.join()).toContain("元");
+  }
+});
+
+test("反向：没有操作结论的引用/回顾仍然豁免（上面那条守卫不能把误报救回来）", () => {
+  for (const s of [
+    "2026-08-24：新闻标题「茅台股价再次站上 1300 元」（发稿时点 11:26）",
+    "历史上曾于 8 月 24 日重新站上 1300 元（置信度：高）",
+  ]) {
+    expect(checkFormat({ reportHtml: stockHtml(s), type: "股票" }).blocking).toEqual([]);
+  }
+});
+
+// 丢弃的报告（2026-08-26 起，目录里只留一个 .dropped、正文删掉）不该被当成「没得测」——
+// 那会让 --all 每次都点亮一片假红线，真问题反而淹掉。但**只认标记**：目录空着照旧报未测。
+test("只剩 .dropped 标记的目录：跳过，不算未测也不算红线", () => {
+  const root = mkdtempSync(join(tmpdir(), "qc-dropped-"));
+  mkdirSync(join(root, "2026-08-24_stock-000001"), { recursive: true });
+  writeFileSync(join(root, "2026-08-24_stock-000001", ".dropped"), "63\n");
+  const r = runQc("2026-08-24_stock-000001", root);
+  expect(r.dropped).toBe(true);
+  expect(r.blocking).toEqual([]);
+  expect(hasBlocking(r)).toBe(false);
+  expect(renderReport(r)).toContain("已丢弃");
+});
+
+test("守卫：目录里什么都没有，仍报「未跑完」（别把没测说成测过了）", () => {
+  const root = mkdtempSync(join(tmpdir(), "qc-empty-"));
+  mkdirSync(join(root, "2026-08-24_stock-000002"), { recursive: true });
+  const r = runQc("2026-08-24_stock-000002", root);
+  expect(r.ok).toBe(false);
+  expect(r.error).toBeTruthy();
 });

@@ -318,7 +318,7 @@ const BAND_PRICE_RE =
 // ⚠️ 绝不能放**裸「已」**（「若已持有…跌破 X 元」是条件不是过去时）、也不能放裸「后」
 // （「跌停反弹后…跌破 X 元转防御」会被误吞）——两条都有守卫钉着。
 const PAST_TENSE_NEAR_RE =
-  /(现在|目前|当前|已经|截至|收于|收盘|近期|上周|昨日|今年至今|一路|随后|此后|触及|年初)[^。；\n]{0,20}$/;
+  /(现在|目前|当前|已经|截至|收于|收盘|近期|上周|昨日|今年至今|一路|随后|此后|触及|年初|曾|历史上)[^。；\n]{0,20}$/;
 
 // 条件句里的「过去时词」不是过去时——这是上面那条注释里「若**已**持有…跌破 X 元」的同一个坑，
 // 只是换了个词：「或股价**收盘**跌破筹码成本 50% 分位 251.6 元，那么观望或减仓」，这里的
@@ -327,6 +327,12 @@ const PAST_TENSE_NEAR_RE =
 // 前 30 字窗口这才罩进「股价收盘」，把存量 300620 那条真红线整条豁免掉了。
 // 所以：窗口里出现条件词时，过去时豁免一律不生效（守卫测试钉着）。
 const CONDITIONAL_NEAR_RE = /(如果|若|一旦|倘若|假如|除非)[^。；\n]{0,30}$/;
+// 比条件词更根本的判据：**句子给出了操作结论，用途就是指导买卖**（§4.9 的「边界是用途」）。
+// 真实的触发条件不一定写「如果」——「跌破 42 元则减仓」就没有，于是只要同段提过新闻、
+// 或句中有个「曾」字，这条真红线就会被引用/过去时豁免静默放跑（2026-08-26 自审抓到）。
+// 在价位**之后**的紧邻窗口里找操作结论，找到就一律不豁免。
+const ACTION_AFTER_RE =
+  /(则|那么|就|即|后)?\s*[^。；\n]{0,12}(减仓|加仓|回避|试仓|观望|离场|止盈|止损|转防御|降低仓位|加大仓位)/;
 
 // 大宗商品 / 产品售价**不是股价**。「批价跌破 1369 元」（茅台飞天散瓶）、「现货金站稳
 // 4,300 美元」（山东黄金）这类句子是行业事实与宏观条件，写进触发条件天经地义，
@@ -369,6 +375,18 @@ const BUYBACK_DISCLOSURE_RE = /(回购|增持|减持)[^。；\n]{0,14}?(?:均价
 // 加进来会把它们一起放过（客观披露价一旦当触发条件用，就不再是客观披露）。
 // ⚠️ 只放这两个 + 现状词。别顺手把「历史高点 / 授予价」也加进来（见上方那条注释）。
 // 现状词（当前 / 现价 / 最新）出现在**匹配文本内部**时是行情陈述而非前瞻触发：
+// H 节引用别人报道里的价位：「新闻标题『茅台股价再次站上 1300 元』」「跌破 1000 元关口
+// （来源：东方财富，发稿时点 14:05）」——那是在陈述别人报道了什么，不是给读者的买卖指令，
+// §4.9 的边界是**用途**。标记词可能落在价位之后（「来源：」常跟在后面），所以前后都要看。
+// 守卫靠「条件句优先」：同段提过新闻不豁免后面真正的触发条件（守卫测试钉着）。
+// 「情感 +0.7」是 H 节事件表每行必带的字段，「新闻」覆盖正文引述库内新闻标题的写法。
+const QUOTE_SOURCE_RE = /新闻标题|发稿时点|来源：|（来源|报道称|旧快照|库内新闻|新闻里|情感\s*[+-]/;
+
+// 筹码套牢带 / 密集成交区的价位区间：与回购区间同类，是客观筹码分布披露而非情景预测。
+// **只看价位之后的紧邻窗口**：写在前面会被「密集套牢带，悲观情景下股价在 150–170 元区间」
+// 这种同段情景区间蹭到豁免（守卫测试钉着这一条）。
+const CHIP_BAND_RE = /^\s*(是|为)?\s*(密集)?(套牢带|成交密集区|筹码密集区|密集成交区|套牢区)/;
+
 // 「股价从年内高点 65.55 元回落至当前 30.48 元」——PAST_TENSE_NEAR_RE 只看动词前面，
 // 这种"时间状语落在动词后面"的写法它够不着（2026-08-16 导入山东黄金那篇时标定）。
 const BASELINE_PRICE_RE = /基准日|发行价|当前|现价|最新价/;
@@ -456,7 +474,14 @@ export function checkFormat({ reportHtml, notesMd, type, dir }) {
       for (const m of scanned.matchAll(TRIGGER_PRICE_RE)) {
         const before = scanned.slice(Math.max(0, m.index - 30), m.index);
         // 条件句优先：「若…股价收盘跌破 X 元」里的「收盘」是条件不是回顾，不吃过去时豁免。
-        if (!CONDITIONAL_NEAR_RE.test(before) && PAST_TENSE_NEAR_RE.test(before)) continue;
+        const around = scanned.slice(Math.max(0, m.index - 40), m.index + m[0].length + 40);
+        // 条件句优先：「若…股价收盘跌破 X 元」里的「收盘」是条件不是回顾，不吃过去时豁免；
+        // 引用豁免同理——同段提过新闻，不等于后面那个真触发条件也能跟着放行。
+        const after = scanned.slice(m.index + m[0].length, m.index + m[0].length + 30);
+        if (!CONDITIONAL_NEAR_RE.test(before) && !ACTION_AFTER_RE.test(after)) {
+          if (PAST_TENSE_NEAR_RE.test(before)) continue;
+          if (QUOTE_SOURCE_RE.test(around)) continue;
+        }
         if (BASELINE_PRICE_RE.test(m[0])) continue;
         if (isCommodity(m)) continue;
         blocking.push(`【${label}】具体触发价位「${m[0].trim()}」（§4.9 价位红线：操作触发条件不得用具体价位，改写成相对/条件表述）——上下文：${at(m)}`);
@@ -464,6 +489,7 @@ export function checkFormat({ reportHtml, notesMd, type, dir }) {
       for (const m of scanned.matchAll(BAND_PRICE_RE)) {
         if (isCommodity(m)) continue;
         if (BUYBACK_DISCLOSURE_RE.test(scanned.slice(Math.max(0, m.index - 20), m.index))) continue;
+        if (CHIP_BAND_RE.test(scanned.slice(m.index + m[0].length, m.index + m[0].length + 12))) continue;
         blocking.push(`【${label}】预测性价格区间「${m[0].trim()}」（§4.9 价位红线：三情景走势不得给具体价位区间，等于给了目标价）——上下文：${at(m)}`);
       }
       const targets = [...scanned.matchAll(BROKER_TARGET_RE)];
@@ -569,6 +595,12 @@ export function runQc(dirName, root = ARCHIVE) {
     // 报告不存在就是「没得测」，必须 ok=false——否则会渲染成「✅ 未见红线」，
     // 把「没测」说成「测过了」，正是本模块最不该犯的错。
     if (!existsSync(reportPath)) {
+      // 已丢弃的报告（stocks-import 判定不值得上线，目录里只留 `.dropped`、正文删掉）
+      // 不是「没得测」——它压根不该上线。**只认这个标记**：目录空着照旧按未测处理，
+      // 否则 --all 每次都点亮一片假红线，真问题反而被淹掉。
+      if (existsSync(join(dirPath, ".dropped"))) {
+        return { ...base, ok: true, dropped: true, type: "已丢弃" };
+      }
       return { ...base, error: `${join(dirName, "report.html")} 不存在` };
     }
     const reportHtml = readFileSync(reportPath, "utf8");
@@ -624,6 +656,10 @@ export function renderReport(qc) {
   L.push(`⚙️  交付前机器质检 · ${qc.dir}${qc.type ? `（${qc.type}）` : ""}`);
   if (!qc.ok) {
     L.push(`  ⛔ 质检未跑完（${qc.error || "未知原因"}）——按「未测」对待，别当通过`);
+    return L.join("\n");
+  }
+  if (qc.dropped) {
+    L.push("  ○ 已丢弃（目录里只剩 .dropped 标记），不上线也不必质检");
     return L.join("\n");
   }
   if (!qc.blocking.length) L.push("  ✅ 硬红线：未见缺章节 / 具体触发价位 / 私人信息 / 导语抽空");

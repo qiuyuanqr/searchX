@@ -31,6 +31,7 @@ import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from 
 import { join } from "path";
 import { execFileSync } from "child_process";
 import { sanitize } from "./sanitize.js";
+import { stripAnchoredPrice, stripAnchoredPriceDeep } from "./price-anchor.js";
 import { mdToHtml, escapeHtml, inline } from "./md-to-html.js";
 import { metaOf, exchangeOf } from "./mapping.js";
 import { buildSectorSql, groupSectorRows, pickConcepts, suggestBoards } from "./sectors.js";
@@ -124,14 +125,25 @@ function querySectors(codes) {
 
 // ========== 幂等：已导过哪些 ==========
 
+// 已处理过的 reportId。两个来源：
+//   ① 正常导入的报告 —— notes.md frontmatter 里的 stocks_report_id；
+//   ② 判定不值得上线、已丢弃的 —— 目录里只留一个 `.dropped`（内容=reportId），正文删掉。
+// 没有 ② 这层，「删掉搁置目录」等于把它变回「未导入」，下个 tick 原样再导一遍——
+// 搁置 → 删除 → 重导 → 再搁置，永远转圈（2026-08-26 清 26 篇积压时发现）。
 export function importedIds(archiveRoot) {
   const ids = new Set();
   if (!existsSync(archiveRoot)) return ids;
   for (const dir of readdirSync(archiveRoot)) {
     const notes = join(archiveRoot, dir, "notes.md");
-    if (!existsSync(notes)) continue;
-    const m = readFileSync(notes, "utf8").match(/^stocks_report_id:\s*(\d+)\s*$/m);
-    if (m) ids.add(Number(m[1]));
+    if (existsSync(notes)) {
+      const m = readFileSync(notes, "utf8").match(/^stocks_report_id:\s*(\d+)\s*$/m);
+      if (m) { ids.add(Number(m[1])); continue; }
+    }
+    const dropped = join(archiveRoot, dir, ".dropped");
+    if (existsSync(dropped)) {
+      const n = parseInt(readFileSync(dropped, "utf8").trim(), 10);
+      if (Number.isFinite(n)) ids.add(n);
+    }
   }
   return ids;
 }
@@ -440,7 +452,11 @@ export function importOne(row, { template, dryRun, sector }) {
   const { slug, boards, known } = metaOf(code);
   const dir = `${date}_${slug}`;
   const parsedSummary = JSON.parse(row.summary_json || "{}");
-  const { value: summary, applied: priceFixes } = applyPriceFixes(parsedSummary, row.id);
+  // 两层价位处理：先走 PRICE_REDLINE_FIXES 那张逐条手列的明表（首批 25 篇的历史遗留），
+  // 再走通用的「删掉带锚价位里的数值」（见 price-anchor.js）。没有锚的裸价位两层都不碰，
+  // 由每日任务的 QC 闸拦下搁置——改写器不替别人猜判断。
+  const { value: summaryFixed, applied: priceFixes } = applyPriceFixes(parsedSummary, row.id);
+  const { value: summary, changes: summaryAnchor } = stripAnchoredPriceDeep(summaryFixed);
   // 申万行业与概念标签：查不到就是空，展示层按空处理（不显示那一行），不编造。
   const industry = sector?.industry || "";
   const concepts = pickConcepts(sector?.concepts || []);
@@ -450,7 +466,8 @@ export function importOne(row, { template, dryRun, sector }) {
   };
 
   const raw = sanitize(row.content_md);
-  const { value: md, applied: bodyFixes } = applyPriceFixes(raw.md, row.id);
+  const { value: mdFixed, applied: bodyFixes } = applyPriceFixes(raw.md, row.id);
+  const { text: md, changes: bodyAnchor } = stripAnchoredPrice(mdFixed);
   const dropped = raw.dropped;
   const oneLiner = pickOneLiner(md);
   const links = pickLinks(md);
@@ -491,6 +508,8 @@ export function importOne(row, { template, dryRun, sector }) {
   return {
     dir, dropped: dropped.length, links: sourceCount, known, title: meta.title,
     priceFixes: [...priceFixes, ...bodyFixes],
+    // 通用改写单独计数并留下原文→改后，导入日志逐条打出来：改的是别人报告里的字，要可复核。
+    anchorFixes: [...summaryAnchor, ...bodyAnchor],
     industry, concepts,
     // 只是建议，不写进 mapping.js——由人确认（2026-08-17 用户拍板）。
     suggestedBoards: suggestBoards(concepts),
@@ -541,7 +560,9 @@ export function main(argv = process.argv.slice(2)) {
     const obs = args.dryRun ? "-" : toObsidian(res.dir, res.title);
     if (args.porcelain) { console.log(res.dir); continue; }
     const pf = res.priceFixes.length ? ` · 价位红线改写 ${res.priceFixes.length} 处` : "";
-    log(`  ✓ ${res.dir}  来源 ${res.links} 条 · 过滤系统参数句 ${res.dropped} 条${pf} · Obsidian ${obs}`);
+    const af = res.anchorFixes?.length ? ` · 带锚价位删数值 ${res.anchorFixes.length} 处` : "";
+    for (const c of res.anchorFixes || []) log(`    ↳ 「${c.from}」→「${c.to}」`);
+    log(`  ✓ ${res.dir}  来源 ${res.links} 条 · 过滤系统参数句 ${res.dropped} 条${pf}${af} · Obsidian ${obs}`);
   }
   if (args.porcelain) return 0;
   if (unknown.length) {

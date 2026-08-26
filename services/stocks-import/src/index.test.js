@@ -208,3 +208,15 @@ test.if(process.env.SX_SLOW_TESTS === "1")("[慢] 真造锁冲突：等到锁释
     expect(rows).toEqual([{ id: 1, v: "a" }]);
   } finally { holder.kill(); }
 }, 60_000);
+
+// 2026-08-26：定价位口径时加的「丢弃」标记。搁置的报告若判定不值得上线（时效已过），
+// 目录里只留一个 .dropped（内容=reportId），正文删掉。没有这层，删目录等于「未导入」，
+// 下个 tick 会原样再导一遍——搁置→删除→重导→再搁置，永远转圈。
+test("importedIds 认 .dropped 标记：丢弃过的报告不会被重新导入", () => {
+  const root = mkdtempSync(join(tmpdir(), "stocks-import-dropped-"));
+  mkdirSync(join(root, "2026-08-24_stock-000001"), { recursive: true });
+  writeFileSync(join(root, "2026-08-24_stock-000001", ".dropped"), "77\n");
+  mkdirSync(join(root, "2026-08-25_stock-000002"), { recursive: true });
+  writeFileSync(join(root, "2026-08-25_stock-000002", "notes.md"), "---\nstocks_report_id: 42\n---\n");
+  expect([...importedIds(root)].sort((a, b) => a - b)).toEqual([42, 77]);
+});
