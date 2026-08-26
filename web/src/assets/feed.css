@@ -5,7 +5,8 @@
   --muted:#7d786f; --rule:#e7e6e3; --hair:rgba(50,45,38,.08); --seal:#b4543a; --seal-soft:#c97a62; --card:#ffffff;
   --accent-bg:#fbeae4; --err:#b3402c;
   --t-stock:#b4543a; --t-concept:#1f7a68; --t-sector:#6d5bb0; --t-method:#2e6fa8;
-  --measure:56rem; /* 内容列宽（2026-08-26 晚 46→56rem：收留白、提信息量），浮动按钮与 .wrap/.topbar-in 都对齐它 */
+  --measure:44rem; /* 内容列宽＝参考站实测 702px（复刻级别），浮动按钮与 .wrap/.topbar-in 都对齐它 */
+  --faint:#dddad5; /* 非首条编号的极淡灰（参考站 #ddd 的暖化） */
   --sans:ui-sans-serif,-apple-system,"PingFang SC","Hiragino Sans GB",sans-serif;
   --serif:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; /* 日期/编号/代码的等宽字（不加载外部字体） */
@@ -14,6 +15,7 @@
   :root{
     --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-2:#cbc6bd; --ink-soft:#b9b4ab;
     --muted:#8f8a80; --rule:#35322c; --hair:rgba(240,236,228,.08); --seal:#d97e5c; --seal-soft:#c97a62; --card:#242220;
+    --faint:#494540;
     --accent-bg:#33261f; --err:#e0735a;
     --t-stock:#d97e5c; --t-concept:#4aa58e; --t-sector:#a495e0; --t-method:#6ea3d1;
   }
@@ -38,8 +40,8 @@ body{background:var(--paper); color:var(--ink); font-family:var(--sans);
 .nav-link:hover{color:var(--seal)}
 .nav-link:focus-visible{outline:2px solid var(--seal-soft); outline-offset:3px}
 .hero{text-align:center; margin:2.3rem 0 .4rem}
-.hero-title{font-family:var(--serif); font-size:1.62rem; font-weight:800; color:var(--ink); letter-spacing:.01em; line-height:1.35; margin:0}
-.hero-sub{font-family:var(--sans); font-size:.86rem; color:var(--muted); margin:.7rem 0 0}
+.hero-title{font-family:var(--serif); font-size:2rem; font-weight:800; color:var(--ink); letter-spacing:.01em; line-height:1.35; margin:0} /* 32px，用户在画布上定的 */
+.hero-sub{font-family:var(--sans); font-size:.92rem; color:var(--muted); margin:.6rem 0 0}
 .kicker{font-family:var(--sans); font-size:.68rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:.55rem}
 @media (max-width:430px){ .kicker-en{display:none} } /* 窄屏藏英文副标，防顶栏折行 */
 .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem; background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700; font-family:var(--serif); transform:rotate(-4deg)}
@@ -82,31 +84,34 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .filterbar .search-wrap{max-width:30rem; margin:0 auto .8rem}
 .filterbar .chips{margin-bottom:0}
 .count{font-family:var(--sans); font-size:.72rem; color:var(--muted); text-align:center; margin-top:.5rem}
-/* ── 简报式信息流（2026-08-26 晚改版）：一天一张卡，卡内编号列条目 ── */
+/* ── 简报式信息流（复刻 ai-digest 实测规格）：一天一张卡，卡内编号列条目、无分割线 ──
+   参考值（1280 视口实测）：卡 702px / padding 25.6px 32px / radius 6px / shadow 0 1px 4px 5%；
+   首条 18px、编号与加粗段同用强调色；其余条 14.7px、编号极淡灰、粗体段近黑、正文灰。 */
 .article-list{list-style:none; margin-top:.2rem; display:flex; flex-direction:column; gap:1rem}
-.day-card{background:var(--card); border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,.05); padding:1.3rem 1.55rem 1.05rem}
+.day-card{background:var(--card); border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,.05); padding:1.6rem 2rem}
 .day-card.hide{display:none}
 .day-head{display:flex; align-items:baseline; gap:.6rem}
-.day-date{font-family:var(--mono); font-size:.84rem; color:var(--muted); letter-spacing:.01em}
-.day-meta{margin-left:auto; font-family:var(--sans); font-size:.72rem; color:var(--muted); opacity:.75}
+.day-date{font-family:var(--mono); font-size:.88rem; color:var(--muted); letter-spacing:.01em}
+.day-meta{margin-left:auto; font-family:var(--sans); font-size:.75rem; color:var(--muted); opacity:.65}
 /* 条目编号用 CSS 计数器：只数没被筛掉的条目，筛选后自动 01 02… 重排、不留空号 */
-.day-entries{margin-top:.5rem; counter-reset:entry}
+.day-entries{margin-top:.6rem; counter-reset:entry}
 .article-card{display:block}
 .article-card.hide{display:none}
 .article-card:not(.hide){counter-increment:entry}
-.article-card + .article-card:not(.hide){border-top:1px solid var(--paper-2)}
-.entry{display:flex; gap:.9rem; align-items:baseline; padding:.72rem 0; text-decoration:none; color:inherit}
-.num{flex:none; font-family:var(--mono); font-size:.84rem; font-weight:600; color:var(--muted); opacity:.55; min-width:1.4em}
+.entry{display:flex; gap:.8rem; align-items:baseline; padding:.38rem 0; text-decoration:none; color:inherit}
+.num{flex:none; font-family:var(--mono); font-size:1.05rem; font-weight:600; color:var(--faint); min-width:1.5em}
 .num::before{content:counter(entry, decimal-leading-zero)}
-.eline{font-family:var(--sans); font-size:.94rem; line-height:1.7; color:var(--ink-2);
+.eline{font-family:var(--sans); font-size:.92rem; line-height:1.7; color:var(--muted);
   display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
-.ehead{font-weight:700; color:var(--ink); transition:color .18s}
+.ehead{font-weight:650; color:var(--ink); transition:color .18s}
 .entry:hover .ehead{color:var(--seal)}
-/* 每天的第一条高亮：编号与加粗段用主色（参照 ai-digest 的 01 强调） */
-.day-entries .article-card:first-child .num{color:var(--seal-soft); opacity:1}
+/* 每天的第一条整级放大：18px + 编号与加粗段同用主色、正文深一档（参考站的 01 强调层级） */
+.day-entries .article-card:first-child .entry{padding:.3rem 0 .45rem}
+.day-entries .article-card:first-child .num{color:var(--seal); font-size:1.1rem}
+.day-entries .article-card:first-child .eline{font-size:1.13rem; line-height:1.6; color:var(--ink-2)}
 .day-entries .article-card:first-child .ehead{color:var(--seal)}
 .day-entries .article-card:first-child .entry:hover .ehead{color:var(--err)}
-.code{font-family:var(--mono); font-size:.74rem; font-weight:400; color:var(--muted); opacity:.8; letter-spacing:0; white-space:nowrap}
+.code{font-family:var(--mono); font-size:.74rem; font-weight:400; color:var(--muted); opacity:.7; letter-spacing:0; white-space:nowrap}
 /* 行尾标注：股票是涨跌小字，少数派类型（概念/板块…）是彩色类型字（颜色按 data-type 走） */
 .dir{font-family:var(--sans); font-size:.76rem; font-weight:600; white-space:nowrap}
 .tprefix{font-family:var(--sans); font-size:.76rem; font-weight:600; color:var(--seal); white-space:nowrap}
