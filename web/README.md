@@ -1,6 +1,6 @@
 # web — 信息流站
 
-把 `research/` 的调研产出渲染成像纸刊一样的阅读型信息流站（暖色纸底、衬线字体、大量留白），部署到 GitHub Pages（https://qiuyuanqr.github.io/searchX/）。
+把 `research/` 的调研产出渲染成阅读型信息流站（2026-08-26 起：暖灰底 + 圆角白卡 + 珊瑚橙主色，衬线标题 + 无衬线正文，筛选按类型配色），部署到 GitHub Pages（https://qiuyuanqr.github.io/searchX/）。
 
 | 子目录 | 是什么 |
 |---|---|
