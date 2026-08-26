@@ -66,9 +66,26 @@ const NAV_SCRIPT = `
   document.querySelectorAll("main h2").forEach(function(h){
     if (h.childNodes.length === 1 && h.firstChild.nodeType === 3){
       var m = h.textContent.match(/^([A-Z])[.、．]\\s*(.+)$/);
-      if (m){ h.innerHTML = '<span class="sx-sec-letter">' + m[1] + '</span>' + esc(m[2]); h.classList.add("sx-lettered"); }
+      if (m){ h.innerHTML = '<span class="sx-sec-letter">' + m[1] + '</span><span class="sx-sec-title">' + esc(m[2]) + '</span>'; h.classList.add("sx-lettered"); }
     }
   });
+
+  // 正文整体装进白卡（参考站的故事卡）：报头 + 核心结论留在灰底上，其余全部入卡。
+  var wrapEl = document.querySelector(".wrap");
+  if (wrapEl && plainEl){
+    var bodyCard = document.createElement("div");
+    bodyCard.className = "sx-body-card";
+    var moving = [];
+    var started = false;
+    [].slice.call(wrapEl.children).forEach(function(n){
+      if (n === plainEl) started = true;
+      if (started && n.tagName !== "FOOTER") moving.push(n);
+    });
+    if (moving.length){
+      wrapEl.insertBefore(bodyCard, moving[0]);
+      moving.forEach(function(n){ bodyCard.appendChild(n); });
+    }
+  }
 
   // 迷你横条目录（参照 Codex 的长内容导航）：每节一根等长小横条，标题存 data-label。
   function railHtml(){ return secs.map(function(s){ return '<a href="#" data-id="' + esc(s.id) + '" data-label="' + esc(s.label) + '"><i></i></a>'; }).join(""); }
@@ -328,25 +345,45 @@ header.masthead .meta{justify-content:center; row-gap:.3rem}
 .sx-tags{display:flex; flex-wrap:wrap; justify-content:center; gap:.35rem; margin-top:.7rem}
 .sx-tag{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem; color:var(--muted);
   background:var(--paper-2); border-radius:999px; padding:.16rem .62rem; white-space:nowrap}
-/* 报头下三个导读块统一同一套语法：小标签 + 左对齐正文（长文居中会两边参差、显乱） */
-.tldr{background:transparent; border:0; border-radius:0; padding:0; margin:2.2rem 0 0;
-  text-align:left; font-size:1.03rem; line-height:1.85; color:var(--ink-soft)}
+/* 核心结论留在灰底报头区：小标签 + 左对齐灰字导读（参考站摘要的位置与灰度） */
+.tldr{background:transparent; border:0; border-radius:0; padding:0; margin:2rem 0 0;
+  text-align:left; font-family:system-ui,-apple-system,"PingFang SC","Noto Sans SC",sans-serif;
+  font-size:.95rem; line-height:1.8; color:var(--muted)}
 .tldr .lbl{display:block; color:var(--seal)}
-/* 先说人话：去卡片化，小标签 + 正文 */
-.plain{background:transparent; border:0; border-radius:0; padding:0; margin:2.2rem 0; font-size:1.02rem}
+/* 正文白卡（参考站实测：702px 卡 / padding 40px 48px / radius 6 / 同款投影），
+   卡内正文整体切无衬线 18.4px、行高 1.85、两端对齐——衬线只留给页面大标题。 */
+.sx-body-card{background:var(--card); border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,.05);
+  padding:2.5rem 3rem; margin-top:2rem;
+  font-family:system-ui,-apple-system,"PingFang SC","Noto Sans SC",sans-serif;
+  font-size:1.13rem; line-height:1.85; color:var(--ink-2)}
+.sx-body-card p{text-align:justify; margin:0 0 1.35rem}
+.sx-body-card ul,.sx-body-card ol{padding-left:1.5em; margin:0 0 1.35rem}
+.sx-body-card li{margin:.35rem 0}
+@media (max-width:640px){ .sx-body-card{padding:1.5rem 1.15rem} }
+/* 先说人话 / 关键发现（已入卡）：小标签 + 正文；关键发现条目是淡色标签行 */
+.plain{background:transparent; border:0; border-radius:0; padding:0; margin:0 0 2rem; font-size:1.05rem}
 .plain .lbl{color:var(--seal)}
-/* 关键发现：去卡片化，条目改成淡色标签行（设计定稿的 key-tag 样式） */
-.findings{background:transparent; border:0; box-shadow:none; border-radius:0; padding:0; margin-bottom:2.6rem}
-.findings h2{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.72rem;
-  letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); font-weight:600; margin:0 0 .6rem}
+.findings{background:transparent; border:0; box-shadow:none; border-radius:0; padding:0; margin-bottom:2.4rem}
+.findings h2{font-family:inherit; font-size:.72rem; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--seal-soft); font-weight:600; margin:0 0 .6rem; border:0; padding:0}
 .findings ul{list-style:none; padding:0; margin:0}
 .findings li{background:rgba(180,84,58,.07); border-left:2px solid rgba(180,84,58,.28); border-radius:0 8px 8px 0;
   padding:.4rem .85rem; margin:.45rem 0; font-size:.9rem; line-height:1.65; color:var(--ink-soft)}
-/* 正文节题：去顶部分隔线；「A. …」式节题由脚本拆出块级等宽字母编号 */
+/* 节题：大号等宽字母编号与无衬线粗标题同行、基线对齐（参考站 01 + 标题的排法） */
 main h2{border-top:0; padding-top:0}
-.sx-lettered{margin:3rem 0 .9rem; font-size:1.32rem}
-.sx-sec-letter{display:block; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  font-size:1.55rem; font-weight:600; color:var(--seal-soft); line-height:1.25; margin-bottom:.1rem}
+.sx-lettered{display:flex; align-items:baseline; gap:.9rem; margin:2.8rem 0 1.3rem;
+  font-size:1.28rem; font-weight:700; line-height:1.75; color:var(--ink)}
+.sx-lettered:first-child{margin-top:0}
+.sx-sec-title{min-width:0}
+.sx-sec-letter{flex:none; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:2.3rem; font-weight:600; color:var(--seal-soft); line-height:1}
+/* 风险/名词小抄/来源的节题与正文节题同一字级；卡内不再用粗分隔线 */
+section.risks,section.sources,.glossary{border-top:0; margin-top:2.4rem; padding-top:0}
+section.risks h2,.glossary h2,section.sources h2{font-family:inherit; font-size:1.28rem; font-weight:700; letter-spacing:0; margin:0 0 .9rem}
+/* 来源清单装浅灰盒（参考站 story 尾的来源盒） */
+section.sources{background:var(--paper-2); border-radius:6px; padding:1.1rem 1.4rem}
+section.sources h2{font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); font-weight:600}
+section.sources li{border-bottom:0; font-size:.85rem}
 .case,.limitation,.correction{border-radius:12px}
 /* 正文区块滚动淡入（脚本挂 body.sx-reveal + 块上 .sx-rv/.in；脚本不跑则全部直接可见） */
 body.sx-reveal .sx-rv{opacity:0; transform:translateY(14px); transition:opacity .5s ease, transform .5s ease}
