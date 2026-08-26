@@ -8,23 +8,32 @@
      而页面要渲染报告标题与 Pagefind 摘录——这些内容都出自全权限 headless Claude 生成的报告正文。
      script-src 'self' 杜绝任何内联脚本执行；wasm-unsafe-eval 是 Pagefind 全文检索的 WASM 所需。 -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' {{WORKER_URL}} {{WORKER_FALLBACK_URL}}; base-uri 'none'; form-action 'none'">
-<title>searchX · 调研档案</title>
+<title>SearchX · 调研档案</title>
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/feed.css">
 </head>
 <body data-pagefind-ignore>
+  <!-- 简报式版式（2026-08-26 晚改版，参照 ai-digest 的布局）：细线顶栏 + 居中刊头 + 一天一卡 -->
+  <header class="topbar">
+    <div class="topbar-in">
+      <span class="brand-name">SearchX 调研档案</span>
+      <nav class="topnav">
+        <button type="button" class="nav-link" id="toggle-search" aria-expanded="false" aria-controls="q">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.6"/><path d="M10.5 10.5 L14 14"/></svg>搜索
+        </button>
+        <button type="button" class="nav-link" id="open-submit" aria-haspopup="dialog" aria-controls="submit-modal" aria-expanded="false">提交调研请求</button>
+      </nav>
+    </div>
+  </header>
   <div class="wrap">
-    <header>
-      <div class="kicker">
-        <span class="seal">研</span> 深度调研引擎<span class="kicker-en"> · DEEP RESEARCH</span>
-        <button type="button" class="submit-link" id="open-submit" aria-haspopup="dialog" aria-controls="submit-modal" aria-expanded="false">+ 提交调研请求</button>
-      </div>
-      <h1 class="brand">searchX · 调研档案</h1>
-    </header>
-    <!-- 筛选区必须是 .wrap 的直接子元素：sticky 只能在父容器内生效，留在 header 里会随 header 一起滚走 -->
+    <div class="hero">
+      <h1 class="hero-title">把一个对象研究透，讲给你听</h1>
+      <p class="hero-sub">深度调研引擎 · 结论先行，可溯源，可证伪</p>
+    </div>
     <div class="filterbar">
-      <div class="search-wrap">
+      <!-- 搜索框默认收起，顶栏「搜索」展开（feed.js 的 bindSearchToggle） -->
+      <div class="search-wrap" hidden>
         <input id="q" class="search" placeholder="搜索题目、结论、标签…" aria-label="搜索题目、结论、标签" autocomplete="off">
         <button type="button" class="search-clear" id="q-clear" aria-label="清空搜索" hidden>✕</button>
       </div>

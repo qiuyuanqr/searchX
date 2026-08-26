@@ -2,34 +2,46 @@ import { test, expect } from "bun:test";
 import { renderIndex } from "./render-index.js";
 
 const TPL = `<ul class="article-list"><!-- CARDS --></ul>`;
-const mk = (date, title) => ({
+const mk = (date, title, extra = {}) => ({
   dir: `${date}_x`, date, slug: "x", type: "概念", title,
-  tldr: "t", tags: [], boards: [], sourceCount: 1, href: `r/${date}_x/`,
+  tldr: "t", tags: [], boards: [], sourceCount: 1, href: `r/${date}_x/`, ...extra,
 });
 
-test("把卡片注入占位符，保留顺序", () => {
+test("把条目注入占位符，保留顺序", () => {
   const html = renderIndex([mk("2026-06-02", "B 标题"), mk("2026-06-01", "A 标题")], TPL);
   expect(html).not.toContain("<!-- CARDS -->");
   expect(html.indexOf("B 标题")).toBeLessThan(html.indexOf("A 标题"));
 });
 
-test("跨月边界插入月分隔行，标签为「年 · 中文月」", () => {
-  const html = renderIndex([mk("2026-06-24", "六月条目"), mk("2026-05-30", "五月条目")], TPL);
-  expect(html).toContain('<li class="month-sep" data-month="2026-06">2026 · 六月</li>');
-  expect(html).toContain('<li class="month-sep" data-month="2026-05">2026 · 五月</li>');
-  // 分隔在对应卡片之前
-  expect(html.indexOf("2026 · 六月")).toBeLessThan(html.indexOf("六月条目"));
-  expect(html.indexOf("六月条目")).toBeLessThan(html.indexOf("2026 · 五月"));
+test("简报式分组（2026-08-26 晚改版）：一天一张卡，同日条目并入同卡", () => {
+  const html = renderIndex([mk("2026-06-24", "甲"), mk("2026-06-24", "乙"), mk("2026-06-20", "丙")], TPL);
+  expect(html.match(/class="day-card"/g).length).toBe(2);
+  expect(html).toContain('data-date="2026-06-24"');
+  expect(html).toContain('<span class="day-date">2026 年 6 月 24 日</span>');
+  // 甲乙同卡：两者之间不再出现新的卡头
+  const seg = html.slice(html.indexOf("甲"), html.indexOf("乙"));
+  expect(seg).not.toContain("day-head");
+  expect(html).not.toContain("month-sep"); // 月分隔已被天卡替代
 });
 
-test("同月多条只插一个分隔行", () => {
-  const html = renderIndex([mk("2026-06-24", "甲"), mk("2026-06-20", "乙")], TPL);
-  expect(html.match(/data-month="2026-06"/g).length).toBe(1);
+test("卡头合计：N 篇调研 · 来源总数；来源缺失或为脏数据时只计能解析的", () => {
+  const html = renderIndex([
+    mk("2026-06-24", "甲", { sourceCount: 14 }),
+    mk("2026-06-24", "乙", { sourceCount: "<img src=x>" }),   // 脏数据不入合计、也不进 HTML
+    mk("2026-06-24", "丙", { sourceCount: 0 }),
+  ], TPL);
+  expect(html).toContain('<span class="day-meta">3 篇调研 · 14 个来源</span>');
+  expect(html).not.toContain("<img");
 });
 
-test("空列表不产分隔行", () => {
+test("来源合计为 0 时卡头只说篇数", () => {
+  const html = renderIndex([mk("2026-06-24", "甲", { sourceCount: 0 })], TPL);
+  expect(html).toContain('<span class="day-meta">1 篇调研</span>');
+});
+
+test("空列表不产天卡", () => {
   const html = renderIndex([], TPL);
-  expect(html).not.toContain("month-sep");
+  expect(html).not.toContain("day-card");
 });
 
 test("chips 按数据生成：带条数、按条数降序、空类型不出现、全部在最前且激活", () => {
@@ -41,11 +53,9 @@ test("chips 按数据生成：带条数、按条数降序、空类型不出现�
   ];
   const html = renderIndex(entries, tpl);
   expect(html).not.toContain("<!-- CHIPS -->");
-  // 「全部」不带色点；类型 chip 带 data-type + 色点（颜色由 feed.css 按 data-type 配）
   expect(html).toContain('data-filter="all" role="button" tabindex="0" aria-pressed="true">全部 <span class="n">3</span>');
-  expect(html).toContain('data-type="股票" data-filter="type:股票" role="button" tabindex="0" aria-pressed="false"><span class="dot"></span>股票 <span class="n">2</span>');
-  expect(html).toContain('data-type="概念" data-filter="type:概念" role="button" tabindex="0" aria-pressed="false"><span class="dot"></span>概念 <span class="n">1</span>');
-  expect(html).not.toMatch(/data-filter="all"[^>]*>[^<]*<span class="dot"/);
+  expect(html).toContain('data-filter="type:股票" role="button" tabindex="0" aria-pressed="false">股票 <span class="n">2</span>');
+  expect(html).toContain('data-filter="type:概念" role="button" tabindex="0" aria-pressed="false">概念 <span class="n">1</span>');
   expect(html).not.toContain("type:人物"); // 没有的类型不出 chip
   expect(html.indexOf("type:股票")).toBeLessThan(html.indexOf("type:概念")); // 条数降序
   expect(html.indexOf('data-filter="all"')).toBeLessThan(html.indexOf("type:股票"));
@@ -56,15 +66,13 @@ test("模板没有 CHIPS 占位符时不受影响（向后兼容）", () => {
   expect(html).toContain("甲");
 });
 
-test("卡片内容含 $' / $& 等替换模式序列时模板不被损坏（函数形式替换不解释 $）", () => {
+test("条目内容含 $' / $& 等替换模式序列时模板不被损坏（函数形式替换不解释 $）", () => {
   const entries = [{
     dir: "2026-06-01_x", date: "2026-06-01", type: "概念",
-    title: "美元符文本 $' 与 $& 测试", tldr: "导语也带 $` 序列",
-    boards: [], sourceCount: 3, href: "r/2026-06-01_x/",
+    title: "美元符标题 $' $& $`", tldr: "导语里也有 $' 序列", tags: [], sourceCount: 1, href: "r/2026-06-01_x/",
   }];
-  const template = "<ul>\n<!-- CARDS -->\n</ul><footer>尾部</footer>";
-  const html = renderIndex(entries, template);
-  expect(html).toContain("$' 与 $&");        // 字面保留
-  expect(html.match(/<footer>/g).length).toBe(1); // 模板尾部没有被 $' 复制
-  expect(html).toContain("$` 序列");
+  const html = renderIndex(entries, TPL);
+  // 模板尾部只出现一次（$ 序列被当作字面量，未复制模板片段）
+  expect(html.match(/<\/ul>/g).length).toBe(1);
+  expect(html).toContain("美元符标题");
 });

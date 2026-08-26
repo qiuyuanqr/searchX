@@ -16,26 +16,29 @@ const NAV_SCRIPT = `
   // 外部来源链接一律新标签页打开：点来源不离开报告页（手机上尤其容易丢阅读位置）
   document.querySelectorAll('a[href^="http"]').forEach(function(a){ a.target = "_blank"; a.rel = "noopener"; });
 
-  // 自动目录：固定区块 + 正文 h2，按文档顺序
+  // 自动目录：固定区块 + 正文 h2，按文档顺序。aux 标记辅助区块（先说人话/来源…），
+  // 桌面端迷你横条导航里画成短一截的条，正文章节是长条，扫一眼能分出主次。
   var secs = [];
-  function add(el, label){ if (!el) return; if (!el.id) el.id = "sx-sec-" + secs.length; secs.push({ id: el.id, label: label }); }
-  add(document.querySelector(".plain"), "先说人话");
-  add(document.querySelector(".tldr"), "核心结论");
-  add(document.querySelector(".findings"), "关键发现");
+  function add(el, label, aux){ if (!el) return; if (!el.id) el.id = "sx-sec-" + secs.length; secs.push({ id: el.id, label: label, aux: !!aux }); }
+  add(document.querySelector(".plain"), "先说人话", true);
+  add(document.querySelector(".tldr"), "核心结论", true);
+  add(document.querySelector(".findings"), "关键发现", true);
   document.querySelectorAll("main h2").forEach(function(h){ add(h, h.textContent.trim()); });
-  add(document.querySelector("section.risks"), "风险与争议");
-  add(document.querySelector(".glossary"), "名词小抄");
-  add(document.querySelector("section.sources"), "来源清单");
+  add(document.querySelector("section.risks"), "风险与争议", true);
+  add(document.querySelector(".glossary"), "名词小抄", true);
+  add(document.querySelector("section.sources"), "来源清单", true);
 
   function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
   function linksHtml(){ return secs.map(function(s){ return '<a href="#" data-id="' + esc(s.id) + '">' + esc(s.label) + '</a>'; }).join(""); }
+  // 桌面端迷你导航（参照 Codex 的长内容导航）：每节一根小横条 + 悬停展开才出现的段落名
+  function railHtml(){ return secs.map(function(s){ return '<a href="#" data-id="' + esc(s.id) + '"' + (s.aux ? ' class="aux"' : '') + '><i></i><span class="l">' + esc(s.label) + '</span></a>'; }).join(""); }
   var aside = document.querySelector(".sx-toc");
   var deskNav = document.querySelector(".sx-toc nav");
   var sheet = document.querySelector(".sx-toc-sheet");
   var sheetPanel = sheet.querySelector(".panel");
   var tocBtn = document.querySelector(".sx-toc-btn");
   if (secs.length){
-    deskNav.insertAdjacentHTML("beforeend", linksHtml());
+    deskNav.insertAdjacentHTML("beforeend", railHtml());
     sheetPanel.insertAdjacentHTML("beforeend", linksHtml());
   } else {
     aside.style.display = "none";   // 没有可索引区块：藏掉目录入口
@@ -212,17 +215,27 @@ table thead th:first-child{z-index:2; background:var(--paper-2)}
 /* 顶部阅读进度条 */
 .sx-progress{position:fixed; top:0; left:0; right:0; height:3px; z-index:60; background:transparent}
 .sx-progress>i{display:block; height:100%; width:0; background:var(--seal); transition:width .1s linear}
-/* 自动目录：电脑端正文左侧吸顶侧栏（窄屏隐藏，退回浮层） */
+/* 自动目录：电脑端左侧迷你横条导航（参照 Codex 的长内容导航）——常态是一列小横条，
+   悬停整栏展开成面板、露出段落名；窄屏或纯触控设备隐藏，退回 ≡ 浮层。 */
 .sx-toc{position:fixed; top:0; bottom:0; display:none; flex-direction:column; justify-content:center;
-  width:170px; left:max(20px, calc((100vw - var(--measure)) / 2 - 190px)); z-index:40; pointer-events:none}
-.sx-toc nav{pointer-events:auto; max-height:74vh; overflow-y:auto; overscroll-behavior:contain}
-.sx-toc .h{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.66rem; letter-spacing:.16em;
-  text-transform:uppercase; color:var(--muted); margin-bottom:.6rem}
-.sx-toc a{display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.8rem;
-  line-height:1.35; color:var(--ink-soft); padding:.32rem 0 .32rem .6rem; border-left:2px solid transparent;
-  text-decoration:none; cursor:pointer; transition:color .15s, border-color .15s}
-.sx-toc a:hover{color:var(--seal)}
-.sx-toc a.on{color:var(--seal); border-left-color:var(--seal); font-weight:600}
+  left:14px; z-index:40; pointer-events:none}
+.sx-toc nav{pointer-events:auto; max-height:78vh; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain;
+  padding:10px 9px; border-radius:12px; border:1px solid transparent;
+  transition:background .2s ease, box-shadow .2s ease, border-color .2s ease}
+.sx-toc nav:hover, .sx-toc nav:focus-within{background:var(--card); border-color:var(--rule); box-shadow:0 8px 28px rgba(0,0,0,.12)}
+.sx-toc .h{display:none}
+.sx-toc a{display:flex; align-items:center; gap:0; padding:5px 4px; text-decoration:none; cursor:pointer}
+.sx-toc a i{flex:none; display:block; width:18px; height:2px; border-radius:2px; background:var(--muted); opacity:.5; transition:width .2s ease, opacity .15s, background .15s}
+.sx-toc a.aux i{width:11px}
+.sx-toc a:hover i{opacity:.9}
+.sx-toc a.on i{background:var(--seal); opacity:1; width:22px}
+/* 段落名：常态收起（宽 0），整栏悬停/键盘聚焦时展开 */
+.sx-toc .l{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.78rem; line-height:1.4;
+  color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:0; opacity:0;
+  transition:max-width .25s ease, opacity .18s ease, margin-left .25s ease}
+.sx-toc nav:hover .l, .sx-toc nav:focus-within .l{max-width:11.5em; opacity:1; margin-left:10px}
+.sx-toc a:hover .l{color:var(--seal)}
+.sx-toc a.on .l{color:var(--seal); font-weight:600}
 /* 手机端目录浮层 */
 /* 整张浮层吞掉触摸手势（touch-action:none）：在半透明遮罩上拖动只会被拦下，不会带着下面的报告页一起滚——
    修复「滑目录时报告页跟着动」。点击遮罩关闭仍正常（tap/click 不受 touch-action 影响）。 */
@@ -241,8 +254,10 @@ html.sx-toc-open,body.sx-toc-open{overflow:hidden}
   color:var(--ink-soft); padding:.6rem 0; border-bottom:1px solid var(--rule); text-decoration:none}
 .sx-toc-sheet a.on{color:var(--seal); font-weight:600}
 .sx-toc-btn{bottom:128px; font-size:1.3rem}
-@media (min-width:1100px){ .sx-toc{display:flex} .sx-toc-btn{display:none} }
-@media (prefers-reduced-motion: reduce){ .sx-nav-btn{transition:none !important} .sx-progress>i{transition:none} .sx-toc a{transition:none} }
+/* 迷你导航靠 hover 展开：只在够宽且有真悬停能力的设备上启用（触控平板仍用 ≡ 浮层） */
+@media (min-width:900px) and (hover:hover){ .sx-toc{display:flex} .sx-toc-btn{display:none} }
+@media (prefers-reduced-motion: reduce){ .sx-nav-btn{transition:none !important} .sx-progress>i{transition:none}
+  .sx-toc nav, .sx-toc a i, .sx-toc .l{transition:none !important} }
 /* ── 2026-08-26 站点改版统一：存量报告的调色板与圆角覆盖到与首页一致 ──
    老报告的 <style> 里烧着旧纸感配色；这段排在其后、同特异性靠后者胜，把变量与几个组件样式整体盖掉。
    值要与 .claude/skills/research/templates/report.html（新报告）和 web/src/assets/feed.css 保持同步。 */

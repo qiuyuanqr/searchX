@@ -1,41 +1,36 @@
 import { test, expect } from "bun:test";
-import { computeFeedView } from "./feed-filter.js";
+import { computeDigestView } from "./feed-filter.js";
 
-// items：信息流里有序的项；kind 'sep' 是月分隔，'card' 是卡片。
-const ITEMS = [
-  { kind: "sep", month: "2026-06" },
-  { kind: "card", type: "概念" },
-  { kind: "card", type: "股票" },
-  { kind: "sep", month: "2026-05" },
-  { kind: "card", type: "人物" },
+// days：简报式信息流的天卡数组，每张卡带当天条目的类型列表。
+const DAYS = [
+  { entries: [{ type: "概念" }, { type: "股票" }] },
+  { entries: [{ type: "人物" }] },
 ];
 
-test("默认（全部）：所有卡片可见，所有分隔可见，计数=卡片数", () => {
-  const { visible, count } = computeFeedView(ITEMS, { type: "all" });
+test("默认（全部）：所有天卡与条目可见，计数=条目总数", () => {
+  const { dayVisible, entryVisible, count } = computeDigestView(DAYS, { type: "all" });
   expect(count).toBe(3);
-  expect(visible).toEqual([true, true, true, true, true]);
+  expect(dayVisible).toEqual([true, true]);
+  expect(entryVisible).toEqual([[true, true], [true]]);
 });
 
-test("按类型筛选：只留该类型卡片", () => {
-  const { visible, count } = computeFeedView(ITEMS, { type: "股票" });
+test("按类型筛选：只留该类型条目，天卡跟随", () => {
+  const { dayVisible, entryVisible, count } = computeDigestView(DAYS, { type: "股票" });
   expect(count).toBe(1);
-  expect(visible[2]).toBe(true);
-  expect(visible[1]).toBe(false);
-  expect(visible[4]).toBe(false);
+  expect(entryVisible).toEqual([[false, true], [false]]);
+  expect(dayVisible).toEqual([true, false]);   // 第二天条目全被筛掉 → 整卡隐藏
 });
 
-test("没有可见卡片的月分隔要隐藏", () => {
-  // 只剩五月那条人物可见 → 六月分隔(索引0)隐藏，五月分隔(索引3)可见
-  const { visible } = computeFeedView(ITEMS, { type: "人物" });
-  expect(visible[0]).toBe(false);
-  expect(visible[3]).toBe(true);
-  expect(visible[4]).toBe(true);
-});
-
-test("全空时所有分隔都隐藏，计数=0", () => {
-  const { visible, count } = computeFeedView(ITEMS, { type: "事件" });
+test("全空时所有天卡隐藏，计数=0", () => {
+  const { dayVisible, count } = computeDigestView(DAYS, { type: "事件" });
   expect(count).toBe(0);
-  expect(visible).toEqual([false, false, false, false, false]);
+  expect(dayVisible).toEqual([false, false]);
+});
+
+test("空天卡（entries 缺失）不炸、恒隐藏", () => {
+  const { dayVisible, count } = computeDigestView([{}], { type: "all" });
+  expect(count).toBe(0);
+  expect(dayVisible).toEqual([false]);
 });
 
 // ── 站内清单直配（matchReportsLocally）────────────────────────────────

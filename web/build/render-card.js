@@ -10,44 +10,60 @@ export function escapeHtml(s) {
     .replace(/"/g, "&quot;");
 }
 
-// 白卡结构（2026-08-26 改版）：标题（可换行）+ 元信息行（月·日 · N 个来源 + 系列角标）+ 导语（方向标记 + 两行截断）。
-// 类型标注策略：股票是绝对多数的默认态、不再逐行挂徽章（规范化代码即身份），少数派类型（概念/板块/方法论…）
-// 用标题前缀小字标注（颜色按类型走，见 feed.css）；月份分隔行已给出年份，卡内日期只需 月·日。
-export function renderCard(e) {
-  const [, mo, d] = e.date.split("-");
-  const dateSide = `${mo}·${d}` + (e.sourceCount ? ` · ${escapeHtml(e.sourceCount)} 个来源` : "");
+// 简报式条目（2026-08-26 晚改版）：一天一张卡（render-index.js 负责分组），卡内每篇是一行条目——
+// 等宽编号（CSS 计数器画，筛选后自动重排）+ 加粗的「名称：结论短句」+ 补充半句 + 行尾的
+// 方向标 / 类型标 + 等宽代码 + 系列角标。参照 ai-digest 的条目句式。
+//
+// 加粗段取导语的第一个短句（到首个 ，。；： 为止）；太长（>40 字）或切不出来就只加粗名称。
+function splitLead(name, lead) {
+  const text = String(lead || "");
+  const clause = text.split(/[，。；：]/)[0];
+  let head, rest;
+  if (clause && clause.length <= 40 && clause.length < text.length) {
+    head = name ? `${name}：${clause}` : clause;
+    rest = text.slice(clause.length);
+  } else {
+    head = name || "";
+    rest = name && text ? `：${text}` : text;
+  }
+  // 补充段只留到第一个句号：真实导语带完整的「支撑在于…主要风险…」长文，全塞进来会把
+  // 行尾的代码 / 系列角标顶出两行截断的可见范围；首页是索引，细节点进报告看。
+  const stop = rest.indexOf("。");
+  if (stop > -1) rest = rest.slice(0, stop + 1);
+  return { head, rest };
+}
 
+export function renderCard(e) {
   const isStock = e.type === "股票";
   const parsed = isStock ? cleanStockTitle(e.title) : null;
-  // 股票卡以代码为身份标注；解析不出代码的股票卡与非股票卡一样，回退到类型前缀 + 原始标题
-  const titleHtml = parsed
-    ? `${escapeHtml(parsed.name)} <span class="code">${escapeHtml(parsed.codes)}</span>`
-    : (e.type ? `<span class="tprefix">${escapeHtml(e.type)} · </span>` : "") + escapeHtml(e.title);
 
   const dir = isStock ? extractDirection(e.tldr) : null;
-  const dirHtml = dir ? `<span class="dir ${dir.cls}">${dir.arrow} ${escapeHtml(dir.label)}</span>` : "";
   // 提到方向标记后导语剥掉开头套话句，从差异化内容讲起；非股票只剥「一句话：」引子
   const leadText = isStock
     ? (dir ? stripLeadBoilerplate(e.tldr) : String(e.tldr || ""))
     : String(e.tldr || "").replace(/^一句话[：:]\s*/, "");
-  const lead = (dirHtml || leadText) ? `<p class="lead">${dirHtml}${escapeHtml(leadText)}</p>` : "";
 
-  // 同一标的的多份报告：新的在元信息行挂「第 N 次 · X 天后」，旧的在卡片底部挂「已有更新版 →」。
-  // 后者必须放在 card-link 这个 <a> 之外——<a> 套 <a> 非法，浏览器会拆开、链接失效。
+  const name = parsed ? parsed.name : e.title;
+  const { head, rest } = splitLead(name, leadText);
+
+  // 行首标注：股票给方向标（红绿扫一眼分涨跌）、少数派类型给彩色类型字（颜色按 data-type 走）；
+  // 行尾只留代码——放行尾的内容必须短，否则会被两行截断吞掉。
+  const lede = dir
+    ? `<span class="dir ${dir.cls}">${dir.arrow} ${escapeHtml(dir.label)}</span> `
+    : (!isStock && e.type ? `<span class="tprefix">${escapeHtml(e.type)}</span> ` : "");
+  const tail = [];
+  if (parsed) tail.push(`<span class="code">${escapeHtml(parsed.codes)}</span>`);
+
+  // 同一标的的多份报告：新的在行尾挂「第 N 次 · X 天后」，旧的整行压暗并在条目下方给
+  // 「已有更新版 →」。后者必须在 .entry 这个 <a> 之外——<a> 套 <a> 非法，浏览器会拆开、链接失效。
   const badge = seriesBadgeHtml(e.series);
   const newerLink = seriesNewerLinkHtml(e.series);
   const staleCls = e.series && e.series.newerHref ? " is-superseded" : "";
 
-  return `<li class="article-card${staleCls}" data-type="${escapeHtml(e.type)}">
-  <a class="card-link" href="${escapeHtml(e.href)}">
-    <div class="card-body">
-      <h2 class="card-title">${titleHtml}</h2>
-      <div class="card-meta">
-        <span class="date-side">${dateSide}</span>
-        ${badge}
-      </div>
-      ${lead}
-    </div>
+  return `<div class="article-card${staleCls}" data-type="${escapeHtml(e.type)}">
+  <a class="entry" href="${escapeHtml(e.href)}">
+    <span class="num" aria-hidden="true"></span>
+    <span class="eline">${lede}<span class="ehead">${escapeHtml(head)}</span>${escapeHtml(rest)}${tail.length ? " " + tail.join(" ") : ""}${badge ? " " + badge : ""}</span>
   </a>${newerLink}
-</li>`;
+</div>`;
 }

@@ -212,8 +212,11 @@ test("目录脚本按固定区块顺序 + 正文 h2 扫描", () => {
   expect(out).toContain("main h2");
 });
 
-test("窄屏阈值：电脑侧栏宽屏才显示", () => {
-  expect(injectReportNav(BASE)).toContain("@media (min-width:1100px)");
+test("迷你导航只在够宽且有真悬停能力的设备上显示（触控平板退回 ≡ 浮层）", () => {
+  const out = injectReportNav(BASE);
+  expect(out).toContain("@media (min-width:900px) and (hover:hover)");
+  expect(out).toContain("railHtml");            // 桌面端注入的是横条版目录
+  expect(out).toContain('class="l"');           // 悬停展开的段落名
 });
 
 // CSP：防存储型 XSS。只放行本文件注入的那段导航脚本（按哈希白名单），

@@ -1,10 +1,26 @@
 import { renderCard, escapeHtml } from "./render-card.js";
 
-const CN_MONTH = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二"];
+// 简报式首页（2026-08-26 晚改版）：一天一张卡，卡头是「YYYY 年 M 月 D 日 + N 篇调研 · M 个来源」，
+// 卡内按当天顺序列条目（renderCard）。条目编号由 CSS 计数器画，类型筛选后自动重排、不留空号。
+function dayLabel(date) {
+  const [y, m, d] = String(date).split("-");
+  return `${y} 年 ${parseInt(m, 10)} 月 ${parseInt(d, 10)} 日`;
+}
 
-function monthLabel(date) {
-  const [y, m] = date.split("-");
-  return `${y} · ${CN_MONTH[parseInt(m, 10) - 1]}月`;
+function renderDay(date, dayEntries) {
+  const n = dayEntries.length;
+  // sourceCount 可能缺失或是脏数据（上游已有转义守卫）：只把能解析成正数的记入合计
+  const src = dayEntries.reduce((s, e) => {
+    const v = Number(e.sourceCount);
+    return s + (Number.isFinite(v) && v > 0 ? v : 0);
+  }, 0);
+  const meta = `${n} 篇调研` + (src > 0 ? ` · ${src} 个来源` : "");
+  return `<li class="day-card" data-date="${escapeHtml(date)}">
+  <div class="day-head"><span class="day-date">${dayLabel(date)}</span><span class="day-meta">${meta}</span></div>
+  <div class="day-entries">
+${dayEntries.map(renderCard).join("\n")}
+  </div>
+</li>`;
 }
 
 // 筛选 chips 按实际数据生成（带条数、按条数降序），空类型不出现——模板写死的年代
@@ -16,28 +32,25 @@ function renderChips(entries) {
     if (!e.type) continue;
     counts.set(e.type, (counts.get(e.type) || 0) + 1);
   }
-  // 类型 chip 带一枚色点（颜色按 data-type 在 feed.css 里配，未配到的类型落回灰点）；「全部」不带点。
-  const chip = (filter, label, n, on, type) =>
-    `<span class="chip${on ? " on" : ""}"${type ? ` data-type="${escapeHtml(type)}"` : ""} data-filter="${escapeHtml(filter)}" role="button" tabindex="0" aria-pressed="${on}">${type ? '<span class="dot"></span>' : ""}${escapeHtml(label)} <span class="n">${n}</span></span>`;
+  const chip = (filter, label, n, on) =>
+    `<span class="chip${on ? " on" : ""}" data-filter="${escapeHtml(filter)}" role="button" tabindex="0" aria-pressed="${on}">${escapeHtml(label)} <span class="n">${n}</span></span>`;
   const parts = [chip("all", "全部", entries.length, true)];
   for (const [type, n] of [...counts].sort((a, b) => b[1] - a[1])) {
-    parts.push(chip(`type:${type}`, type, n, false, type));
+    parts.push(chip(`type:${type}`, type, n, false));
   }
   return parts.join("\n        ");
 }
 
-// entries 已按新→旧排序（见 scan.compareByNewest）。跨月边界插一行月分隔。
+// entries 已按新→旧排序（见 scan.compareByNewest）。按 date 分组成天卡，组内保持原顺序。
 export function renderIndex(entries, template) {
-  let lastMonth = "";
-  const parts = [];
+  const days = [];                     // [{ date, entries: [...] }]，保持首现顺序
+  const byDate = new Map();
   for (const e of entries) {
-    const ym = e.date.slice(0, 7); // YYYY-MM
-    if (ym !== lastMonth) {
-      lastMonth = ym;
-      parts.push(`<li class="month-sep" data-month="${ym}">${monthLabel(e.date)}</li>`);
-    }
-    parts.push(renderCard(e));
+    let day = byDate.get(e.date);
+    if (!day) { day = { date: e.date, entries: [] }; byDate.set(e.date, day); days.push(day); }
+    day.entries.push(e);
   }
+  const parts = days.map((d) => renderDay(d.date, d.entries));
   // 函数形式替换：字符串形式会解释替换值里的 $ 模式（$'、$& 等），标题/导语里出现这类
   // 序列（财经文本写美元符时常见）会静默复制模板尾部、损坏首页结构。
   return template

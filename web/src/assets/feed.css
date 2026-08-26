@@ -1,17 +1,18 @@
 /* 2026-08-26 改版调色板：中性暖灰底 + 珊瑚橙主色 + 按内容类型配色（股票橙 / 概念青 / 板块紫 / 方法论蓝）。
    变量名沿用旧纸感时代的叫法（--paper/--seal…），四个页面模板与站内组件都在引用，只换值不换名。 */
 :root{
-  --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
-  --muted:#7d786f; --rule:#e5e2da; --hair:rgba(50,45,38,.08); --seal:#b4543a; --seal-soft:#c97a62; --card:#ffffff;
+  --paper:#fafafa; --paper-2:#f0efec; --ink:#2b2926; --ink-2:#45413b; --ink-soft:#6e6a63;
+  --muted:#7d786f; --rule:#e7e6e3; --hair:rgba(50,45,38,.08); --seal:#b4543a; --seal-soft:#c97a62; --card:#ffffff;
   --accent-bg:#fbeae4; --err:#b3402c;
   --t-stock:#b4543a; --t-concept:#1f7a68; --t-sector:#6d5bb0; --t-method:#2e6fa8;
   --measure:46rem; /* 正文列宽，浮动按钮据此贴列（与 .wrap 的 max-width 对齐） */
   --sans:ui-sans-serif,-apple-system,"PingFang SC","Hiragino Sans GB",sans-serif;
   --serif:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; /* 日期/编号/代码的等宽字（不加载外部字体） */
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+    --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-2:#cbc6bd; --ink-soft:#b9b4ab;
     --muted:#8f8a80; --rule:#35322c; --hair:rgba(240,236,228,.08); --seal:#d97e5c; --seal-soft:#c97a62; --card:#242220;
     --accent-bg:#33261f; --err:#e0735a;
     --t-stock:#d97e5c; --t-concept:#4aa58e; --t-sector:#a495e0; --t-method:#6ea3d1;
@@ -27,6 +28,18 @@ body{background:var(--paper); color:var(--ink); font-family:var(--sans);
   /* 移动端：禁双击放大（保留滚动/点击）；电脑端缩放不受影响 */
   touch-action:manipulation; -webkit-text-size-adjust:100%}
 .wrap{max-width:46rem; margin:0 auto; padding:1.9rem 1.5rem 5.5rem}
+/* ── 简报式首页（2026-08-26 晚改版）：细线顶栏 + 居中刊头 ── */
+.topbar{border-bottom:1px solid var(--rule); background:var(--paper)}
+.topbar-in{max-width:46rem; margin:0 auto; padding:.85rem 1.5rem; display:flex; align-items:center}
+.brand-name{font-family:var(--serif); font-size:1.02rem; font-weight:800; color:var(--seal); letter-spacing:.01em}
+.topnav{margin-left:auto; display:flex; align-items:center; gap:1.3rem}
+.nav-link{display:inline-flex; align-items:center; gap:.32rem; font-family:var(--sans); font-size:.84rem; color:var(--ink-soft);
+  background:none; border:0; padding:0; cursor:pointer; line-height:1.5; transition:color .18s}
+.nav-link:hover{color:var(--seal)}
+.nav-link:focus-visible{outline:2px solid var(--seal-soft); outline-offset:3px}
+.hero{text-align:center; margin:2.3rem 0 .4rem}
+.hero-title{font-family:var(--serif); font-size:1.62rem; font-weight:800; color:var(--ink); letter-spacing:.01em; line-height:1.35; margin:0}
+.hero-sub{font-family:var(--sans); font-size:.86rem; color:var(--muted); margin:.7rem 0 0}
 .kicker{font-family:var(--sans); font-size:.68rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:.55rem}
 @media (max-width:430px){ .kicker-en{display:none} } /* 窄屏藏英文副标，防顶栏折行 */
 .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem; background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700; font-family:var(--serif); transform:rotate(-4deg)}
@@ -51,66 +64,66 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .search-clear:hover{color:var(--seal); background:var(--paper-2)}
 .search::placeholder{color:var(--muted)}
 .search:focus{border-color:var(--seal-soft); box-shadow:0 0 0 3px rgba(180,84,58,.09)}
-.chips{display:flex; flex-wrap:wrap; gap:.5rem; font-family:var(--sans); font-size:.8rem; margin-bottom:1rem}
-.chip .n{opacity:.62; font-size:.9em; margin-left:.1em} /* chip 里的条数（构建期按数据生成） */
-.chip{display:inline-flex; align-items:center; gap:.38rem; padding:.34rem .85rem; border:1px solid transparent; border-radius:999px;
-  color:var(--ink-soft); cursor:pointer; transition:all .2s; background:var(--card); box-shadow:0 1px 2px rgba(50,45,38,.06); user-select:none}
-.chip:hover{border-color:var(--seal-soft); color:var(--seal); transform:translateY(-1px)}
+/* 类型筛选：安静的小胶囊，选中态用深底（参照 ai-digest 的克制点缀），居中排 */
+.chips{display:flex; flex-wrap:wrap; justify-content:center; gap:.4rem; font-family:var(--sans); font-size:.82rem; margin-bottom:.4rem}
+.chip .n{opacity:.55; font-size:.9em; margin-left:.15em} /* chip 里的条数（构建期按数据生成） */
+.chip{display:inline-flex; align-items:center; padding:.3rem .8rem; border-radius:999px;
+  color:var(--ink-soft); cursor:pointer; transition:color .18s, background .18s; background:transparent; user-select:none}
+.chip:hover{color:var(--seal)}
 .chip:focus-visible{outline:2px solid var(--seal-soft); outline-offset:2px}
-.chip.on{background:var(--seal); border-color:var(--seal); color:#fff; box-shadow:none}
-/* 类型 chip 的色点：四个常驻类型各有配色，没配到的类型落回灰点；选中态点转白（背景已是主色） */
-.chip .dot{flex:none; width:7px; height:7px; border-radius:999px; background:var(--muted)}
-.chip[data-type="股票"] .dot{background:var(--t-stock)}
-.chip[data-type="概念"] .dot{background:var(--t-concept)}
-.chip[data-type="板块"] .dot{background:var(--t-sector)}
-.chip[data-type="方法论"] .dot{background:var(--t-method)}
-.chip.on .dot{background:#fff}
+.chip.on{background:var(--ink); color:var(--paper)}
+.chip.on .n{opacity:.7}
 /* 触控目标 ≥44px（移动端可用性标准，实测原有 31px 高不够）：只加大纵向留白，横向不变，
    避免变胖挤占换行；桌面端鼠标点击精度够，不需要这层加大，保持原本的紧凑密度。 */
 @media (max-width:520px){ .chip{padding:.7rem .78rem} }
 .rule-grad{height:1px; background:linear-gradient(90deg, transparent 0%, var(--hair) 16%, var(--hair) 84%, transparent 100%)}
-/* 吸顶筛选区：搜索 + 类型/板块两组 chips + 计数；吸住后底边浮现。
-   注意：它必须是 .wrap 的直接子元素（sticky 受父容器约束）；窄屏整条高约 250px 太占屏，不吸顶。 */
-.filterbar{position:sticky; top:0; z-index:30; background:var(--paper);
-  margin:0 -1.5rem; padding:.55rem 1.5rem .5rem; border-bottom:1px solid transparent; transition:border-color .2s}
-.filterbar.stuck{border-bottom-color:var(--rule)}
-@media (max-width:520px){ .filterbar{position:static} }
-.filterbar .search-wrap{margin:.2rem 0 .65rem}
+/* 筛选区：居中，不再吸顶（简报式版面顶栏已常驻） */
+.filterbar{margin:1.4rem 0 1.6rem}
+.filterbar .search-wrap{max-width:30rem; margin:0 auto .8rem}
 .filterbar .chips{margin-bottom:0}
-.count{font-family:var(--sans); font-size:.72rem; color:var(--muted); margin-top:.55rem}
-/* 列表改成带间隙的白卡流（月份分隔行也是列表项，跟着弹性排布） */
-.article-list{list-style:none; margin-top:.4rem; display:flex; flex-direction:column; gap:.8rem}
-@keyframes riseIn{from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none}}
-.article-card{animation:riseIn .5s cubic-bezier(.2,.7,.2,1) backwards}
+.count{font-family:var(--sans); font-size:.72rem; color:var(--muted); text-align:center; margin-top:.5rem}
+/* ── 简报式信息流（2026-08-26 晚改版）：一天一张卡，卡内编号列条目 ── */
+.article-list{list-style:none; margin-top:.2rem; display:flex; flex-direction:column; gap:1rem}
+.day-card{background:var(--card); border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,.05); padding:1.3rem 1.55rem 1.05rem}
+.day-card.hide{display:none}
+.day-head{display:flex; align-items:baseline; gap:.6rem}
+.day-date{font-family:var(--mono); font-size:.84rem; color:var(--muted); letter-spacing:.01em}
+.day-meta{margin-left:auto; font-family:var(--sans); font-size:.72rem; color:var(--muted); opacity:.75}
+/* 条目编号用 CSS 计数器：只数没被筛掉的条目，筛选后自动 01 02… 重排、不留空号 */
+.day-entries{margin-top:.5rem; counter-reset:entry}
+.article-card{display:block}
 .article-card.hide{display:none}
-.month-sep{display:flex; align-items:center; gap:.75rem; font-family:var(--serif); font-size:.76rem; letter-spacing:.18em;
-  color:var(--muted); padding:.7rem .1rem 0}
-.month-sep::after{content:""; flex:1; height:1px; background:linear-gradient(90deg, var(--rule), transparent)}
-.month-sep.hide{display:none}
-/* ── 白卡（2026-08-26 改版）：圆角白卡 + 标题（可换行）+ 元信息行 + 两行导语 ── */
-.card-link{display:block; text-decoration:none; color:inherit; background:var(--card);
-  border:1px solid var(--hair); border-radius:16px; padding:1.05rem 1.25rem 1rem;
-  box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
-  transition:box-shadow .25s ease, transform .18s ease}
-.card-link:hover{transform:translateY(-2px); box-shadow:0 3px 6px rgba(50,45,38,.06), 0 14px 30px rgba(50,45,38,.09)}
-.card-body{min-width:0}
-.card-title{font-family:var(--serif); font-size:1.22rem; line-height:1.35; font-weight:600; margin:0; transition:color .2s ease}
-.card-link:hover .card-title{color:var(--seal)}
-.card-meta{display:flex; align-items:center; flex-wrap:wrap; gap:.55rem; margin-top:.3rem;
-  font-family:var(--sans); font-size:.72rem; color:var(--muted)}
-.date-side{flex:none}
-.code{font-family:var(--sans); font-size:.72em; font-weight:500; color:var(--muted); letter-spacing:.02em} /* 股票代码：身份标注、不抢戏 */
-.tprefix{font-family:var(--sans); font-size:.72em; font-weight:600; color:var(--seal); letter-spacing:.03em} /* 少数派类型（概念/板块…）标题前缀，颜色按类型走 */
+.article-card:not(.hide){counter-increment:entry}
+.article-card + .article-card:not(.hide){border-top:1px solid var(--paper-2)}
+.entry{display:flex; gap:.9rem; align-items:baseline; padding:.72rem 0; text-decoration:none; color:inherit}
+.num{flex:none; font-family:var(--mono); font-size:.84rem; font-weight:600; color:var(--muted); opacity:.55; min-width:1.4em}
+.num::before{content:counter(entry, decimal-leading-zero)}
+.eline{font-family:var(--sans); font-size:.94rem; line-height:1.7; color:var(--ink-2);
+  display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.ehead{font-weight:700; color:var(--ink); transition:color .18s}
+.entry:hover .ehead{color:var(--seal)}
+/* 每天的第一条高亮：编号与加粗段用主色（参照 ai-digest 的 01 强调） */
+.day-entries .article-card:first-child .num{color:var(--seal-soft); opacity:1}
+.day-entries .article-card:first-child .ehead{color:var(--seal)}
+.day-entries .article-card:first-child .entry:hover .ehead{color:var(--err)}
+.code{font-family:var(--mono); font-size:.74rem; font-weight:400; color:var(--muted); opacity:.8; letter-spacing:0; white-space:nowrap}
+/* 行尾标注：股票是涨跌小字，少数派类型（概念/板块…）是彩色类型字（颜色按 data-type 走） */
+.dir{font-family:var(--sans); font-size:.76rem; font-weight:600; white-space:nowrap}
+.tprefix{font-family:var(--sans); font-size:.76rem; font-weight:600; color:var(--seal); white-space:nowrap}
 .article-card[data-type="概念"] .tprefix{color:var(--t-concept)}
 .article-card[data-type="板块"] .tprefix{color:var(--t-sector)}
 .article-card[data-type="方法论"] .tprefix{color:var(--t-method)}
-/* 同一标的多份报告：新的在元信息行挂「第 N 次 · X 天后」，旧的压暗并在卡片底部给一条「已有更新版 →」。 */
-.series-badge{flex:none; font-family:var(--sans); font-size:.68rem; letter-spacing:.02em;
-  color:var(--seal); background:var(--accent-bg); border-radius:999px; padding:.12rem .55rem; white-space:nowrap}
-.series-newer{display:inline-block; font-family:var(--sans); font-size:.72rem; color:var(--muted);
-  text-decoration:none; padding:.4rem 1.25rem 0; transition:color .2s ease}
+/* 同一标的多份报告：新的在行尾挂「第 N 次 · X 天后」，旧的整行压暗并在条目下方给「已有更新版 →」。 */
+.series-badge{font-family:var(--sans); font-size:.68rem; letter-spacing:.02em;
+  color:var(--seal); background:var(--accent-bg); border-radius:999px; padding:.1rem .5rem; white-space:nowrap}
+.series-newer{display:block; font-family:var(--sans); font-size:.72rem; color:var(--muted);
+  text-decoration:none; padding:0 0 .55rem 2.3rem; margin-top:-.3rem; transition:color .2s ease}
 .series-newer:hover{color:var(--seal)}
-.is-superseded .card-title, .is-superseded .lead{opacity:.62}          /* 压暗正文，别压角标与链接 */
+/* 滚动逐条浮现（feed.js 的 bindReveal；隐藏态只在 JS 启动后才加，脚本不跑时内容直接可见） */
+body.js-reveal .day-card{opacity:0; transform:translateY(16px); transition:opacity .55s ease, transform .55s ease}
+body.js-reveal .day-card.shown{opacity:1; transform:none}
+@media (prefers-reduced-motion: reduce){ body.js-reveal .day-card{opacity:1; transform:none; transition:none} }
+.is-superseded .eline{opacity:.62}          /* 压暗整行文字，别压「已有更新版」链接 */
 .result.is-superseded a > h3, .result.is-superseded a > .ex{opacity:.62}
 /* 搜索结果里那张白卡其实是 .result 内的 <a>，而「已有更新版」只能放在 <a> 之外（<a> 套 <a> 非法），
    照原样它会掉到卡片外面、还不跟着卡片的 hover 位移。把卡片外观整体上移到 .result 容器， */
@@ -127,17 +140,14 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 /* 窄屏收起「X 天后」：标题 + 角标 + 日期三项挤在一行，「第 N 次」才是必须看见的那半截 */
 @media (max-width:480px){ .series-gap{display:none} }
 
-.lead{color:var(--ink-soft); font-size:.86rem; line-height:1.6; margin:.5rem 0 0;
-  display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
-/* 方向标记：从股票导语开头的固定句式提炼，红绿一眼分涨跌；绿/琥珀站内无变量，此处专用（与 check 页 vchip 同策略） */
-.dir{display:inline-block; font-family:var(--sans); font-size:.7rem; font-weight:600;
-  padding:.08rem .55rem; border-radius:999px; margin-right:.45rem; vertical-align:.08em}
-.dir.down{color:var(--err); background:rgba(179,64,44,.09)}
-.dir.up{color:#2f7d54; background:rgba(47,125,84,.09)}
-.dir.flat{color:#9a7420; background:rgba(154,116,32,.1)}
+/* 方向标记颜色：从股票导语开头的固定句式提炼，红绿一眼分涨跌；简报式下是行尾小字、不带底色。
+   绿/琥珀站内无变量，此处专用（与 check 页 vchip 同策略）。 */
+.dir.down{color:var(--err)}
+.dir.up{color:#2f7d54}
+.dir.flat{color:#9a7420}
 @media (prefers-color-scheme: dark){
-  .dir.up{color:#5aa87e; background:rgba(90,168,126,.13)}
-  .dir.flat{color:#c9a04a; background:rgba(201,160,74,.14)}
+  .dir.up{color:#5aa87e}
+  .dir.flat{color:#c9a04a}
 }
 .results{margin-top:1rem; display:flex; flex-direction:column; gap:.7rem}
 .result a{display:block; text-decoration:none; color:inherit; background:var(--card); border-radius:16px;
@@ -198,11 +208,7 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .dup-notice a{color:var(--seal); border-bottom:1px solid transparent; transition:border-color .2s}
 .dup-notice a:hover{border-bottom-color:var(--seal-soft)}
 @media (prefers-reduced-motion: reduce){ .submit-btn{transition:none !important} }
-/* 头部 CTA 从文字链升级成主色胶囊按钮（改版后站内唯一的填充主色按钮之一） */
-.kicker .submit-link{margin-left:auto; flex:none; white-space:nowrap; font-family:var(--sans); font-size:.72rem; letter-spacing:.04em; text-transform:none;
-  color:#fff; background:var(--seal); border:0; border-radius:999px; padding:.4rem .95rem; cursor:pointer; line-height:1.4;
-  box-shadow:0 3px 10px rgba(180,84,58,.22); transition:transform .18s ease, box-shadow .2s ease}
-.kicker .submit-link:hover{transform:translateY(-1px); box-shadow:0 6px 16px rgba(180,84,58,.3)}
+/* 提交入口在顶栏（.nav-link），不再需要单独的 CTA 按钮样式 */
 
 /* ── 提交弹窗（入口在首页内）── */
 .modal-backdrop{position:fixed; inset:0; z-index:100; background:rgba(20,16,10,.46);

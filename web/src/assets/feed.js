@@ -1,6 +1,6 @@
 import { buildPayload, tokenFromQuery, tokenFromHash, resolveToken, TOKEN_STORAGE_KEY, clearStoredToken, describeVerify, describeResult, renderSearchResultsHTML, describeExistingReport, fetchAny } from "./submit.js";
 import { findFreshReport, DEFAULT_DEDUP_WINDOW_DAYS } from "./dedup.js";
-import { computeFeedView, buildSearchItems } from "./feed-filter.js";
+import { computeDigestView, buildSearchItems } from "./feed-filter.js";
 
 // 取 localStorage，沙箱/隐私模式下属性访问本身可能抛错 → 兜成 null（resolveToken 再静默降级）。
 function safeStorage(){ try { return window.localStorage; } catch { return null; } }
@@ -66,32 +66,53 @@ function bindToTop(){
   toTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }));
 }
 
-// 吸顶筛选区：真正吸住（贴到视口顶）才亮底边分隔
-function bindStuck(){
-  const bar = document.querySelector(".filterbar");
-  if (!bar) return;
-  const onScroll = () => bar.classList.toggle("stuck", bar.getBoundingClientRect().top <= 0.5);
-  window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
+// 滚动逐条浮现（参照 ai-digest 的 .reveal）：天卡进入视口时淡入上浮一次。
+// 初始隐藏态只在 JS 启动后才加（body.js-reveal）——脚本被拦 / 未加载时内容永远直接可见。
+function bindReveal(){
+  if (reduce || !("IntersectionObserver" in window)) return;
+  const cards = document.querySelectorAll(".day-card");
+  if (!cards.length) return;
+  document.body.classList.add("js-reveal");
+  const io = new IntersectionObserver((es) => es.forEach((x) => {
+    if (x.isIntersecting) { x.target.classList.add("shown"); io.unobserve(x.target); }
+  }), { rootMargin: "0px 0px -8% 0px", threshold: 0.04 });
+  cards.forEach((c) => io.observe(c));
 }
 
-// 类型筛选；联动月分隔可见性与计数。
+// 顶栏「搜索」开关：点开显示搜索框并聚焦；再点收起并清空（回到信息流）
+function bindSearchToggle(){
+  const btn = document.getElementById("toggle-search");
+  const wrap = document.querySelector(".search-wrap");
+  const input = document.getElementById("q");
+  if (!btn || !wrap || !input) return;
+  btn.addEventListener("click", () => {
+    const show = wrap.hidden;
+    wrap.hidden = !show;
+    btn.setAttribute("aria-expanded", show ? "true" : "false");
+    if (show) { input.focus(); }
+    else if (input.value) { input.value = ""; input.dispatchEvent(new Event("input", { bubbles: true })); }
+  });
+}
+
+// 类型筛选；简报式结构：条目按类型显隐，天卡在条目全被筛掉时整卡隐藏。
 function bindChips(){
   const typeChips = document.getElementById("chips-type");
   const feed = document.getElementById("feed");
   const empty = document.getElementById("empty");
   const countEl = document.getElementById("count");
-  const nodes = [...feed.children]; // li.article-card / li.month-sep（有序）
-  const items = nodes.map((n) =>
-    n.classList.contains("month-sep")
-      ? { kind: "sep" }
-      : { kind: "card", type: n.dataset.type || "" }
-  );
+  const dayNodes = [...feed.children]; // li.day-card（有序）
+  const days = dayNodes.map((d) => {
+    const entryNodes = [...d.querySelectorAll(".article-card")];
+    return { node: d, entryNodes, entries: entryNodes.map((n) => ({ type: n.dataset.type || "" })) };
+  });
   let activeType = "all";
 
   function apply(){
-    const { visible, count } = computeFeedView(items, { type: activeType });
-    nodes.forEach((n, i) => n.classList.toggle("hide", !visible[i]));
+    const { dayVisible, entryVisible, count } = computeDigestView(days, { type: activeType });
+    days.forEach((d, i) => {
+      d.node.classList.toggle("hide", !dayVisible[i]);
+      d.entryNodes.forEach((n, j) => n.classList.toggle("hide", !entryVisible[i][j]));
+    });
     // feedText 存起来：搜索态会把计数改成「找到 N 条」，清空搜索时由 bindSearch 用它还原
     if (countEl) { countEl.dataset.feedText = `共 ${count} 篇`; countEl.textContent = countEl.dataset.feedText; }
     empty.hidden = count > 0;
@@ -415,8 +436,9 @@ function bindRefresh(){
 }
 
 bindToTop();
-bindStuck();
 bindChips();
 bindSearch();
+bindSearchToggle();
 bindSubmitModal();
 bindRefresh();
+bindReveal();
