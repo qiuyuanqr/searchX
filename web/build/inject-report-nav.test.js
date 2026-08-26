@@ -286,3 +286,12 @@ test("注入段带新调色板覆盖（:root 亮/暗 + 组件圆角），且排�
   // 覆盖段必须出现在报告自己的 <style> 之后（同特异性靠位置取胜）
   expect(out.indexOf("--seal:#b4543a")).toBeGreaterThan(out.indexOf("--seal:#a3361f"));
 });
+
+test("报头元信息整队：概念标签串拆成小胶囊行、来源短项归前", () => {
+  const out = injectReportNav(BASE);
+  expect(out).toContain("sx-tags");
+  expect(out).toContain("sx-tag");
+  expect(out).toContain('"概念标签" || k === "关联板块"');
+  expect(out).toContain("header.masthead::after");   // 主色短色条挂报头、不再挂 tldr
+  expect(out).not.toContain(".tldr::after");
+});

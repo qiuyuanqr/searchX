@@ -17,9 +17,36 @@ const NAV_SCRIPT = `
   document.querySelectorAll('a[href^="http"]').forEach(function(a){ a.target = "_blank"; a.rel = "noopener"; });
 
   // ── 排版换装（2026-08-26 晚）：把存量报告的正文调整成简报式版面 ──
-  // 核心结论上移到报头之下、作居中导读（新旧报告的 DOM 顺序都是 plain→tldr，统一搬）
+  // 核心结论上移到报头之下（新旧报告的 DOM 顺序都是 plain→tldr，统一搬）
   var tldrEl = document.querySelector(".tldr"), plainEl = document.querySelector(".plain");
   if (tldrEl && plainEl && plainEl.parentNode) plainEl.parentNode.insertBefore(tldrEl, plainEl);
+
+  // 报头元信息整队：短项（生成/类型/行业/来源）归一行；「概念标签/关联板块」那串最长最吵，
+  // 拆成独立一行的小胶囊（按 · 切分，textContent 重建，不引入任何未转义 HTML）。
+  var metaEl = document.querySelector("header.masthead .meta");
+  if (metaEl){
+    var metaSpans = [].slice.call(metaEl.children);
+    var tagSpan = null, srcSpan = null;
+    metaSpans.forEach(function(s){
+      var b = s.querySelector("b"); if (!b) return;
+      var k = b.textContent.trim();
+      if (k === "概念标签" || k === "关联板块") tagSpan = s;
+      if (k === "来源") srcSpan = s;
+    });
+    if (srcSpan && tagSpan) metaEl.insertBefore(srcSpan, tagSpan);
+    if (tagSpan){
+      var lbl = tagSpan.querySelector("b");
+      var raw = tagSpan.textContent.replace(lbl ? lbl.textContent : "", "").trim();
+      var parts = raw.split(/\\s*·\\s*/).filter(Boolean);
+      if (parts.length){
+        var row = document.createElement("div");
+        row.className = "sx-tags";
+        parts.forEach(function(t){ var el = document.createElement("span"); el.className = "sx-tag"; el.textContent = t; row.appendChild(el); });
+        metaEl.parentNode.insertBefore(row, metaEl.nextSibling);
+        tagSpan.remove();
+      }
+    }
+  }
 
   // 自动目录：固定区块 + 正文 h2，按（搬动后的）文档顺序
   var secs = [];
@@ -292,21 +319,24 @@ table thead th:first-child{z-index:2; background:var(--paper-2)}
 }
 .wrap{max-width:var(--measure)}   /* 存量报告的 .wrap 写死了旧 measure 的场合也统一吃到新宽度 */
 .seal{background:var(--accent-bg); border:0; border-radius:8px; width:1.7rem; height:1.7rem; font-size:.78rem}
-/* 报头居中（设计定稿：等宽日期行感觉由 .meta 承担，大标题居中，其下是核心结论导读 + 短色条） */
+/* 报头居中：大标题 + 一行短元信息 + 概念标签小胶囊行 + 主色短色条收尾（色条在报头、不再挂 tldr 上） */
 header.masthead{text-align:center; border-bottom:0; padding-bottom:0; margin-bottom:.6rem}
+header.masthead::after{content:""; display:block; width:40px; height:2px; border-radius:2px; background:var(--seal); margin:1.6rem auto 0}
 header.masthead .kicker{justify-content:center}
 header.masthead h1{font-size:2.2rem; line-height:1.35}
-header.masthead .meta{justify-content:center}
-/* 核心结论（脚本已搬到报头下）：居中灰色导读 + 主色短色条收尾 */
-.tldr{background:transparent; border:0; border-radius:0; padding:0; margin:1.1rem auto 0;
-  max-width:36em; text-align:center; font-size:.98rem; line-height:1.9; color:var(--ink-soft)}
-.tldr .lbl{display:none}
-.tldr::after{content:""; display:block; width:40px; height:2px; border-radius:2px; background:var(--seal); margin:1.9rem auto 0}
+header.masthead .meta{justify-content:center; row-gap:.3rem}
+.sx-tags{display:flex; flex-wrap:wrap; justify-content:center; gap:.35rem; margin-top:.7rem}
+.sx-tag{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem; color:var(--muted);
+  background:var(--paper-2); border-radius:999px; padding:.16rem .62rem; white-space:nowrap}
+/* 报头下三个导读块统一同一套语法：小标签 + 左对齐正文（长文居中会两边参差、显乱） */
+.tldr{background:transparent; border:0; border-radius:0; padding:0; margin:2.2rem 0 0;
+  text-align:left; font-size:1.03rem; line-height:1.85; color:var(--ink-soft)}
+.tldr .lbl{display:block; color:var(--seal)}
 /* 先说人话：去卡片化，小标签 + 正文 */
-.plain{background:transparent; border:0; border-radius:0; padding:0; margin:2.8rem 0 2.4rem; font-size:1.02rem}
+.plain{background:transparent; border:0; border-radius:0; padding:0; margin:2.2rem 0; font-size:1.02rem}
 .plain .lbl{color:var(--seal)}
 /* 关键发现：去卡片化，条目改成淡色标签行（设计定稿的 key-tag 样式） */
-.findings{background:transparent; border:0; box-shadow:none; border-radius:0; padding:0; margin-bottom:2.8rem}
+.findings{background:transparent; border:0; box-shadow:none; border-radius:0; padding:0; margin-bottom:2.6rem}
 .findings h2{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.72rem;
   letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); font-weight:600; margin:0 0 .6rem}
 .findings ul{list-style:none; padding:0; margin:0}
