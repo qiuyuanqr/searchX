@@ -10,12 +10,12 @@ export function escapeHtml(s) {
     .replace(/"/g, "&quot;");
 }
 
-// 高密度卡片（2026-07-14 改版）：两行结构——标题行（标题 + 右侧 月·日 · N 源）+ 导语（方向标记 + 两行截断）。
-// 类型标注策略：股票是 27/39 的默认态、不再逐行挂徽章（规范化代码即身份），少数派类型（概念/板块/方法论…）
-// 用标题前缀小字标注；月份分隔行已给出年份，卡内日期只需 月·日。
+// 白卡结构（2026-08-26 改版）：标题（可换行）+ 元信息行（月·日 · N 个来源 + 系列角标）+ 导语（方向标记 + 两行截断）。
+// 类型标注策略：股票是绝对多数的默认态、不再逐行挂徽章（规范化代码即身份），少数派类型（概念/板块/方法论…）
+// 用标题前缀小字标注（颜色按类型走，见 feed.css）；月份分隔行已给出年份，卡内日期只需 月·日。
 export function renderCard(e) {
   const [, mo, d] = e.date.split("-");
-  const dateSide = `${mo}·${d}` + (e.sourceCount ? ` · ${escapeHtml(e.sourceCount)} 源` : "");
+  const dateSide = `${mo}·${d}` + (e.sourceCount ? ` · ${escapeHtml(e.sourceCount)} 个来源` : "");
 
   const isStock = e.type === "股票";
   const parsed = isStock ? cleanStockTitle(e.title) : null;
@@ -32,7 +32,7 @@ export function renderCard(e) {
     : String(e.tldr || "").replace(/^一句话[：:]\s*/, "");
   const lead = (dirHtml || leadText) ? `<p class="lead">${dirHtml}${escapeHtml(leadText)}</p>` : "";
 
-  // 同一标的的多份报告：新的在标题行挂「第 N 次 · X 天后」，旧的在卡片底部挂「已有更新版 →」。
+  // 同一标的的多份报告：新的在元信息行挂「第 N 次 · X 天后」，旧的在卡片底部挂「已有更新版 →」。
   // 后者必须放在 card-link 这个 <a> 之外——<a> 套 <a> 非法，浏览器会拆开、链接失效。
   const badge = seriesBadgeHtml(e.series);
   const newerLink = seriesNewerLinkHtml(e.series);
@@ -41,10 +41,10 @@ export function renderCard(e) {
   return `<li class="article-card${staleCls}" data-type="${escapeHtml(e.type)}">
   <a class="card-link" href="${escapeHtml(e.href)}">
     <div class="card-body">
-      <div class="title-row">
-        <h2 class="card-title">${titleHtml}</h2>
-        ${badge}
+      <h2 class="card-title">${titleHtml}</h2>
+      <div class="card-meta">
         <span class="date-side">${dateSide}</span>
+        ${badge}
       </div>
       ${lead}
     </div>

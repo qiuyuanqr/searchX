@@ -41,9 +41,11 @@ test("chips 按数据生成：带条数、按条数降序、空类型不出现�
   ];
   const html = renderIndex(entries, tpl);
   expect(html).not.toContain("<!-- CHIPS -->");
+  // 「全部」不带色点；类型 chip 带 data-type + 色点（颜色由 feed.css 按 data-type 配）
   expect(html).toContain('data-filter="all" role="button" tabindex="0" aria-pressed="true">全部 <span class="n">3</span>');
-  expect(html).toContain('data-filter="type:股票" role="button" tabindex="0" aria-pressed="false">股票 <span class="n">2</span>');
-  expect(html).toContain('data-filter="type:概念" role="button" tabindex="0" aria-pressed="false">概念 <span class="n">1</span>');
+  expect(html).toContain('data-type="股票" data-filter="type:股票" role="button" tabindex="0" aria-pressed="false"><span class="dot"></span>股票 <span class="n">2</span>');
+  expect(html).toContain('data-type="概念" data-filter="type:概念" role="button" tabindex="0" aria-pressed="false"><span class="dot"></span>概念 <span class="n">1</span>');
+  expect(html).not.toMatch(/data-filter="all"[^>]*>[^<]*<span class="dot"/);
   expect(html).not.toContain("type:人物"); // 没有的类型不出 chip
   expect(html.indexOf("type:股票")).toBeLessThan(html.indexOf("type:概念")); // 条数降序
   expect(html.indexOf('data-filter="all"')).toBeLessThan(html.indexOf("type:股票"));

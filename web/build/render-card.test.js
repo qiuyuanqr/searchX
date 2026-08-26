@@ -24,21 +24,21 @@ const STOCK = {
   href: "r/2026-07-13_guoci/",
 };
 
-test("卡片含标题、链接、筛选用 data 属性、右侧日期与来源数", () => {
+test("卡片含标题、链接、筛选用 data 属性、元信息行里的日期与来源数", () => {
   const html = renderCard(ENTRY);
   expect(html).toContain('href="r/2026-06-03_cpo/"');
   expect(html).toContain("CPO / 硅光产业链");
   expect(html).toContain('data-type="板块"');
-  expect(html).toContain('<span class="date-side">06·03 · 14 源</span>');
+  expect(html).toContain('<span class="date-side">06·03 · 14 个来源</span>');
 });
 
-test("高密度结构：标题行（title-row）+ 导语，无独立 meta 行与类型徽章", () => {
+test("白卡结构（2026-08-26 改版）：标题 + 元信息行（card-meta）+ 导语，无旧版标题行与类型徽章", () => {
   const html = renderCard(ENTRY);
-  expect(html).toContain('class="title-row"');
   expect(html).toContain('class="card-title"');
+  expect(html).toContain('class="card-meta"');
   expect(html).toContain('class="lead"');
+  expect(html).not.toContain('class="title-row"');
   expect(html).not.toContain('class="ctype"');
-  expect(html).not.toContain('class="card-meta"');
 });
 
 test("非股票类型：标题前缀小字标注类型", () => {
@@ -89,6 +89,7 @@ test("无导语且无方向时不渲染 lead；来源数为 0 时日期不带来
   const html = renderCard({ ...ENTRY, tldr: "", sourceCount: 0 });
   expect(html).not.toContain('class="lead"');
   expect(html).toContain('<span class="date-side">06·03</span>');
+  expect(html).not.toContain("个来源");
 });
 
 test("sourceCount 也走转义：即便上游漏拦，标记也不会进 HTML", () => {
@@ -103,11 +104,12 @@ test("sourceCount 也走转义：即便上游漏拦，标记也不会进 HTML", 
 // ── 同一标的多份报告的角标（方案 C）────────────────────────────────
 const SERIES_BASE = { title: "胜宏科技（300476.SZ）", type: "股票", date: "2026-07-26", href: "r/new/", tldr: "偏震荡，前次判断已兑现" };
 
-test("系列里较新的一篇：标题行出「第 N 次 · X 天后」", () => {
+test("系列里较新的一篇：元信息行出「第 N 次 · X 天后」", () => {
   const html = renderCard({ ...SERIES_BASE, series: { index: 2, total: 2, daysSincePrev: 48, newerHref: null } });
   expect(html).toContain('<span class="series-badge">第 2 次<span class="series-gap"> · 48 天后</span></span>');
-  // 角标是标题行的独立 flex 项，不能落进 .card-title——后者 nowrap+省略号，窄屏会把它截没
+  // 角标落在 card-meta 行里，不能混进 .card-title
   expect(html).not.toMatch(/<h2 class="card-title">[^<]*<span class="series-badge"/);
+  expect(html.indexOf('class="card-meta"')).toBeLessThan(html.indexOf("series-badge"));
   expect(html).not.toContain("series-newer");     // 最新那篇不出「已有更新版」
   expect(html).not.toContain("is-superseded");
 });

@@ -13,11 +13,10 @@ function esc(s) {
     .replace(/"/g, "&quot;");
 }
 
-// 标题行里的行内角标：只有第 2 次及以后才出——单篇不出，系列里最早那篇也不出
+// 行内角标：只有第 2 次及以后才出——单篇不出，系列里最早那篇也不出
 //（它的身份由「已有更新版」那行表达，再挂个「第 1 次」是噪声）。
-// 「X 天后」单独包一层：`.card-title` 是 nowrap + 省略号，角标若并进标题里，窄屏会被直接截掉
-// （改了等于没改）。所以角标在标题行里是独立的 flex:none 项，且这半截在窄屏由 CSS 收起，
-// 保证「第 N 次」这个关键信号在任何宽度都看得见。
+// 2026-08-26 改版后角标落在卡片的元信息行（card-meta），不再与标题同排；
+// 「X 天后」仍单独包一层，窄屏由 CSS 收起，保证「第 N 次」这个关键信号在任何宽度都看得见。
 export function seriesBadgeHtml(series) {
   if (!series || !(series.index > 1)) return "";
   const gap = Number.isFinite(series.daysSincePrev) && series.daysSincePrev >= 0

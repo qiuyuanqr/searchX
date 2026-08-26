@@ -1,51 +1,70 @@
+/* 2026-08-26 改版调色板：中性暖灰底 + 珊瑚橙主色 + 按内容类型配色（股票橙 / 概念青 / 板块紫 / 方法论蓝）。
+   变量名沿用旧纸感时代的叫法（--paper/--seal…），四个页面模板与站内组件都在引用，只换值不换名。 */
 :root{
-  --paper:#f7f4ee; --paper-2:#efe9df; --ink:#2c2823; --ink-soft:#5f594f;
-  --muted:#9c9486; --rule:#e7e1d5; --hair:rgba(70,60,48,.08); --seal:#b14a31; --seal-soft:#c97a62; --card:#fcfaf5;
-  --accent-bg:#efeadd; --err:#b3402c;
+  --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+  --muted:#7d786f; --rule:#e5e2da; --hair:rgba(50,45,38,.08); --seal:#b4543a; --seal-soft:#c97a62; --card:#ffffff;
+  --accent-bg:#fbeae4; --err:#b3402c;
+  --t-stock:#b4543a; --t-concept:#1f7a68; --t-sector:#6d5bb0; --t-method:#2e6fa8;
   --measure:46rem; /* 正文列宽，浮动按钮据此贴列（与 .wrap 的 max-width 对齐） */
   --sans:ui-sans-serif,-apple-system,"PingFang SC","Hiragino Sans GB",sans-serif;
   --serif:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --paper:#17150f; --paper-2:#1e1b14; --ink:#efe9dc; --ink-soft:#c0b9a8;
-    --muted:#857d6f; --rule:#332f25; --hair:rgba(240,233,220,.07); --seal:#e57c61; --seal-soft:#c97a62; --card:#1d1a13;
-    --accent-bg:#211d15; --err:#e0735a;
+    --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+    --muted:#8f8a80; --rule:#35322c; --hair:rgba(240,236,228,.08); --seal:#d97e5c; --seal-soft:#c97a62; --card:#242220;
+    --accent-bg:#33261f; --err:#e0735a;
+    --t-stock:#d97e5c; --t-concept:#4aa58e; --t-sector:#a495e0; --t-method:#6ea3d1;
   }
 }
 *{box-sizing:border-box; margin:0; padding:0}
 /* hidden 属性必须压过 .chips/.results 的 display:flex（否则搜索时筛选条/容器藏不掉） */
 [hidden]{display:none !important}
 html{scroll-behavior:smooth}
-body{background:var(--paper); color:var(--ink); font-family:var(--serif);
-  font-size:18px; line-height:1.7; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+/* 改版后正文基准改无衬线（衬线只留给标题与 .prose 正文），基准 16px 更接近应用感 */
+body{background:var(--paper); color:var(--ink); font-family:var(--sans);
+  font-size:16px; line-height:1.7; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
   /* 移动端：禁双击放大（保留滚动/点击）；电脑端缩放不受影响 */
   touch-action:manipulation; -webkit-text-size-adjust:100%}
 .wrap{max-width:46rem; margin:0 auto; padding:1.9rem 1.5rem 5.5rem}
 .kicker{font-family:var(--sans); font-size:.68rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:.55rem}
 @media (max-width:430px){ .kicker-en{display:none} } /* 窄屏藏英文副标，防顶栏折行 */
-.seal{display:inline-flex; align-items:center; justify-content:center; width:1.35rem; height:1.35rem; border:1.4px solid var(--seal); color:var(--seal); border-radius:3px; font-size:.6rem; font-weight:700; transform:rotate(-4deg)}
+.seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem; background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700; font-family:var(--serif); transform:rotate(-4deg)}
 h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-spacing:-.015em; margin:.45rem 0 0}
 .search-wrap{position:relative; margin:1.2rem 0 .95rem}
-.search-wrap::before{content:"🔍"; position:absolute; left:13px; top:50%; transform:translateY(-50%); font-size:.82rem; opacity:.45}
+/* 放大镜换成描线 SVG（emoji 是彩色的、与新配色打架）；CSP 已放行 img-src data:。暗色下换浅描边一版。 */
+.search-wrap::before{content:""; position:absolute; left:15px; top:50%; transform:translateY(-50%); width:16px; height:16px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none' stroke='%237d786f' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='4.6'/%3E%3Cpath d='M10.5 10.5 L14 14'/%3E%3C/svg%3E") center/contain no-repeat}
+@media (prefers-color-scheme: dark){
+  .search-wrap::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none' stroke='%238f8a80' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='4.6'/%3E%3Cpath d='M10.5 10.5 L14 14'/%3E%3C/svg%3E")}
+}
 /* 字号定死 1rem(16px)：iOS 聚焦输入框时，字号<16px 会自动放大整页。之前靠 @media
    (pointer:coarse) 才升到 16px、桌面基准只有 .92rem(14.72px)——审计工具/无触控模拟的量法
    量到的正是这个基准值，不如直接把基准定到 16px，不依赖媒体查询是否命中。 */
 .search{width:100%; font-family:var(--sans); font-size:1rem; color:var(--ink); background:var(--card);
-  border:1px solid var(--rule); border-radius:10px; padding:.65rem .9rem .65rem 2.3rem; outline:none; transition:border-color .2s, box-shadow .2s}
-.search-wrap .search{padding-right:2.4rem} /* 给右侧清除按钮留位（只限带清除按钮的搜索框，不影响弹窗表单） */
+  border:1px solid var(--rule); border-radius:12px; padding:.65rem .9rem .65rem 2.4rem; outline:none; transition:border-color .2s, box-shadow .2s}
+/* 首页搜索框是全圆角胶囊；表单里的输入框/文本域沿用上面的 12px（textarea 套 999px 会很怪） */
+.search-wrap .search{border-radius:999px; padding-right:2.4rem; box-shadow:0 1px 2px rgba(50,45,38,.04)} /* 右侧给清除按钮留位 */
 .search-clear{position:absolute; right:5px; top:50%; transform:translateY(-50%); width:2rem; height:2rem;
   border:0; border-radius:50%; background:transparent; color:var(--muted); font-size:.82rem; cursor:pointer;
   display:flex; align-items:center; justify-content:center; transition:color .18s, background .18s}
 .search-clear:hover{color:var(--seal); background:var(--paper-2)}
 .search::placeholder{color:var(--muted)}
-.search:focus{border-color:var(--seal-soft); box-shadow:0 0 0 3px rgba(177,74,49,.09)}
-.chips{display:flex; flex-wrap:wrap; gap:.42rem; font-family:var(--sans); font-size:.76rem; margin-bottom:1rem}
+.search:focus{border-color:var(--seal-soft); box-shadow:0 0 0 3px rgba(180,84,58,.09)}
+.chips{display:flex; flex-wrap:wrap; gap:.5rem; font-family:var(--sans); font-size:.8rem; margin-bottom:1rem}
 .chip .n{opacity:.62; font-size:.9em; margin-left:.1em} /* chip 里的条数（构建期按数据生成） */
-.chip{padding:.26rem .78rem; border:1px solid var(--rule); border-radius:20px; color:var(--ink-soft); cursor:pointer; transition:all .2s; background:transparent; user-select:none}
+.chip{display:inline-flex; align-items:center; gap:.38rem; padding:.34rem .85rem; border:1px solid transparent; border-radius:999px;
+  color:var(--ink-soft); cursor:pointer; transition:all .2s; background:var(--card); box-shadow:0 1px 2px rgba(50,45,38,.06); user-select:none}
 .chip:hover{border-color:var(--seal-soft); color:var(--seal); transform:translateY(-1px)}
 .chip:focus-visible{outline:2px solid var(--seal-soft); outline-offset:2px}
-.chip.on{background:var(--seal); border-color:var(--seal); color:#fff}
+.chip.on{background:var(--seal); border-color:var(--seal); color:#fff; box-shadow:none}
+/* 类型 chip 的色点：四个常驻类型各有配色，没配到的类型落回灰点；选中态点转白（背景已是主色） */
+.chip .dot{flex:none; width:7px; height:7px; border-radius:999px; background:var(--muted)}
+.chip[data-type="股票"] .dot{background:var(--t-stock)}
+.chip[data-type="概念"] .dot{background:var(--t-concept)}
+.chip[data-type="板块"] .dot{background:var(--t-sector)}
+.chip[data-type="方法论"] .dot{background:var(--t-method)}
+.chip.on .dot{background:#fff}
 /* 触控目标 ≥44px（移动端可用性标准，实测原有 31px 高不够）：只加大纵向留白，横向不变，
    避免变胖挤占换行；桌面端鼠标点击精度够，不需要这层加大，保持原本的紧凑密度。 */
 @media (max-width:520px){ .chip{padding:.7rem .78rem} }
@@ -59,46 +78,47 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .filterbar .search-wrap{margin:.2rem 0 .65rem}
 .filterbar .chips{margin-bottom:0}
 .count{font-family:var(--sans); font-size:.72rem; color:var(--muted); margin-top:.55rem}
-.article-list{list-style:none; margin-top:.4rem}
+/* 列表改成带间隙的白卡流（月份分隔行也是列表项，跟着弹性排布） */
+.article-list{list-style:none; margin-top:.4rem; display:flex; flex-direction:column; gap:.8rem}
 @keyframes riseIn{from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none}}
 .article-card{animation:riseIn .5s cubic-bezier(.2,.7,.2,1) backwards}
 .article-card.hide{display:none}
-.month-sep{font-family:var(--sans); font-size:.7rem; letter-spacing:.14em; text-transform:uppercase;
-  color:var(--muted); padding:1.1rem .55rem .35rem}
+.month-sep{display:flex; align-items:center; gap:.75rem; font-family:var(--serif); font-size:.76rem; letter-spacing:.18em;
+  color:var(--muted); padding:.7rem .1rem 0}
+.month-sep::after{content:""; flex:1; height:1px; background:linear-gradient(90deg, var(--rule), transparent)}
 .month-sep.hide{display:none}
-/* ── 高密度卡片（2026-07-14 改版）：标题行（标题 + 右侧 月·日 · N 源）+ 两行导语 ── */
-.card-link{position:relative; display:block; text-decoration:none; color:inherit;
-  padding:.6rem .55rem .65rem; border-radius:9px; transition:background .18s ease}
-.card-link::before{content:""; position:absolute; left:0; top:.65rem; bottom:.65rem; width:3px; border-radius:3px;
-  background:var(--seal); transform:scaleX(0); transform-origin:left; opacity:0; transition:transform .22s ease, opacity .22s ease}
-.card-link:hover{background:var(--card)}
-.card-link:hover::before{transform:scaleX(1); opacity:.9}
-.article-card:not(:last-child) .card-link{box-shadow:inset 0 -1px 0 var(--hair)}
+/* ── 白卡（2026-08-26 改版）：圆角白卡 + 标题（可换行）+ 元信息行 + 两行导语 ── */
+.card-link{display:block; text-decoration:none; color:inherit; background:var(--card);
+  border:1px solid var(--hair); border-radius:16px; padding:1.05rem 1.25rem 1rem;
+  box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+  transition:box-shadow .25s ease, transform .18s ease}
+.card-link:hover{transform:translateY(-2px); box-shadow:0 3px 6px rgba(50,45,38,.06), 0 14px 30px rgba(50,45,38,.09)}
 .card-body{min-width:0}
-.title-row{display:flex; align-items:baseline; gap:.6rem; min-width:0}
-.title-row .card-title{flex:1; min-width:0}
-.date-side{flex:none; font-family:var(--sans); font-size:.68rem; color:var(--muted)}
-.card-title{font-family:var(--serif); font-size:1.12rem; line-height:1.3; font-weight:600; margin:0;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:color .2s ease}
+.card-title{font-family:var(--serif); font-size:1.22rem; line-height:1.35; font-weight:600; margin:0; transition:color .2s ease}
 .card-link:hover .card-title{color:var(--seal)}
-.code{font-family:var(--sans); font-size:.76em; font-weight:500; color:var(--muted); letter-spacing:.02em} /* 股票代码：身份标注、不抢戏 */
-.tprefix{font-family:var(--sans); font-size:.72em; font-weight:600; color:var(--seal); letter-spacing:.03em} /* 少数派类型（概念/板块…）标题前缀 */
-/* 同一标的多份报告：新的挂「第 N 次 · X 天后」，旧的压暗并在卡片底部给一条「已有更新版 →」。
-   角标是 title-row 的独立弹性项（flex:none）——放进 .card-title 会被它的 nowrap+省略号在窄屏截没。 */
-.series-badge{flex:none; font-family:var(--sans); font-size:.66rem; letter-spacing:.02em;
-  color:var(--seal); background:var(--accent-bg); border-radius:20px; padding:.1rem .5rem; white-space:nowrap}
-.series-newer{display:inline-block; font-family:var(--sans); font-size:.7rem; color:var(--muted);
-  text-decoration:none; padding:0 0 .7rem 1.15rem; margin-top:-.35rem; transition:color .2s ease}
+.card-meta{display:flex; align-items:center; flex-wrap:wrap; gap:.55rem; margin-top:.3rem;
+  font-family:var(--sans); font-size:.72rem; color:var(--muted)}
+.date-side{flex:none}
+.code{font-family:var(--sans); font-size:.72em; font-weight:500; color:var(--muted); letter-spacing:.02em} /* 股票代码：身份标注、不抢戏 */
+.tprefix{font-family:var(--sans); font-size:.72em; font-weight:600; color:var(--seal); letter-spacing:.03em} /* 少数派类型（概念/板块…）标题前缀，颜色按类型走 */
+.article-card[data-type="概念"] .tprefix{color:var(--t-concept)}
+.article-card[data-type="板块"] .tprefix{color:var(--t-sector)}
+.article-card[data-type="方法论"] .tprefix{color:var(--t-method)}
+/* 同一标的多份报告：新的在元信息行挂「第 N 次 · X 天后」，旧的压暗并在卡片底部给一条「已有更新版 →」。 */
+.series-badge{flex:none; font-family:var(--sans); font-size:.68rem; letter-spacing:.02em;
+  color:var(--seal); background:var(--accent-bg); border-radius:999px; padding:.12rem .55rem; white-space:nowrap}
+.series-newer{display:inline-block; font-family:var(--sans); font-size:.72rem; color:var(--muted);
+  text-decoration:none; padding:.4rem 1.25rem 0; transition:color .2s ease}
 .series-newer:hover{color:var(--seal)}
 .is-superseded .card-title, .is-superseded .lead{opacity:.62}          /* 压暗正文，别压角标与链接 */
 .result.is-superseded a > h3, .result.is-superseded a > .ex{opacity:.62}
 /* 搜索结果里那张白卡其实是 .result 内的 <a>，而「已有更新版」只能放在 <a> 之外（<a> 套 <a> 非法），
    照原样它会掉到卡片外面、还不跟着卡片的 hover 位移。把卡片外观整体上移到 .result 容器， */
 /* 内层 <a> 退成透明，两者就重新是同一张卡了。 */
-.result.is-superseded{background:var(--card); border-radius:13px; box-shadow:0 1px 2px rgba(0,0,0,.03);
+.result.is-superseded{background:var(--card); border-radius:16px; box-shadow:0 1px 2px rgba(0,0,0,.03);
   overflow:hidden; transition:box-shadow .25s ease, transform .18s ease}
 .result.is-superseded:hover{box-shadow:0 12px 26px rgba(0,0,0,.1); transform:translateY(-3px)}
-.result.is-superseded > a{background:transparent; box-shadow:none; border-radius:0; padding-bottom:.35rem}
+.result.is-superseded > a{background:transparent; box-shadow:none; border:0; border-radius:0; padding-bottom:.35rem}
 .result.is-superseded > a:hover{box-shadow:none; transform:none}   /* 位移交给外层容器，避免两层各动各的 */
 /* 选择器要压过 .result a{color:inherit}（同为 0,1,1 但它在后面），否则这条链接在搜索结果里
    会继承正文色、显示成近白/近黑，与信息流那面的灰色不一致。 */
@@ -107,25 +127,25 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 /* 窄屏收起「X 天后」：标题 + 角标 + 日期三项挤在一行，「第 N 次」才是必须看见的那半截 */
 @media (max-width:480px){ .series-gap{display:none} }
 
-.lead{color:var(--ink-soft); font-size:.86rem; line-height:1.5; margin:.18rem 0 0;
+.lead{color:var(--ink-soft); font-size:.86rem; line-height:1.6; margin:.5rem 0 0;
   display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
 /* 方向标记：从股票导语开头的固定句式提炼，红绿一眼分涨跌；绿/琥珀站内无变量，此处专用（与 check 页 vchip 同策略） */
-.dir{display:inline-block; font-family:var(--sans); font-size:.68rem; font-weight:600;
-  padding:.04rem .4rem; border-radius:4px; margin-right:.35rem; vertical-align:.08em}
+.dir{display:inline-block; font-family:var(--sans); font-size:.7rem; font-weight:600;
+  padding:.08rem .55rem; border-radius:999px; margin-right:.45rem; vertical-align:.08em}
 .dir.down{color:var(--err); background:rgba(179,64,44,.09)}
 .dir.up{color:#2f7d54; background:rgba(47,125,84,.09)}
-.dir.flat{color:#b07d18; background:rgba(176,125,24,.10)}
+.dir.flat{color:#9a7420; background:rgba(154,116,32,.1)}
 @media (prefers-color-scheme: dark){
   .dir.up{color:#5aa87e; background:rgba(90,168,126,.13)}
   .dir.flat{color:#c9a04a; background:rgba(201,160,74,.14)}
 }
 .results{margin-top:1rem; display:flex; flex-direction:column; gap:.7rem}
-.result a{display:block; text-decoration:none; color:inherit; background:var(--card); border-radius:13px;
-  padding:1.1rem 1.4rem; box-shadow:0 1px 2px rgba(0,0,0,.03); transition:box-shadow .25s ease, transform .18s ease}
+.result a{display:block; text-decoration:none; color:inherit; background:var(--card); border-radius:16px;
+  border:1px solid var(--hair); padding:1.1rem 1.4rem; box-shadow:0 1px 2px rgba(0,0,0,.03); transition:box-shadow .25s ease, transform .18s ease}
 .result a:hover{box-shadow:0 12px 26px rgba(0,0,0,.1); transform:translateY(-3px)}
 .result h3{font-family:var(--serif); font-size:1.2rem; font-weight:600; margin-bottom:.3rem}
 .result .ex{color:var(--ink-soft); font-size:.92rem; line-height:1.55}
-.result .ex mark{background:rgba(177,74,49,.18); color:inherit; padding:0 .1em; border-radius:2px}
+.result .ex mark{background:rgba(180,84,58,.18); color:inherit; padding:0 .1em; border-radius:2px}
 .result .rmeta{font-family:var(--sans); font-size:.7rem; color:var(--muted); margin-top:.4rem}
 .empty{margin-top:2rem; text-align:center; color:var(--muted); font-family:var(--sans); font-size:.9rem}
 /* 右下角浮动按钮：刷新（常驻）+ 回到顶部（滚动后浮现），共用外观 */
@@ -156,32 +176,33 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .field-label em{color:var(--seal); font-style:normal}
 .search.ta{line-height:1.55; resize:vertical; min-height:2.6rem; font-family:var(--sans)}
 .submit-btn{align-self:flex-start; font-family:var(--sans); font-size:.9rem; color:#fff;
-  background:var(--seal); border:1px solid var(--seal); border-radius:10px;
+  background:var(--seal); border:1px solid var(--seal); border-radius:999px;
   padding:.6rem 1.5rem; cursor:pointer; transition:transform .18s ease, box-shadow .25s ease, background .2s}
-.submit-btn:hover{transform:translateY(-2px); box-shadow:0 10px 22px rgba(177,74,49,.22)}
+.submit-btn:hover{transform:translateY(-2px); box-shadow:0 10px 22px rgba(180,84,58,.22)}
 .submit-btn:active{transform:translateY(0) scale(.98)}
 /* 禁用态（未授权 / 查重拦截 / 请求在途）：一眼可辨不可点，去掉悬浮动效。写在 hover/active 之后以覆盖之 */
 .submit-btn:disabled{opacity:.45; cursor:not-allowed; transform:none; box-shadow:none}
 /* 提交状态：横幅式（带底色 + 左侧色条），比纯文字更难被忽略 */
 .form-status{font-family:var(--sans); font-size:.9rem; line-height:1.5; margin:0;
   padding:.6rem .85rem; border-radius:8px; border-left:3px solid currentColor; font-weight:500}
-.form-status[data-kind="success"]{color:var(--seal); background:rgba(177,74,49,.1)}
+.form-status[data-kind="success"]{color:var(--seal); background:rgba(180,84,58,.1)}
 .form-status[data-kind="error"]{color:var(--err); background:rgba(179,64,44,.1)}
 .form-status[data-kind="pending"]{color:var(--ink-soft); background:var(--paper-2)}
 /* warn = 提交成功但服务端降级（没记下邮箱）：比 error 弱、比 success 显眼。
    落点在 done 面板（#done-warn），不是表单里的 #form-status——后者随表单隐藏、写了也看不见。 */
 .done-warn{margin:.6rem 0 0; padding:.55rem .7rem; border-radius:6px;
-  color:var(--seal); background:rgba(177,74,49,.12); font-size:.92rem; line-height:1.6; text-align:left}
+  color:var(--seal); background:rgba(180,84,58,.12); font-size:.92rem; line-height:1.6; text-align:left}
 .fineprint{font-family:var(--sans); font-size:.74rem; color:var(--muted); margin:0}
 .dup-notice{font-family:var(--sans); font-size:.82rem; line-height:1.5; color:var(--ink-soft); margin:-.2rem 0 .2rem;
   padding:.55rem .7rem; background:var(--paper-2); border:1px solid var(--rule); border-left:3px solid var(--seal); border-radius:8px}
 .dup-notice a{color:var(--seal); border-bottom:1px solid transparent; transition:border-color .2s}
 .dup-notice a:hover{border-bottom-color:var(--seal-soft)}
 @media (prefers-reduced-motion: reduce){ .submit-btn{transition:none !important} }
-.kicker .submit-link{margin-left:auto; flex:none; white-space:nowrap; font-family:var(--sans); font-size:.7rem; letter-spacing:.06em; text-transform:none;
-  color:var(--seal); background:none; border:0; padding:0; cursor:pointer; line-height:inherit;
-  border-bottom:1px solid transparent; transition:border-color .2s}
-.kicker .submit-link:hover{border-bottom-color:var(--seal-soft)}
+/* 头部 CTA 从文字链升级成主色胶囊按钮（改版后站内唯一的填充主色按钮之一） */
+.kicker .submit-link{margin-left:auto; flex:none; white-space:nowrap; font-family:var(--sans); font-size:.72rem; letter-spacing:.04em; text-transform:none;
+  color:#fff; background:var(--seal); border:0; border-radius:999px; padding:.4rem .95rem; cursor:pointer; line-height:1.4;
+  box-shadow:0 3px 10px rgba(180,84,58,.22); transition:transform .18s ease, box-shadow .2s ease}
+.kicker .submit-link:hover{transform:translateY(-1px); box-shadow:0 6px 16px rgba(180,84,58,.3)}
 
 /* ── 提交弹窗（入口在首页内）── */
 .modal-backdrop{position:fixed; inset:0; z-index:100; background:rgba(20,16,10,.46);
@@ -251,7 +272,7 @@ body.modal-lock{overflow:hidden}
 .vchip[data-tone="unknown"]{color:var(--muted); border-color:var(--rule); background:var(--paper-2)}
 .result-time{font-family:var(--sans); font-size:.74rem; color:var(--muted); margin:0 0 1rem}
 
-.prose{font-family:var(--serif); color:var(--ink); line-height:1.7}
+.prose{font-family:var(--serif); color:var(--ink); font-size:1.06rem; line-height:1.7} /* body 基准降到 16px 后，正文阅读区补回一点字号 */
 .prose h2{font-size:1.24rem; font-weight:600; margin:1.5rem 0 .55rem; padding-bottom:.28rem; border-bottom:1px solid var(--hair)}
 .prose h3{font-size:1.06rem; font-weight:600; margin:1.05rem 0 .4rem}
 .prose p{margin:.55rem 0}

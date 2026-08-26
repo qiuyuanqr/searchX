@@ -16,11 +16,12 @@ function renderChips(entries) {
     if (!e.type) continue;
     counts.set(e.type, (counts.get(e.type) || 0) + 1);
   }
-  const chip = (filter, label, n, on) =>
-    `<span class="chip${on ? " on" : ""}" data-filter="${escapeHtml(filter)}" role="button" tabindex="0" aria-pressed="${on}">${escapeHtml(label)} <span class="n">${n}</span></span>`;
+  // 类型 chip 带一枚色点（颜色按 data-type 在 feed.css 里配，未配到的类型落回灰点）；「全部」不带点。
+  const chip = (filter, label, n, on, type) =>
+    `<span class="chip${on ? " on" : ""}"${type ? ` data-type="${escapeHtml(type)}"` : ""} data-filter="${escapeHtml(filter)}" role="button" tabindex="0" aria-pressed="${on}">${type ? '<span class="dot"></span>' : ""}${escapeHtml(label)} <span class="n">${n}</span></span>`;
   const parts = [chip("all", "全部", entries.length, true)];
   for (const [type, n] of [...counts].sort((a, b) => b[1] - a[1])) {
-    parts.push(chip(`type:${type}`, type, n, false));
+    parts.push(chip(`type:${type}`, type, n, false, type));
   }
   return parts.join("\n        ");
 }
