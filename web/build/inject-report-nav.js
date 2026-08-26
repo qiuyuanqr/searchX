@@ -16,22 +16,22 @@ const NAV_SCRIPT = `
   // 外部来源链接一律新标签页打开：点来源不离开报告页（手机上尤其容易丢阅读位置）
   document.querySelectorAll('a[href^="http"]').forEach(function(a){ a.target = "_blank"; a.rel = "noopener"; });
 
-  // 自动目录：固定区块 + 正文 h2，按文档顺序。aux 标记辅助区块（先说人话/来源…），
-  // 桌面端迷你横条导航里画成短一截的条，正文章节是长条，扫一眼能分出主次。
+  // 自动目录：固定区块 + 正文 h2，按文档顺序
   var secs = [];
-  function add(el, label, aux){ if (!el) return; if (!el.id) el.id = "sx-sec-" + secs.length; secs.push({ id: el.id, label: label, aux: !!aux }); }
-  add(document.querySelector(".plain"), "先说人话", true);
-  add(document.querySelector(".tldr"), "核心结论", true);
-  add(document.querySelector(".findings"), "关键发现", true);
+  function add(el, label){ if (!el) return; if (!el.id) el.id = "sx-sec-" + secs.length; secs.push({ id: el.id, label: label }); }
+  add(document.querySelector(".plain"), "先说人话");
+  add(document.querySelector(".tldr"), "核心结论");
+  add(document.querySelector(".findings"), "关键发现");
   document.querySelectorAll("main h2").forEach(function(h){ add(h, h.textContent.trim()); });
-  add(document.querySelector("section.risks"), "风险与争议", true);
-  add(document.querySelector(".glossary"), "名词小抄", true);
-  add(document.querySelector("section.sources"), "来源清单", true);
+  add(document.querySelector("section.risks"), "风险与争议");
+  add(document.querySelector(".glossary"), "名词小抄");
+  add(document.querySelector("section.sources"), "来源清单");
 
   function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
   function linksHtml(){ return secs.map(function(s){ return '<a href="#" data-id="' + esc(s.id) + '">' + esc(s.label) + '</a>'; }).join(""); }
-  // 桌面端迷你导航（参照 Codex 的长内容导航）：每节一根小横条 + 悬停展开才出现的段落名
-  function railHtml(){ return secs.map(function(s){ return '<a href="#" data-id="' + esc(s.id) + '"' + (s.aux ? ' class="aux"' : '') + '><i></i><span class="l">' + esc(s.label) + '</span></a>'; }).join(""); }
+  // 桌面端迷你导航（参照 Codex 的长内容导航）：每节一根等长小横条，标题存 data-label，
+  // 鼠标在栏上移动时由下方 magnify() 做鱼眼放大 + 只给最近那条弹标题。
+  function railHtml(){ return secs.map(function(s){ return '<a href="#" data-id="' + esc(s.id) + '" data-label="' + esc(s.label) + '"><i></i></a>'; }).join(""); }
   var aside = document.querySelector(".sx-toc");
   var deskNav = document.querySelector(".sx-toc nav");
   var sheet = document.querySelector(".sx-toc-sheet");
@@ -40,9 +40,49 @@ const NAV_SCRIPT = `
   if (secs.length){
     deskNav.insertAdjacentHTML("beforeend", railHtml());
     sheetPanel.insertAdjacentHTML("beforeend", linksHtml());
+    bindRailMagnify();
   } else {
     aside.style.display = "none";   // 没有可索引区块：藏掉目录入口
     tocBtn.style.display = "none";
+  }
+  // 鱼眼放大（参照 Codex）：常态每条等长；鼠标在栏上移动时，离光标越近的条越长、
+  // 线性衰减成阶梯；只有最近那条弹出标题气泡。键盘聚焦某条等效于鼠标指着它。
+  function bindRailMagnify(){
+    var links = [].slice.call(deskNav.querySelectorAll("a"));
+    if (!links.length) return;
+    var tip = document.createElement("span");
+    tip.className = "sx-rail-tip";
+    aside.appendChild(tip);
+    var BASE = 12, EXTRA = 22, RANGE = 90;   // 基础长 / 最大增量 / 影响半径(px)
+    function setW(a, w){ var i = a.querySelector("i"); if (i) i.style.width = w + "px"; }
+    function onMove(e){
+      var best = null, bestD = Infinity;
+      links.forEach(function(a){
+        var r = a.getBoundingClientRect(), c = r.top + r.height / 2;
+        var d = Math.abs(e.clientY - c);
+        setW(a, BASE + EXTRA * Math.max(0, 1 - d / RANGE));
+        if (d < bestD){ bestD = d; best = a; }
+      });
+      links.forEach(function(a){ a.classList.toggle("near", a === best); });
+      if (best){
+        // aside 是 top:0 的 fixed 定位，视口 Y 即容器内 Y，气泡直接用 clientY 系坐标
+        var r = best.getBoundingClientRect();
+        tip.textContent = best.dataset.label || "";
+        tip.style.top = (r.top + r.height / 2) + "px";
+        tip.classList.add("show");
+      }
+    }
+    function reset(){
+      links.forEach(function(a){ setW(a, BASE); a.classList.remove("near"); });
+      tip.classList.remove("show");
+    }
+    deskNav.addEventListener("mousemove", onMove);
+    deskNav.addEventListener("mouseleave", reset);
+    links.forEach(function(a){
+      a.addEventListener("focus", function(){ var r = a.getBoundingClientRect(); onMove({ clientY: r.top + r.height / 2 }); });
+      a.addEventListener("blur", reset);
+    });
+    reset();
   }
   function jump(id){ var t = document.getElementById(id); if (t) t.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }); }
   // 打开/关闭目录浮层时一并锁/解锁整页滚动，防止滑动穿透到下面的报告页。
@@ -215,27 +255,25 @@ table thead th:first-child{z-index:2; background:var(--paper-2)}
 /* 顶部阅读进度条 */
 .sx-progress{position:fixed; top:0; left:0; right:0; height:3px; z-index:60; background:transparent}
 .sx-progress>i{display:block; height:100%; width:0; background:var(--seal); transition:width .1s linear}
-/* 自动目录：电脑端左侧迷你横条导航（参照 Codex 的长内容导航）——常态是一列小横条，
-   悬停整栏展开成面板、露出段落名；窄屏或纯触控设备隐藏，退回 ≡ 浮层。 */
+/* 自动目录：电脑端左侧迷你横条导航（参照 Codex 的长内容导航）——常态是一列等长小横条，
+   鼠标移入后由脚本做鱼眼放大（离光标越近越长），只有最近那条弹出标题气泡；
+   窄屏或纯触控设备隐藏，退回 ≡ 浮层。条长由脚本写行内样式，这里只给基础态。 */
 .sx-toc{position:fixed; top:0; bottom:0; display:none; flex-direction:column; justify-content:center;
   left:14px; z-index:40; pointer-events:none}
 .sx-toc nav{pointer-events:auto; max-height:78vh; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain;
-  padding:10px 9px; border-radius:12px; border:1px solid transparent;
-  transition:background .2s ease, box-shadow .2s ease, border-color .2s ease}
-.sx-toc nav:hover, .sx-toc nav:focus-within{background:var(--card); border-color:var(--rule); box-shadow:0 8px 28px rgba(0,0,0,.12)}
+  padding:8px 14px 8px 2px}
 .sx-toc .h{display:none}
-.sx-toc a{display:flex; align-items:center; gap:0; padding:5px 4px; text-decoration:none; cursor:pointer}
-.sx-toc a i{flex:none; display:block; width:18px; height:2px; border-radius:2px; background:var(--muted); opacity:.5; transition:width .2s ease, opacity .15s, background .15s}
-.sx-toc a.aux i{width:11px}
-.sx-toc a:hover i{opacity:.9}
-.sx-toc a.on i{background:var(--seal); opacity:1; width:22px}
-/* 段落名：常态收起（宽 0），整栏悬停/键盘聚焦时展开 */
-.sx-toc .l{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.78rem; line-height:1.4;
-  color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:0; opacity:0;
-  transition:max-width .25s ease, opacity .18s ease, margin-left .25s ease}
-.sx-toc nav:hover .l, .sx-toc nav:focus-within .l{max-width:11.5em; opacity:1; margin-left:10px}
-.sx-toc a:hover .l{color:var(--seal)}
-.sx-toc a.on .l{color:var(--seal); font-weight:600}
+.sx-toc a{display:block; padding:4px 8px 4px 0; text-decoration:none; cursor:pointer}
+.sx-toc a i{display:block; width:12px; height:2px; border-radius:2px; background:var(--muted); opacity:.45; transition:width .15s ease, opacity .15s, background .15s}
+.sx-toc a.near i{opacity:.95}
+.sx-toc a.on i{background:var(--seal); opacity:1}
+/* 最近那条的标题气泡（脚本定位到该条的纵向中点） */
+.sx-rail-tip{position:absolute; left:54px; transform:translateY(-50%); background:var(--card);
+  border:1px solid var(--rule); border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,.14);
+  padding:.28rem .7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.78rem;
+  color:var(--ink); white-space:nowrap; max-width:16em; overflow:hidden; text-overflow:ellipsis;
+  opacity:0; transition:opacity .12s ease, top .1s ease}
+.sx-rail-tip.show{opacity:1}
 /* 手机端目录浮层 */
 /* 整张浮层吞掉触摸手势（touch-action:none）：在半透明遮罩上拖动只会被拦下，不会带着下面的报告页一起滚——
    修复「滑目录时报告页跟着动」。点击遮罩关闭仍正常（tap/click 不受 touch-action 影响）。 */
@@ -257,7 +295,7 @@ html.sx-toc-open,body.sx-toc-open{overflow:hidden}
 /* 迷你导航靠 hover 展开：只在够宽且有真悬停能力的设备上启用（触控平板仍用 ≡ 浮层） */
 @media (min-width:900px) and (hover:hover){ .sx-toc{display:flex} .sx-toc-btn{display:none} }
 @media (prefers-reduced-motion: reduce){ .sx-nav-btn{transition:none !important} .sx-progress>i{transition:none}
-  .sx-toc nav, .sx-toc a i, .sx-toc .l{transition:none !important} }
+  .sx-toc a i, .sx-rail-tip{transition:none !important} }
 /* ── 2026-08-26 站点改版统一：存量报告的调色板与圆角覆盖到与首页一致 ──
    老报告的 <style> 里烧着旧纸感配色；这段排在其后、同特异性靠后者胜，把变量与几个组件样式整体盖掉。
    值要与 .claude/skills/research/templates/report.html（新报告）和 web/src/assets/feed.css 保持同步。 */

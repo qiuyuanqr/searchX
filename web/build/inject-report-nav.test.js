@@ -216,7 +216,9 @@ test("迷你导航只在够宽且有真悬停能力的设备上显示（触控�
   const out = injectReportNav(BASE);
   expect(out).toContain("@media (min-width:900px) and (hover:hover)");
   expect(out).toContain("railHtml");            // 桌面端注入的是横条版目录
-  expect(out).toContain('class="l"');           // 悬停展开的段落名
+  expect(out).toContain("bindRailMagnify");     // 鱼眼放大：离光标越近的条越长
+  expect(out).toContain("sx-rail-tip");         // 最近那条的标题气泡
+  expect(out).toContain("data-label");          // 标题存条目属性，气泡从这里取
 });
 
 // CSP：防存储型 XSS。只放行本文件注入的那段导航脚本（按哈希白名单），
