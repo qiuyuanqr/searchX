@@ -46,13 +46,12 @@ export function renderCard(e) {
   const name = parsed ? parsed.name : e.title;
   const { head, rest } = splitLead(name, leadText);
 
-  // 行首标注：股票给方向标（红绿扫一眼分涨跌）、少数派类型给彩色类型字（颜色按 data-type 走）；
-  // 行尾只留代码——放行尾的内容必须短，否则会被两行截断吞掉。
-  const lede = dir
-    ? `<span class="dir ${dir.cls}">${dir.arrow} ${escapeHtml(dir.label)}</span> `
-    : (!isStock && e.type ? `<span class="tprefix">${escapeHtml(e.type)}</span> ` : "");
+  // 行尾标注（2026-08-26 用户反馈：行首挂标破坏行头一体性）：代码在前、方向标/类型字在后。
+  // 放行尾的内容必须短，否则会被两行截断吞掉——导语补充段已截句，装得下。
   const tail = [];
   if (parsed) tail.push(`<span class="code">${escapeHtml(parsed.codes)}</span>`);
+  if (dir) tail.push(`<span class="dir ${dir.cls}">${dir.arrow} ${escapeHtml(dir.label)}</span>`);
+  else if (!isStock && e.type) tail.push(`<span class="tprefix">${escapeHtml(e.type)}</span>`);
 
   // 同一标的的多份报告：新的在行尾挂「第 N 次 · X 天后」，旧的整行压暗并在条目下方给
   // 「已有更新版 →」。后者必须在 .entry 这个 <a> 之外——<a> 套 <a> 非法，浏览器会拆开、链接失效。
@@ -63,7 +62,7 @@ export function renderCard(e) {
   return `<div class="article-card${staleCls}" data-type="${escapeHtml(e.type)}">
   <a class="entry" href="${escapeHtml(e.href)}">
     <span class="num" aria-hidden="true"></span>
-    <span class="eline">${lede}<span class="ehead">${escapeHtml(head)}</span>${escapeHtml(rest)}${tail.length ? " " + tail.join(" ") : ""}${badge ? " " + badge : ""}</span>
+    <span class="eline"><span class="ehead">${escapeHtml(head)}</span>${escapeHtml(rest)}${tail.length ? " " + tail.join(" ") : ""}${badge ? " " + badge : ""}</span>
   </a>${newerLink}
 </div>`;
 }

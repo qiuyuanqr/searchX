@@ -119,3 +119,14 @@ test("非系列报告：两种角标都不出", () => {
   expect(html).not.toContain("series-newer");
   expect(html).not.toContain("is-superseded");
 });
+
+test("行尾标注顺序：代码在前、方向标在后；行首不再挂任何标（2026-08-26 用户反馈）", () => {
+  const html = renderCard(STOCK);
+  const eline = html.slice(html.indexOf('class="eline"'));
+  expect(eline.indexOf('class="ehead"')).toBeLessThan(eline.indexOf('class="code"'));
+  expect(eline.indexOf('class="code"')).toBeLessThan(eline.indexOf('class="dir'));
+  // 非股票的类型字同样在行尾（标题之后）
+  const h2 = renderCard(ENTRY);
+  const e2 = h2.slice(h2.indexOf('class="eline"'));
+  expect(e2.indexOf('class="ehead"')).toBeLessThan(e2.indexOf('class="tprefix"'));
+});
