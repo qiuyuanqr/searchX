@@ -8,7 +8,7 @@ import nodemailer from "nodemailer";
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
-import { shouldAlert, composeAlert } from "./alert.js";
+import { shouldAlert, composeAlert, classifyFailure, parseAlertArgs } from "./alert.js";
 
 export function stateDir() {
   return join(homedir(), "Library", "Application Support", "searchx-runner");
@@ -39,7 +39,8 @@ function beijingNow() {
 }
 
 // 发一封限频报警。返回是否真的发了。发送成功才落限频标记：发送失败下一 tick 还会再试。
-export async function sendRateLimitedAlert(key, detail) {
+// opts.logTail 给了就走结构化正文（类型/关键行/处置/现场日志），见 composeAlert。
+export async function sendRateLimitedAlert(key, detail, { logTail = "", logPath = "" } = {}) {
   const user = (process.env.RUNNER_SMTP_USER || "").trim();
   const pass = (process.env.RUNNER_SMTP_PASS || "").trim();
   const to = (process.env.RUNNER_AUTHOR_EMAIL || user).trim();
@@ -55,20 +56,26 @@ export async function sendRateLimitedAlert(key, detail) {
   const transport = nodemailer.createTransport({
     host: "smtp.gmail.com", port: 465, secure: true, auth: { user, pass },
   });
-  await transport.sendMail(composeAlert({ key, detail, authorEmail: to, fromEmail: user, when: beijingNow() }));
+  await transport.sendMail(composeAlert({ key, detail, authorEmail: to, fromEmail: user, when: beijingNow(), logTail, logPath }));
   writePrev(key, now);
-  console.log(`✉️ 已发报警（key=${key}）：${detail}`);
+  // 日志里也带上识别出的类型：翻日志时不必再跟邮件对照。
+  const kind = logTail ? `[${classifyFailure(logTail).type}] ` : "";
+  console.log(`✉️ 已发报警（key=${key}）：${kind}${detail}`);
   return true;
 }
 
 if (import.meta.main) {
-  const [key, ...rest] = process.argv.slice(2);
+  const { key, detail, logPath, logStdin } = parseAlertArgs(process.argv.slice(2));
   if (!key) {
-    console.error("用法：bun services/runner/src/alert-cli.js <key> <详情…>");
+    console.error("用法：bun services/runner/src/alert-cli.js <key> <详情…> [--log-path <完整日志路径>] [--log-stdin]");
     process.exit(2);
   }
+  // --log-stdin：本轮日志尾部走管道喂进来（三个 scheduled-run.sh 的失败分支）。
+  // isTTY 时不读：手动在终端敲这条命令排障时，读 stdin 会等一个永远不来的输入、看着像卡死；
+  // 管道与重定向下 isTTY 都是 false，正常路径不受影响。读不到就退回旧格式，照常发信。
+  const logTail = logStdin && !process.stdin.isTTY ? await Bun.stdin.text() : "";
   try {
-    await sendRateLimitedAlert(key, rest.join(" ") || "(无详情)");
+    await sendRateLimitedAlert(key, detail || "(无详情)", { logTail, logPath });
   } catch (e) {
     console.error("✗ 报警发送失败：", e.message);
     process.exit(1);

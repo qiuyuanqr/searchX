@@ -30,6 +30,16 @@ export PATH="$HOME/.bun/bin:$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:/u
 ts() { date '+%Y-%m-%d %H:%M:%S'; }
 say() { echo "[$(ts)] $*" >> "$LOG"; }
 alert() { bun services/runner/src/alert-cli.js "$1" "$2" >> "$LOG" 2>&1 || true; }
+# 本轮日志 = 最后一条「tick：」分隔线之后的内容。失败时喂给 alert-cli，让它识别错误类型、
+# 挑出关键错误行、给出处置办法，再连同末尾几行现场一起发信——只报一个退出码的旧写法，
+# 每次都得先 ssh 上来翻日志才知道该干什么（2026-08-26 的 401 事故就白等了十小时）。
+tick_log() { tail -n 300 "$LOG" | awk '/──────── tick：/{buf=""} {buf=buf $0 ORS} END{printf "%s", buf}'; }
+# 失败类报警走这个（附本轮日志尾部）；detail 已写清原因和处置办法的（如 parked）仍走 alert。
+alert_failed() {
+  TICK_LOG="$(tick_log)"
+  printf '%s' "$TICK_LOG" | bun services/runner/src/alert-cli.js "$1" "$2" \
+    --log-path "$LOG" --log-stdin >> "$LOG" 2>&1 || true
+}
 
 # 日志超 5MB 滚一次
 if [ -f "$LOG" ] && [ "$(wc -c < "$LOG")" -gt 5000000 ]; then mv -f "$LOG" "$LOG.1"; fi
@@ -76,7 +86,7 @@ NEW_DIRS=$(bun run services/stocks-import/src/index.js --porcelain 2>>"$LOG")
 code=$?
 if [ "$code" -ne 0 ]; then
   say "导入脚本退出码 $code，本次中止"
-  alert stocks-import-failed "Stocks→searchX 每日同步失败（导入阶段退出码 $code），日志：$LOG"
+  alert_failed stocks-import-failed "Stocks→searchX 每日同步 · 导入阶段退出码 $code"
   exit "$code"
 fi
 # —— 1b) 补上「已导入但没走完提交」的目录 ——
@@ -125,7 +135,7 @@ done <<< "$NEW_DIRS"
 # —— 3) 构建自检：本地先构一遍，别把会让 CI 挂掉的东西推上去 ——
 if ! bun run build >> "$LOG" 2>&1; then
   say "构建失败，本次不提交"
-  alert stocks-import-failed "Stocks→searchX 每日同步：构建自检失败，已导入但未提交，日志：$LOG"
+  alert_failed stocks-import-failed "Stocks→searchX 每日同步 · 构建自检失败（已导入但未提交）"
   exit 1
 fi
 
@@ -148,7 +158,7 @@ else
     say "已推送 ${count} 篇，CI 将自动部署"
   else
     say "push 失败"
-    alert stocks-import-failed "Stocks→searchX 每日同步：git push 失败（已本地提交），日志：$LOG"
+    alert_failed stocks-import-failed "Stocks→searchX 每日同步 · git push 失败（已本地提交）"
     exit 1
   fi
 fi

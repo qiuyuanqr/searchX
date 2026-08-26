@@ -22,6 +22,11 @@ export PATH="$HOME/.bun/bin:$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:/u
 
 ts() { date '+%Y-%m-%d %H:%M:%S'; }
 
+# 本轮日志 = 最后一条「tick：」分隔线之后的内容。失败时喂给 alert-cli，让它识别错误类型、
+# 挑出关键错误行、给出处置办法，再连同末尾几行现场一起发信——只报一个退出码的旧写法，
+# 每次都得先 ssh 上来翻日志才知道该干什么（2026-08-26 的 401 事故就白等了十小时）。
+tick_log() { tail -n 300 "$LOG" | awk '/──────── tick：/{buf=""} {buf=buf $0 ORS} END{printf "%s", buf}'; }
+
 # 日志超 5MB 滚动一次，避免无限增长
 if [ -f "$LOG" ] && [ "$(wc -c < "$LOG")" -gt 5000000 ]; then mv -f "$LOG" "$LOG.1"; fi
 
@@ -45,6 +50,8 @@ echo "[$(ts)] ──────── 结束 (exit=$code)" >> "$LOG"
 # 常见失败=研究未产出，会被下个 tick 自动重跑；同一 Issue 连续失败 3 次由 runner 自动贴 done
 # 停跑止损并给作者发「已停跑」专信。报警是让作者知道「在重试」，可及时人工介入。
 if [ "$code" -ne 0 ]; then
-  bun services/runner/src/alert-cli.js runner-failed "定时 runner 退出码 $code，日志：$LOG" >> "$LOG" 2>&1 || true
+  TICK_LOG="$(tick_log)"
+  printf '%s' "$TICK_LOG" | bun services/runner/src/alert-cli.js runner-failed \
+    "定时 runner · 退出码 $code" --log-path "$LOG" --log-stdin >> "$LOG" 2>&1 || true
 fi
 exit "$code"
