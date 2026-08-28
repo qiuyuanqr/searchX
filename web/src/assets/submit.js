@@ -1,4 +1,4 @@
-import { seriesBadgeHtml, seriesNewerLinkHtml } from "./series-badge.js";
+import { seriesBadgeHtml } from "./series-badge.js";
 
 // 提交表单的纯逻辑：拼载荷 + 把响应映射成中文。
 // DOM 引导（打开/关闭弹窗、提交、Turnstile 渲染）统一由 feed.js 负责，feed.js 从这里 import 这两个纯函数。
@@ -150,13 +150,12 @@ export function renderSearchResultsHTML(items, entries) {
       const meta = entry
         ? `<div class="rmeta">${escapeHtml(String(entry.date || "").replace(/-/g, "·"))}${entry.type ? " · " + escapeHtml(entry.type) : ""}</div>`
         : "";
-      // 同一标的的多份报告，搜索结果里会并排出现两张同名卡——这里最容易困惑，所以角标同样要出。
-      // series 由构建写进 reports.json（web/build/series.js），与信息流卡片同一份数据。
+      // 系列角标（「第 N 次」）：series 由构建写进 reports.json（web/build/series.js），
+      // 与信息流卡片同一份数据。旧篇 2026-08-28 起已从 reports.json 与全文索引剔除，
+      // 搜索结果里只会出现最新篇，不再需要压暗与「已有更新版」那套。
       const series = entry && entry.series;
       const badge = seriesBadgeHtml(series);
-      const newerLink = seriesNewerLinkHtml(series);   // 放 <a> 之外：<a> 套 <a> 会被浏览器拆开
-      const stale = series && series.newerHref ? " is-superseded" : "";
-      return `<div class="result${stale}"><a href="${url}"><h3>${title}${badge}</h3><p class="ex">${ex}</p>${meta}</a>${newerLink}</div>`;
+      return `<div class="result"><a href="${url}"><h3>${title}${badge}</h3><p class="ex">${ex}</p>${meta}</a></div>`;
     })
     .join("");
 }

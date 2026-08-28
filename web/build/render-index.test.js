@@ -76,3 +76,18 @@ test("条目内容含 $' / $& 等替换模式序列时模板不被损坏（函�
   expect(html.match(/<\/ul>/g).length).toBe(1);
   expect(html).toContain("美元符标题");
 });
+
+// ── 2026-08-28：旧报告（已有更新版）不再出条目 ─────────────────────
+test("旧篇不出条目：整天全是旧篇时天卡不出；计数与 chips 只算展示条目", () => {
+  const stale = { series: { index: 1, total: 2, daysSincePrev: null, newerHref: "r/new/", latestHref: "r/new/", latestDate: "2026-06-24" } };
+  const tplWithChips = `<div class="chips"><!-- CHIPS --></div><ul><!-- CARDS --></ul>`;
+  const html = renderIndex([
+    mk("2026-06-24", "最新篇", { series: { index: 2, total: 2, daysSincePrev: 4, newerHref: null, history: [{ date: "2026-06-20", href: "r/2026-06-20_x/" }] } }),
+    mk("2026-06-20", "旧篇标题", stale),
+  ], tplWithChips);
+  expect(html).not.toContain("旧篇标题");
+  expect(html.match(/class="day-card"/g).length).toBe(1);          // 06-20 那天整卡不出
+  expect(html).toContain('>全部 <span class="n">1</span>');         // chips 不数旧篇
+  expect(html).toContain("1 篇调研");
+  expect(html).toContain("历史调研");                                // 历史入口在最新条目下
+});

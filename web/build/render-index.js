@@ -8,9 +8,13 @@ function dayLabel(date) {
 }
 
 function renderDay(date, dayEntries) {
-  const n = dayEntries.length;
+  // 旧报告（已有更新版）不再出条目（renderCard 返回空串），计数也只算真正展示的；
+  // 一天全是旧篇时整卡不出——否则会出现「N 篇调研」的空卡。
+  const shown = dayEntries.filter((e) => !(e.series && e.series.newerHref));
+  if (!shown.length) return "";
+  const n = shown.length;
   // sourceCount 可能缺失或是脏数据（上游已有转义守卫）：只把能解析成正数的记入合计
-  const src = dayEntries.reduce((s, e) => {
+  const src = shown.reduce((s, e) => {
     const v = Number(e.sourceCount);
     return s + (Number.isFinite(v) && v > 0 ? v : 0);
   }, 0);
@@ -18,7 +22,7 @@ function renderDay(date, dayEntries) {
   return `<li class="day-card" data-date="${escapeHtml(date)}">
   <div class="day-head"><span class="day-date">${dayLabel(date)}</span><span class="day-meta">${meta}</span></div>
   <div class="day-entries">
-${dayEntries.map(renderCard).join("\n")}
+${shown.map(renderCard).join("\n")}
   </div>
 </li>`;
 }
@@ -51,9 +55,11 @@ export function renderIndex(entries, template) {
     day.entries.push(e);
   }
   const parts = days.map((d) => renderDay(d.date, d.entries));
+  // chips 计数按真正展示的条目算（旧报告不再出条目），否则「股票 103」会把隐藏的旧篇也数进去
+  const shownEntries = entries.filter((e) => !(e.series && e.series.newerHref));
   // 函数形式替换：字符串形式会解释替换值里的 $ 模式（$'、$& 等），标题/导语里出现这类
   // 序列（财经文本写美元符时常见）会静默复制模板尾部、损坏首页结构。
   return template
-    .replace("<!-- CHIPS -->", () => renderChips(entries))
+    .replace("<!-- CHIPS -->", () => renderChips(shownEntries))
     .replace("<!-- CARDS -->", () => parts.join("\n"));
 }

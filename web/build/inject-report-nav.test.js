@@ -319,3 +319,38 @@ test("正文来源小节的三道判据都在：标题长度 + 只跳说明段�
   expect(out).toContain('if (tag !== "P") return;');                // ② 中间只允许说明段落
   expect(out).toContain("linked.length < items.length * 0.6");      // ③ 六成条目得是外链
 });
+
+// ── 2026-08-28：旧报告页挂「已有更新版」横幅并整页退出全文索引 ──────────
+test("旧报告（series 带 newerHref）：出横幅链 ../../latestHref、body 挂 data-pagefind-ignore", () => {
+  const out = injectReportNav(BASE, { series: {
+    index: 1, total: 2, daysSincePrev: null,
+    newerHref: "r/2026-08-10_x/", latestHref: "r/2026-08-27_x/", latestDate: "2026-08-27",
+  } });
+  expect(out).toContain('class="sx-stale-note"');
+  expect(out).toContain('href="../../r/2026-08-27_x/"');
+  expect(out).toContain("2026-08-27 最新版");
+  expect(out).toMatch(/<body[^>]*data-pagefind-ignore/i);
+});
+
+test("最新报告 / 无系列：不出横幅、body 不挂 pagefind-ignore", () => {
+  for (const series of [null, { index: 2, total: 2, daysSincePrev: 17, newerHref: null, history: [{ date: "2026-08-10", href: "r/2026-08-10_x/" }] }]) {
+    const out = injectReportNav(BASE, { series });
+    expect(out).not.toContain('class="sx-stale-note"');   // 样式与脚本选择器恒在，只认横幅标记本身
+    expect(out).not.toMatch(/<body[^>]*data-pagefind-ignore/i);
+  }
+});
+
+test("继续阅读：build 传入的 related 渲染成日期+标题白条卡，标题转义", () => {
+  const out = injectReportNav(BASE, { related: [
+    { dir: "2026-08-27_a", date: "2026-08-27", title: "甲报告 <b>x</b>" },
+    { dir: "2026-08-26_b", date: "2026-08-26", title: "乙报告" },
+  ] });
+  expect(out).toContain('class="sx-related-card" href="../2026-08-27_a/"');
+  expect(out).toContain("2026 年 8 月 27 日");
+  expect(out).toContain("甲报告 &lt;b&gt;x&lt;/b&gt;");
+  expect(out).toContain("乙报告");
+});
+
+test("没有 related 时不渲染继续阅读区", () => {
+  expect(injectReportNav(BASE)).not.toContain('class="sx-related"');
+});

@@ -25,8 +25,12 @@ export function seriesBadgeHtml(series) {
   return `<span class="series-badge">第 ${esc(series.index)} 次${gap}</span>`;
 }
 
-// 卡片底部那行「已有更新版 →」，链到紧邻的下一篇。最新那篇没有 newerHref、不出这行。
-export function seriesNewerLinkHtml(series) {
-  if (!series || !series.newerHref) return "";
-  return `<a class="series-newer" href="${esc(series.newerHref)}">已有更新版 →</a>`;
+// 最新条目下的「历史调研」行（2026-08-28 起替代旧篇单独展示）：旧篇不再出现在首页与
+// 搜索里，历史入口收进这一行，日期新→旧、各自链到当次报告。单篇 / 旧篇不出。
+export function seriesHistoryHtml(series) {
+  if (!series || !Array.isArray(series.history) || !series.history.length) return "";
+  const links = series.history
+    .map((h) => `<a href="${esc(h.href)}">${esc(h.date)}</a>`)
+    .join('<span class="series-history-dot"> · </span>');
+  return `<div class="series-history">历史调研：${links}</div>`;
 }

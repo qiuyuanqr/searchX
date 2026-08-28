@@ -36,22 +36,38 @@ test("单篇报告不带 series 字段（不出角标）", () => {
   expect(out[0].series).toBeUndefined();
 });
 
-test("两篇：新的拿「第 2 次 + 间隔天数」，旧的拿 newerHref", () => {
+test("两篇：新的拿「第 2 次 + 间隔天数 + history」，旧的拿 newerHref + latest 直达", () => {
   const out = annotateSeries([SHENGHONG_NEW, SHENGHONG_OLD]);
   const [nw, old] = out;
-  expect(nw.series).toEqual({ index: 2, total: 2, daysSincePrev: 48, newerHref: null });
-  expect(old.series).toEqual({ index: 1, total: 2, daysSincePrev: null, newerHref: "r/2026-07-26_shenghong-tech-300476/" });
+  expect(nw.series).toEqual({
+    index: 2, total: 2, daysSincePrev: 48, newerHref: null,
+    history: [{ date: "2026-06-08", href: "r/2026-06-08_shenghong-tech-300476/" }],
+  });
+  expect(old.series).toEqual({
+    index: 1, total: 2, daysSincePrev: null,
+    newerHref: "r/2026-07-26_shenghong-tech-300476/",
+    latestHref: "r/2026-07-26_shenghong-tech-300476/", latestDate: "2026-07-26",
+  });
 });
 
-test("三篇：中间那篇既有间隔天数、也有更新版链接（链到紧邻的下一篇，不是最新那篇）", () => {
+test("三篇：中间那篇 newerHref 链紧邻下一篇、latest 直达最新；最新篇 history 新→旧", () => {
   const mid = { title: "某股（000001.SZ）", date: "2026-03-01", href: "r/mid/", type: "股票" };
   const old = { title: "某股（000001.SZ）", date: "2026-02-01", href: "r/old/", type: "股票" };
   const nw = { title: "某股（000001.SZ）", date: "2026-04-01", href: "r/new/", type: "股票" };
   const out = annotateSeries([nw, mid, old]);
   const byHref = Object.fromEntries(out.map((e) => [e.href, e.series]));
-  expect(byHref["r/new/"]).toEqual({ index: 3, total: 3, daysSincePrev: 31, newerHref: null });
-  expect(byHref["r/mid/"]).toEqual({ index: 2, total: 3, daysSincePrev: 28, newerHref: "r/new/" });
-  expect(byHref["r/old/"]).toEqual({ index: 1, total: 3, daysSincePrev: null, newerHref: "r/mid/" });
+  expect(byHref["r/new/"]).toEqual({
+    index: 3, total: 3, daysSincePrev: 31, newerHref: null,
+    history: [{ date: "2026-03-01", href: "r/mid/" }, { date: "2026-02-01", href: "r/old/" }],
+  });
+  expect(byHref["r/mid/"]).toEqual({
+    index: 2, total: 3, daysSincePrev: 28, newerHref: "r/new/",
+    latestHref: "r/new/", latestDate: "2026-04-01",
+  });
+  expect(byHref["r/old/"]).toEqual({
+    index: 1, total: 3, daysSincePrev: null, newerHref: "r/mid/",
+    latestHref: "r/new/", latestDate: "2026-04-01",
+  });
 });
 
 test("不改变入参顺序，也不改动原对象（构建里这个数组还要按原序渲染）", () => {

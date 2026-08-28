@@ -56,10 +56,11 @@ export function build({
       throw new Error(`report.html 有问题，拒绝发布 ${e.dir}：\n  - ${defects.join("\n  - ")}`);
     }
     const related = byDateDesc
-      .filter((x) => x.dir !== e.dir)
+      .filter((x) => x.dir !== e.dir && !(x.series && x.series.newerHref))  // 继续阅读也不推旧版
       .slice(0, 3)
       .map((x) => ({ dir: x.dir, date: x.date, title: x.title }));
-    writeFileSync(join(destDir, "index.html"), injectReportNav(reportHtml, { related }));
+    // series 传给注入器：旧报告页挂「已有更新版」横幅并退出全文索引
+    writeFileSync(join(destDir, "index.html"), injectReportNav(reportHtml, { related, series: e.series }));
     // data/ 已被 .gitignore（research/*/data/）排除在仓库外：CI 用干净 checkout 构建，
     // 该目录在那里根本不存在，这行只在本机 `bun run serve` 时（本机磁盘上确有 data/）生效，
     // 纯本机预览用途，不会把 data/ 带上公开站。
@@ -81,10 +82,14 @@ export function build({
   // dedup.js 与 runner 同一份源（无依赖、浏览器可直接 import），复制到 assets/ 供表单加载。
   cpSync(dedup, join(out, "assets", "dedup.js"));
   // reports.json：表单 fetch 后本地比对，判断"这只票是否已有报告"。只放查重所需字段，邮箱等私密信息绝不出现。
-  const slim = entries.map((e) => ({
-    title: e.title, type: e.type, date: e.date, slug: e.slug, tags: e.tags, href: e.href,
-    ...(e.series ? { series: e.series } : {}),   // 搜索结果卡片据此出同样的角标
-  }));
+  // 旧报告（已有更新版）不进清单（2026-08-28）：搜索直配与查重都只看最新篇——查重按标的
+  // 匹配最近一篇，最新篇本就比旧篇新，剔除旧篇不改变判定。
+  const slim = entries
+    .filter((e) => !(e.series && e.series.newerHref))
+    .map((e) => ({
+      title: e.title, type: e.type, date: e.date, slug: e.slug, tags: e.tags, href: e.href,
+      ...(e.series ? { series: e.series } : {}),   // 搜索结果卡片据此出同样的角标
+    }));
   writeFileSync(join(out, "reports.json"), JSON.stringify(slim));
   // reports.json 没有内容指纹（它是被 fetch 的数据文件、不是被引用的资源），新报告上线后
   // 短时窗口内浏览器仍可能用旧缓存清单，前端查重会漏掉最新那篇。给它一个短缓存声明帮不上忙

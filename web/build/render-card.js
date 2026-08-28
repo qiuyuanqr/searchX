@@ -1,6 +1,6 @@
 import { cleanStockTitle } from "./clean-title.js";
 import { extractDirection, stripLeadBoilerplate } from "./extract-direction.js";
-import { seriesBadgeHtml, seriesNewerLinkHtml } from "../src/assets/series-badge.js";
+import { seriesBadgeHtml, seriesHistoryHtml } from "../src/assets/series-badge.js";
 
 export function escapeHtml(s) {
   return String(s)
@@ -34,6 +34,9 @@ function splitLead(name, lead) {
 }
 
 export function renderCard(e) {
+  // 同一标的的旧报告（已有更新版）不再单独出条目（2026-08-28 用户拍板）：
+  // 结论已过时，历史入口收进最新条目下的「历史调研」行。
+  if (e.series && e.series.newerHref) return "";
   const isStock = e.type === "股票";
   const parsed = isStock ? cleanStockTitle(e.title) : null;
 
@@ -53,16 +56,15 @@ export function renderCard(e) {
   if (dir) tail.push(`<span class="dir ${dir.cls}">${dir.arrow} ${escapeHtml(dir.label)}</span>`);
   else if (!isStock && e.type) tail.push(`<span class="tprefix">${escapeHtml(e.type)}</span>`);
 
-  // 同一标的的多份报告：新的在行尾挂「第 N 次 · X 天后」，旧的整行压暗并在条目下方给
-  // 「已有更新版 →」。后者必须在 .entry 这个 <a> 之外——<a> 套 <a> 非法，浏览器会拆开、链接失效。
+  // 同一标的的多份报告：最新条目行尾挂「第 N 次 · X 天后」，历史各篇收进条目下方的
+  // 「历史调研」行。历史行必须在 .entry 这个 <a> 之外——<a> 套 <a> 非法，浏览器会拆开、链接失效。
   const badge = seriesBadgeHtml(e.series);
-  const newerLink = seriesNewerLinkHtml(e.series);
-  const staleCls = e.series && e.series.newerHref ? " is-superseded" : "";
+  const history = seriesHistoryHtml(e.series);
 
-  return `<div class="article-card${staleCls}" data-type="${escapeHtml(e.type)}">
+  return `<div class="article-card" data-type="${escapeHtml(e.type)}">
   <a class="entry" href="${escapeHtml(e.href)}">
     <span class="num" aria-hidden="true"></span>
     <span class="eline"><span class="ehead">${escapeHtml(head)}</span>${escapeHtml(rest)}${tail.length ? " " + tail.join(" ") : ""}${badge ? " " + badge : ""}</span>
-  </a>${newerLink}
+  </a>${history}
 </div>`;
 }

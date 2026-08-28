@@ -109,6 +109,10 @@ const NAV_SCRIPT = `
     else wrapEl.appendChild(relEl);
   }
 
+  // 旧报告的「已有更新版」横幅（构建时注入在 body 尾）：挪到 .wrap 最前、报头之上
+  var staleEl = document.querySelector(".sx-stale-note");
+  if (staleEl && wrapEl && wrapEl.firstElementChild) wrapEl.insertBefore(staleEl, wrapEl.firstElementChild);
+
   // ── 来源区收敛（对齐参考站 ai-digest 详情页的来源盒）──
   // 来源是备查用的，不该和正文抢眼：页尾清单本已装盒但仍是橙链接 + 深色实心类型标；
   // 正文里那节「联网来源清单」更是连盒都没有，一屏橙色大字比正文本身还响。
@@ -323,10 +327,21 @@ function relatedHtml(related, homeHref) {
 </nav>`;
 }
 
+// 旧报告页顶部的「已有更新版」横幅（2026-08-28）：旧篇不再出现在首页与搜索，
+// 从「历史调研」链接进来的读者要一眼知道这是过时版本、并能一键跳最新。
+function staleNoteHtml(series) {
+  if (!series || !series.newerHref) return "";
+  const href = escapeHtml("../../" + (series.latestHref || series.newerHref));
+  const when = series.latestDate ? escapeHtml(series.latestDate) + " " : "";
+  return `
+<div class="sx-stale-note">本报告已有更新版，结论可能过时 — <a href="${href}">查看 ${when}最新版 →</a></div>`;
+}
+
 export function injectReportNav(html, {
   homeHref = "../../index.html",
   faviconHref = "../../assets/favicon.png",
   related = [],
+  series = null,
 } = {}) {
   // 站点 favicon（报告在 /r/<dir>/ 下，故上两级到 /assets）。注入到 <head>，
   // 让单独打开/分享的报告页也带站点图标，而非浏览器默认首字母。
@@ -351,6 +366,12 @@ export function injectReportNav(html, {
   // 表格不进全文索引（data-pagefind-ignore）：表格里的裸数字串会被 Pagefind 摘成
   // 「682 亿. 82.10. 15.15.」这类无意义摘录；关键事实正文都有，摘录落在正文段落上更可读。
   html = html.replace(/<table(?=[\s>])(?![^>]*data-pagefind-ignore)/gi, "<table data-pagefind-ignore");
+
+  // 旧报告整页退出全文索引（body 挂 data-pagefind-ignore，与 index/admin 同款写法）：
+  // 搜索只该出最新篇——旧篇正文若还在索引里，搜个股名照样把过时结论顶上来。
+  if (series && series.newerHref) {
+    html = html.replace(/<body(?![^>]*data-pagefind-ignore)(?=[\s>])/i, "<body data-pagefind-ignore");
+  }
 
   // 统一报告副本的 viewport（覆盖所有存量报告——其原始 report.html 可能仍是旧 viewport，
   // 无需逐个改归档文件）。不锁 maximum-scale/user-scalable：body 已有 touch-action:manipulation
@@ -573,7 +594,13 @@ body.sx-reveal .sx-rv.in{opacity:1; transform:none}
 .sx-related-home a{color:var(--muted); text-decoration:none; transition:color .15s}
 .sx-related-home a:hover{color:var(--ink-soft)}
 @media (max-width:740px){ .sx-related-card{flex-direction:column; gap:.2rem; padding:.8rem 1rem} }
-</style>${relatedHtml(related, homeHref)}
+/* 旧报告顶部的更新版横幅：主色浅底横条，脚本挪到 .wrap 最前（报头之上） */
+.sx-stale-note{max-width:var(--measure); margin:0 auto 1.6rem; padding:.55rem .9rem;
+  background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 6px 6px 0;
+  font-family:var(--sx-sans); font-size:.85rem; line-height:1.6; color:var(--ink-soft); text-align:center}
+.sx-stale-note a{color:var(--seal); text-decoration:none; font-weight:600; border-bottom:1px solid var(--seal-soft)}
+.sx-stale-note a:hover{border-bottom-width:2px}
+</style>${staleNoteHtml(series)}${relatedHtml(related, homeHref)}
 <div class="sx-progress" aria-hidden="true"><i></i></div>
 <aside class="sx-toc" aria-label="目录"><nav><div class="h">目录</div></nav></aside>
 <a class="sx-nav-btn sx-home" href="${homeHref}" aria-label="返回调研档案首页" title="返回档案首页">

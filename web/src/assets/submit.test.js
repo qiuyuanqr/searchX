@@ -312,27 +312,27 @@ test("resolveToken：storage 不可用时不抛，仍能返回链接里的 token
 
 // ── 搜索结果卡片的系列角标（方案 C）────────────────────────────────
 // 搜「胜宏科技」会并排出现两张同名卡，正是最困惑的地方，角标必须同样生效。
+// 2026-08-28 起旧篇不进 reports.json 与全文索引，搜索结果只会出现最新篇。
 const SERIES_ENTRIES = [
   { title: "胜宏科技（300476.SZ）", type: "股票", date: "2026-07-26", href: "r/2026-07-26_shenghong/",
-    series: { index: 2, total: 2, daysSincePrev: 48, newerHref: null } },
-  { title: "胜宏科技（300476.SZ）", type: "股票", date: "2026-06-08", href: "r/2026-06-08_shenghong/",
-    series: { index: 1, total: 2, daysSincePrev: null, newerHref: "r/2026-07-26_shenghong/" } },
+    series: { index: 2, total: 2, daysSincePrev: 48, newerHref: null,
+      history: [{ date: "2026-06-08", href: "r/2026-06-08_shenghong/" }] } },
 ];
 
-test("搜索结果：较新一篇出「第 2 次 · 48 天后」，较旧一篇出「已有更新版 →」并压暗", () => {
+test("搜索结果：最新一篇出「第 2 次 · 48 天后」角标，不再有压暗与「已有更新版」", () => {
   const html = renderSearchResultsHTML([
     { url: "/r/2026-07-26_shenghong/", meta: { title: "胜宏科技（300476.SZ）" }, excerpt: "e" },
-    { url: "/r/2026-06-08_shenghong/", meta: { title: "胜宏科技（300476.SZ）" }, excerpt: "e" },
   ], SERIES_ENTRIES);
   expect(html).toContain('<span class="series-badge">第 2 次<span class="series-gap"> · 48 天后</span></span>');
-  expect(html).toContain('<a class="series-newer" href="r/2026-07-26_shenghong/">已有更新版 →</a>');
-  expect(html).toContain('class="result is-superseded"');
+  expect(html).not.toContain("series-newer");
+  expect(html).not.toContain("is-superseded");
 });
 
-test("搜索结果：更新版链接在结果卡的 <a> 之外（<a> 套 <a> 会被浏览器拆开）", () => {
+test("搜索结果：旧索引缓存里残留的旧篇 URL 也按普通卡渲染、不炸（清单里已无该条）", () => {
   const html = renderSearchResultsHTML(
     [{ url: "/r/2026-06-08_shenghong/", meta: { title: "胜宏科技" }, excerpt: "e" }], SERIES_ENTRIES);
-  expect(html.indexOf("series-newer")).toBeGreaterThan(html.indexOf("</a>"));
+  expect(html).toContain('<div class="result">');
+  expect(html).not.toContain("series-badge");
 });
 
 test("搜索结果：清单里没有 series 字段时不出任何角标（旧 reports.json 缓存也不炸）", () => {
@@ -340,6 +340,5 @@ test("搜索结果：清单里没有 series 字段时不出任何角标（旧 re
     [{ url: "/r/x/", meta: { title: "某报告" }, excerpt: "e" }],
     [{ title: "某报告", date: "2026-01-01", type: "股票", href: "r/x/" }]);
   expect(html).not.toContain("series-badge");
-  expect(html).not.toContain("series-newer");
   expect(html).not.toContain("is-superseded");
 });

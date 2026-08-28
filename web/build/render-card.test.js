@@ -94,30 +94,31 @@ test("无导语时只加粗名称，行内不残留孤立冒号", () => {
   expect(html).not.toContain("</span>：<");
 });
 
-// ── 同一标的多份报告的角标（方案 C）────────────────────────────────
+// ── 同一标的多份报告（2026-08-28 起旧篇不展示，历史收进最新条目下）──────────
 const SERIES_BASE = { title: "胜宏科技（300476.SZ）", type: "股票", date: "2026-07-26", href: "r/new/", tldr: "偏震荡，前次判断已兑现" };
 
-test("系列里较新的一篇：行尾出「第 N 次 · X 天后」", () => {
-  const html = renderCard({ ...SERIES_BASE, series: { index: 2, total: 2, daysSincePrev: 48, newerHref: null } });
+test("系列里最新的一篇：行尾出「第 N 次 · X 天后」+ 条目下出「历史调研」行（在 .entry 之外）", () => {
+  const html = renderCard({ ...SERIES_BASE, series: {
+    index: 2, total: 2, daysSincePrev: 48, newerHref: null,
+    history: [{ date: "2026-06-08", href: "r/old/" }],
+  } });
   expect(html).toContain('<span class="series-badge">第 2 次<span class="series-gap"> · 48 天后</span></span>');
-  expect(html).not.toContain("series-newer");     // 最新那篇不出「已有更新版」
-  expect(html).not.toContain("is-superseded");
+  expect(html).toContain('<div class="series-history">历史调研：<a href="r/old/">2026-06-08</a></div>');
+  // <a> 套 <a> 会被浏览器拆开导致链接失效：历史行必须出现在 .entry 闭合之后
+  expect(html.indexOf("series-history")).toBeGreaterThan(html.indexOf("</a>"));
 });
 
-test("系列里较旧的一篇：条目压暗 + 出「已有更新版 →」，且该链接在 .entry 之外", () => {
-  const html = renderCard({ ...SERIES_BASE, date: "2026-06-08", href: "r/old/", series: { index: 1, total: 2, daysSincePrev: null, newerHref: "r/new/" } });
-  expect(html).toContain('class="article-card is-superseded"');
-  expect(html).toContain('<a class="series-newer" href="r/new/">已有更新版 →</a>');
-  // <a> 套 <a> 会被浏览器拆开导致链接失效：更新版链接必须出现在 .entry 闭合之后
-  expect(html.indexOf("series-newer")).toBeGreaterThan(html.indexOf("</a>"));
-  expect(html).not.toContain("series-badge");     // 最早那篇不挂「第 1 次」
+test("系列里较旧的一篇：整条不渲染（结论过时，历史入口在最新条目下）", () => {
+  const html = renderCard({ ...SERIES_BASE, date: "2026-06-08", href: "r/old/", series: {
+    index: 1, total: 2, daysSincePrev: null, newerHref: "r/new/", latestHref: "r/new/", latestDate: "2026-07-26",
+  } });
+  expect(html).toBe("");
 });
 
-test("非系列报告：两种角标都不出", () => {
+test("非系列报告：角标与历史行都不出", () => {
   const html = renderCard(SERIES_BASE);
   expect(html).not.toContain("series-badge");
-  expect(html).not.toContain("series-newer");
-  expect(html).not.toContain("is-superseded");
+  expect(html).not.toContain("series-history");
 });
 
 test("行尾标注顺序：代码在前、方向标在后；行首不再挂任何标（2026-08-26 用户反馈）", () => {

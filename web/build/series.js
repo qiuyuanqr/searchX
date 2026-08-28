@@ -1,6 +1,6 @@
 // 同一标的的多份报告 = 一个「系列」，不是重复。
-// 站上第二篇往往在给第一篇的判断打分（胜宏 07-26 开头即「前次报告『偏跌』已兑现」），
-// 所以两篇都保留、各自标清关系：新的标「第 N 次 · X 天后」，旧的标「已有更新版 →」。
+// 2026-08-28 用户拍板（替代 08-10 的「两张卡都留」）：旧报告过时了，首页与搜索**只展示最新篇**，
+// 旧篇归进最新条目下的「历史调研」行；旧报告页面仍在线上（挂更新版横幅、退出全文索引）。
 // 归组结果同时进 reports.json，让信息流卡片与搜索结果卡片用同一份数据、不各算一套。
 
 // 归组键：优先用**标题里**的 6 位代码。
@@ -22,7 +22,9 @@ function daysBetween(fromYMD, toYMD) {
   return Math.round((b - a) / 86400000);
 }
 
-// 给每条 entry 补 series 字段：{ index, total, daysSincePrev, newerHref }。
+// 给每条 entry 补 series 字段：{ index, total, daysSincePrev, newerHref, latestHref?, latestDate?, history? }。
+// 旧篇带 newerHref（链紧邻下一篇）与 latestHref/latestDate（报告页横幅直达最新版）；
+// 最新篇带 history（新→旧的 {date, href} 列表，渲染「历史调研」行）。
 // 只有 total > 1 才挂 series——单篇报告不该出现任何角标。
 // 返回新数组、保持入参顺序，原对象不改（调用方还要按原序渲染信息流）。
 export function annotateSeries(entries) {
@@ -42,17 +44,27 @@ export function annotateSeries(entries) {
     const ordered = [...group].sort(
       (a, b) => String(a.date).localeCompare(String(b.date)) || String(a.href).localeCompare(String(b.href)),
     );
+    const latest = ordered[ordered.length - 1];
     ordered.forEach((e, i) => {
       const prev = i > 0 ? ordered[i - 1] : null;
       const next = i < ordered.length - 1 ? ordered[i + 1] : null;
-      info.set(e, {
+      const s = {
         index: i + 1,
         total: ordered.length,
         daysSincePrev: prev ? daysBetween(prev.date, e.date) : null,
         // 链到紧邻的下一篇，不是最新那篇：三篇时中间那篇的"更新版"是它的下一篇，
         // 顺着链能一篇篇读下去，也能看出判断是怎么一步步改的。
         newerHref: next ? next.href : null,
-      });
+      };
+      if (next) {
+        // 旧篇：报告页横幅要一键直达最新版（顺链读是给愿意考古的人的，横幅先给最新）
+        s.latestHref = latest.href;
+        s.latestDate = latest.date;
+      } else {
+        // 最新篇：挂新→旧的历史列表，渲染条目下的「历史调研」行
+        s.history = ordered.slice(0, -1).reverse().map((x) => ({ date: x.date, href: x.href }));
+      }
+      info.set(e, s);
     });
   }
 

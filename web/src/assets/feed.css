@@ -149,12 +149,15 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .article-card[data-type="概念"] .tprefix{color:var(--t-concept)}
 .article-card[data-type="板块"] .tprefix{color:var(--t-sector)}
 .article-card[data-type="方法论"] .tprefix{color:var(--t-method)}
-/* 同一标的多份报告：新的在行尾挂「第 N 次 · X 天后」，旧的整行压暗并在条目下方给「已有更新版 →」。 */
+/* 同一标的多份报告（2026-08-28 起旧篇不再单独出条目）：最新条目行尾挂「第 N 次 · X 天后」，
+   历史各篇收进条目下方的「历史调研」小字行，日期链到当次报告。 */
 .series-badge{font-family:var(--sans); font-size:.68rem; letter-spacing:.02em;
   color:var(--seal); background:var(--accent-bg); border-radius:999px; padding:.1rem .5rem; white-space:nowrap}
-.series-newer{display:block; font-family:var(--sans); font-size:.72rem; color:var(--muted);
-  text-decoration:none; padding:0 0 .55rem 2.6rem; margin-top:-.3rem; transition:color .2s ease} /* 左缩进=编号列 1.8rem+间隙 .8rem，与条目文字对齐 */
-.series-newer:hover{color:var(--seal)}
+.series-history{font-family:var(--sans); font-size:.72rem; color:var(--muted);
+  padding:0 0 .55rem 2.6rem; margin-top:-.3rem} /* 左缩进=编号列 1.8rem+间隙 .8rem，与条目文字对齐 */
+.series-history a{font-family:var(--mono); color:var(--muted); text-decoration:none; letter-spacing:.02em; transition:color .2s ease}
+.series-history a:hover{color:var(--seal)}
+.series-history-dot{color:var(--faint)}
 /* 滚动逐条浮现（feed.js 的 bindReveal；隐藏态只在 JS 启动后才加，脚本不跑时内容直接可见） */
 body.js-reveal .day-card{opacity:0; transform:translateY(18px); transition:opacity .5s ease, transform .5s ease}
 body.js-reveal .day-card.shown{opacity:1; transform:none}
@@ -163,20 +166,8 @@ body.js-reveal .day-card:nth-child(2){transition-delay:.06s}
 body.js-reveal .day-card:nth-child(3){transition-delay:.12s}
 body.js-reveal .day-card:nth-child(4){transition-delay:.18s}
 @media (prefers-reduced-motion: reduce){ body.js-reveal .day-card{opacity:1; transform:none; transition:none} }
-.is-superseded .eline{opacity:.62}          /* 压暗整行文字，别压「已有更新版」链接 */
-.result.is-superseded a > h3, .result.is-superseded a > .ex{opacity:.62}
-/* 搜索结果里那张白卡其实是 .result 内的 <a>，而「已有更新版」只能放在 <a> 之外（<a> 套 <a> 非法），
-   照原样它会掉到卡片外面、还不跟着卡片的 hover 位移。把卡片外观整体上移到 .result 容器， */
-/* 内层 <a> 退成透明，两者就重新是同一张卡了。 */
-.result.is-superseded{background:var(--card); border-radius:16px; box-shadow:0 1px 2px rgba(0,0,0,.03);
-  overflow:hidden; transition:box-shadow .25s ease, transform .18s ease}
-.result.is-superseded:hover{box-shadow:0 12px 26px rgba(0,0,0,.1); transform:translateY(-3px)}
-.result.is-superseded > a{background:transparent; box-shadow:none; border:0; border-radius:0; padding-bottom:.35rem}
-.result.is-superseded > a:hover{box-shadow:none; transform:none}   /* 位移交给外层容器，避免两层各动各的 */
-/* 选择器要压过 .result a{color:inherit}（同为 0,1,1 但它在后面），否则这条链接在搜索结果里
-   会继承正文色、显示成近白/近黑，与信息流那面的灰色不一致。 */
-.result .series-newer{display:block; padding:0 1.4rem 1.05rem; margin-top:0; color:var(--muted)}
-.result .series-newer:hover{color:var(--seal)}
+/* （2026-08-28 移除了 .is-superseded / .series-newer 那套「旧篇压暗 + 已有更新版」样式：
+   旧报告不再出现在首页与搜索，历史入口收进最新条目下的 .series-history 行。） */
 /* 窄屏收起「X 天后」：标题 + 角标 + 日期三项挤在一行，「第 N 次」才是必须看见的那半截 */
 @media (max-width:480px){ .series-gap{display:none} }
 
