@@ -64,6 +64,8 @@ function bindToTop(){
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
   toTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }));
+  const footTop = document.getElementById("foot-top"); // 页脚「回到顶部」与浮动按钮同一动作
+  if (footTop) footTop.addEventListener("click", (e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }); });
 }
 
 // 滚动逐条浮现（参照 ai-digest 的 .reveal）：天卡进入视口时淡入上浮一次。
@@ -75,7 +77,7 @@ function bindReveal(){
   document.body.classList.add("js-reveal");
   const io = new IntersectionObserver((es) => es.forEach((x) => {
     if (x.isIntersecting) { x.target.classList.add("shown"); io.unobserve(x.target); }
-  }), { rootMargin: "0px 0px -8% 0px", threshold: 0.04 });
+  }), { threshold: 0.08 }); // 参考站同参：无 rootMargin、8% 可见即浮现
   cards.forEach((c) => io.observe(c));
 }
 
@@ -344,6 +346,8 @@ function bindSubmitModal(){
   }
 
   openBtn.addEventListener("click", open);
+  const footOpen = document.getElementById("foot-submit"); // 页脚的第二个入口，同一个弹窗
+  if (footOpen) footOpen.addEventListener("click", open);
   closeBtn.addEventListener("click", close);
   if (titleInput) titleInput.addEventListener("input", checkDup); // 输入题目即查重
   modal.addEventListener("click", (e) => { if (e.target === modal) close(); }); // 点遮罩关闭

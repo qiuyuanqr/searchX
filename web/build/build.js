@@ -43,7 +43,9 @@ export function build({
   // 信息流卡片与 reports.json（搜索结果卡片读它）都用这一份，不各算一套。
   const entries = annotateSeries(scanned);
 
-  // 报告副本：注入站点导航（回到顶部 + 返回档案首页），原始 report.html 不动
+  // 报告副本：注入站点导航（回到顶部 + 返回档案首页）+ 页尾「继续阅读」（最近三篇、排除本篇），
+  // 原始 report.html 不动
+  const byDateDesc = [...entries].sort((a, b) => String(b.date).localeCompare(String(a.date)));
   for (const e of entries) {
     const destDir = join(out, "r", e.dir);
     mkdirSync(destDir, { recursive: true });
@@ -53,7 +55,11 @@ export function build({
     if (defects.length) {
       throw new Error(`report.html 有问题，拒绝发布 ${e.dir}：\n  - ${defects.join("\n  - ")}`);
     }
-    writeFileSync(join(destDir, "index.html"), injectReportNav(reportHtml));
+    const related = byDateDesc
+      .filter((x) => x.dir !== e.dir)
+      .slice(0, 3)
+      .map((x) => ({ dir: x.dir, date: x.date, title: x.title }));
+    writeFileSync(join(destDir, "index.html"), injectReportNav(reportHtml, { related }));
     // data/ 已被 .gitignore（research/*/data/）排除在仓库外：CI 用干净 checkout 构建，
     // 该目录在那里根本不存在，这行只在本机 `bun run serve` 时（本机磁盘上确有 data/）生效，
     // 纯本机预览用途，不会把 data/ 带上公开站。

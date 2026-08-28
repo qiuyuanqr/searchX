@@ -70,21 +70,43 @@ const NAV_SCRIPT = `
     }
   });
 
-  // 正文整体装进白卡（参考站的故事卡）：报头 + 核心结论留在灰底上，其余全部入卡。
+  // 正文按节分装白卡（参考站的段落分配：一节一卡、卡间露灰底）：报头 + 核心结论留在灰底上；
+  // 「先说人话 + 关键发现」合成导语卡；main 里每个 h2 节题起一张新卡；风险 / 名词小抄 / 来源清单各一卡。
   var wrapEl = document.querySelector(".wrap");
+  var mainEl = document.querySelector("main");
+  function makeCard(nodes){
+    if (!nodes.length) return;
+    var card = document.createElement("div");
+    card.className = "sx-card";
+    nodes[0].parentNode.insertBefore(card, nodes[0]);
+    nodes.forEach(function(n){ card.appendChild(n); });
+  }
   if (wrapEl && plainEl){
-    var bodyCard = document.createElement("div");
-    bodyCard.className = "sx-body-card";
-    var moving = [];
-    var started = false;
+    var pre = [], post = [], seen = false, afterMain = false;
     [].slice.call(wrapEl.children).forEach(function(n){
-      if (n === plainEl) started = true;
-      if (started && n.tagName !== "FOOTER") moving.push(n);
+      if (n === plainEl) seen = true;
+      if (!seen || n.tagName === "FOOTER") return;
+      if (n === mainEl){ afterMain = true; return; }
+      (afterMain ? post : pre).push(n);
     });
-    if (moving.length){
-      wrapEl.insertBefore(bodyCard, moving[0]);
-      moving.forEach(function(n){ bodyCard.appendChild(n); });
+    makeCard(pre);                                  // 导语卡；没有 main 的异常报告则全文一卡（回到旧行为）
+    post.forEach(function(n){ makeCard([n]); });    // 风险 / 名词小抄 / 来源清单
+    if (mainEl){
+      var group = [];
+      [].slice.call(mainEl.children).forEach(function(n){
+        if (n.tagName === "H2" && group.length){ makeCard(group); group = []; }
+        group.push(n);
+      });
+      makeCard(group);
     }
+  }
+
+  // 继续阅读（构建时注入在 body 尾）：挪进 .wrap、报告 footer 之前，与正文同列
+  var relEl = document.querySelector(".sx-related");
+  if (relEl && wrapEl){
+    var foots = [].slice.call(wrapEl.children).filter(function(n){ return n.tagName === "FOOTER"; });
+    if (foots.length) wrapEl.insertBefore(relEl, foots[foots.length - 1]);
+    else wrapEl.appendChild(relEl);
   }
 
   // ── 来源区收敛（对齐参考站 ai-digest 详情页的来源盒）──
@@ -213,7 +235,12 @@ const NAV_SCRIPT = `
   // 正文区块滚动淡入（与首页 bindReveal 同一套约束）：隐藏态只在 JS 启动后才加，
   // 脚本被挡 / 未加载时内容永远直接可见；「减少动态」用户不启用。
   if (!reduce && "IntersectionObserver" in window){
-    var blocks = document.querySelectorAll(".tldr, .plain, .findings, main > *, section.risks, .glossary, section.sources");
+    // 分卡后按整卡浮现（参考站按 article-section 整卡 reveal）；tldr 在卡外单独算一块。
+    // 没分出卡的异常报告（缺 .plain 等）退回按块浮现的旧选择器。
+    var blocks = document.querySelectorAll(".tldr, .sx-card");
+    if (!document.querySelector(".sx-card")){
+      blocks = document.querySelectorAll(".tldr, .plain, .findings, main > *, section.risks, .glossary, section.sources");
+    }
     if (blocks.length){
       document.body.classList.add("sx-reveal");
       var io = new IntersectionObserver(function(es){ es.forEach(function(x){
@@ -271,9 +298,35 @@ function buildCsp() {
   ].join("; ");
 }
 
+function escapeHtml(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+// 「继续阅读」（参考站详情页尾的 related-section）：build 传入最近三篇（排除本篇），
+// 每条是 日期 + 标题 的白条卡，链接指向兄弟报告目录（/r/<dir>/ 互为同级）。
+function relatedHtml(related, homeHref) {
+  if (!Array.isArray(related) || !related.length) return "";
+  const fmtDate = (d) => {
+    const m = String(d || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? `${m[1]} 年 ${parseInt(m[2], 10)} 月 ${parseInt(m[3], 10)} 日` : String(d || "");
+  };
+  const items = related.map((x) =>
+    `<a class="sx-related-card" href="../${encodeURIComponent(x.dir)}/"><span class="sx-related-date">${escapeHtml(fmtDate(x.date))}</span><span class="sx-related-title">${escapeHtml(x.title)}</span></a>`
+  ).join("\n    ");
+  return `
+<nav class="sx-related" aria-label="继续阅读">
+  <h2>继续阅读</h2>
+  <div class="sx-related-grid">
+    ${items}
+  </div>
+  <p class="sx-related-home"><a href="${homeHref}">返回档案首页 &rarr;</a></p>
+</nav>`;
+}
+
 export function injectReportNav(html, {
   homeHref = "../../index.html",
   faviconHref = "../../assets/favicon.png",
+  related = [],
 } = {}) {
   // 站点 favicon（报告在 /r/<dir>/ 下，故上两级到 /assets）。注入到 <head>，
   // 让单独打开/分享的报告页也带站点图标，而非浏览器默认首字母。
@@ -384,45 +437,69 @@ table thead th:first-child{z-index:2; background:var(--paper-2)}
 /* ── 2026-08-26 站点改版统一：存量报告的调色板 / 版面覆盖到与首页与设计定稿一致 ──
    老报告的 <style> 里烧着旧纸感样式；这段排在其后、同特异性靠后者胜，把变量与版面整体盖掉。
    调色板值要与 .claude/skills/research/templates/report.html（新报告）和 web/src/assets/feed.css 同步。 */
+/* 等宽字自托管 JetBrains Mono（与首页 feed.css 同两份文件；报告在 /r/<dir>/ 下，故上两级取 assets） */
+@font-face{
+  font-family:"JetBrains Mono"; font-style:normal; font-weight:400; font-display:swap;
+  src:url("../../assets/fonts/jetbrains-mono-latin-400-normal.woff2") format("woff2");
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face{
+  font-family:"JetBrains Mono"; font-style:normal; font-weight:600; font-display:swap;
+  src:url("../../assets/fonts/jetbrains-mono-latin-600-normal.woff2") format("woff2");
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 :root{
-  --paper:#fafafa; --paper-2:#f0efec; --ink:#2b2926; --ink-soft:#6e6a63;
+  --paper:#fafafa; --paper-2:#f0efec; --ink:#2b2926; --ink-2:#45413b; --ink-soft:#6e6a63;
   --muted:#7d786f; --rule:#e7e6e3; --seal:#b4543a; --seal-soft:#c97a62;
   --card:#ffffff; --accent-bg:#fbeae4;
   --measure:47rem;   /* 阅读列 42→47rem：改版后两侧留白收一档 */
+  --sx-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sx-sans:system-ui,-apple-system,"PingFang SC","Noto Sans SC",sans-serif;
 }
+/* --ink-2 是 feed.css 才有的变量，报告模板本身没定义：正文卡引用它，不在此补上会静默回退成继承色 */
+/* 参考站详情页的全局字感：1.8 行高 + .05em 字距（模板烧的是 1.72/.005em，这里盖掉，逐级继承进卡） */
+body{line-height:1.8; letter-spacing:.05em; line-break:strict}
 @media (prefers-color-scheme: dark){
   :root{
-    --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+    --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-2:#cbc6bd; --ink-soft:#b9b4ab;
     --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
     --card:#242220; --accent-bg:#33261f;
   }
 }
 .wrap{max-width:var(--measure)}   /* 存量报告的 .wrap 写死了旧 measure 的场合也统一吃到新宽度 */
 .seal{background:var(--accent-bg); border:0; border-radius:8px; width:1.7rem; height:1.7rem; font-size:.78rem}
-/* 报头居中：大标题 + 一行短元信息 + 概念标签小胶囊行 + 主色短色条收尾（色条在报头、不再挂 tldr 上） */
+/* 报头居中：等宽小元信息 + 宋体大标题 + 概念标签小胶囊行；主色短色条移到导读之后收尾
+   （参考站的顺序是 日期→标题→导读→色条，色条压轴，不隔在标题与导读中间） */
 header.masthead{text-align:center; border-bottom:0; padding-bottom:0; margin-bottom:.6rem}
-header.masthead::after{content:""; display:block; width:40px; height:2px; border-radius:2px; background:var(--seal); margin:1.6rem auto 0}
 header.masthead .kicker{justify-content:center}
-header.masthead h1{font-size:2.2rem; line-height:1.35}
-header.masthead .meta{justify-content:center; row-gap:.3rem}
+header.masthead h1{font-family:"Songti SC","Noto Serif SC","Source Han Serif SC",Georgia,serif;
+  font-size:1.9rem; font-weight:800; line-height:1.5; letter-spacing:.05em; margin:.55rem 0 .3rem} /* 参考站 h1 实测规格 */
+header.masthead .meta{justify-content:center; row-gap:.3rem;
+  font-family:var(--sx-mono); font-size:.8rem; letter-spacing:.03em; color:var(--muted)} /* 参考站 article-meta：等宽小字 */
 .sx-tags{display:flex; flex-wrap:wrap; justify-content:center; gap:.35rem; margin-top:.7rem}
 .sx-tag{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem; color:var(--muted);
   background:var(--paper-2); border-radius:999px; padding:.16rem .62rem; white-space:nowrap}
-/* 核心结论留在灰底报头区：小标签 + 左对齐灰字导读（参考站摘要的位置与灰度） */
-.tldr{background:transparent; border:0; border-radius:0; padding:0; margin:2rem 0 0;
-  text-align:left; font-family:system-ui,-apple-system,"PingFang SC","Noto Sans SC",sans-serif;
-  font-size:.95rem; line-height:1.8; color:var(--muted)}
+/* 核心结论留在灰底报头区：小标签 + 左对齐灰字导读（参考站摘要的位置与灰度），
+   尾部接 50×3 主色短色条（参考站 header::after 的规格与位置——在导读之后、正文卡之前） */
+.tldr{background:transparent; border:0; border-radius:0; padding:0; margin:2rem 0 1.8rem;
+  text-align:left; font-family:var(--sx-sans);
+  font-size:.95rem; line-height:1.65; color:var(--muted)}
 .tldr .lbl{display:block; color:var(--seal)}
-/* 正文白卡（参考站实测：702px 卡 / padding 40px 48px / radius 6 / 同款投影），
-   卡内正文整体切无衬线 18.4px、行高 1.85、两端对齐——衬线只留给页面大标题。 */
-.sx-body-card{background:var(--card); border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,.05);
-  padding:2.5rem 3rem; margin-top:2rem;
-  font-family:system-ui,-apple-system,"PingFang SC","Noto Sans SC",sans-serif;
+.tldr::after{content:""; display:block; width:50px; height:3px; background:var(--seal); margin:1.5rem auto 0}
+/* 节卡（参考站实测：702px 卡 / padding 40px 48px / radius 6 / 同款投影 / 卡间距 1.2rem），
+   一节一卡、卡间露灰底；卡内正文无衬线 18.4px、行高 1.85、两端对齐——衬线只留给页面大标题。 */
+.sx-card{background:var(--card); border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,.05);
+  padding:2.5rem 3rem; margin:0 0 1.2rem;
+  font-family:var(--sx-sans);
   font-size:1.13rem; line-height:1.85; color:var(--ink-2)}
-.sx-body-card p{text-align:justify; margin:0 0 1.35rem}
-.sx-body-card ul,.sx-body-card ol{padding-left:1.5em; margin:0 0 1.35rem}
-.sx-body-card li{margin:.35rem 0}
-@media (max-width:640px){ .sx-body-card{padding:1.5rem 1.15rem} }
+.sx-card p{text-align:justify; margin:0 0 1.35rem}
+.sx-card ul,.sx-card ol{padding-left:1.5em; margin:0 0 1.35rem}
+.sx-card li{margin:.35rem 0}
+.sx-card > :last-child{margin-bottom:0}
+@media (max-width:740px){
+  .sx-card{padding:2rem 1.5rem}                     /* 断点与参考站一致（740） */
+  header.masthead h1{font-size:1.25rem}             /* 参考站手机端 h1 同值 */
+}
 /* 先说人话 / 关键发现（已入卡）：小标签 + 正文；关键发现条目是淡色标签行 */
 .plain{background:transparent; border:0; border-radius:0; padding:0; margin:0 0 2rem; font-size:1.05rem}
 .plain .lbl{color:var(--seal)}
@@ -432,23 +509,27 @@ header.masthead .meta{justify-content:center; row-gap:.3rem}
 .findings ul{list-style:none; padding:0; margin:0}
 .findings li{background:rgba(180,84,58,.07); border-left:2px solid rgba(180,84,58,.28); border-radius:0 8px 8px 0;
   padding:.4rem .85rem; margin:.45rem 0; font-size:.9rem; line-height:1.65; color:var(--ink-soft)}
-/* 节题：大号等宽字母编号与无衬线粗标题同行、基线对齐（参考站 01 + 标题的排法） */
-main h2{border-top:0; padding-top:0}
-.sx-lettered{display:flex; align-items:baseline; gap:.9rem; margin:2.8rem 0 1.3rem;
-  font-size:1.28rem; font-weight:700; line-height:1.75; color:var(--ink)}
+/* 节题：大号等宽字母编号与无衬线粗标题同行、基线对齐（参考站 01 + 标题的排法，
+   实测 h2 1.3rem/700/字距 .03em、编号 2.4rem/600） */
+main h2{border-top:0; padding-top:0; font-size:1.3rem; font-weight:700; letter-spacing:.03em; margin:2.4rem 0 1.5rem}
+.sx-card > h2:first-child{margin-top:0} /* 早期报告的节题不带字母编号（非 .sx-lettered），字级也统一到参考站 h2 规格 */
+.sx-lettered{display:flex; align-items:baseline; gap:.8rem; margin:2.4rem 0 1.5rem;
+  font-size:1.3rem; font-weight:700; letter-spacing:.03em; line-height:1.75; color:var(--ink)}
 .sx-lettered:first-child{margin-top:0}
 .sx-sec-title{min-width:0}
-.sx-sec-letter{flex:none; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  font-size:2.3rem; font-weight:600; color:var(--seal-soft); line-height:1}
-/* 风险/名词小抄/来源的节题与正文节题同一字级；卡内不再用粗分隔线 */
+.sx-sec-letter{flex:none; font-family:var(--sx-mono);
+  font-size:2.4rem; font-weight:600; color:var(--seal-soft); line-height:1}
+/* 风险/名词小抄/来源的节题与正文节题同一字级；卡内不再用粗分隔线；各自成卡后顶到卡沿 */
 section.risks,section.sources,.glossary{border-top:0; margin-top:2.4rem; padding-top:0}
-section.risks h2,.glossary h2,section.sources h2{font-family:inherit; font-size:1.28rem; font-weight:700; letter-spacing:0; margin:0 0 .9rem}
+.sx-card > section.risks,.sx-card > .glossary{margin-top:0}
+section.risks h2,.glossary h2,section.sources h2{font-family:inherit; font-size:1.3rem; font-weight:700; letter-spacing:.03em; margin:0 0 .9rem}
 /* 来源盒：照参考站 ai-digest 详情页实测规格（底 #f8f9fa / radius 4 / padding .8×1.2rem /
    标签题 .75rem #bbb / 条目 .85rem #999 无下划线 / 域名标等宽 .68rem 淡灰底）。
    底色与灰阶都换成透明度写法，跟着亮暗两套主题走，不写死参考站的中性灰。
    页尾清单（section.sources）与正文里那节「联网来源清单」（脚本挂 .sx-srcbox）同一套。 */
 section.sources,.sx-srcbox{background:rgba(127,127,127,.06); border:0; border-radius:4px;
   padding:.85rem 1.2rem; margin:2.4rem 0 0}
+.sx-card > .sx-srcbox,.sx-card > section.sources{margin:0} /* 单独成卡时灰盒顶到卡沿（参考站：白卡里衬灰来源盒） */
 section.sources h2,.sx-srcbox>h2,.sx-srcbox>h3{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
   font-size:.75rem; font-weight:600; letter-spacing:.05em; text-transform:none;
   color:var(--muted); opacity:.85; margin:0 0 .45rem}
@@ -466,7 +547,7 @@ section.sources a:hover,.sx-srcbox a:hover{color:var(--ink); text-decoration:non
 section.sources .src-tag,.sx-srcbox .src-tag{background:rgba(127,127,127,.13); color:var(--muted);
   font-size:.66rem; letter-spacing:.04em; padding:.08rem .38rem; margin-right:.42rem}
 /* 行尾域名标（脚本按 href 生成）：一眼看清这条出自哪家站点，省得读完整串标题才知道 */
-.sx-src-domain{display:inline-block; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+.sx-src-domain{display:inline-block; font-family:var(--sx-mono);
   font-size:.68rem; line-height:1.5; color:var(--muted); background:rgba(127,127,127,.13);
   padding:.1rem .42rem; border-radius:3px; margin-left:.4rem; white-space:nowrap; vertical-align:.05em}
 section.sources em,.sx-srcbox em{color:var(--muted); font-size:.75rem; font-style:normal; opacity:.8; margin:0 .25rem}
@@ -474,9 +555,25 @@ section.sources em,.sx-srcbox em{color:var(--muted); font-size:.75rem; font-styl
 .sx-srcbox>p{font-size:.8rem; line-height:1.6; color:var(--muted); text-align:left; margin:0 0 .35rem}
 .case,.limitation,.correction{border-radius:12px}
 /* 正文区块滚动淡入（脚本挂 body.sx-reveal + 块上 .sx-rv/.in；脚本不跑则全部直接可见） */
-body.sx-reveal .sx-rv{opacity:0; transform:translateY(14px); transition:opacity .5s ease, transform .5s ease}
+body.sx-reveal .sx-rv{opacity:0; transform:translateY(18px); transition:opacity .5s ease, transform .5s ease}
 body.sx-reveal .sx-rv.in{opacity:1; transform:none}
-</style>
+/* 继续阅读（参考站 related-section 规格）：小灰节题 + 白条卡列，脚本把它挪到报告 footer 之前 */
+.sx-related{max-width:var(--measure); margin:2.5rem auto 0}
+.sx-related h2{font-family:var(--sx-sans); font-size:.88rem; font-weight:600; color:var(--muted);
+  letter-spacing:.08em; margin:0 0 .8rem; border:0; padding:0}
+.sx-related-grid{display:flex; flex-direction:column; gap:.5rem}
+.sx-related-card{display:flex; align-items:baseline; gap:1rem; background:var(--card); padding:1rem 1.4rem;
+  border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,.04); text-decoration:none; color:inherit;
+  transition:box-shadow .2s ease, transform .2s ease}
+.sx-related-card:hover{box-shadow:0 3px 12px rgba(0,0,0,.08); transform:translateY(-1px)}
+.sx-related-date{flex:none; font-family:var(--sx-mono); font-size:.75rem; color:var(--muted); opacity:.75}
+.sx-related-title{font-family:var(--sx-sans); font-size:.95rem; color:var(--ink-soft); line-height:1.5; transition:color .15s}
+.sx-related-card:hover .sx-related-title{color:var(--ink)}
+.sx-related-home{margin:.8rem 0 0; font-family:var(--sx-sans); font-size:.85rem}
+.sx-related-home a{color:var(--muted); text-decoration:none; transition:color .15s}
+.sx-related-home a:hover{color:var(--ink-soft)}
+@media (max-width:740px){ .sx-related-card{flex-direction:column; gap:.2rem; padding:.8rem 1rem} }
+</style>${relatedHtml(related, homeHref)}
 <div class="sx-progress" aria-hidden="true"><i></i></div>
 <aside class="sx-toc" aria-label="目录"><nav><div class="h">目录</div></nav></aside>
 <a class="sx-nav-btn sx-home" href="${homeHref}" aria-label="返回调研档案首页" title="返回档案首页">

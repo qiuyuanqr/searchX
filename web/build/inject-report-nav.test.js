@@ -292,8 +292,9 @@ test("报头元信息整队：概念标签串拆成小胶囊行、来源短项�
   expect(out).toContain("sx-tags");
   expect(out).toContain("sx-tag");
   expect(out).toContain('"概念标签" || k === "关联板块"');
-  expect(out).toContain("header.masthead::after");   // 主色短色条挂报头、不再挂 tldr
-  expect(out).not.toContain(".tldr::after");
+  // 2026-08-28 起主色短色条挂导读（.tldr）尾部：参考站的顺序是 标题→导读→色条，色条压轴
+  expect(out).toContain(".tldr::after");
+  expect(out).not.toContain("header.masthead::after");
 });
 
 // ── 2026-08-28 来源区收敛：对齐参考站 ai-digest 详情页的来源盒 ──────────
@@ -303,7 +304,7 @@ test("来源盒按参考站实测规格：淡底小圆角 + .85rem 灰链接不�
   expect(out).toContain("border-radius:4px");
   expect(out).toContain("font-size:.85rem");                       // 条目 13.6px = 参考站同值
   expect(out).toContain("section.sources a,.sx-srcbox a{color:var(--ink-soft); text-decoration:none");
-  expect(out).toContain(".sx-src-domain{display:inline-block; font-family:ui-monospace");
+  expect(out).toContain(".sx-src-domain{display:inline-block; font-family:var(--sx-mono)"); // 2026-08-28 起等宽统一走自托管 JetBrains Mono 变量
   // 类型标不再是深色实心块（存量模板里烧着 .src-media{background:#6b4a1f} 那套）
   expect(out).toContain("section.sources .src-tag,.sx-srcbox .src-tag{background:rgba(127,127,127,.13)");
 });
