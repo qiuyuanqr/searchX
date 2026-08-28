@@ -87,6 +87,69 @@ const NAV_SCRIPT = `
     }
   }
 
+  // ── 来源区收敛（对齐参考站 ai-digest 详情页的来源盒）──
+  // 来源是备查用的，不该和正文抢眼：页尾清单本已装盒但仍是橙链接 + 深色实心类型标；
+  // 正文里那节「联网来源清单」更是连盒都没有，一屏橙色大字比正文本身还响。
+  // 这里统一给两处挂 .sx-srcbox，样式见下方 CSS；顺带补一枚行尾域名标。
+  function srcDomain(href){
+    // 只给真外链挂域名标：站内锚点（存量里有 href="#" 的注脚）经 new URL 会解析成本站域名，
+    // 挂上去等于给自家站点发了个来源标。
+    try {
+      var u = new URL(href, location.href);
+      if (u.protocol !== "http:" && u.protocol !== "https:") return "";
+      if (u.origin === location.origin) return "";
+      return u.hostname.replace(/^(www|m|mobile|3g)\./, "");
+    } catch(e){ return ""; }
+  }
+  function decorateSrc(root){
+    [].slice.call(root.querySelectorAll("li")).forEach(function(li){
+      var a = li.querySelector("a[href]"); if (!a) return;
+      // 条目文本里一般已写了日期（「… — 中国经济网 2026-04-01」），行尾 <em> 的同一日期是重复
+      [].slice.call(li.querySelectorAll("em")).forEach(function(em){
+        var t = em.textContent.trim();
+        if (t && a.textContent.indexOf(t) !== -1) em.remove();
+      });
+      if (li.querySelector(".sx-src-domain")) return;
+      var d = srcDomain(a.getAttribute("href"));
+      if (!d) return;
+      var chip = document.createElement("span");
+      chip.className = "sx-src-domain";
+      chip.textContent = d;
+      a.appendChild(chip);
+    });
+  }
+  var srcSection = document.querySelector("section.sources");
+  if (srcSection){ srcSection.classList.add("sx-srcbox"); decorateSrc(srcSection); }
+  // 正文内的来源小节。判据要严：光看标题带「来源」二字远远不够，正文里
+  // 「H3. 股东与资本运作层面（联网，带来源）」「A 股产业链：…但需警惕弱来源」这类
+  // 叙述小节同样命中，包进灰盒等于把正文吞掉。三道一起卡（对存量 139 篇实扫过）：
+  //   ① 标题去掉括号补语后不超过 14 字，且落在「来源 / 参考文献 / 引用」上；
+  //   ② 标题后最多隔两个说明段落就得见到列表，中间出现别的元素（含下一个标题）即放弃；
+  //   ③ 该列表里六成以上条目确实是外链。
+  [].slice.call(document.querySelectorAll("main h2, main h3")).forEach(function(h){
+    var name = h.textContent.replace(/[（(][^）)]*[）)]/g, "").trim();
+    if (name.length > 14 || !/来源|参考文献|引用/.test(name)) return;
+    var skipped = [], node = h.nextElementSibling, list = null;
+    for (var i = 0; i < 3 && node; i++){
+      var tag = node.tagName;
+      if (tag === "UL" || tag === "OL"){ list = node; break; }
+      if (tag !== "P") return;               // 说明段落之外的东西：这不是来源清单
+      skipped.push(node);
+      node = node.nextElementSibling;
+    }
+    if (!list) return;
+    var items = [].slice.call(list.children);
+    var linked = items.filter(function(li){ return li.querySelector('a[href^="http"]'); });
+    if (!items.length || linked.length < items.length * 0.6) return;
+    var box = document.createElement("div");
+    box.className = "sx-srcbox";
+    h.parentNode.insertBefore(box, h);
+    box.appendChild(h);
+    skipped.forEach(function(n){ box.appendChild(n); });   // 说明句一起收进盒，否则盒外留半句
+    box.appendChild(list);
+    decorateSrc(box);
+  });
+
   // 迷你横条目录（参照 Codex 的长内容导航）：每节一根等长小横条，标题存 data-label。
   function railHtml(){ return secs.map(function(s){ return '<a href="#" data-id="' + esc(s.id) + '" data-label="' + esc(s.label) + '"><i></i></a>'; }).join(""); }
   var aside = document.querySelector(".sx-toc");
@@ -380,10 +443,35 @@ main h2{border-top:0; padding-top:0}
 /* 风险/名词小抄/来源的节题与正文节题同一字级；卡内不再用粗分隔线 */
 section.risks,section.sources,.glossary{border-top:0; margin-top:2.4rem; padding-top:0}
 section.risks h2,.glossary h2,section.sources h2{font-family:inherit; font-size:1.28rem; font-weight:700; letter-spacing:0; margin:0 0 .9rem}
-/* 来源清单装浅灰盒（参考站 story 尾的来源盒） */
-section.sources{background:var(--paper-2); border-radius:6px; padding:1.1rem 1.4rem}
-section.sources h2{font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); font-weight:600}
-section.sources li{border-bottom:0; font-size:.85rem}
+/* 来源盒：照参考站 ai-digest 详情页实测规格（底 #f8f9fa / radius 4 / padding .8×1.2rem /
+   标签题 .75rem #bbb / 条目 .85rem #999 无下划线 / 域名标等宽 .68rem 淡灰底）。
+   底色与灰阶都换成透明度写法，跟着亮暗两套主题走，不写死参考站的中性灰。
+   页尾清单（section.sources）与正文里那节「联网来源清单」（脚本挂 .sx-srcbox）同一套。 */
+section.sources,.sx-srcbox{background:rgba(127,127,127,.06); border:0; border-radius:4px;
+  padding:.85rem 1.2rem; margin:2.4rem 0 0}
+section.sources h2,.sx-srcbox>h2,.sx-srcbox>h3{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+  font-size:.75rem; font-weight:600; letter-spacing:.05em; text-transform:none;
+  color:var(--muted); opacity:.85; margin:0 0 .45rem}
+section.sources ol,section.sources ul,.sx-srcbox ol,.sx-srcbox ul{
+  list-style:none; counter-reset:s; padding:0; margin:0; font-size:.85rem}
+section.sources li,.sx-srcbox li{counter-increment:s; position:relative; border-bottom:0;
+  padding:.25rem 0 .25rem 1.85rem; margin:0; line-height:1.65; color:var(--ink-soft)}
+section.sources li::before,.sx-srcbox li::before{content:counter(s); position:absolute; left:0; top:.25rem;
+  font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.7rem; width:1.25rem; text-align:right;
+  color:var(--muted); opacity:.55}
+section.sources a,.sx-srcbox a{color:var(--ink-soft); text-decoration:none; transition:color .15s}
+section.sources a:hover,.sx-srcbox a:hover{color:var(--ink); text-decoration:none}
+/* 类型标（监管/披露/媒体/研究/社区）：原先是深色实心块，一列排下来比来源本身还抢眼。
+   收成与域名标同款的淡灰小标——类型二字仍在，只是不再用颜色喊。 */
+section.sources .src-tag,.sx-srcbox .src-tag{background:rgba(127,127,127,.13); color:var(--muted);
+  font-size:.66rem; letter-spacing:.04em; padding:.08rem .38rem; margin-right:.42rem}
+/* 行尾域名标（脚本按 href 生成）：一眼看清这条出自哪家站点，省得读完整串标题才知道 */
+.sx-src-domain{display:inline-block; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:.68rem; line-height:1.5; color:var(--muted); background:rgba(127,127,127,.13);
+  padding:.1rem .42rem; border-radius:3px; margin-left:.4rem; white-space:nowrap; vertical-align:.05em}
+section.sources em,.sx-srcbox em{color:var(--muted); font-size:.75rem; font-style:normal; opacity:.8; margin:0 .25rem}
+/* 清单前的说明句（「本报告联网部分仅用于…，来源如下：」）：跟条目同一字级，别比来源还响 */
+.sx-srcbox>p{font-size:.8rem; line-height:1.6; color:var(--muted); text-align:left; margin:0 0 .35rem}
 .case,.limitation,.correction{border-radius:12px}
 /* 正文区块滚动淡入（脚本挂 body.sx-reveal + 块上 .sx-rv/.in；脚本不跑则全部直接可见） */
 body.sx-reveal .sx-rv{opacity:0; transform:translateY(14px); transition:opacity .5s ease, transform .5s ease}

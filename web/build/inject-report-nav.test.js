@@ -295,3 +295,26 @@ test("报头元信息整队：概念标签串拆成小胶囊行、来源短项�
   expect(out).toContain("header.masthead::after");   // 主色短色条挂报头、不再挂 tldr
   expect(out).not.toContain(".tldr::after");
 });
+
+// ── 2026-08-28 来源区收敛：对齐参考站 ai-digest 详情页的来源盒 ──────────
+test("来源盒按参考站实测规格：淡底小圆角 + .85rem 灰链接不加下划线 + 等宽域名标", () => {
+  const out = injectReportNav(BASE);
+  expect(out).toContain("section.sources,.sx-srcbox{background:rgba(127,127,127,.06)");
+  expect(out).toContain("border-radius:4px");
+  expect(out).toContain("font-size:.85rem");                       // 条目 13.6px = 参考站同值
+  expect(out).toContain("section.sources a,.sx-srcbox a{color:var(--ink-soft); text-decoration:none");
+  expect(out).toContain(".sx-src-domain{display:inline-block; font-family:ui-monospace");
+  // 类型标不再是深色实心块（存量模板里烧着 .src-media{background:#6b4a1f} 那套）
+  expect(out).toContain("section.sources .src-tag,.sx-srcbox .src-tag{background:rgba(127,127,127,.13)");
+});
+
+// 判据放松就会把正文小节吞进灰盒：存量里「H3. 股东与资本运作层面（联网，带来源）」
+// 「A 股产业链：…但需警惕弱来源」这类标题都带「来源」二字，只靠标题词必然误伤。
+// 三道卡缺一不可，谁改动这段都得先看懂为什么是三道。
+test("正文来源小节的三道判据都在：标题长度 + 只跳说明段落 + 六成条目是外链", () => {
+  const out = injectReportNav(BASE);
+  expect(out).toContain('replace(/[（(][^）)]*[）)]/g, "")');       // ① 先去掉括号补语
+  expect(out).toContain("name.length > 14");                        //    再卡长度
+  expect(out).toContain('if (tag !== "P") return;');                // ② 中间只允许说明段落
+  expect(out).toContain("linked.length < items.length * 0.6");      // ③ 六成条目得是外链
+});
