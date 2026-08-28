@@ -76,8 +76,8 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
    (pointer:coarse) 才升到 16px、桌面基准只有 .92rem(14.72px)——审计工具/无触控模拟的量法
    量到的正是这个基准值，不如直接把基准定到 16px，不依赖媒体查询是否命中。 */
 .search{width:100%; font-family:var(--sans); font-size:1rem; color:var(--ink); background:var(--card);
-  border:1px solid var(--rule); border-radius:12px; padding:.65rem .9rem .65rem 2.4rem; outline:none; transition:border-color .2s, box-shadow .2s}
-/* 首页搜索框是全圆角胶囊；表单里的输入框/文本域沿用上面的 12px（textarea 套 999px 会很怪） */
+  border:1px solid var(--rule); border-radius:6px; padding:.65rem .9rem .65rem 2.4rem; outline:none; transition:border-color .2s, box-shadow .2s}
+/* 首页搜索框是全圆角胶囊；表单里的输入框/文本域用上面的 6px（2026-08-28 从 12px 收敛，对齐参考站表单的克制圆角） */
 .search-wrap .search{border-radius:999px; padding-right:2.4rem; box-shadow:0 1px 2px rgba(50,45,38,.04)} /* 右侧给清除按钮留位 */
 .search-clear{position:absolute; right:5px; top:50%; transform:translateY(-50%); width:2rem; height:2rem;
   border:0; border-radius:50%; background:transparent; color:var(--muted); font-size:.82rem; cursor:pointer;
@@ -98,9 +98,15 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
    避免变胖挤占换行；桌面端鼠标点击精度够，不需要这层加大，保持原本的紧凑密度。 */
 @media (max-width:520px){ .chip{padding:.7rem .78rem} }
 .rule-grad{height:1px; background:linear-gradient(90deg, transparent 0%, var(--hair) 16%, var(--hair) 84%, transparent 100%)}
-/* 筛选区：居中，不再吸顶（简报式版面顶栏已常驻） */
-.filterbar{margin:1.4rem 0 1.6rem}
-.filterbar .search-wrap{max-width:30rem; margin:0 auto .8rem}
+/* 筛选区：居中，不再吸顶（简报式版面顶栏已常驻）。
+   min-height 兜住搜索框高度：chips 被搜索态 display:none 掉时行高也不塌，版面不跳。 */
+.filterbar{margin:1.4rem 0 1.6rem; position:relative; min-height:2.75rem;
+  display:flex; flex-direction:column; justify-content:center}
+/* 搜索框展开不挤压版面：绝对定位悬浮在筛选行位置（不占文档流），展开时筛选行原地
+   隐位（visibility 保高度）——原先 hidden 切换会把 chips 和整列卡片往下推、页面跳动。 */
+.filterbar .search-wrap{position:absolute; left:0; right:0; top:50%; transform:translateY(-50%);
+  max-width:30rem; margin:0 auto; z-index:5}
+.filterbar.searching .chips{visibility:hidden}
 .filterbar .chips{margin-bottom:0}
 .count{display:inline-flex; align-items:center; font-family:var(--sans); font-size:.75rem; color:var(--muted); opacity:.75; padding-left:.3rem} /* 筛选行末尾的行内计数，不单独占行 */
 /* ── 简报式信息流（复刻 ai-digest 实测规格）：一天一张卡，卡内编号列条目、无分割线 ──
@@ -225,16 +231,18 @@ body.js-reveal .day-card:nth-child(4){transition-delay:.18s}
 .field-label{font-family:var(--sans); font-size:.78rem; letter-spacing:.04em; color:var(--ink-soft)}
 .field-label em{color:var(--seal); font-style:normal}
 .search.ta{line-height:1.55; resize:vertical; min-height:2.6rem; font-family:var(--sans)}
-.submit-btn{align-self:flex-start; font-family:var(--sans); font-size:.9rem; color:#fff;
-  background:var(--seal); border:1px solid var(--seal); border-radius:999px;
-  padding:.6rem 1.5rem; cursor:pointer; transition:transform .18s ease, box-shadow .25s ease, background .2s}
-.submit-btn:hover{transform:translateY(-2px); box-shadow:0 10px 22px rgba(180,84,58,.22)}
-.submit-btn:active{transform:translateY(0) scale(.98)}
+/* 提交按钮照参考站表单按钮的手感：小圆角实心块、hover 只加深底色不上浮（原为胶囊+上浮大阴影） */
+.submit-btn{align-self:flex-start; font-family:var(--sans); font-size:.95rem; font-weight:500; color:#fff;
+  background:var(--seal); border:0; border-radius:6px;
+  padding:.55rem 1.4rem; cursor:pointer; transition:background .15s}
+.submit-btn:hover:not(:disabled){background:#9c4630}
+.submit-btn:active{transform:scale(.98)}
+@media (prefers-color-scheme: dark){ .submit-btn:hover:not(:disabled){background:#c46a4a} }
 /* 禁用态（未授权 / 查重拦截 / 请求在途）：一眼可辨不可点，去掉悬浮动效。写在 hover/active 之后以覆盖之 */
 .submit-btn:disabled{opacity:.45; cursor:not-allowed; transform:none; box-shadow:none}
 /* 提交状态：横幅式（带底色 + 左侧色条），比纯文字更难被忽略 */
 .form-status{font-family:var(--sans); font-size:.9rem; line-height:1.5; margin:0;
-  padding:.6rem .85rem; border-radius:8px; border-left:3px solid currentColor; font-weight:500}
+  padding:.6rem .85rem; border-radius:6px; border-left:3px solid currentColor; font-weight:500}
 .form-status[data-kind="success"]{color:var(--seal); background:rgba(180,84,58,.1)}
 .form-status[data-kind="error"]{color:var(--err); background:rgba(179,64,44,.1)}
 .form-status[data-kind="pending"]{color:var(--ink-soft); background:var(--paper-2)}
@@ -244,7 +252,7 @@ body.js-reveal .day-card:nth-child(4){transition-delay:.18s}
   color:var(--seal); background:rgba(180,84,58,.12); font-size:.92rem; line-height:1.6; text-align:left}
 .fineprint{font-family:var(--sans); font-size:.74rem; color:var(--muted); margin:0}
 .dup-notice{font-family:var(--sans); font-size:.82rem; line-height:1.5; color:var(--ink-soft); margin:-.2rem 0 .2rem;
-  padding:.55rem .7rem; background:var(--paper-2); border:1px solid var(--rule); border-left:3px solid var(--seal); border-radius:8px}
+  padding:.55rem .7rem; background:var(--paper-2); border:1px solid var(--rule); border-left:3px solid var(--seal); border-radius:6px}
 .dup-notice a{color:var(--seal); border-bottom:1px solid transparent; transition:border-color .2s}
 .dup-notice a:hover{border-bottom-color:var(--seal-soft)}
 @media (prefers-reduced-motion: reduce){ .submit-btn{transition:none !important} }
@@ -257,9 +265,9 @@ body.js-reveal .day-card:nth-child(4){transition-delay:.18s}
   animation:backdropIn .22s ease}
 @keyframes backdropIn{from{opacity:0} to{opacity:1}}
 .modal-card{position:relative; width:min(34rem,100%); margin:0 auto;
-  background:var(--paper); border:1px solid var(--rule); border-radius:16px;
+  background:var(--paper); border:1px solid var(--rule); border-radius:8px;
   padding:1.7rem 1.7rem 1.5rem; box-shadow:0 24px 60px rgba(0,0,0,.28);
-  animation:riseIn .42s cubic-bezier(.2,.7,.2,1) backwards}
+  animation:riseIn .42s cubic-bezier(.2,.7,.2,1) backwards} /* 圆角 16→8：对齐 2026-08-28 参考站口径（卡 6 / 浮层 8） */
 .modal-close{position:absolute; top:.8rem; right:.85rem; width:2rem; height:2rem; border-radius:50%;
   background:transparent; border:1px solid var(--rule); color:var(--ink-soft); font-size:.85rem; cursor:pointer;
   display:flex; align-items:center; justify-content:center; transition:color .18s ease, border-color .18s ease, transform .25s ease}

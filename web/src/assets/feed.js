@@ -86,14 +86,19 @@ function bindSearchToggle(){
   const btn = document.getElementById("toggle-search");
   const wrap = document.querySelector(".search-wrap");
   const input = document.getElementById("q");
+  const bar = document.querySelector(".filterbar");
   if (!btn || !wrap || !input) return;
-  btn.addEventListener("click", () => {
-    const show = wrap.hidden;
+  // 搜索框悬浮在筛选行上方（CSS absolute）：展开只切换显隐 + 给 .filterbar 挂 .searching
+  // 让 chips 原地隐位（visibility 保高度），版面高度全程不变、页面不跳
+  const set = (show) => {
     wrap.hidden = !show;
+    if (bar) bar.classList.toggle("searching", show);
     btn.setAttribute("aria-expanded", show ? "true" : "false");
     if (show) { input.focus(); }
     else if (input.value) { input.value = ""; input.dispatchEvent(new Event("input", { bubbles: true })); }
-  });
+  };
+  btn.addEventListener("click", () => set(wrap.hidden));
+  input.addEventListener("keydown", (e) => { if (e.key === "Escape") set(false); }); // Esc 收起并清空
 }
 
 // 类型筛选；简报式结构：条目按类型显隐，天卡在条目全被筛掉时整卡隐藏。
