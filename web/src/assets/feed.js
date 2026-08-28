@@ -97,8 +97,23 @@ function bindSearchToggle(){
     if (show) { input.focus(); }
     else if (input.value) { input.value = ""; input.dispatchEvent(new Event("input", { bubbles: true })); }
   };
-  btn.addEventListener("click", () => set(wrap.hidden));
+  let collapsedAt = 0;   // 最近一次因失焦收起的时刻
+  btn.addEventListener("click", () => {
+    // 刚因失焦收起（<350ms）的这次点击，本意就是收起：焦点离开已触发 focusout 收好了，
+    // 这里再 toggle 会把它又弹开，表现成「点搜索关不掉」
+    if (wrap.hidden && Date.now() - collapsedAt < 350) return;
+    set(wrap.hidden);
+  });
   input.addEventListener("keydown", (e) => { if (e.key === "Escape") set(false); }); // Esc 收起并清空
+  // 失焦自动收起：焦点离开搜索区且没输入内容时收起、还原筛选菜单——否则不熟悉这套交互的人
+  // 点了别处发现菜单没了、也不知道去哪找回。有搜索词时不收：结果正显示着，且点结果链接时
+  // blur 先于 click 发生，这时收起会把结果列表清掉、让点击落空。
+  wrap.addEventListener("focusout", (e) => {
+    if (wrap.contains(e.relatedTarget)) return;   // 焦点还在搜索区内（比如点了清除按钮）
+    if (input.value) return;
+    collapsedAt = Date.now();
+    set(false);
+  });
 }
 
 // 类型筛选；简报式结构：条目按类型显隐，天卡在条目全被筛掉时整卡隐藏。
