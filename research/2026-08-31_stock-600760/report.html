@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>中航沈飞（600760.SH） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>中航沈飞（600760.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-08-31（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 地面兵装Ⅱ</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 中字头股票 · 大飞机 · 军民融合 · 高端装备 · 无人机 · 数字经济 · 军工</span>
+      <span><b>来源</b> 22 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    中航沈飞（600760）主要做的是实业投资；航空产品研发、生产、服务保障。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——中报塌了六成，而能证明它「只是节奏问题」的那份数据，13 周内根本不会出现。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：中报塌了六成，而能证明它「只是节奏问题」的那份数据，13 周内根本不会出现。支撑在于Q4单季占全年54%营收61%净利；PE46.2居行业53只第10便宜；十五五开局装备采购确定性升。主要风险是13周内无数据可证实多头逻辑；卖方要求H2净利25-32亿vs H1仅4.73亿；毛利率掉3.1pct而净利率仅掉0.37pct。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>Q4单季占全年54%营收61%净利</li>
+      <li>PE46.2居行业53只第10便宜</li>
+      <li>十五五开局装备采购确定性升</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据基准：库内取数截至 2026-08-28（库内估值）／行情截至 2026-08-31 11:48 盘中（库内行情）／财报最新期 2026H1（库内财务，公告日 2026-08-28）。撰写日 2026-08-31。 票名与代码经库内基础资料核实唯一命中：600760 · 航空。</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：中报塌了六成，而能证明它「只是节奏问题」的那份数据，13 周内根本不会出现。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>公司业绩天然极度后置，2025 年 Q4 单季就贡献了全年 53.9% 营收、61.3% 净利</strong>（据库内财务中 2025 年报 446.56 亿／35.18 亿减 2025Q3 累计 206.07 亿／13.62 亿推算）——所以「上半年难看」在这家公司身上是常态而非异态，这是多头逻辑最硬的一块地基（置信度：高，库内数据直接支持）。</li>
+<li><strong>估值在极贵的行业里属于相对便宜的一端</strong>：PE(TTM) 46.20，在航空行业 53 只可比票中排第 10 便宜，而行业 PE 中位数高达 99.74（库内估值，2026-08-28）（置信度：高）。</li>
+<li><strong>「十五五」开局年 + 2027 建军百年，装备采购确定性被多家卖方指向 2026–2028 上行</strong>（联网多源，见 F 节）（置信度：中，属行业层判断且来源均为卖方）。</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>13 周内没有任何一个数据点能证明多头是对的</strong>。三季报（约 W9）在这家公司身上历来也是弱季——2025Q3 单季营收仅约 59.8 亿、净利约 2.26 亿（据库内累计数推算）；真正的验证在年报，落在 13 周窗口之外（置信度：高，这是本报告最重要的一条）。</li>
+<li><strong>卖方对 2026 全年 EPS 的预测分歧达 23%（1.055～1.30，见 J 节），且全部要求下半年净利做到 25～32 亿，而上半年只有 4.73 亿</strong>——若下半年兑现不足，46 倍 TTM 估值的分母会继续变小（置信度：高）。</li>
+<li><strong>利润质量存疑</strong>：上半年毛利率较 2025 全年掉了 3.10 个百分点（10.59% vs 13.70%），净利率却只掉了 0.37 个百分点（7.56% vs 7.93%）——毛利线以下有东西在托，但库内无非经常性损益明细（库内财务不含该字段）（置信度：中）。</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ul>
+<li><strong>信号一</strong>：三季报（约 2026-10-30，W9）的<strong>单季</strong>营收与毛利率。核验法＝三季报累计营收减去库内 2026H1 的 61.91 亿；对照锚是 2025Q3 单季推算值 59.8 亿。</li>
+<li><strong>信号二</strong>：珠海航展窗口（2026-11-10～11-15，W11）是否出现公司或集团层面的<strong>军贸订单／框架协议公告</strong>——这是 13 周内唯一可能提前兑现预期的事件（联网多源，见 I 节）。</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong>：我把「Q4 集中确认」当成了可重复的规律，但它只有 2025 年一个完整样本被库内数据支持（库内财务只回溯 4 期）。如果 2026 上半年的交付缺口不是节奏问题、而是新机型产线爬坡的结构性问题，那么 Q4 补不回来，整条逻辑链从地基开始垮——而我在 13 周内拿不到能分辨这两者的数据。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>名称／代码</strong>：中航沈飞 · 600760 · 主板 · 上市状态（正常上市，非退市）</li>
+<li><strong>所属行业</strong>：航空（库内公司档案）</li>
+<li><strong>上市时间</strong>：1996-10-11，至今近 30 年</li>
+<li><strong>员工人数</strong>：16,444 人（库内公司档案）</li>
+<li><strong>注册资本</strong>：28.35 亿元（283,509.4714 万元）</li>
+<li><strong>主营业务（库内主营业务原文）</strong>：实业投资；航空产品研发、生产、服务保障。</li>
+<li><strong>经营范围（库内经营范围原文）</strong>：以自有资金对外投资；航空产品研发、服务保障；机械、电子产品开发、制造。</li>
+</ul>
+<p><strong>⚠️ 一处必须点名的库内数据瑕疵</strong>：库内公司档案的公司简介字段描述的是「专用车和液压零部件的生产制造及销售……专用车产品中主要以工程和物流运输类专用车为主」——这与同一条记录里的主营业务（航空产品）、行业归属（航空）自相矛盾。该段文字明显是本壳公司资产重组前的旧业务描述，<strong>未随主营变更刷新</strong>。本报告后续一切业务判断以主营业务 / 库内经营范围 / 行业归属三个字段为准，公司简介整段弃用（置信度：高，三对一的内部交叉验证）。这条也写进 M 节缺口清单。</p>
+<p><strong>当前行情（唯一事实源库内行情）</strong></p>
+<ul>
+<li>现价 46.63 元 · 涨跌幅 +0.24% · 数据时点 <strong>2026-08-31 11:48（盘中，非收盘）</strong> · 当日振幅区间 −0.77%～+0.88% · 成交额 5.60 亿元 · 来源 realtime</li>
+<li>⚠️ 该时点为盘中快照，收盘值可能不同，引用请带时点。</li>
+</ul>
+<p><strong>估值（库内估值，交易日 2026-08-28）</strong></p>
+<ul>
+<li>总市值 1,318.81 亿元 · PE(TTM) 46.20 · PB 5.63 · 股息率 0.84% · 换手率 1.13%</li>
+<li>行业 PE 中位数 99.74，可比票 53 只，本票 PE 排名第 <strong>10</strong> 便宜</li>
+<li>据总市值 1,318.81 亿 ÷ 注册资本 28.35 亿股互校，<strong>2026-08-28 收盘价推算为 46.52 元</strong>（该股本假设可由 PE(TTM) 反算的 TTM EPS 独立验证，见 C 节，两条路径吻合）——本报告后文所有价位锚以此为准。</li>
+</ul>
+<p><strong>估值口径判断</strong>：46 倍 TTM 市盈率、5.63 倍市净率，绝对水平不便宜；但放在中位数近 100 倍的航空行业里属于偏低的一端（置信度：高，库内估值直接给出）。<strong>注意这个「便宜」是相对的</strong>——行业中位数被大量微利／亏损小票的畸高 PE 拉高，53 只票的中位数不是一个稳健的贵贱基准（置信度：中）。换手率 1.13% 说明当前无投机热度。</p>
+<h2>C. 财务健康（库内财务，近 4 期，新→旧）</h2>
+<p><strong>四期原始数据</strong></p>
+<ul>
+<li><strong>2026H1</strong>（截止 2026-06-30 · 公告 2026-08-28）｜营收 61.91 亿 · 同比 <strong>−57.68%</strong>｜净利 4.73 亿 · 同比 <strong>−58.37%</strong>｜EPS 0.17｜毛利率 10.59%｜净利率 7.56%｜ROE 2.01%｜资产负债率 63.11%</li>
+<li><strong>2026Q1</strong>（截止 2026-03-31 · 公告 2026-04-29）｜营收 26.12 亿 · 同比 −55.23%｜净利 1.65 亿 · 同比 −61.69%｜EPS 0.06｜毛利率 10.58%｜净利率 6.33%｜ROE 0.70%｜资产负债率 64.61%</li>
+<li><strong>2025 年报</strong>（截止 2025-12-31 · 公告 2026-03-31）｜营收 446.56 亿 · 同比 +4.25%｜净利 35.18 亿 · 同比 +3.65%｜EPS 1.26｜毛利率 13.70%｜净利率 7.93%｜ROE <strong>17.32%</strong>｜资产负债率 66.88%</li>
+<li><strong>2025Q3</strong>（截止 2025-09-30 · 公告 2025-10-30）｜营收 206.07 亿 · 同比 −18.54%｜净利 13.62 亿 · 同比 −25.10%｜EPS 0.50｜毛利率 11.83%｜净利率 6.64%｜ROE 7.00%｜资产负债率 62.60%</li>
+</ul>
+<p><strong>趋势判读（不是罗列，是找拐点）</strong></p>
+<p><strong>① 收入的季节性极端后置，这是理解全部数字的钥匙（置信度：高）。</strong> 拿库内累计数拆单季（均为推算，标注如下）：</p>
+<ul>
+<li>2025 上半年营收 ≈ 146.3 亿（据 2026H1 的 61.91 亿与同比 −57.68% 反推）</li>
+<li>2025Q3 单季营收 ≈ 59.8 亿（据 206.07 减 146.3 推算）</li>
+<li><strong>2025Q4 单季营收 = 240.49 亿（据 446.56 减 206.07 推算），占全年 53.9%</strong></li>
+<li><strong>2025Q4 单季净利 = 21.56 亿（据 35.18 减 13.62 推算），占全年 61.3%</strong></li>
+</ul>
+<p>也就是说：<strong>这家公司一个季度做完全年一半以上的收入、六成以上的利润</strong>。任何拿前三季度线性外推全年的做法在这只票上都是无效的。</p>
+<p><strong>② 但 2026 年的下滑幅度超出了单纯的季节性（置信度：高）。</strong> 2026H1 营收 61.91 亿 vs 2025 同期推算 146.3 亿，少了 84 亿；这不是「季节分布」能解释的，因为同比对的就是同一个季节。库内数字能确认的是<strong>下滑真实且剧烈</strong>；下滑的<strong>原因</strong>库内查不到，见 E 节联网补充。</p>
+<p><strong>③ 环比在改善，但基数极低（置信度：高）。</strong> 2026Q2 单季营收 = 61.91 − 26.12 = <strong>35.79 亿</strong>（推算），环比 Q1 的 26.12 亿增长约 37%；Q2 单季净利 = 4.73 − 1.65 = <strong>3.08 亿</strong>（推算），环比 Q1 的 1.65 亿增长约 87%；Q2 单季净利率约 8.61%（推算）高于 Q1 的 6.33%。<strong>方向是对的，量级远远不够</strong>——Q2 单季净利 3.08 亿，而 2025Q4 单季是 21.56 亿。</p>
+<p><strong>④ 盈利质量出现一个需要解释的背离（置信度：中，本报告最想追却追不到的一项）。</strong> 2026H1 毛利率 10.59%，比 2025 全年的 13.70% 低了 <strong>3.10 个百分点</strong>；但净利率 7.56% 只比 7.93% 低了 <strong>0.37 个百分点</strong>。在收入腰斩、固定费用摊薄能力最差的半年里，净利率几乎没掉——这意味着毛利线以下有显著贡献项（可能来自政府补助、利息收入、投资收益或费用资本化）。<strong>库内财务不返回非经常性损益与费用明细，库内无法证实或证伪</strong>。这条直接决定了「4.73 亿的利润里有多少是主业赚的」，是 C 节最大的悬念（补法见 M 节）。</p>
+<p><strong>⑤ 杠杆在回落，是唯一无争议的正面项（置信度：高）。</strong> 资产负债率 66.88%（2025 年报）→ 64.61%（Q1）→ 63.11%（H1），连续两期下降。年报高点通常与 Q4 集中交付带来的预收／应付高峰有关，回落属正常释放，不构成独立利好，但至少排除了「杠杆恶化」这个风险源。</p>
+<p><strong>⑥ ROE 的量级要看年度不看半年（置信度：高）。</strong> 2026H1 ROE 2.01% 看起来很差，但 2025 全年 ROE 是 <strong>17.32%</strong>——对一个重资产制造业这是相当高的水平。半年 ROE 在极端后置的收入结构下没有可比意义。</p>
+<p><strong>TTM 口径交叉验证（置信度：高）</strong>：TTM 净利 = 35.18 − 11.36（2025H1 净利推算值）+ 4.73 = <strong>28.55 亿</strong>；除以 28.35 亿股得 TTM EPS ≈ <strong>1.007 元</strong>；对应 08-28 推算收盘价 46.52 元，隐含 PE = 46.2 —— 与库内估值给出的 PE(TTM) 46.2025 <strong>完全吻合</strong>。这条互校同时验证了股本假设与全部推算链条。</p>
+<h2>D. 竞争格局与竞对对比（库内同业对比，同为 2026H1 财报口径）</h2>
+<ul>
+<li><strong>中航沈飞 600760</strong>｜市值 1,318.81 亿 · PE_TTM 46.20 · PB 5.63 · H1 营收 61.91 亿 · H1 净利 4.73 亿 · ROE 2.01% · 净利率 7.56%（库内直接值）</li>
+<li><strong>中航成飞 302132</strong>｜市值 1,603.25 亿 · PE_TTM 49.66 · PB 7.67 · H1 营收 151.67 亿 · H1 净利 7.09 亿 · ROE 3.37% · 净利率约 4.67%（据 7.09÷151.67 推算）</li>
+<li><strong>航发动力 600893</strong>｜市值 1,010.26 亿 · PE_TTM 146.68 · PB 2.52 · H1 营收 207.55 亿 · H1 净利 1.46 亿 · ROE 0.36% · 净利率约 0.70%（据 1.46÷207.55 推算）</li>
+<li><strong>电科蓝天 688818</strong>｜市值 781.96 亿 · PE_TTM 234.41 · PB 14.21 · H1 营收 14.71 亿 · H1 净利 0.72 亿 · ROE 1.54% · 净利率约 4.89%（据 0.72÷14.71 推算）</li>
+</ul>
+<p><strong>横向位置判断</strong></p>
+<p><strong>① 盈利能力是它最硬的相对优势（置信度：高）。</strong> 在收入腰斩的最差半年里，沈飞 7.56% 的净利率仍是四家中最高的——是成飞（约 4.67%）的 1.6 倍，是航发动力（约 0.70%）的十倍以上。总装主机厂普遍是低毛利、高周转的生意，沈飞在这个坐标系里的利润转化效率明显更好（置信度：高，四家同期同口径直接对比）。</p>
+<p><strong>② 但它的收入下滑幅度也是主机厂里最重的（置信度：中）。</strong> 沈飞 H1 营收 61.91 亿，只有成飞 151.67 亿的 41%，而两家市值分别是 1,318.81 亿与 1,603.25 亿（差距只有 18%）。市值／半年营收比：沈飞 21.3 倍 vs 成飞 10.6 倍（均据库内数推算）。<strong>同为战斗机总装厂，市场给沈飞的单位收入定价是成飞的两倍</strong>。这个溢价要么源于对下半年补回的预期，要么源于对机型代际的预期——库内数据无法分辨（置信度：中）。</p>
+<p><strong>③ PB 的排序值得注意（置信度：中）。</strong> PB 5.63 低于成飞的 7.67、远低于电科蓝天的 14.21，高于航发动力的 2.52。PE 与 PB 双双低于成飞，说明<strong>在两家总装厂之间，市场当前给沈飞的估值是更保守的那个</strong>——这与「沈飞 H1 更难看」一致，也意味着如果 Q4 兑现，向成飞估值靠拢是一条现成的修复路径（置信度：中，属推论）。</p>
+<p><strong>④ 航发动力与电科蓝天的 PE（146.7／234.4）提醒了一件事</strong>：航空行业 PE 中位数 99.74 是被这类微利票撑起来的，<strong>「沈飞排第 10 便宜」不等于「沈飞便宜」</strong>，只等于「沈飞不是最贵的那批」（置信度：高）。</p>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>分级结论：结构性护城河（置信度：中）——但库内证据只支持到「行业属性」这一层，不支持到「公司专属」。</strong></p>
+<p><strong>库内能支撑的部分（置信度：高）</strong></p>
+<ul>
+<li>主营业务「航空产品研发、生产、服务保障」+ 行业归属「航空」+ 16,444 名员工 + 28.35 亿注册资本 + 446.56 亿的 2025 年营收体量——这组数字共同指向一个<strong>大型航空整机总装平台</strong>，而非零部件供应商。</li>
+<li>这类主体的护城河来自<strong>准入牌照与型号资质</strong>：军用航空器总装是许可制、单一型号定点制，新进入者不存在。这是典型的<strong>结构性护城河</strong>（准入壁垒 + 客户高度集中且不可替代）。</li>
+<li>商业模式的直接证据就是 C 节的季节性：一个季度确认全年六成利润，说明收入确认绑定的是<strong>批次验收交付</strong>而非连续销售——这是订单制、单一大客户模式的财务指纹（置信度：高，库内数据自证）。</li>
+</ul>
+<p><strong>这套护城河的另一面（必须写出来的代价，置信度：高）</strong></p>
+<p>同一个护城河带来的是<strong>议价权在下游、节奏权不在自己手上</strong>。2026H1 的塌陷就是这个模式的成本：交付节奏由客户与配套体系决定，公司只能被动承接。护城河保证了「别人抢不走」，但不保证「今年一定有」。</p>
+<p><strong>联网补充的产业侧信息（库外，标注来源与日期）</strong></p>
+<ul>
+<li>公司在 2026-07-14 发布的半年度业绩预减公告中说明，业绩变动主要系上半年交付产品主要为<strong>新型装备</strong>，在生产组织、产能提升等方面尚处于优化阶段，受<strong>部分配套产品交付节奏</strong>等因素影响，本期交付数量同比下浮较大。该表述由 <a href="https://finance.cnr.cn/ycbd/20260714/t20260714_527709983.shtml" target="_blank" rel="noopener">央广网（2026-07-14）</a>、<a href="https://m.10jqka.com.cn/20260714/c678162916.shtml" target="_blank" rel="noopener">同花顺财经（2026-07-14）</a>、<a href="https://stock.jrj.com.cn/2026/07/14155457795883.shtml" target="_blank" rel="noopener">金融界（2026-07-14）</a>、<a href="https://wap.stockstar.com/detail/AN2026071400034105" target="_blank" rel="noopener">证券之星公告摘要（2026-07-14）</a> 四处一致转述，<strong>多源交叉验证通过</strong>（置信度：中——内容一致但均转自同一份公司公告，属同源多渠道，不构成独立求证）。
+<ul>
+<li><strong>这条是本报告的关键枢纽</strong>：它把下滑归因于「新型装备切换 + 配套节奏」，即<strong>过渡性</strong>而非<strong>结构性</strong>。多头逻辑全部建立在这个归因成立之上。而它的信息源是公司自述——<strong>没有第三方能验证</strong>（置信度：低，就归因的可靠性而言）。</li>
+</ul></li>
+<li>关于新机型产能爬坡的具体交付数量，网络上流传多个测算版本（如新浪财经头条 2026 年、网易号相关文章、东方财富财富号 2026-05-25 等）。<strong>这些均为自媒体测算，无官方披露，且彼此不独立（互相转载），本报告不采信其任何数字，也不将其作为论据</strong>。军品交付量本身不属于强制披露项——这是一个<strong>原理上无法在 13 周内核实</strong>的信息缺口，不是我没查到（置信度：高，就「查不到」这个结论本身而言）。</li>
+</ul>
+<h2>F. 政策与监管（库内无此维度，本节全部为联网补充）</h2>
+<p><strong>① 2026 是「十五五」开局年，装备采购确定性被普遍指向上行（多源，置信度：中）</strong></p>
+<ul>
+<li>多家卖方 2026 年度策略指出，2026 年作为「十五五」实施首年，军方将加快中长期采购机制改革，重点装备型号有望通过「分档定价＋批量采购」模式锁定 3–5 年交付计划；2026 年同时承接「十四五」延期订单集中交付与「十五五」新型号批产开工两类需求。来源：<a href="https://view.inews.qq.com/a/20251111A012AZ00" target="_blank" rel="noopener">中信建投国防军工 2026 年投资策略（2025-11-11）</a>、<a href="https://pdf.dfcfw.com/pdf/H301_AP202511171783225949_1.pdf" target="_blank" rel="noopener">东吴证券国防军工行业深度报告（2025-11-17）</a>、<a href="https://www.sdyanbao.com/detail/938831" target="_blank" rel="noopener">中泰证券国防军工 2026 年度策略</a>、<a href="https://www.dwqgbh.cn/news/b457d806cd9f963570b758755de6d76e/" target="_blank" rel="noopener">国盛军工 2026 年度策略</a>。</li>
+<li><strong>传导链条</strong>：采购机制长周期化 → 主机厂订单能见度提升 → 交付节奏波动性下降 → 收入确认更平滑。<strong>方向：中性偏利好</strong>。</li>
+<li>⚠️ <strong>这四个来源全部是卖方研究</strong>，不是政策原文。它们对政策的解读高度趋同，但趋同不等于正确（置信度：中偏低）。<strong>本报告不把它当作事实，只当作行业共识的证据。</strong></li>
+</ul>
+<p><strong>② 2027 建军百年目标构成时间约束（多源，置信度：中）</strong></p>
+<ul>
+<li>多家机构提到「十四五」积累订单叠加「十五五」新增军费，指向 2026–2028 年行业向上动能。来源同上（中信建投、东吴、中泰）。</li>
+<li><strong>传导链条</strong>：时间节点刚性 → 装备列装进度不可无限推迟 → 交付缺口需在后续期间补回。<strong>这条直接支持「H1 缺口是节奏而非取消」的假设</strong>，是多头逻辑在库外能找到的最有力的间接支撑（置信度：中）。</li>
+</ul>
+<p><strong>③ 行业景气仍处修复早期，业绩分化显著（多源，置信度：中）</strong></p>
+<ul>
+<li>2026 年中报预告口径下，军工板块 40 家预增、17 家预减；无人系统与增材制造改善明显，航发产业链承压；机构判断下半年传统军工有望迎来新一轮备货与订单释放，但行业仍处修复早期。来源：<a href="https://www.jiemian.com/article/14382581.html" target="_blank" rel="noopener">界面新闻军工板块业绩盘点</a>、<a href="https://m.10jqka.com.cn/20260708/c678033156.shtml" target="_blank" rel="noopener">同花顺财经·机构观点（2026-07-08）</a>、<a href="https://www.fxbaogao.com/detail/5426713" target="_blank" rel="noopener">开源证券军工 2026 年度中期策略</a>。</li>
+<li><strong>对本票的意义</strong>：沈飞属于「预减」的那 17 家之列（其 2026-07-14 预减公告已由 E 节四源证实），<strong>在板块内部处于落后位置而非领跑位置</strong>（置信度：中）。</li>
+</ul>
+<p><strong>④ 直接指向本票的具体监管／政策事件：本次调研未检索到（置信度：高）</strong></p>
+<p>联网未发现 2026 年内针对中航沈飞公司层面的监管处罚、问询函、重组审批或专项政策。<strong>无消息在此处是中性信息，不作正面解读。</strong></p>
+<h2>G. 题材与产业链关联（库内概念标签共 16 个标签，逐个分级）</h2>
+<p><strong>第一类：有库内主营佐证——真有业务（置信度：高）</strong></p>
+<ul>
+<li><strong>军工（885700.TI）</strong>：主营业务明确「航空产品研发、生产、服务保障」，行业归属 = 航空，员工 1.6 万人，2025 年营收 446.56 亿。<strong>真有业务，且是全部业务。</strong></li>
+<li><strong>高端装备（885427.TI）</strong>：航空整机总装属高端装备制造，由同一组主营字段支撑。<strong>真有业务（宽口径）。</strong></li>
+</ul>
+<p><strong>第二类：股权属性标签，非业务标签（置信度：高）</strong></p>
+<ul>
+<li><strong>中字头股票（885741.TI）</strong>、<strong>国企改革（886021.TI）</strong>、<strong>央企国企改革（885595.TI）</strong>、<strong>同花顺中特估 100（886045.TI）</strong></li>
+<li>这四个反映的是公司的央企属性（公司名冠「中航」），<strong>不对应任何一块营收</strong>。国企改革题材若有催化，走的是估值重估逻辑而非业绩逻辑——<strong>归为「仅属性标签，未见营收佐证」</strong>。</li>
+</ul>
+<p><strong>第三类：指数与交易属性标签，与业务无关（置信度：高）</strong></p>
+<ul>
+<li><strong>上证 50 样本股（883301.TI）</strong>、<strong>上证 180 成份股（883302.TI）</strong>、<strong>沪深 300 样本股（883300.TI）</strong>、<strong>同花顺漂亮 100（885916.TI）</strong>、<strong>沪股通（885520.TI）</strong>、<strong>融资融券（885338.TI）</strong></li>
+<li>这六个只说明一件事：<strong>本票是主流宽基指数成份、可沪股通买入、可两融</strong>。它们的唯一实质含义是<strong>流动性与被动资金覆盖度高</strong>（与库内估值的 1,318.81 亿市值一致），<strong>不是题材</strong>。</li>
+</ul>
+<p><strong>第四类：仅概念标签，未见营收佐证（置信度：高，就「库内无佐证」这一事实而言）</strong></p>
+<ul>
+<li><strong>大飞机（885566.TI）</strong>：主营业务只写到「航空产品」，未细分到大飞机机型；库内无分产品营收拆分。<strong>仅概念标签。</strong></li>
+<li><strong>无人机（885564.TI）</strong>：主营业务与库内经营范围全文均未出现无人机、无人系统字样。<strong>仅概念标签，未见营收佐证。</strong> ⚠️ 这一条尤其要强调：I 节 W1 的高重要性事件（无人机关税）正是通过这个标签匹配到本票的——<strong>标签匹配不等于业务受影响</strong>。</li>
+<li><strong>军民融合（885743.TI）</strong>：库内经营范围有「机械、电子产品开发、制造」可勉强沾边，但无营收佐证。<strong>仅概念标签。</strong></li>
+<li><strong>数字经济（885976.TI）</strong>：库内零佐证。<strong>仅概念标签</strong>，且 I 节有两个事件由它匹配进来，相关性应判定为低。</li>
+</ul>
+<p><strong>产业链位置（基于库内主营 + E 节产业信息，置信度：中）</strong></p>
+<ul>
+<li><strong>上游</strong>：航空发动机（同行业可比票中的航发动力 600893 即处此位）、机载航电、结构件与原材料、各类配套分系统。<strong>议价权在这一端偏弱于总装厂</strong>，但 2026H1 公司自述的「配套产品交付节奏」影响说明——<strong>上游一旦掉链子，总装厂无法独立完成交付</strong>，这是总装环节被低估的脆弱点（置信度：中）。</li>
+<li><strong>本环节</strong>：整机总装集成 + 服务保障。牌照与型号定点带来不可替代性，但<strong>产能与交付节奏受两头夹</strong>（上游配套 + 下游验收）。</li>
+<li><strong>下游</strong>：单一大客户为主，附带出口通道。<strong>议价权高度集中在下游</strong>，价格与批次由采购方主导。</li>
+<li><strong>一句话</strong>：<strong>在自己这一环是垄断的，但在整条链上是被动的</strong>——利润率（D 节 7.56% 居首）体现前者，收入波动率（C 节 −57.68%）体现后者。</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<p><strong>① 库内新闻：零条（库内新闻（近 60 日）返回空列表）</strong></p>
+<p><strong>信息缺口</strong>：库中近 60 日无 600760 关联新闻。 <strong>影响</strong>：本节失去了消息面的主要事实源，无法从库内判断市场叙事的走向与强度。<strong>注意这不代表市场上没有消息</strong>——公司 2026-07-14 发过业绩预减公告、2026-08-28 披露了中报（两者的存在均由库内财务的公告日与 E 节联网四源独立证实），<strong>但这些都没进新闻库</strong>。所以该缺口是<strong>新闻库对本票的覆盖问题</strong>，不是「本票无消息」（置信度：高）。 <strong>补法</strong>：直接查交易所公告原文（上交所 600760 公告栏），或在新闻库补入该票的公告流后重跑本调研。</p>
+<p><strong>② 涨停史：近 180 日无任何涨停记录（库内涨停记录（近 180 日）返回空列表）</strong></p>
+<p>这条空返回本身是有效信息（置信度：高）：<strong>过去半年这只票从未被情绪面选中过</strong>，没有连板、没有游资参与痕迹。结合库内估值的换手率 1.13%（2026-08-28），画像是一只<strong>被动资金持有为主、投机热度极低</strong>的大盘蓝筹——与 G 节第三类标签（上证 50／沪深 300 成份）互相印证。</p>
+<p><strong>含义（置信度：中）</strong>：这类票的向上修复通常靠<strong>基本面兑现或机构调仓</strong>驱动，不靠情绪脉冲。因此指望它在没有硬数据的情况下靠题材大涨，与它自身的交易特征不符。</p>
+<p><strong>③ 资金流（库内资金筹码，2026-08-03 至 2026-08-28，20 个交易日）</strong></p>
+<ul>
+<li>特大单（主力）净流入合计 <strong>+3.73 亿元</strong></li>
+<li>全口径净流入合计 <strong>+3.99 亿元</strong></li>
+<li>净流入为正的天数 <strong>9 天 / 20 天</strong>，为负 11 天</li>
+</ul>
+<p><strong>读法（置信度：中）</strong>：负流入天数多于正流入天数，但合计仍为净流入 —— 说明<strong>流入日的单日金额显著大于流出日</strong>，形态更像分批吸纳而非持续抛售。⚠️ 该窗口覆盖的是 07-14 预减公告之后、08-28 中报披露当日之前的区间，<strong>基本不含市场对中报正式数字的反应</strong>。 ⚠️ <strong>纪律声明：资金流是盘面现象不是基本面证据。本节数据仅作情绪面佐证，不进入 J 节逻辑链，也不单独用于任何操作条件。</strong></p>
+<p><strong>④ 筹码分布：库内无该票数据（库内资金筹码为 None）</strong></p>
+<p><strong>筹码数据库内仅覆盖关注票，该票暂无。</strong> 这是数据覆盖范围问题，不是事实缺失。 <strong>影响</strong>：本报告拿不到获利盘比例（获利盘比例）与筹码分位成本，因此 <strong>L 节的所有价位锚只能用「中报披露日收盘推算价」这类公开可复现刻度，不能用筹码分位成本</strong>（置信度：高）。</p>
+<p><strong>⑤ 股东户数（库内资金筹码）</strong></p>
+<ul>
+<li>截至 <strong>2026-06-30</strong>：175,946 户</li>
+<li>/ 均为 None —— <strong>库内无上一期数据，无法计算环比</strong></li>
+</ul>
+<p><strong>读法（置信度：低）</strong>：单点户数不能判断筹码集中还是趋散，<strong>趋势缺失导致这条基本无法使用</strong>。且股东户数为季度披露，天然滞后两个月以上——即使有环比，反映的也是 6 月末状态，早于 7-14 预减公告与 8-28 中报（置信度：高，就滞后性而言）。</p>
+<h2>I. 未来 13 周事件日历（库内事件日历（近 120 日） 5 条 + 联网补充）</h2>
+<div class="callout">⚠️ 库内返回的 5 条事件<strong>全部通过概念标签匹配</strong>（字段显示为「概念 885564.TI／885976.TI／885427.TI」），<strong>没有一条是公司层面事件</strong>。按 G 节的分级，其中「无人机」与「数字经济」标签在本票上均属<strong>仅概念标签、未见营收佐证</strong>——因此这些事件对本票基本面的直接影响应判定为低。<strong>这一点比事件本身更重要。</strong></div>
+<ul>
+<li><strong>W1（2026-08-31 起）</strong>：特朗普对进口无人机及零部件加征最高 100% 关税正式生效（09-03）· 政策 · 库内重要性 8 · 匹配路径：概念 885564.TI（无人机）· <strong>对本票影响：低</strong>——库内主营无无人机营收佐证（G 节第四类）；间接影响限于扰动军工板块整体情绪（置信度：中）</li>
+<li><strong>W2（2026-09-07 起）</strong>：本周无已知事件</li>
+<li><strong>W3（2026-09-14 起）</strong>：上合组织数字经济论坛（09-14～16，乌鲁木齐，国家数据局主办）· 会议 · 重要性 6 · 匹配路径：概念 885976.TI · <strong>对本票影响：可忽略</strong>（置信度：高）｜2026 世界制造业大会开幕（09-20～23，合肥）· 会议 · 重要性 7 · 匹配路径：概念 885427.TI（高端装备）· <strong>对本票影响：低</strong>，可能释放装备制造政策信号（置信度：低）</li>
+<li><strong>W4（2026-09-21 起）</strong>：中国国际信息通信展 PT 展（09-22～24，北京）· 会议 · 重要性 7 · 概念 885976.TI · <strong>影响可忽略</strong>｜第五届全球数字贸易博览会（09-23～27，杭州，商务部主办）· 会议 · 重要性 7 · 概念 885976.TI · <strong>影响可忽略</strong>（置信度：高）</li>
+<li><strong>W5（2026-09-28 起）</strong>：本周无已知公司事件（含国庆假期休市窗口）</li>
+<li><strong>W6（2026-10-05 起）</strong>：本周无已知事件（节后开市周）</li>
+<li><strong>W7（2026-10-12 起）</strong>：本周无已知事件</li>
+<li><strong>W8（2026-10-19 起）</strong>：本周无已知公司事件 · 但进入 A 股三季报密集披露期，<strong>同行业可比票（中航成飞 302132、航发动力 600893）的三季报可能先于本票披露</strong>，构成产业链交叉验证的提前窗口（置信度：中）</li>
+<li><strong>W9（2026-10-26 起）</strong>：<strong>★ 2026 年三季报（预计约 10-30）· 财报 · 重要性高</strong> · 依据：库内财务中 2025Q3 的公告日为 20251030，据此推算同期披露；<strong>具体日期以交易所预约披露安排为准</strong>（置信度：中）· <strong>影响：本 13 周窗口内唯一一次公司基本面硬数据更新，是 A 节两大信号中的信号一</strong></li>
+<li><strong>W10（2026-11-02 起）</strong>：本周无已知事件 · 珠海航展前的预热与预期发酵窗口（置信度：低）</li>
+<li><strong>W11（2026-11-09 起）</strong>：<strong>★ 第十六届中国国际航空航天博览会（珠海航展），2026-11-10～11-15 · 行业 · 重要性高</strong> · 来源：<a href="https://baike.baidu.com/item/%E7%AC%AC%E5%8D%81%E5%85%AD%E5%B1%8A%E4%B8%AD%E5%9B%BD%E5%9B%BD%E9%99%85%E8%88%AA%E7%A9%BA%E8%88%AA%E5%A4%A9%E5%8D%9A%E8%A7%88%E4%BC%9A/65117438" target="_blank" rel="noopener">百度百科·第十六届中国航展</a>（多源交叉：<a href="https://m.zh.bendibao.com/xiuxian/104870.shtm" target="_blank" rel="noopener">珠海本地宝</a>、<a href="https://www.jufair.com/exhibition/508.html" target="_blank" rel="noopener">聚展网</a>、<a href="https://www.shifair.com/exhibitionDetails/539.html" target="_blank" rel="noopener">世展网</a>，日期一致）· <strong>影响：13 周内唯一可能提前兑现军贸／订单预期的高能级事件，是 A 节信号二</strong>（置信度：中——展会必然举行是高置信，但「本届是否落地涉及本公司的订单公告」完全无法预判）</li>
+<li><strong>W12（2026-11-16 起）</strong>：本周无已知既定事件 · 航展后订单／框架协议公告的常见落地窗口（置信度：低，属经验性推断非既定日程）</li>
+<li><strong>W13（2026-11-23 起）</strong>：本周无已知事件</li>
+</ul>
+<p><strong>日历读出来的核心结论（置信度：高）</strong>：13 周里只有 <strong>两个</strong> 事件对本票真正有信息量——W9 三季报与 W11 珠海航展。<strong>其余 11 周基本是空窗</strong>。而 W9 的三季报按公司的收入结构（C 节）大概率仍然难看：2025Q3 单季营收也才约 59.8 亿（推算）。<strong>换句话说，13 周内最可能出现的情形是「没有好消息，也没有决定性坏消息」——这是本报告给出「震荡」判断最直接的依据。</strong></p>
+<h2>J. 逻辑链（可证伪）</h2>
+<p><strong>主链</strong></p>
+<div class="callout"><strong>因为</strong>「2025Q4 单季贡献了全年 53.9% 营收与 61.3% 净利」（据库内财务累计数推算 · 置信度：<strong>高</strong>） <strong>且</strong>「2026H1 营收 61.91 亿同比 −57.68%、净利 4.73 亿同比 −58.37%，公司归因于新型装备交付节奏与配套节奏」（库内数字置信度：<strong>高</strong>；归因来自公司公告经四源转述置信度：<strong>低</strong>） <strong>且</strong>「2026Q2 单季营收 35.79 亿、净利 3.08 亿，环比 Q1 分别 +37%／+87%」（推算 · 置信度：<strong>高</strong>） <strong>所以推论</strong>：全年利润仍将由 Q4 决定，上半年的缺口在结构上<strong>有可能</strong>被 Q4 补回（置信度：<strong>中</strong>） <strong>如果推论成立，应该能观察到</strong>：① W9 三季报单季营收不低于 2025Q3 单季推算的 59.8 亿，且毛利率自 10.59% 回升；② 存货／合同资产等交付前指标同步走高（<strong>该项库内无数据，见 M 节缺口</strong>）；③ 卖方 2026 全年 EPS 预测在中报后不下修。 <strong>如果推论不成立，应该能观察到</strong>：三季报单季营收继续低于 40 亿、毛利率进一步下探、或出现减值。</div>
+<p><strong>⚠️ 最弱的一环，也就是整条链的命门（必须点名）</strong></p>
+<p><strong>是「归因」这一环，不是数字那一环。</strong> 数字（−57.68%）是硬的、库内可查、无争议；但<strong>「这是节奏问题、不是能力问题」这个判断，唯一的信息源是公司自己的公告</strong>。E 节的四个联网来源看似交叉验证，实则全部转述同一份公告——<strong>同源多渠道，不构成独立求证</strong>（置信度：低）。军品交付量不属强制披露，第三方原理上无法核实。</p>
+<p><strong>这一环塌了，全链塌</strong>：如果新型装备的产线爬坡是结构性受阻，Q4 就补不回来，那么 46.20 倍的 TTM 估值（库内估值）分母还会继续缩小，D 节里「市值／半年营收 21.3 倍 vs 成飞 10.6 倍」的溢价也就失去了依据。</p>
+<p><strong>J 节纪律声明</strong>：H 节的资金流（+3.73 亿）与股东户数（175,946 户）<strong>未进入本逻辑链</strong>，按 skill 纪律它们只作情绪面佐证。</p>
+<p><strong>卖方预期（一律单列，不与库内事实混排）</strong></p>
+<ul>
+<li>〔卖方预期〕来源：招商证券研报（库内研报）· 日期：2026-07-26 · 观点：评级「强烈推荐」；预测 2026 全年 EPS 1.08 元 / 归母净利 30.71 亿元 / PE 40.0，2027 年 EPS 1.39 元 / 净利 39.43 亿 / PE 31.1，2028 年 EPS 1.78 元 / 净利 50.58 亿 / PE 24.3 · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：山西证券研报（库内研报）· 日期：<strong>2026-08-28</strong>（中报披露当日）· 观点：预测 2026 全年 EPS 1.30 元 / PE 34.7，2027 年 EPS 1.47 元 / PE 30.7，2028 年 EPS 1.62 元 / PE 27.9；库内未记录评级 · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：兴业证券研报（库内研报）· 日期：2026-06-14 · 观点：预测 2026 全年 EPS 1.055 元 / 归母净利 29.90 亿元，2027 年 EPS 1.213 元 / 净利 34.40 亿元；库内评级字段为「无」 · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>库内近 90 天研报覆盖：3 家机构 / 3 篇研报 / 8 条盈利预测；评级分布「强烈推荐 1、无 1」；研报标题字段为空（库内未存标题）。</li>
+</ul>
+<p><strong>对卖方预期的三条独立观察（这是我的分析，不是卖方的话）</strong></p>
+<ol>
+<li><strong>分歧度异常大（置信度：高）</strong>：同一年度 EPS 预测跨度 1.055～1.30，<strong>离散度约 23%</strong>。对一家已披露半年报的大盘蓝筹而言，这个分歧幅度本身就说明<strong>下半年能见度极低</strong>。</li>
+<li><strong>全部预测都要求下半年出现数量级跳升（据库内数推算 · 置信度：高）</strong>：
+<ul>
+<li>按兴业 29.90 亿 → 下半年需 <strong>25.17 亿</strong>（29.90 − 库内 H1 的 4.73）</li>
+<li>按招商 30.71 亿 → 下半年需 <strong>25.98 亿</strong></li>
+<li>按山西 EPS 1.30 × 28.35 亿股 ≈ 36.86 亿 → 下半年需 <strong>32.13 亿</strong></li>
+<li>对照：2025 下半年净利 ≈ <strong>23.82 亿</strong>（据 35.18 − 13.62 + 2025Q3 单季推算链得出，即 35.18 − 11.36 = 23.82 亿）</li>
+<li><strong>即：兴业／招商隐含下半年同比 +6%～+9%（不算激进），山西隐含 +35%（相当激进）</strong>。</li>
+</ul></li>
+<li><strong>时点值得留意（置信度：中）</strong>：山西证券这份最高的预测，发布日 2026-08-28 正是中报披露日——<strong>是在看到 H1 只有 4.73 亿之后仍给出全年 36.86 亿</strong>。这要么意味着该机构掌握了额外的交付节奏信息，要么意味着模型未及时反映中报。<strong>库内不含研报正文（研报标题为空），无从判断是哪一种</strong>——这条列入 M 节缺口。</li>
+</ol>
+<h2>K. 三情景推演（概率合计 100%）</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜<strong>触发</strong>：W9 三季报（约 10-30）显示第三季度单季营收（＝三季报累计营收 − 库内 2026H1 的 61.91 亿）<strong>≥ 60 亿</strong>，且累计毛利率自 10.59% 回升至 <strong>12% 以上</strong>；或 W11 珠海航展窗口（11-10～11-15）出现涉及本公司／中航工业集团的<strong>军贸订单或框架协议正式公告</strong>｜<strong>路径</strong>：市场确认「H1 是节奏问题」，Q4 集中确认逻辑被重新定价；估值向同业中航成飞的 PB 7.67 / PE 49.66 方向收敛（当前本票 PB 5.63 / PE 46.20），修复空间来自 D 节的估值差而非盈利上修</li>
+</ul>
+<ul>
+<li><strong>中性（55%）</strong>｜<strong>触发</strong>：W9 三季报单季营收落在 <strong>40～60 亿</strong>区间（即与 2025Q3 单季推算值 59.8 亿相当或略低），毛利率维持 10%～12%，无减值；且航展期间只有产品展示、无订单公告｜<strong>路径</strong>：本报告 I 节判断的「13 周无决定性信息」成真——多空双方都拿不到证据，股价跟随军工板块 beta 区间震荡，真正的裁决推迟到 2027 年 3 月左右的年报。<strong>这是概率最高的一支，也是给出「震荡」结论的主体依据</strong></li>
+</ul>
+<ul>
+<li><strong>悲观（20%）</strong>｜<strong>触发</strong>：W9 三季报单季营收 <strong>&lt; 40 亿</strong>（即环比 Q2 的 35.79 亿几无改善、同比 2025Q3 推算值继续腰斩）；或报表出现存货／合同资产减值；或库内研报中 2026 全年 EPS 预测中枢被下修至 <strong>1.00 元以下</strong>（当前区间 1.055～1.30）｜<strong>路径</strong>：「节奏论」被证伪，市场转向「产能爬坡结构性受阻」定价；TTM EPS 随 Q4 低于预期继续下行，46.20 倍 PE 的分母收缩使估值被动抬升，D 节相对成飞的市值／营收溢价（21.3 倍 vs 10.6 倍）面临压缩</li>
+</ul>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向（触发条件全部来自本报告出现过的指标或事件，可被后来者用数据核对）</strong></p>
+<ol>
+<li><strong>如果</strong> W9 三季报（约 2026-10-30）披露的第三季度单季营收（＝累计营收 − 库内 2026H1 的 61.91 亿）<strong>≥ 60 亿元</strong>，<strong>且</strong>累计毛利率自 2026H1 的 10.59% 回升至 <strong>12% 以上</strong>，<strong>那么</strong> 可转为<strong>轻仓试仓</strong>——这两条同时满足才说明产能爬坡与利润率同步修复，单看营收会被低毛利订单误导。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> W11 珠海航展窗口（2026-11-10～11-15）出现涉及本公司或中航工业集团的<strong>军贸订单／框架协议正式公告</strong>（以交易所公告或集团官方发布为准，非媒体转述、非自媒体测算），<strong>那么</strong> 由<strong>观望转试仓</strong>；<strong>如果</strong>航展期间<strong>仅有产品展示而无任何订单类公告</strong>，<strong>那么</strong> 维持<strong>观望</strong>——展示不是订单，这是 E 节联网教训的直接应用。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> W9 三季报单季营收 <strong>&lt; 40 亿元</strong>，<strong>或</strong>报表出现存货／合同资产减值，<strong>或</strong>库内研报的 2026 全年 EPS 预测中枢跌破 <strong>1.00 元</strong>（当前 3 家区间 1.055～1.30），<strong>那么</strong> <strong>回避</strong>——满足任意一条即说明 J 节的「归因」命门已被证伪。</li>
+</ol>
+<ol>
+<li><strong>如果</strong>股价跌破<strong>中报披露日（2026-08-28）收盘推算价 46.52 元</strong>（该锚据总市值 1,318.81 亿 ÷ 注册资本对应股本 28.35 亿股推算，并已由 PE(TTM) 反算独立验证）<strong>且</strong> W9 三季报同时落入上述第 3 条任一情形，<strong>那么</strong> <strong>减仓</strong>——单纯破位不构成动作，必须有基本面证伪同时发生。</li>
+</ol>
+<div class="callout">⚠️ 价位锚说明：H 节已述本票筹码分布数据库内缺失，<strong>拿不到筹码分位成本</strong>，故只能采用「中报披露日收盘推算价」这一公开可复现刻度作为锚。</div>
+<p><strong>风控要点——这笔判断在什么情况下应当被推翻</strong></p>
+<ul>
+<li><strong>推翻多头侧的条件</strong>：出现任何第三方可核实的证据表明 H1 交付缺口是<strong>产能／产线结构性受阻</strong>而非交付节奏（例如公司公告产能建设延期、上游配套方公告供货中断、三季报存货不增反降）。<strong>J 节命门一破，本报告 A 节的核心驱动 1 与 K 节的乐观情景同时失效。</strong></li>
+<li><strong>推翻震荡判断的条件</strong>：如果在 W9 之前就出现公司层面重大公告（重组、定增、大额订单、业绩预告修正），13 周「信息空窗」的前提即不成立，需立即重跑本调研。</li>
+<li><strong>推翻本报告全部估值讨论的条件</strong>：若三季报或年报显示 2026H1 那 4.73 亿净利中非经常性损益占比过半（C 节第 ④ 点的悬念），则「净利率 7.56% 居同业之首」这个 D 节核心优势不成立，需重估。</li>
+</ul>
+<p><strong>仓位思路（只讲相对概念）</strong></p>
+<ul>
+<li>当前状态下（W9 三季报未出、航展未开）：<strong>不参与或极轻仓观察</strong>。理由不是看空，而是 I 节的结论——<strong>13 周内大概率拿不到能改变判断的信息，此时下注等于为「没有信息」付时间成本</strong>。</li>
+<li>若触发第 1 条或第 2 条：<strong>轻仓</strong>。因为即便触发，验证的也只是中间指标，最终裁决仍在年报。</li>
+<li>若触发第 3 条：<strong>不参与</strong>。</li>
+<li>全程<strong>不适合重仓</strong>——理由是 J 节命门依赖单一自述信息源、且 K 节中性情景占 55%（置信度：中）。</li>
+</ul>
+<h2>M. 逻辑自查</h2>
+<p><strong>① 这份判断最依赖的假设是哪一条？错了会怎样？</strong></p>
+<p>最依赖的是：<strong>「2025Q4 单季占全年 53.9% 营收、61.3% 净利」这个季节性规律在 2026 年可重复」</strong>。</p>
+<p><strong>它的脆弱性我必须说清楚</strong>：库内财务（近 4 期）只回溯 4 期，我实际只观察到<strong>一个完整年度</strong>的这种分布。<strong>一个样本推不出规律</strong>——2025 年的极端后置也可能本身就是当年特殊交付安排的结果。我在 A 节把它标为「置信度：高」，那个「高」只指<strong>数据本身准确</strong>（累计数相减无争议），<strong>不指「它会重演」</strong>。这个区分是本报告最容易被误读的地方，特此点破。</p>
+<p><strong>如果它错了</strong>：全年利润不再由 Q4 决定，那么 2026 全年就是「上半年 4.73 亿 + 下半年温和」的量级，卖方 29.9～36.9 亿的预测将大幅落空，K 节的悲观情景概率应从 20% 大幅上调。</p>
+<p><strong>② 有没有为了让逻辑好看而忽略的反面证据？</strong></p>
+<p>有三处，逐条自曝：</p>
+<ul>
+<li><strong>2025Q3 就已经在下滑了</strong>。库内 2025Q3 营收同比 −18.54%、净利同比 −25.10% —— <strong>在 2026 年的塌陷之前，2025 年三季度就已经是负增长</strong>。我在正文里把叙事重心放在「2026H1 是节奏问题」，但<strong>连续四个报告期（25Q3 → 25 年报 +4.25% → 26Q1 −55.23% → 26H1 −57.68%）里有三期同比为负</strong>，只有 2025 年报靠 Q4 拉回正。这更像<strong>一条已经持续了一年多的下行</strong>，而不是一次孤立的季度扰动。这条反面证据我没有在 A 节给它应有的权重（置信度：高，库内数据直接支持）。</li>
+<li><strong>山西证券的 36.86 亿预测我用了怀疑口吻，但它也可能是对的</strong>。我在 J 节暗示它「可能未及时反映中报」，但它发布于中报当日——<strong>同样可能是它掌握了我不掌握的交付信息</strong>。我倾向于怀疑，这个倾向没有证据支撑（置信度：低）。</li>
+<li><strong>市值／半年营收 21.3 倍 vs 成飞 10.6 倍这个对比对沈飞不公平</strong>。因为分母（沈飞 H1 营收）恰好处在异常低点，而成飞 H1 营收 151.67 亿是正常水平。这个比值放大了差距。我在 D 节用它论证「市场给沈飞溢价」，<strong>但它同样可以被解释为「沈飞的分母是暂时的」</strong>——这正是多头会说的话，而我把它写成了偏空的证据（置信度：中，属方法论偏差自曝）。</li>
+</ul>
+<p><strong>③ 信息缺口清单</strong></p>
+<ul>
+<li><strong>缺口 1（最重要）：库内无非经常性损益与费用明细。</strong></li>
+</ul>
+<p>影响：无法解释 C 节第 ④ 点的背离（毛利率掉 3.10pct 而净利率只掉 0.37pct），即<strong>无法判断 4.73 亿净利中主业贡献几何</strong>。这直接动摇 D 节「净利率同业最高」这一核心相对优势。 补法：查上交所 600760 的 2026 年半年度报告全文（利润表 + 非经常性损益明细表），或在库内财务表补入 / 三费字段后重跑。</p>
+<ul>
+<li><strong>缺口 2：库内无合同负债、存货、合同资产、经营性现金流字段。</strong></li>
+</ul>
+<p>影响：军工主机厂的订单能见度主要靠合同负债与存货前瞻，<strong>没有它们，J 节的「应该能观察到②」这个证伪条件根本无法执行</strong>。这是本报告在验证手段上的最大空缺。 补法：从半年报资产负债表取合同负债与存货，与 2025 年末对比；建议在库内取数中扩展这几个字段（这是可产品化的改进项）。</p>
+<ul>
+<li><strong>缺口 3：库内新闻（近 60 日）对本票零覆盖。</strong></li>
+</ul>
+<p>影响：H 节失去消息面事实源；07-14 预减公告、08-28 中报这两件确实发生的事都不在新闻库里。 补法：见 H 节 ①。</p>
+<ul>
+<li><strong>缺口 4：库内资金筹码为 None（库内仅覆盖关注票）。</strong></li>
+</ul>
+<p>影响：无获利盘比例与筹码分位成本，导致 L 节的价位锚只能退而使用「中报披露日收盘推算价」。 补法：将 600760 纳入筹码囤积清单后重跑。</p>
+<ul>
+<li><strong>缺口 5：库内资金筹码无上一期数据为 None。</strong></li>
+</ul>
+<p>影响：股东户数只有 175,946 这一个孤点，无法判断筹码集中或趋散，该维度实际上等于空白。 补法：补入 2026-03-31 期股东户数后可算环比。</p>
+<ul>
+<li><strong>缺口 6：库内研报为空，库内不存研报标题与正文。</strong></li>
+</ul>
+<p>影响：J 节无法判断山西证券高预测的依据，也无法读取任何一家的逻辑，只能对着 EPS 数字做反推。 补法：库内补研报标题字段，或按需联网检索单篇研报摘要。</p>
+<ul>
+<li><strong>缺口 7：库内公司档案字段内容陈旧且与本公司主营矛盾</strong>（详见 B 节）。</li>
+</ul>
+<p>影响：本次已识别并整段弃用，未造成误判；但<strong>这是一个会静默误导后续所有调研的数据质量问题</strong>。 补法：修正库内基础资料或对应来源表的公司简介字段。</p>
+<ul>
+<li><strong>缺口 8：交付数量等军品经营指标原理上不可得。</strong></li>
+</ul>
+<p>影响：E 节联网只能找到自媒体测算，本报告已全部拒绝采信。<strong>这不是查得不够，是这类信息不存在于公开渠道</strong>——任何声称掌握具体交付数量的信源都应默认不可信。 补法：无。只能通过财务数字（营收、存货）间接反推。</p>
+<ul>
+<li><strong>取数覆盖说明</strong>：本次调研调用了 12 个库内取数。库内 A/H 对照返回 None（本票非 A+H 两地上市），按方法论规则不在正文展开；库内涨停记录与库内新闻返回空列表，其空返回本身已在 H 节作为结论使用；筹码分布为 None 已在 H 节④与缺口 4 说明。其余 8 个函数的返回值均在正文中被引用。</li>
+</ul>
+<div class="callout"><strong>本报告为库内数据 + 有限联网信息的结构化整理，用于辅助判断与后续复盘，不构成任何投资建议。所有卖方预测均为他人观点而非事实。库内数据基准日 2026-08-28，行情时点 2026-08-31 11:48 盘中。</strong></div>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-08-31），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>13周内无数据可证实多头逻辑</li>
+      <li>卖方要求H2净利25-32亿vs H1仅4.73亿</li>
+      <li>毛利率掉3.1pct而净利率仅掉0.37pct</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>非经常性损益</dt><dd>与主营业务无关、偶发的收益或损失，如处置资产、政府补助、金融资产公允价值变动。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>业绩预告</dt><dd>上市公司在正式财报前发布的盈利区间预告，达到规定变动幅度时强制披露。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.cnr.cn/ycbd/20260714/t20260714_527709983.shtml" target="_blank" rel="noopener">央广网（2026-07-14）</a> <em>2026-07-14</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.10jqka.com.cn/20260714/c678162916.shtml" target="_blank" rel="noopener">同花顺财经（2026-07-14）</a> <em>2026-07-14</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://stock.jrj.com.cn/2026/07/14155457795883.shtml" target="_blank" rel="noopener">金融界（2026-07-14）</a> <em>2026-07-14</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://wap.stockstar.com/detail/AN2026071400034105" target="_blank" rel="noopener">证券之星公告摘要（2026-07-14）</a> <em>2026-07-14</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://view.inews.qq.com/a/20251111A012AZ00" target="_blank" rel="noopener">中信建投国防军工 2026 年投资策略（2025-11-11）</a> <em>2025-11-11</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://pdf.dfcfw.com/pdf/H301_AP202511171783225949_1.pdf" target="_blank" rel="noopener">东吴证券国防军工行业深度报告（2025-11-17）</a> <em>2025-11-17</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.sdyanbao.com/detail/938831" target="_blank" rel="noopener">中泰证券国防军工 2026 年度策略</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.dwqgbh.cn/news/b457d806cd9f963570b758755de6d76e/" target="_blank" rel="noopener">国盛军工 2026 年度策略</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.jiemian.com/article/14382581.html" target="_blank" rel="noopener">界面新闻军工板块业绩盘点</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.10jqka.com.cn/20260708/c678033156.shtml" target="_blank" rel="noopener">同花顺财经·机构观点（2026-07-08）</a> <em>2026-07-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.fxbaogao.com/detail/5426713" target="_blank" rel="noopener">开源证券军工 2026 年度中期策略</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://baike.baidu.com/item/%E7%AC%AC%E5%8D%81%E5%85%AD%E5%B1%8A%E4%B8%AD%E5%9B%BD%E5%9B%BD%E9%99%85%E8%88%AA%E7%A9%BA%E8%88%AA%E5%A4%A9%E5%8D%9A%E8%A7%88%E4%BC%9A/65117438" target="_blank" rel="noopener">百度百科·第十六届中国航展</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.zh.bendibao.com/xiuxian/104870.shtm" target="_blank" rel="noopener">珠海本地宝</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.jufair.com/exhibition/508.html" target="_blank" rel="noopener">聚展网</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.shifair.com/exhibitionDetails/539.html" target="_blank" rel="noopener">世展网</a></li>
+      <li><span class="src-tag src-disc">披露</span> 库内财务，公告日 2026-08-28 <em>2026-08-28</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 截止 2026-06-30 · 公告 2026-08-28 <em>2026-06-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 截止 2026-03-31 · 公告 2026-04-29 <em>2026-03-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 截止 2025-12-31 · 公告 2026-03-31 <em>2025-12-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 截止 2025-09-30 · 公告 2025-10-30 <em>2025-09-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 如新浪财经头条 2026 年、网易号相关文章、东方财富财富号 2026-05-25 等 <em>2026-05-25</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 其 2026-07-14 预减公告已由 E 节四源证实 <em>2026-07-14</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-08-31 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
