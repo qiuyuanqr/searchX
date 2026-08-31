@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>赛托生物（300583.SZ） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>赛托生物（300583.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-01（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 化学制药</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 辅助生殖 · 维生素 · 肝炎概念 · 合成生物</span>
+      <span><b>来源</b> 23 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    赛托生物（300583）是一家 A 股上市公司。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——基本面拐点是真的，但今天一根大阳把预期先抽走了。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：基本面拐点是真的，但今天一根大阳把预期先抽走了。支撑在于H1净利0.30亿同比+157%扭亏；毛利率四期升至25.43%；8款原料药获欧盟CEP证书。主要风险是PE(TTM)约324倍估值紧绷；9-01涨13.42%无可归因事件；近20日特大单净流出0.14亿。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>H1净利0.30亿同比+157%扭亏</li>
+      <li>毛利率四期升至25.43%</li>
+      <li>8款原料药获欧盟CEP证书</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据基准：库内行情数据时点 <strong>15:35（2026-09-01 收盘）</strong>；估值库内估值交易日 <strong>2026-08-31</strong>；财务库内财务最新期 <strong>2026H1（公告日 2026-08-29）</strong>。联网信息均标来源与日期。</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中） <strong>一句话逻辑</strong>：基本面拐点是真的，但今天一根大阳把预期先抽走了。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>盈利拐点已由财报落实，不是预期</strong>：2026H1 营收 6.13 亿、同比 +20.67%，归母净利 0.30 亿、同比 +157.37%，相对 2025 全年的 −0.73 亿是实打实的扭亏（库内财务，置信度：<strong>高</strong>）。</li>
+<li><strong>毛利率是本轮修复的真引擎</strong>：毛利率从 2025Q3 累计 12.53% → 2025 全年 15.00% → 2026Q1 22.08% → 2026H1 25.43%，四期单调抬升；据前两期倒算，单二季度毛利率约 29.3%（据库内财务推算，置信度：<strong>中</strong>）。</li>
+<li><strong>「中间体—原料药—制剂」一体化在往前走，且有外部资质佐证</strong>：截至 2026 年 5 月已有 8 款原料药取得欧盟 CEP 证书（新浪财经《调研速递》2026-05-09；发现报告机构调研纪要同期，两源一致，置信度：<strong>中</strong>）。</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>估值口径极度紧绷</strong>：8-31 PE(TTM) 285.71 倍、行业 148 只同行里排第 108 位（库内估值）；叠加今日 +13.42%，PE(TTM) 约 324 倍、PB 约 1.80 倍（据 8-31 值与今日涨幅推算，置信度：<strong>高</strong>）。分母是刚从亏损里爬出来的极小 TTM 基数——PE 在这种状态下不是估值，是噪声（置信度：<strong>高</strong>）。</li>
+<li><strong>今天这 13.42% 的驱动，我查不到</strong>：库内新闻（60 天）返回 0 条、库内事件日历（120 天）返回 0 条；联网针对 9-01 异动的定向检索也无结果。<strong>一根没有可归因事件的大阳线，回吐概率显著高于有公告支撑的大阳线</strong>（置信度：<strong>中</strong>）。</li>
+<li><strong>主力资金与股价方向背离</strong>：近 20 个交易日（2026-08-04 ~ 08-31）全口径净流入 +0.35 亿，但特大单口径净流出 −0.14 亿，净流入天数仅 9/20（库内资金筹码）。即涨的这段主要不是特大单在买（置信度：<strong>中</strong>，注：资金流是盘面现象，仅作情绪佐证）。</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ol>
+<li><strong>三季报的毛利率与单季净利</strong>（预计 2026 年 10 月下旬，见 I 节 W8–W9）：能否守住 H1 的 25.43% 累计毛利率、单季不再回到亏损——这是整条逻辑链唯一的硬验证点。</li>
+<li><strong>9-01 大阳线的可归因性</strong>（未来 5 个交易日内）：若三日内仍无任何公告 / 龙虎榜 / 行业事件能解释，按无驱动脉冲对待。</li>
+</ol>
+<p><strong>这份判断最可能错在哪</strong>：我把「毛利率四期单调抬升」当成了趋势，但库内只有 4 期数据、且 2025H1 那一期缺失，我看不到完整的同比对照。若单二季度约 29.3% 的毛利率里含一次性因素（如某批高价订单、汇兑或资产处置），则 A 节整条驱动 2 会作废——而中报正文我拿不到，验不了。</p>
+<h2>B. 公司快照</h2>
+<p>库内基础资料唯一命中 300583，无同名歧义。</p>
+<ul>
+<li><strong>是什么公司</strong>：山东赛托生物科技股份有限公司。库内主营描述——「应用基因工程技术和微生物转化技术制造甾体药物原料的企业」；公司简介进一步写明是「专业生产微生物控制剂和新型甾体激素药关键中间体、原料药的生物医药企业」，拥有菏泽赛托、菏泽润鑫两个控股子公司（库内公司档案，置信度：<strong>高</strong>）。</li>
+<li><strong>行业与板块</strong>：化学制药 · 创业板。上市日 2017-01-06，至今约 9 年 8 个月。上市状态 = <strong>L（正常上市）</strong>，非退市、非 ST 标记（库内公司档案，置信度：<strong>高</strong>）。</li>
+<li><strong>规模</strong>：员工 990 人，注册资本 18,970.21 万元（库内公司档案）。经营范围含药品生产、药品委托生产、<strong>兽药生产</strong>、药品进出口——兽药（动保）是一条常被忽略的营收腿，下文 G 节展开。</li>
+<li><strong>当前行情</strong>（库内行情，唯一行情事实源）：<strong>收盘 14.71 元，涨 +13.42%</strong>，成交额 2.50 亿元，当日最高 +15.57%、最低 +6.48%，数据时点 <strong>15:35（即 2026-09-01 收盘）</strong>。由此反推：8-31 收盘 12.97 元、今日最高 14.99 元、最低 13.81 元（据库内行情推算，置信度：<strong>高</strong>）。日内振幅超 9 个百分点，收盘价距最高点仍有回落——<strong>冲高未能封住</strong>，这是今天走势里最该记下的一笔（置信度：<strong>高</strong>）。</li>
+<li><strong>估值</strong>（库内估值，交易日 <strong>2026-08-31</strong>）：总市值 27.91 亿元、PE(TTM) 285.71 倍、PB 1.58 倍、股息率 0.136%、换手率 9.354%。行业内 PE 中位数 36.08 倍、同行 148 只、该票 PE 排名第 <strong>108</strong> 位（越靠后越贵）。</li>
+</ul>
+<p>叠加今日涨幅推算：市值约 <strong>31.66 亿</strong>、PE(TTM) 约 <strong>324 倍</strong>、PB 约 <strong>1.80 倍</strong>（据 8-31 值 × 1.1342 推算，置信度：<strong>高</strong>）。 ⚠️ <strong>口径提醒</strong>：8-31 换手率就已达 9.354%——异动不是今天才开始的，8-31 盘面已经在动（置信度：<strong>高</strong>）。 <strong>仅估值口径</strong>的结论：PB 1.8 倍对一家净资产实在、刚扭亏的原料药企业不算离谱；PE 324 倍则完全由极小的 TTM 盈利基数造成（按市值/PE 倒算，TTM 归母净利仅约 0.098 亿元——据库内估值推算，置信度：<strong>中</strong>）。<strong>用 PE 判断这只票的贵贱，此刻无效</strong>（置信度：<strong>高</strong>）。</p>
+<p>库内 A/H 对照返回 None —— 非 A+H 两地上市，无跨市场估值参照系（属常态）。</p>
+<h2>C. 财务健康</h2>
+<p>库内财务（近 4 期）四期，新→旧（金额单位：亿元）：</p>
+<ul>
+<li><strong>2026H1（20260630，公告 2026-08-29）</strong>｜营收 6.13 · 同比 <strong>+20.67%</strong>｜归母净利 <strong>0.30</strong> · 同比 <strong>+157.37%</strong>｜毛利率 <strong>25.43%</strong>｜净利率 5.05%｜ROE 1.72%｜EPS 0.16｜资产负债率 39.22%</li>
+<li><strong>2026Q1（20260331）</strong>｜营收 3.28 · 同比 <strong>+26.24%</strong>｜归母净利 0.04 · 同比 +113.15%｜毛利率 22.08%｜净利率 1.39%｜ROE 0.21%｜EPS 0.02｜资产负债率 38.56%</li>
+<li><strong>2025 全年（20251231）</strong>｜营收 10.17 · 同比 +4.77%｜归母净利 <strong>−0.73</strong> · 同比 +17.60%｜毛利率 15.00%｜净利率 −8.33%｜ROE −4.06%｜EPS −0.39｜资产负债率 39.21%</li>
+<li><strong>2025Q3 累计（20250930）</strong>｜营收 7.49 · 同比 <strong>−2.07%</strong>｜归母净利 <strong>−0.69</strong> · 同比 −570.46%｜毛利率 12.53%｜净利率 −10.56%｜ROE −3.84%｜EPS −0.36｜资产负债率 37.15%</li>
+</ul>
+<p><strong>趋势判读（不是罗列，说拐点在哪）</strong></p>
+<ol>
+<li><strong>拐点确认在 2026Q1，H1 得到延续，不是单季偶然</strong>（置信度：<strong>高</strong>）。营收同比走出 −2.07% → +4.77% → +26.24% → +20.67% 的抬头路径；净利从连续两期亏损直接转正。<strong>两个季度连续为正，比单季扭亏的说服力高一档</strong>。</li>
+<li><strong>真正的引擎是毛利率，不是收入规模</strong>（置信度：<strong>高</strong>）。12.53% → 15.00% → 22.08% → 25.43%，四期单调抬升，累计提升 12.9 个百分点。营收才增 20%，净利却增 157%——<strong>利润弹性完全来自单位毛利，典型的周期品价格/成本剪刀差修复形态</strong>。</li>
+<li><strong>单二季度已经跑出像样的盈利能力</strong>（据 H1 与 Q1 倒算，置信度：<strong>中</strong>）：Q2 单季营收约 <strong>2.85 亿</strong>、归母净利约 <strong>0.27 亿</strong>、单季净利率约 <strong>9.35%</strong>、单季毛利率约 <strong>29.29%</strong>。注意 Q2 单季营收（2.85 亿）<strong>低于</strong> Q1（3.28 亿），但净利是 Q1 的近 7 倍——<strong>这一季的利润是&quot;提价/降本&quot;给的，不是&quot;放量&quot;给的</strong>。这个区分很重要：量的逻辑可持续性强于价的逻辑。</li>
+<li><strong>资产负债表没出问题</strong>（置信度：<strong>高</strong>）。资产负债率四期在 37.15%–39.22% 窄幅波动，扭亏没有靠加杠杆换来。</li>
+<li><strong>ROE 仍然很低</strong>（置信度：<strong>高</strong>）。H1 ROE 1.72%（半年度口径），年化也就 3.4% 上下——<strong>盈利刚回到水面，离&quot;赚钱的生意&quot;还有距离</strong>。这也是 PB 只有 1.8 倍的原因。</li>
+</ol>
+<p><strong>期次缺失点名</strong>：库内四期跳过了 <strong>2025H1（20250630）</strong>，因此 2026H1 的 +20.67% / +157.37% 同比是财报自带的，我无法用库内数据独立复核其基数；同时也看不到 2025 年的中报毛利率，<strong>「四期单调抬升」这条曲线中间缺一个点</strong>（置信度影响：把驱动 2 从&quot;高&quot;降到&quot;中&quot;的主要原因）。</p>
+<p><strong>估值口径小结（不等于好坏结论）</strong>：以 8-31 口径，PE(TTM) 285.71 倍远高于行业中位 36.08 倍、行业内排名靠贵的一端（108/148）；但如上文，TTM 分母含 2025 年的亏损尾巴，PE 此刻不具备横向可比性。<strong>PB 1.58 倍（8-31）/ 约 1.80 倍（9-01 推算）才是当下更有意义的估值刻度</strong>（置信度：<strong>中</strong>）。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比（取 3 家）返回同属化学制药、按市值排序的三只（截止期均为 20260630）：</p>
+<ul>
+<li><strong>药明康德（603259）</strong>｜市值 4,639.36 亿 · PE(TTM) 21.41 · PB 5.57 · 营收 288.97 亿 · 净利 110.80 亿 · ROE 13.59%</li>
+<li><strong>恒瑞医药（600276）</strong>｜市值 3,057.76 亿 · PE(TTM) 39.58 · PB 4.74 · 营收 154.56 亿 · 净利 44.65 亿 · ROE 7.10%</li>
+<li><strong>百利天恒（688506）</strong>｜市值 1,101.71 亿 · PE(TTM) 无 · PB 23.90 · 营收 1.87 亿 · 净利 −16.37 亿 · ROE −29.15%</li>
+<li><strong>赛托生物（300583）</strong>｜市值 27.91 亿（8-31）· PE(TTM) 285.71 · PB 1.58 · 营收 6.13 亿（H1）· 净利 0.30 亿 · ROE 1.72%</li>
+</ul>
+<p><strong>⚠️ 这组对比的最大问题，是它不构成同业对比</strong>（置信度：<strong>高</strong>）。库内同业对比给的是「化学制药」这个大类里市值最大的三家，而它们分别是 CXO 龙头、创新药龙头、创新药 Biotech——<strong>没有一家和赛托生物做同一门生意</strong>。赛托的真实赛道是甾体激素中间体/原料药，市值 27.91 亿，与上述三家差 40–166 倍。<strong>拿 ROE 13.59% 的药明康德去衬托赛托的 1.72%，得不出任何有效结论。</strong></p>
+<p><strong>能从这组数字里安全拿走的，只有三条</strong>（置信度：<strong>中</strong>）：</p>
+<ol>
+<li><strong>体量位置</strong>：赛托市值不足行业头部的 1%，是<strong>小盘股</strong>——这决定了它的波动更多由资金与题材驱动，而非基本面平滑映射（今日 +13.42%、2.5 亿成交额即是明证）。</li>
+<li><strong>PB 是全组最低</strong>：1.58 倍（8-31）vs 药明 5.57 / 恒瑞 4.74 / 百利天恒 23.90。<strong>这是重资产制造业 vs 轻资产研发业的属性差异，不是&quot;便宜&quot;</strong>——把它读成低估值机会是典型误读。</li>
+<li><strong>亏损也能有高估值</strong>：百利天恒 PE 为空（净利 −16.37 亿）而 PB 23.90，说明本行业市场愿意为管线定价。但赛托的故事是<strong>产能与成本</strong>，不是管线——<strong>它拿不到那套估值逻辑</strong>。</li>
+</ol>
+<p><strong>信息缺口</strong>：库内同业对比不支持按细分赛道（甾体激素原料药）取同行。真正的可比对象应是同做甾体中间体/激素原料药的上市公司，本报告无法从库内取得其市值/PE/毛利率做横向对标。<strong>影响</strong>：D 节无法回答「赛托在甾体赛道里贵不贵、毛利率修复是行业普涨还是它自己的 alpha」——这恰恰是本轮逻辑最需要的对照。<strong>补法</strong>：需要按概念/细分板块成分股取数的能力，或在三季报季手工取 2–3 家同赛道公司毛利率做对照（见 M 节）。</p>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>（库内 + 联网）：黄姜/植物甾醇等初始原料 → 皂素、双烯等起始物料 → 甾体核心中间体与高端中间体 → 特色原料药 → 制剂。赛托的位置是<strong>中间体 + 原料药</strong>，正在往制剂延伸（库内公司档案主营 + 经营范围；产业链路径见东方财富《2024 年中国甾体激素中间体原料药行业概览》PDF，2024-11）。这是一门<strong>制造业生意</strong>：利润 = 产品价 − 原料价 − 能耗与转化成本，<strong>利润率对上下游价格高度敏感</strong>——这解释了 C 节「营收 +20% 而净利 +157%」的杠杆效应，也意味着<strong>这个杠杆是双向的</strong>（置信度：<strong>高</strong>）。</p>
+<p><strong>护城河诚实分级</strong>：</p>
+<ul>
+<li><strong>结构性护城河：弱，接近没有</strong>（置信度：<strong>中</strong>）。甾体中间体是标准化化工品，公司自述发明专利仅 4 项、著作权 13 件、在申请专利 11 项（库内公司档案）——这个专利体量撑不起技术壁垒叙事。ROE 1.72%（H1）也从结果侧印证了：<strong>没有护城河的生意赚不到超额回报</strong>。</li>
+<li><strong>阶段性优势 ①：国际注册资质</strong>（置信度：<strong>中</strong>）。8 款原料药已获欧盟 CEP 证书（新浪财经《调研速递》2026-05-09；发现报告机构调研纪要，两源一致）；据同花顺 F10 / 机构调研纪要转述，已取得生产许可的原料药达 14 个品种，丙酸氟替卡松、曲安奈德等多个品种通过美国 FDA 现场检查（单源系转述，置信度：<strong>低</strong>）。<strong>注册资质是真实的进入门槛</strong>——竞争对手要复制需要数年周期。但它是<strong>准入证不是定价权</strong>，不能阻止同样有证的对手压价。</li>
+<li><strong>阶段性优势 ②：微生物转化技术路线</strong>（置信度：<strong>中</strong>）。库内主营明确写「应用基因工程技术和微生物转化技术」，这是相对传统化学合成路线的成本/环保优势，也是它能挂上「合成生物」标签的<strong>实质依据</strong>（见 G 节）。2025-12-05 公司拟变更 1.24 亿元募集资金投向「生物合成技术研发及产业化项目」（新浪财经 2025-12-05），说明这条路线在持续投钱（置信度：<strong>中</strong>）。</li>
+<li><strong>反面证据（必须写进来）</strong>：据医药魔方报道，公司曾<strong>终止对银谷制药的高溢价并购</strong>，该标的后由羚锐制药接手（单源，置信度：<strong>低</strong>）；据机构调研纪要，高端制剂产业化项目的产品从原计划 <strong>8 款缩减为 3 款</strong>（丙酸氟替卡松乳膏剂、糠酸莫米松鼻喷雾剂、布地奈德鼻喷雾剂），终止冻干注射剂、注射液、混悬凝胶三条产线建设（置信度：<strong>低</strong>，单源转述）。<strong>「一体化」叙事在执行层面是收缩过的</strong>——这一条对 A 节驱动 3 是直接的减分项，不能省略。</li>
+</ul>
+<p><strong>一句话定性</strong>：<strong>无结构性护城河、有资质型阶段优势的周期制造业</strong>（置信度：<strong>中</strong>）。它的业绩弹性来自价格周期，不来自壁垒——<strong>做对方向的收益和做错方向的损失同样大</strong>。</p>
+<h2>F. 政策与监管</h2>
+<p>库内无政策数据，本节全部来自联网，逐条带源带日期。</p>
+<ol>
+<li><strong>生物制造被写入「十五五」未来产业布局</strong>（≥2 独立来源，置信度：<strong>中</strong>）。
+<ul>
+<li>新华网 2025-12-19：工业和信息化部将编制发布《「十五五」生物制造发展规划》，明确标志性产品与人工智能典型应用案例、培育生物制造中试平台、开展高性能生物反应器揭榜挂帅。</li>
+<li>国家发改委官网 2026-04-01《「十五五」新图景：聚力&quot;未来产业&quot; 引领产业未来》：将生物制造与量子科技、氢能与核聚变、脑机接口、具身智能、6G 并列为前瞻布局的未来产业。</li>
+<li>新华网 2025-12-30《瞭望｜生物制造迈向万亿级产业》：我国生物制造产业总规模已接近 1 万亿元，生物发酵产品产量占全球 70% 以上。</li>
+</ul></li>
+</ol>
+<p><strong>传导链条</strong>：国家级产业定位 → 地方配套与专项资金 / 中试平台 → 对「合成生物」标签给予估值溢价，<strong>但传导到赛托具体营收需要它的生物合成产业化项目真正投产</strong>。<strong>这是主题层利好、不是订单层利好</strong>（置信度：<strong>中</strong>）。</p>
+<ol>
+<li><strong>原料药出口证明管理规定 2026-01-01 生效</strong>（<strong>单源未交叉验证 · 置信度：低</strong>）。据 chinamedglobal 行业解读（2026 年，未标具体日）：新规最大变化是允许<strong>未在国内获批的药品申请出口证明</strong>，即企业可专门为海外市场开发产品线，无需等待国内审评。若属实，对已握 8 张欧盟 CEP 的赛托是<strong>方向性利好</strong>（缩短海外品种的上市路径）。⚠️ <strong>我没能找到第二个独立来源交叉验证这条规定的具体条文与生效日，读者请自行核实原文</strong>。</li>
+<li><strong>地方合成生物制造扶持政策持续出台</strong>（置信度：<strong>中</strong>）。北京市科委等部门《北京市加快合成生物制造产业创新发展行动计划（2024—2026 年）》（北京市政府门户 2024-11-29）；财联社等报道江苏、上海等地陆续推出生物制造支持政策。<strong>注意：赛托主体在山东菏泽</strong>，上述地方政策<strong>不直接适用于它</strong>——只是行业情绪的来源，不是它能拿到的补贴（置信度：<strong>中</strong>，这条区分很重要，别被&quot;政策利好&quot;四个字含糊过去）。</li>
+<li><strong>未检到的监管风险项</strong>：本次联网未检到针对赛托生物的行政处罚、环保督察、GMP 飞检不合格等负面监管事件。<strong>「未检到」不等于「没有」</strong>——甾体中间体属高污染工艺环节，环保是这个赛道的常态性监管风险（置信度：<strong>低</strong>，属推断）。</li>
+</ol>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 4 个同花顺概念标签，逐个分级：</p>
+<ul>
+<li><strong>合成生物（886077.TI）｜真有业务（置信度：高）</strong>。库内主营描述直书「应用基因工程技术和微生物转化技术制造甾体药物原料」——<strong>这是主业本身，不是贴标签</strong>。外部佐证：2025-12-05 拟变更 1.24 亿元募集资金投向「生物合成技术研发及产业化项目」（新浪财经 2025-12-05）。<strong>四个标签里只有这一个经得起推敲</strong>。</li>
+<li><strong>辅助生殖（885909.TI）｜产业链上游关联，未见直接营收佐证（置信度：中）</strong>。逻辑链是：赛托做甾体中间体 → 下游包含孕激素类（黄体酮等）→ 孕激素是辅助生殖用药。据华西证券 F10 / 同花顺 F10 对公司的描述，其高端中间体下游用于糖皮质激素类、性激素类、孕激素类、蛋白同化激素类甾体药物。<strong>但库内主营与经营范围均未出现&quot;辅助生殖&quot;或具体孕激素品种的营收表述</strong>——它卖的是原料，隔着至少两层下游，<strong>辅助生殖需求波动传导到它的报表，既弱又慢</strong>。</li>
+<li><strong>维生素（886081.TI）｜仅概念标签，未见营收佐证（置信度：中）</strong>。库内公司档案的主营描述、公司简介、经营范围<strong>三处均无维生素相关表述</strong>。产业上甾体路线与 VD3 在植物甾醇/胆固醇原料端有邻近性，可能是标签来源，但<strong>没有任何营收佐证</strong>。⚠️ 若行情以&quot;维生素涨价&quot;为由炒作到这只票，属于<strong>标签驱动、无业绩承接</strong>。</li>
+<li><strong>肝炎概念（885989.TI）｜仅概念标签，未见营收佐证（置信度：中）</strong>。库内无任何肝病/抗病毒药物相关表述。糖皮质激素在部分肝病治疗中有临床用途，推测是标签来源。<strong>与营收无可验证关联</strong>。</li>
+</ul>
+<p><strong>产业链位置与议价能力</strong>（联网 + 库内，置信度：<strong>中</strong>）：</p>
+<ul>
+<li><strong>上游</strong>：黄姜 / 植物甾醇等农产品级初始原料 → 皂素、双烯等起始物料。据东方财富《2024 年中国甾体激素中间体原料药行业概览》（2024-11）与医药魔方行研，皂素 2024 年 6 月价格 600 元/公斤（环比 +3.4%、同比 +20%）。<strong>上游是农产品，价格随种植周期波动，赛托对上游几乎没有议价能力</strong>。</li>
+</ul>
+<p>⚠️ <strong>数据时效缺口</strong>：我只查到 2024 年的皂素/双烯价格，<strong>2026 年的甾体原料价格未检到任何来源</strong>（置信度：<strong>低</strong>）。而 C 节那条&quot;毛利率四期单调抬升&quot;最可能的解释就是原料端降价或产品端提价——<strong>这条最关键的产业链数据我恰恰是空的</strong>，见 M 节。</p>
+<ul>
+<li><strong>下游</strong>：制剂药企（糖皮质激素、性激素、孕激素、蛋白同化激素类）与动保企业（经营范围含兽药生产）。下游相对集中、议价能力强于赛托。</li>
+<li><strong>议价能力结论</strong>：<strong>两头受挤的中间环节</strong>（置信度：<strong>中</strong>）。这类企业的盈利本质上是「行业产能利用率」的函数——景气时超额利润，过剩时全行业亏损。2025 年那 −0.73 亿的亏损，就是这个模式的下行样本。</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<p><strong>新闻</strong>：库内新闻（近 60 日）返回 <strong>0 条</strong>。即<strong>过去 60 天库内没有采集到任何与该票关联的新闻</strong>（置信度：<strong>高</strong>，这是取数事实）。对一只今天涨 13.42% 的票来说，这本身是强信号：<strong>要么消息面确实真空、要么消息在库外</strong>。联网定向检索 9-01 异动原因同样无果。<strong>结论：今日大涨在本报告的证据体系内属于&quot;不可归因脉冲&quot;</strong>（置信度：<strong>中</strong>）。</p>
+<p><strong>涨停史</strong>：库内涨停记录（近 180 日）返回 <strong>0 条</strong>——近 180 个日历日<strong>无涨停记录</strong>（置信度：<strong>高</strong>）。这条比想象中重要：</p>
+<ul>
+<li>说明过去半年该票<strong>没有被游资打过板</strong>，不是情绪票的常客；</li>
+<li>也说明今天 +13.42% 是<strong>半年来的首次极端异动</strong>（创业板涨停幅度为 20%，13.42% 未触板，且盘中最高 +15.57% 后回落收在 +13.42%，<strong>冲高受阻</strong>——据库内行情推算，置信度：<strong>高</strong>）；</li>
+<li>无连板历史 → 无「N 连板」路径依赖，<strong>首次异动的次日方向由资金续力决定，缺少历史模式可参照</strong>（置信度：<strong>中</strong>）。</li>
+</ul>
+<p><strong>资金与筹码</strong>（库内资金筹码，⚠️ 以下是盘面现象，非基本面证据，不进 J 节逻辑链）：</p>
+<ul>
+<li><strong>主力资金</strong>（窗口 20 个交易日，2026-08-04 ~ 2026-08-31）：全口径净流入 <strong>+0.35 亿元</strong>；<strong>特大单（主力）口径净流出 −0.14 亿元</strong>；净流入 <strong>9 天</strong> / 净流出 <strong>11 天</strong>。</li>
+</ul>
+<p><strong>读法</strong>：这一个月股价在涨（8-31 换手率已达 9.354%），但<strong>特大单是净卖出方</strong>——即上涨主要由中小单承接，<strong>大资金在这段行情里是减持一侧</strong>（置信度：<strong>中</strong>）。这与今日大阳线构成一个需要警惕的组合：<strong>没有大资金铺垫的单日暴涨，续航依赖后续增量资金</strong>。</p>
+<ul>
+<li><strong>筹码分布</strong>：筹码分布返回 None ——<strong>库内筹码数据仅覆盖关注票，该票暂无</strong>。这是<strong>数据覆盖范围问题，不是&quot;该票没有筹码结构&quot;</strong>。<strong>直接后果</strong>：本报告无法给出获利盘比例（获利盘比例）、无法判断上方套牢盘密度、也<strong>无法用筹码分位成本作为操作触发条件的价位锚</strong>——L 节因此改用可复现的行情锚（见下）。</li>
+<li><strong>股东户数</strong>：截至 <strong>2026-06-30</strong> 为 <strong>12,806 户</strong>；库内上一报告期 / 均为 None，<strong>无上期数据，环比无法计算</strong>（置信度：<strong>高</strong>，取数事实）。季度披露天然滞后，此刻这个数字<strong>已经落后行情两个月</strong>，对判断当前筹码集中/分散<strong>基本无参考价值</strong>。</li>
+</ul>
+<p><strong>情绪面小结</strong>（置信度：<strong>中</strong>）：一只半年无涨停、60 天无新闻、主力特大单净流出的小盘票，在中报披露后第 3 个交易日（中报公告日 2026-08-29，库内财务公告日）放量拉出 +13.42%——<strong>最合理的解释是中报扭亏的延迟发酵</strong>（8-29 是周六，8-31 周一换手率 9.354% 已启动，9-01 加速）。这个解释与库内取数<strong>不矛盾但也未被证实</strong>，我把它标为<strong>推断，非结论</strong>。</p>
+<h2>I. 未来 13 周事件日历</h2>
+<p>库内事件日历（近 120 日）返回 <strong>0 条</strong>——库内事件日历对该票<strong>无任何已知排期</strong>（置信度：<strong>高</strong>，取数事实）。以下日历由<strong>监管规则推定 + 联网</strong>补齐，凡属推定的均已标明。</p>
+<ul>
+<li><strong>W1（2026-08-31 起）</strong>：2026 中报已于 <strong>2026-08-29</strong> 披露（库内财务公告日，库内事实）· 财报 · 重要性 <strong>高</strong> · 影响：C 节全部结论的来源；本周股价 8-31 换手 9.354%、9-01 +13.42%，市场正在消化它。<strong>本周剩余交易日的核心观察点是 9-01 大阳能否被守住</strong>。</li>
+<li><strong>W2（2026-09-07 起）</strong>：本周无已知事件。<strong>观察窗</strong>：若 9-01 异动源于某项未公开信息，交易所异动问询函通常在异动后 1–2 周内出现——<strong>有函件即为可归因，无函件则维持&quot;不可归因脉冲&quot;定性</strong>。</li>
+<li><strong>W3（2026-09-14 起）</strong>：本周无已知事件。</li>
+<li><strong>W4（2026-09-21 起）</strong>：本周无已知事件。<strong>三季度最后一个完整交易周，季末资金面通常偏紧</strong>（推定，置信度：低）。</li>
+<li><strong>W5（2026-09-28 起）</strong>：<strong>国庆长假前最后交易窗口 + 2026Q3 结束（9-30 为三季度末）</strong>（历法推定，置信度：<strong>高</strong>）· 时点 · 重要性 <strong>中</strong> · 影响：Q3 财务数据在此日截止，即 A 节「最该盯的信号 1」的<strong>业绩生成完毕</strong>，此后只等披露。</li>
+<li><strong>W6（2026-10-05 起）</strong>：<strong>国庆假期，A 股休市</strong>（历法推定，置信度：<strong>高</strong>）· 无交易。</li>
+<li><strong>W7（2026-10-12 起）</strong>：本周无已知事件。节后首个完整交易周。</li>
+<li><strong>W8（2026-10-19 起）</strong>：<strong>三季报披露窗口开启</strong>（推定，置信度：<strong>中</strong>）· 财报 · 重要性 <strong>高</strong> · 依据：库内财务显示上一年三季报公告日为 <strong>2025-10-29</strong>，创业板三季报法定截止为 10 月 31 日。<strong>本周或下周将出现赛托的三季报</strong>。影响：验证 C 节「毛利率四期单调抬升」是趋势还是波动——<strong>整份报告的胜负手</strong>。</li>
+<li><strong>W9（2026-10-26 起）</strong>：<strong>三季报大概率落地周</strong>（推定，置信度：<strong>中</strong>，参照 2025-10-29）· 财报 · 重要性 <strong>高</strong> · 影响：① 单季毛利率能否守住 H1 的 25.43% 累计水平；② 单季净利是否延续 Q2 的约 0.27 亿（推算值）；③ TTM 净利修复后 PE 会自然回落——<strong>PE 从约 324 倍降到多少，取决于这一期</strong>。</li>
+<li><strong>W10（2026-11-02 起）</strong>：本周无已知事件。<strong>三季报后的市场消化周</strong>——若业绩证实，通常此时出现研报覆盖（当前库内研报为 None，见 J 节）。</li>
+<li><strong>W11（2026-11-09 起）</strong>：本周无已知事件。</li>
+<li><strong>W12（2026-11-16 起）</strong>：本周无已知事件。</li>
+<li><strong>W13（2026-11-23 起）</strong>：本周无已知事件。<strong>13 周窗口结束，本报告应在此重跑复盘</strong>。</li>
+</ul>
+<p><strong>信息缺口（本节最大的一个）</strong>：<strong>限售股解禁</strong>。库内事件日历无解禁排期数据，联网亦未检到该票 2026 年 9–11 月的解禁安排。<strong>影响</strong>：解禁是小盘股 13 周窗口内最典型的供给冲击来源，缺这一项意味着<strong>K 节的悲观情景可能漏掉一个触发器</strong>。<strong>补法</strong>：需查交易所限售股份上市流通提示性公告或第三方解禁日历，本报告的数据源覆盖不到。</p>
+<h2>J. 逻辑链（可证伪）</h2>
+<p><strong>主链</strong>：</p>
+<div class="callout">因为 ①<strong>甾体中间体是价格敏感的周期制造业、赛托对上下游都缺乏议价能力</strong>（E/G 节，置信度：中），且 ②<strong>其毛利率在四期内从 12.53% 单调抬升到 25.43%、单二季度推算达约 29.29%</strong>（C 节，库内硬数据，置信度：高）， <strong>→ 所以</strong> 推论：<strong>本轮扭亏的主因是行业价格/成本剪刀差的周期性修复，而非公司自身壁垒或新产品放量</strong>（置信度：<strong>中</strong>）。 <strong>→ 如果这个推论成立，应该能观察到</strong>：(a) 2026Q3 毛利率<strong>继续维持或小幅波动在 25%–30% 区间</strong>（周期上行未结束），且 (b) 同赛道其他甾体原料药公司同期毛利率<strong>同步改善</strong>（行业性而非公司性），且 (c) 公司营收增长主要靠<strong>价</strong>而非<strong>量</strong>——即<strong>营收增速显著低于净利增速</strong>的模式延续。 <strong>反过来，这条链被证伪的观察是</strong>：Q3 毛利率跌回 20% 以下，或 Q3 单季重新亏损——那说明 Q2 的约 0.27 亿净利含一次性因素（C 节已点名的软肋）。</div>
+<p><strong>支链（一体化叙事）</strong>：</p>
+<div class="callout">因为 ①<strong>已有 8 款原料药取得欧盟 CEP 证书</strong>（联网双源，置信度：中）且 ②<strong>&quot;十五五&quot;将生物制造列为未来产业</strong>（F 节，官方双源，置信度：中）， <strong>→ 所以</strong> 推论：公司具备从&quot;卖中间体&quot;向&quot;卖原料药/制剂&quot;上移的资质基础，长期毛利率中枢有抬升空间（置信度：<strong>低</strong>）。 <strong>→ 如果成立，应观察到</strong>：原料药与制剂收入占比在年报中提升、CEP 品种数量继续增加。 <strong>⚠️ 但这条支链已经有反面证据</strong>：制剂产业化项目产品数从 8 款缩减为 3 款、三条注射剂产线终止建设（E 节，单源转述，置信度：低）。<strong>执行在收缩，叙事在扩张——以叙事为准是错的。</strong></div>
+<p><strong>⚠️ 最弱的一环（整条链的命门）</strong>：<strong>「毛利率修复是周期性的」这个判断，我没有任何行业价格数据支撑</strong>。G 节已承认：库内没有甾体原料价格，联网只查到 2024 年的皂素/双烯价格，2026 年数据完全空白；D 节又因库内同业对比返回的是化学制药市值前三（药明康德/恒瑞/百利天恒）而非同赛道公司，<strong>拿不到同行毛利率做对照</strong>。 换句话说：<strong>我知道赛托的毛利率在涨，但我不知道这是行业在涨还是它一家在涨</strong>——而这两种情况对未来 13 周的含义完全相反（行业性 → 可持续但拥挤；公司性 → 更值钱但更可疑）。<strong>这是本报告最大的认知盲区，任何读者都应据此下调对 A 节方向判断的权重。</strong></p>
+<p><strong>不进逻辑链的东西（纪律声明）</strong>：H 节的资金流（近 20 日特大单净流出 0.14 亿）、股东户数（12,806 户）、涨停史（180 日无涨停）<strong>均为盘面/情绪现象，仅作旁证，不作为上述任何一环的论据</strong>。</p>
+<h2>K. 三情景推演（13 周窗口，至 2026-11-29）</h2>
+<ul>
+<li><strong>乐观（35%）</strong>｜<strong>触发</strong>：三季报（W8–W9）单季毛利率 ≥25%（即守住 H1 的 25.43% 累计水平）<strong>且</strong> Q3 单季归母净利 ≥0.20 亿（约为 Q2 推算值 0.27 亿的 7 成）｜<strong>路径</strong>：TTM 净利快速修复 → PE(TTM) 从约 324 倍（9-01 推算）自然大幅回落 → 估值叙事从&quot;PE 天价&quot;切换到&quot;PB 1.8 倍的周期反转股&quot; → 库内研报当前为空的研报覆盖出现补位 → 股价在 9-01 收盘 14.71 元上方构筑新平台。</li>
+<li><strong>中性（40%）</strong>｜<strong>触发</strong>：三季报单季毛利率落在 20%–25% 区间、单季净利为正但低于 0.20 亿｜<strong>路径</strong>：扭亏成立但弹性证伪，市场认下&quot;周期修复但不强&quot;的定价 → 9-01 大阳线的涨幅被逐步消化、回补部分跳空 → 在 9-01 当日最低 13.81 元（据库内行情推算）与 9-01 当日最高 14.99 元（同上推算）之间反复震荡，跟随医药/合成生物板块 beta。</li>
+<li><strong>悲观（25%）</strong>｜<strong>触发</strong>：三季报单季毛利率跌回 20% 以下、<strong>或</strong> Q3 单季重新亏损、<strong>或</strong> 期间出现资产减值/环保处罚公告、<strong>或</strong> W2–W4 出现交易所异动问询而公司回复&quot;不存在应披露未披露事项&quot;｜<strong>路径</strong>：Q2 的一次性因素被坐实 → C 节的拐点叙事整体作废 → 无新闻无涨停无主力承接（H 节三重真空）意味着<strong>回撤时同样缺少承接盘</strong> → 跌破 9-01 大涨日起点、即 8-31 收盘 12.97 元（据库内行情推算），行情回到中报前状态。</li>
+</ul>
+<p>概率合计 100%。三个触发条件全部可用三季报数字或公开公告核对。</p>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong>（触发条件均取自本报告出现过的指标或事件）：</p>
+<ol>
+<li><strong>如果</strong> 三季报（预计 W8–W9，参照上年 2025-10-29）单季毛利率 ≥25%（对标 C 节 2026H1 累计 25.43%）<strong>且</strong> 单季归母净利 ≥0.20 亿元，<strong>那么</strong> 可将本票从<strong>观望</strong>上调为<strong>轻仓试仓</strong>——因为届时 J 节主链的观察项 (a) 被证实，且 TTM 修复会让 PE 从约 324 倍（9-01 推算）自然回落，估值风险随之下降。</li>
+<li><strong>如果</strong> 未来 5 个交易日内 9-01 的 +13.42% 仍无任何公告、问询函或行业事件可归因（H 节已确认库内新闻 60 天为 0 条、库内涨停记录 180 天无涨停），<strong>且</strong> 股价跌破 9-01 当日最低 13.81 元（据库内行情推算），<strong>那么</strong> 按无驱动脉冲回吐处理，<strong>观望</strong>，不参与追高。</li>
+<li><strong>如果</strong> 股价跌破 9-01 大涨日起点、即 8-31 收盘 12.97 元（据库内行情推算），<strong>那么</strong> 视为中报扭亏行情被市场整体否定，<strong>回避</strong>，等三季报重新给证据。</li>
+<li><strong>如果</strong> 已有仓位且三季报单季重新亏损、或期间出现资产减值/环保处罚公告（K 节悲观触发项），<strong>那么</strong> <strong>减仓</strong>——这是 J 节主链被直接证伪，持有理由消失。</li>
+</ol>
+<p><strong>风控要点（什么情况下这份判断应当被推翻，不是止损价）</strong>：</p>
+<ul>
+<li><strong>推翻条件 1</strong>：查到 2026 年甾体中间体（皂素/双烯/雄烯二酮等）价格数据，显示<strong>行业价格并未上行</strong>——那么&quot;周期性修复&quot;的解释错了，C 节毛利率抬升需要另一套解释（很可能是一次性的），本报告 A 节方向应重估。</li>
+<li><strong>推翻条件 2</strong>：取得同赛道甾体原料药公司 2026H1 毛利率，显示<strong>同行未同步改善</strong>——那么修复是公司性的，J 节主链的推论（周期性）错，但结论方向可能反而更好，需重写而非微调。</li>
+<li><strong>推翻条件 3</strong>：出现限售解禁公告（I 节已承认这是日历缺口）——K 节悲观情景需新增供给冲击触发器，概率分配要调。</li>
+<li><strong>推翻条件 4</strong>：库内新闻恢复采集后出现该票的实质公告（如重大合同、产能投产、并购），说明 H 节&quot;消息面真空&quot;是<strong>采集缺失</strong>而非事实——H/J 两节据此建立的推断全部需要重做。</li>
+</ul>
+<p><strong>仓位思路（只讲相对概念）</strong>：在三季报落地前，本票的<strong>证据强度只支持&quot;不参与&quot;或&quot;极轻仓观察&quot;</strong>。理由是三重叠加：① PE(TTM) 约 324 倍（9-01 推算）意味着估值对盈利不及预期的放大倍数极高；② 27.91 亿市值（8-31）的小盘属性使波动更多由资金而非基本面决定；③ J 节命门（不知道毛利率修复是行业性还是公司性）在三季报之前<strong>无法用任何现有数据源解决</strong>。<strong>在关键证据到达前建重仓，是拿仓位替代信息。</strong></p>
+<h2>M. 逻辑自查</h2>
+<p><strong>这份判断最依赖的假设是哪一条？错了会怎样？</strong></p>
+<p>最依赖的是：<strong>「2026Q2 单季约 0.27 亿归母净利、约 29.29% 单季毛利率（均为据库内财务推算）反映的是可持续经营能力」</strong>。 如果错了（即 Q2 利润含资产处置、政府补助、汇兑收益等一次性项目），那么 C 节的&quot;拐点&quot;是账面拐点而非经营拐点，A 节驱动 1 与驱动 2 同时作废，K 节概率分布应向悲观大幅倾斜。 <strong>为什么我无法排除这个可能</strong>：库内财务只返回营收/净利/毛利率/ROE/负债率等汇总指标，<strong>没有扣非净利润、没有经营性现金流、没有非经常性损益明细</strong>。<strong>一家刚扭亏的公司，扣非与非扣非的差别往往就是全部结论</strong>——而这个字段库里没有。</p>
+<p><strong>有没有为了让逻辑好看而忽略的反面证据？有三条，逐条列出：</strong></p>
+<ol>
+<li><strong>单二季度营收（约 2.85 亿）低于一季度（3.28 亿）</strong>。我在 C 节写了这一点，但在 A 节的&quot;驱动&quot;里没有强调——<strong>收入环比是下滑的</strong>。如果 A 节只看&quot;H1 营收 +20.67%&quot;会形成&quot;量价齐升&quot;的错觉，实际是<strong>量在退、价在进</strong>。</li>
+<li><strong>制剂项目从 8 款缩减到 3 款、三条注射剂产线终止</strong>（E 节，单源转述）。这与我在 A 节驱动 3 写的&quot;一体化在往前走&quot;<strong>方向相反</strong>。我保留了驱动 3 是因为 CEP 资质有双源佐证，但<strong>读者应当把驱动 3 理解为&quot;资质在积累&quot;而非&quot;产能在扩张&quot;</strong>。</li>
+<li><strong>近 20 日特大单净流出 −0.14 亿而股价在涨</strong>（H 节）。这条我按纪律没放进 J 节逻辑链，但它是对&quot;基本面驱动上涨&quot;这一叙事的直接反例：<strong>如果真是中报扭亏驱动，大资金理应是买方</strong>。</li>
+</ol>
+<p><strong>信息缺口清单（按对结论的影响排序）：</strong></p>
+<ol>
+<li><strong>【影响：极大】2026 年甾体原料/中间体价格数据全缺</strong>。库内无价格数据；联网仅得 2024 年皂素 600 元/公斤（2024-06，同比 +20%，来源东方财富行业概览 PDF 2024-11）。<strong>后果</strong>：J 节命门无法闭合，&quot;周期性 vs 公司性&quot;无法判定。<strong>补法</strong>：需接入化工品价格数据源（生意社/百川盈孚一类），或在三季报季手工核对 2–3 家同赛道公司毛利率做行业性判断。</li>
+<li><strong>【影响：极大】扣非净利润与经营性现金流缺失</strong>。库内财务不返回该字段。<strong>后果</strong>：无法排除 Q2 利润含一次性项目，即上文&quot;最依赖的假设&quot;无法验证。<strong>补法</strong>：读中报正文的利润表与非经常性损益附注（本报告的数据源不覆盖财报正文）。</li>
+<li><strong>【影响：大】库内研报数据为空</strong>。库内研报返回 <strong>None</strong>——库内近 90 天<strong>无该票任何券商研报</strong>（这本身是信息：27.91 亿市值的小盘股处于卖方覆盖真空）。联网仅检到一份东方财富存档的旧研报《赛托生物：中间体有望企稳回升，产业链延伸稳步推进》（PDF 编号 AP202405071632553708，<strong>约 2024-05-07</strong>）——<strong>该报告距今已逾两年，其时公司尚在亏损周期，观点对当下无参考价值</strong>，仅作卖方曾覆盖的存在性证明。</li>
+</ol>
+<p>〔卖方预期〕来源：东方财富存档研报《中间体有望企稳回升，产业链延伸稳步推进》· 日期：约 2024-05-07 · 观点：中间体业务有望企稳回升、产业链延伸稳步推进 · 置信度：<strong>低</strong>（卖方预期非事实；且距今逾两年、未经交叉验证，标题外的具体预测数字本报告未取得） <strong>补法</strong>：三季报后关注是否有新研报覆盖（K 节乐观情景的观察项之一）。</p>
+<ol>
+<li><strong>【影响：大】60 天新闻库为空 + 120 天事件日历为空</strong>。库内新闻 0 条、库内事件日历 0 条。<strong>后果</strong>：9-01 的 +13.42% 无法归因；I 节 13 周日历有 8 周只能写&quot;无已知事件&quot;，其中<strong>限售解禁</strong>这一小盘股关键供给项完全缺位。<strong>补法</strong>：查交易所公告与限售股上市流通提示，本报告数据源不覆盖。</li>
+<li><strong>【影响：中】筹码数据缺失</strong>。库内资金筹码的筹码分布为 None——<strong>库内筹码仅覆盖关注票，该票暂无</strong>（数据覆盖范围问题，非事实缺失）。<strong>后果</strong>：无获利盘比例（获利盘比例），无法判断上方套牢盘密度，L 节操作触发条件的价位锚只能改用行情推算锚（9-01 收盘/最高/最低、8-31 收盘）而非筹码分位成本。<strong>补法</strong>：将该票纳入关注票池后可获得。</li>
+<li><strong>【影响：中】股东户数无环比</strong>。股东户数仅有 2026-06-30 的 12,806 户为 None。<strong>后果</strong>：无法判断筹码趋散还是集中；且季度数据滞后行情两个月，对当下判断参考价值低。</li>
+<li><strong>【影响：中】同赛道可比公司缺失</strong>。库内同业对比按化学制药大类市值排序，返回药明康德/恒瑞医药/百利天恒——<strong>三家均非同业</strong>（D 节已详述）。<strong>后果</strong>：横向估值与毛利率对标全部落空。</li>
+<li><strong>【影响：小】2025H1 期次缺失</strong>。库内财务（近 4 期）覆盖 2025Q3 至 2026H1，跳过 2025H1，导致&quot;毛利率四期单调抬升&quot;曲线中间缺一点，同比基数无法独立复核。</li>
+<li><strong>【说明·非缺口】库内 A/H 对照返回 None</strong> —— 该票非 A+H 两地上市，无此数据属常态，不构成缺口。</li>
+</ol>
+<p><strong>最后一句自查</strong>：这份报告里所有&quot;公司在变好&quot;的证据都来自<strong>一份中报的汇总数字</strong>，所有&quot;要小心&quot;的证据来自<strong>估值、资金、数据缺口</strong>。<strong>证据的厚度是不对称的</strong>——单一财报期支撑的乐观，对上多维度支撑的谨慎。这就是我把方向定为&quot;震荡&quot;而不是&quot;偏涨&quot;的真实原因。</p>
+<p><strong>参考来源（联网部分）</strong></p>
+<ul>
+<li><a href="https://www.news.cn/tech/20251219/55ec48807c39490087bfbf65da5a19cc/c.html" target="_blank" rel="noopener">工信部将编制发布「十五五」生物制造发展规划 · 新华网 2025-12-19</a></li>
+<li><a href="https://www.ndrc.gov.cn/xwdt/spfg/mtjj/202604/t20260401_1404454.html" target="_blank" rel="noopener">「十五五」新图景：聚力&quot;未来产业&quot; 引领产业未来 · 国家发展和改革委员会 2026-04-01</a></li>
+<li><a href="https://www.news.cn/tech/20251230/659f3e79ef8c4f1b865018ae321a445f/c.html" target="_blank" rel="noopener">瞭望｜生物制造迈向万亿级产业 · 新华网 2025-12-30</a></li>
+<li><a href="https://www.beijing.gov.cn/zhengce/zhengcefagui/202411/t20241129_3952690.html" target="_blank" rel="noopener">北京市加快合成生物制造产业创新发展行动计划（2024-2026 年）· 北京市人民政府 2024-11-29</a></li>
+<li><a href="https://finance.sina.com.cn/stock/aigc/jgdy/2026-05-09/doc-inhxhcxm6991546.shtml" target="_blank" rel="noopener">调研速递｜山东赛托生物接受投资者线上调研 8 款原料药获欧盟 CEP 证书 · 新浪财经 2026-05-09</a></li>
+<li><a href="https://www.fxbaogao.com/detail/4841448" target="_blank" rel="noopener">赛托生物机构调研纪要 · 发现报告</a></li>
+<li><a href="https://m.lejucaijing.com/news-7193536798193809251.html" target="_blank" rel="noopener">赛托生物子公司收到化学原料药欧洲 CEP 证书 · 乐居财经</a></li>
+<li><a href="https://finance.sina.com.cn/stock/aigc/tzxm/2025-12-05/doc-infztyiw9798129.shtml" target="_blank" rel="noopener">赛托生物拟变更 1.24 亿元募集资金投向生物合成技术研发及产业化项目 · 新浪财经 2025-12-05</a></li>
+<li><a href="https://pdf.dfcfw.com/pdf/H3_AP202411221641032526_1.pdf" target="_blank" rel="noopener">2024 年中国甾体激素中间体原料药行业概览 · 东方财富研报存档 2024-11</a></li>
+<li><a href="https://bydrug.pharmcube.com/news/detail/286e0fa6978a931b307b38e33f4ceeb8" target="_blank" rel="noopener">「生命之钥」——甾体药物 · 医药魔方 ByDrug 行研</a></li>
+<li><a href="https://bydrug.pharmcube.com/news/detail/639d9467dfdfa8510ab5816683194fe3" target="_blank" rel="noopener">赛托生物终止高溢价并购银谷制药，羚锐制药接盘 · 医药魔方 ByDrug</a></li>
+<li><a href="https://pdf.dfcfw.com/pdf/H3_AP202405071632553708_1.pdf" target="_blank" rel="noopener">赛托生物：中间体有望企稳回升，产业链延伸稳步推进 · 东方财富研报存档约 2024-05-07</a></li>
+<li><a href="https://chinamedglobal.com/blog/china-15th-five-year-plan-biomedicine-emerging-pillar-industry-pharma-device-export-guide" target="_blank" rel="noopener">「十五五」规划首提生物医药「新兴支柱产业」（含原料药出口证明新规解读，单源未交叉验证）· chinamedglobal</a></li>
+<li><a href="http://static.cninfo.com.cn/finalpage/2026-04-28/1225206071.PDF" target="_blank" rel="noopener">山东赛托生物科技股份有限公司 2025 年年度报告摘要 · 巨潮资讯 2026-04-28</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-01），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>PE(TTM)约324倍估值紧绷</li>
+      <li>9-01涨13.42%无可归因事件</li>
+      <li>近20日特大单净流出0.14亿</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>扣非净利</dt><dd>扣除非经常性损益后的净利润。剔除卖资产、政府补助、公允价值变动等一次性项目，更接近主业真实盈利。</dd><dt>非经常性损益</dt><dd>与主营业务无关、偶发的收益或损失，如处置资产、政府补助、金融资产公允价值变动。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>限售解禁</dt><dd>首发或定增取得的股份锁定期届满、可以上市流通。解禁本身不等于减持，但增加了潜在供给。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.news.cn/tech/20251219/55ec48807c39490087bfbf65da5a19cc/c.html" target="_blank" rel="noopener">工信部将编制发布「十五五」生物制造发展规划 · 新华网 2025-12-19</a> <em>2025-12-19</em></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.ndrc.gov.cn/xwdt/spfg/mtjj/202604/t20260401_1404454.html" target="_blank" rel="noopener">「十五五」新图景：聚力&quot;未来产业&quot; 引领产业未来 · 国家发展和改革委员会 2026-04-01</a> <em>2026-04-01</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.news.cn/tech/20251230/659f3e79ef8c4f1b865018ae321a445f/c.html" target="_blank" rel="noopener">瞭望｜生物制造迈向万亿级产业 · 新华网 2025-12-30</a> <em>2025-12-30</em></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.beijing.gov.cn/zhengce/zhengcefagui/202411/t20241129_3952690.html" target="_blank" rel="noopener">北京市加快合成生物制造产业创新发展行动计划（2024-2026 年）· 北京市人民政府 2024-11-29</a> <em>2024-20</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/aigc/jgdy/2026-05-09/doc-inhxhcxm6991546.shtml" target="_blank" rel="noopener">调研速递｜山东赛托生物接受投资者线上调研 8 款原料药获欧盟 CEP 证书 · 新浪财经 2026-05-09</a> <em>2026-05-09</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.fxbaogao.com/detail/4841448" target="_blank" rel="noopener">赛托生物机构调研纪要 · 发现报告</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.lejucaijing.com/news-7193536798193809251.html" target="_blank" rel="noopener">赛托生物子公司收到化学原料药欧洲 CEP 证书 · 乐居财经</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/aigc/tzxm/2025-12-05/doc-infztyiw9798129.shtml" target="_blank" rel="noopener">赛托生物拟变更 1.24 亿元募集资金投向生物合成技术研发及产业化项目 · 新浪财经 2025-12-05</a> <em>2025-12-05</em></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://pdf.dfcfw.com/pdf/H3_AP202411221641032526_1.pdf" target="_blank" rel="noopener">2024 年中国甾体激素中间体原料药行业概览 · 东方财富研报存档 2024-11</a> <em>2024-11</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://bydrug.pharmcube.com/news/detail/286e0fa6978a931b307b38e33f4ceeb8" target="_blank" rel="noopener">「生命之钥」——甾体药物 · 医药魔方 ByDrug 行研</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://bydrug.pharmcube.com/news/detail/639d9467dfdfa8510ab5816683194fe3" target="_blank" rel="noopener">赛托生物终止高溢价并购银谷制药，羚锐制药接盘 · 医药魔方 ByDrug</a></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://pdf.dfcfw.com/pdf/H3_AP202405071632553708_1.pdf" target="_blank" rel="noopener">赛托生物：中间体有望企稳回升，产业链延伸稳步推进 · 东方财富研报存档约 2024-05-07</a> <em>2024-05-07</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://chinamedglobal.com/blog/china-15th-five-year-plan-biomedicine-emerging-pillar-industry-pharma-device-export-guide" target="_blank" rel="noopener">「十五五」规划首提生物医药「新兴支柱产业」（含原料药出口证明新规解读，单源未交叉验证）· chinamedglobal</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://static.cninfo.com.cn/finalpage/2026-04-28/1225206071.PDF" target="_blank" rel="noopener">山东赛托生物科技股份有限公司 2025 年年度报告摘要 · 巨潮资讯 2026-04-28</a> <em>2026-04-28</em></li>
+      <li><span class="src-tag src-disc">披露</span> 公告日 2026-08-29 <em>2026-08-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经《调研速递》2026-05-09 <em>2026-05-09</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 发现报告机构调研纪要同期，两源一致，置信度：中 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 20260630，公告 2026-08-29 <em>2026-08-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内公司档案主营 + 经营范围 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 产业链路径见东方财富《2024 年中国甾体激素中间体原料药行业概览》PDF，2024-11 <em>2024-11</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 发现报告机构调研纪要，两源一致 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 中报公告日 2026-08-29，库内财务公告日 <em>2026-08-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 2024-06，同比 +20%，来源东方财富行业概览 PDF 2024-11 <em>2024-06</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-01 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
