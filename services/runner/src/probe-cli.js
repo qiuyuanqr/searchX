@@ -10,6 +10,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 import { evaluateProbe, nextStreaks } from "./alert.js";
 import { sendRateLimitedAlert, stateDir } from "./alert-cli.js";
+import { classifyFetchError, probeLogLine, rollLines } from "./probe.js";
 
 const TIMEOUT_MS = 10_000;
 
@@ -27,12 +28,15 @@ function saveStreaks(s) {
   }
 }
 
+// 返回 { ok, reason }：ok 仍是报警判定唯一依据（口径一字未动），reason 只喂给历史记录。
+// 分开的理由见 probe.js 顶部——「断」有好几种成因，混成一个布尔就没法事后判断该不该迁站。
 async function reachable(url) {
   try {
     const r = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS), redirect: "follow" });
-    return r.status < 500; // 4xx 也算「可达」：链路通，只是请求本身不合法（探活不带凭证）
-  } catch {
-    return false;
+    // 4xx 也算「可达」：链路通，只是请求本身不合法（探活不带凭证）
+    return r.status < 500 ? { ok: true, reason: "ok" } : { ok: false, reason: `http-${r.status}` };
+  } catch (e) {
+    return { ok: false, reason: classifyFetchError(e) };
   }
 }
 
@@ -41,11 +45,27 @@ const site = trim(process.env.RUNNER_SITE_BASE) || "https://qiuyuanqr.github.io/
 const primary = trim(process.env.RUNNER_WORKER_URL);
 const fallback = trim(process.env.RUNNER_WORKER_FALLBACK_URL) || "https://searchx-intake.qiuyuanqr.workers.dev";
 
-const [siteOk, primaryOk, fallbackOk] = await Promise.all([
+const [siteR, primaryR, fallbackR] = await Promise.all([
   reachable(site + "/"),
-  primary ? reachable(primary + "/verify") : Promise.resolve(false),
+  primary ? reachable(primary + "/verify") : Promise.resolve({ ok: false, reason: "unconfigured" }),
   reachable(fallback + "/verify"),
 ]);
+const [siteOk, primaryOk, fallbackOk] = [siteR.ok, primaryR.ok, fallbackR.ok];
+
+// 历史记录：只写盘、不参与任何判定。写盘失败照旧只喊一声——监控的记录环节挂了，
+// 不能连累探活本身与报警（同 saveStreaks 的处理）。
+try {
+  const f = join(stateDir(), "probe-log.jsonl");
+  let existing = "";
+  try { existing = readFileSync(f, "utf8"); } catch { /* 首次探活，无历史 */ }
+  mkdirSync(stateDir(), { recursive: true });
+  writeFileSync(f, rollLines(existing, probeLogLine({
+    at: new Date().toISOString(),
+    results: { site: siteR.reason, primary: primaryR.reason, fallback: fallbackR.reason },
+  })));
+} catch (e) {
+  console.error(`✗ 探活历史写盘失败（不影响报警判定）：${e.message}`);
+}
 
 const streaks = nextStreaks(loadStreaks(), { siteOk, primaryOk });
 saveStreaks(streaks);
