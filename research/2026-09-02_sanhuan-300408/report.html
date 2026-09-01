@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>三环集团（300408.SZ） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>三环集团（300408.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-02（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>关联板块</b> 光模块 · 算力</span>
+      <span><b>申万行业</b> 元件</span>
+      <span style="flex-basis:100%"><b>概念标签</b> MLCC概念 · 光纤概念 · 共封装光学(CPO) · 燃料电池 · 小米概念 · 5G · 消费电子概念 · 数据中心(AIDC)</span>
+      <span><b>来源</b> 28 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    三环集团（300408）主要做的是先进电子陶瓷材料和零部件领域的全球领先企业，构建电子及陶瓷材料、电子元件、通信器件、设备组件四大类核心产品矩阵，覆盖通信、AI 及数据中心、消费电子、汽车电子、半导体制造及封装、新能源、智能工业控制等应用领域。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——业绩爆发已兑现，筹码与资金正在离场。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：业绩爆发已兑现，筹码与资金正在离场。支撑在于H1营收+54.8%净利+56.2%创四期最强；毛利率连升三期至44.32%；MLCC原厂多轮涨价周期确认。主要风险是近20日资金净流出26.95亿；股东户数季度环比+226.7%；PE_TTM 65.8股息率仅0.347%。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>H1营收+54.8%净利+56.2%创四期最强</li>
+      <li>毛利率连升三期至44.32%</li>
+      <li>MLCC原厂多轮涨价周期确认</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据基准：库内取数日 2026-09-01，行情时点数据时点 15:35（收盘后）。本报告为存档档案，非荐股材料。</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：业绩爆发已兑现，筹码与资金正在离场。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>2026H1 业绩是近四期最强的一期</strong>：营收 64.23 亿、同比 +54.82%，归母净利 19.32 亿、同比 +56.18%；毛利率 42.14%（2025 全年）→ 43.49%（26Q1）→ 44.32%（26H1）连续三期抬升，负债率仅 20.36%（置信度：高，库内财务库内硬数据）。</li>
+<li><strong>MLCC 处在多源确认的涨价周期</strong>：村田 2026 年 3 月对 AI 服务器/车规高容 MLCC 提价 15%–35%，三星电机 8 月 1 日起全品类调价，太阳诱电 9 月 1 日起对部分产品调价（置信度：中，多源交叉，见 F 节）。</li>
+<li><strong>公司在真金白银回购</strong>：库内公告显示累计回购 A 股 733.97 万股、成交总金额 8.52 亿元，回购比例达 1%（2026-09-01，库内新闻）（置信度：高）。</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>资金面与筹码结构同步恶化</strong>：近 20 个交易日（08-05~09-01）资金净流入合计 <strong>−26.95 亿元</strong>，特大单净流入 −4.41 亿元，净流入为正仅 8/20 天；股东户数从 3.89 万户（03-31）增至 12.71 万户（06-30），环比 <strong>+226.7%</strong>，筹码急剧分散（置信度：高，库内资金筹码）。</li>
+<li><strong>当前价已跌穿 8-07 的主要成本带</strong>：09-01 收盘 109.22 元、当日 −5.03% 且逼近当日最低（−5.96%），已低于 8-07 加权均本 119.56 元与 8-07 筹码 50% 分位成本 116.80 元（置信度：高）。</li>
+<li><strong>估值绝对水位高</strong>：PE_TTM 65.82、PB 9.63，PB 是三家可比公司里的最高档之一；股息率仅 0.347%，容错空间薄（置信度：高，库内估值）。</li>
+</ol>
+<p><strong>最该盯的信号</strong>：① 2026 年三季报（法定披露截止 10-31，见 I 节 W9）的单季营收/净利同比与毛利率能否延续 H1 的 44.32% 抬升；② 每周核库内资金筹码的近 20 日资金净流入是否由负转正、正流入天数能否回到 10/20 以上。</p>
+<p><strong>这份判断最可能错在哪</strong>：库内<strong>没有分产品营收拆分</strong>，我无法核实 MLCC 在 64.23 亿营收里占多少。整条「MLCC 涨价 → 三环受益」的传导链，在库内只能靠公司主营描述与卖方研报标题间接支撑。如果 MLCC 实际占比很小、H1 的高增长主要来自别的产品线，那么 F 节的行业涨价证据与本票的相关性会被高估。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>公司</strong>：潮州三环（集团）股份有限公司，1970 年成立，2014-12-03 于深交所创业板上市（上市状态 = 正常上市），至今上市约 11 年 9 个月。</li>
+<li><strong>行业</strong>：元器件（库内行业分类），行业内共 312 只可比标的。</li>
+<li><strong>主营</strong>（库内公司档案原文）：先进电子陶瓷材料和零部件领域的全球领先企业，构建电子及陶瓷材料、电子元件、通信器件、设备组件四大类核心产品矩阵，覆盖通信、AI 及数据中心、消费电子、汽车电子、半导体制造及封装、新能源、智能工业控制等应用领域。</li>
+<li><strong>公司自述的全球地位</strong>（公司简介原文）：光纤连接器陶瓷插芯、氧化铝陶瓷基板、电阻器用陶瓷基体产销量均居全球前列；国家 863 成果产业化基地；连续多年名列中国电子元件百强前十，2016 年第八。</li>
+<li><strong>规模</strong>：员工 17,352 人；注册资本 191,649.7371 万元（对应约 19.16 亿股）。</li>
+</ul>
+<p><strong>当前行情与估值</strong>（数据时点 2026-09-01，数据时点 15:35 = 当日收盘值）</p>
+<ul>
+<li>股价 <strong>109.22 元</strong>，当日 <strong>−5.03%</strong>，成交额 43.70 亿元；当日最高 +0.43%、最低 −5.96%——<strong>几乎收在全天最低附近</strong>（置信度：高）。</li>
+<li>总市值 <strong>2,180.82 亿元</strong>；PE_TTM <strong>65.82</strong>；PB <strong>9.63</strong>；股息率 <strong>0.347%</strong>；换手率 <strong>2.1235%</strong>。</li>
+<li><strong>同行业 PE 分位</strong>：元器件行业 312 只，行业 PE 中位数 68.17，本票 PE 排名第 <strong>109</strong> 位——<strong>仅估值口径</strong>看，它比行业中位数略便宜、处在行业偏低的三分之一区间（置信度：高）。⚠️ 这只是相对分位，不构成&quot;便宜&quot;的结论：行业中位数本身就是 68 倍。</li>
+<li><strong>A/H 溢价</strong>：A 股对 H 股（三环集团）溢价 <strong>15.8%</strong>（2026-09-01）。同日 H 股收 110.00 港元、−4.10%，A 股 −5.03%，两地同步走弱（置信度：高）。A+H 票中 15.8% 属偏低溢价水平，意味着港股投资者对这家公司给的估值与 A 股接近——这是相对正面的跨市场参照（置信度：中，属横向经验判断）。</li>
+</ul>
+<h2>C. 财务健康</h2>
+<p>近四期（库内财务，新→旧，金额单位亿元）：</p>
+<ul>
+<li><strong>2026H1</strong>（截止 20260630，公告 20260828）· 营收 <strong>64.23</strong>、同比 <strong>+54.82%</strong> · 净利 <strong>19.32</strong>、同比 <strong>+56.18%</strong> · ROE <strong>8.72%</strong> · 毛利率 <strong>44.32%</strong> · 净利率 <strong>30.08%</strong> · EPS <strong>1.01</strong> · 资产负债率 <strong>20.36%</strong></li>
+<li><strong>2026Q1</strong>（20260331）· 营收 <strong>26.81</strong>、同比 <strong>+46.25%</strong> · 净利 <strong>7.91</strong>、同比 <strong>+48.48%</strong> · ROE <strong>3.59%</strong> · 毛利率 <strong>43.49%</strong> · 净利率 <strong>29.50%</strong> · EPS <strong>0.41</strong> · 负债率 <strong>17.14%</strong></li>
+<li><strong>2025 全年</strong>（20251231）· 营收 <strong>90.07</strong>、同比 <strong>+22.13%</strong> · 净利 <strong>26.18</strong>、同比 <strong>+19.54%</strong> · ROE <strong>12.61%</strong> · 毛利率 <strong>42.14%</strong> · 净利率 <strong>29.05%</strong> · EPS <strong>1.37</strong> · 负债率 <strong>18.27%</strong></li>
+<li><strong>2025Q1–Q3</strong>（20250930）· 营收 <strong>65.08</strong>、同比 <strong>+20.96%</strong> · 净利 <strong>19.59</strong>、同比 <strong>+22.16%</strong> · ROE <strong>9.58%</strong> · 毛利率 <strong>42.49%</strong> · 净利率 <strong>30.08%</strong> · EPS <strong>1.02</strong> · 负债率 <strong>17.24%</strong></li>
+</ul>
+<p><strong>趋势判断（不是罗列，是找拐点）：</strong></p>
+<ol>
+<li><strong>增速拐点在 2026Q1 就已出现，Q2 进一步加速</strong>（置信度：高）。营收同比从 2025 全年的 +22.13% 跳到 26Q1 的 +46.25%，再到 26H1 的 +54.82%——<strong>累计口径同比逐期抬升，说明二季度单季增速高于一季度</strong>。据库内累计数推算：26Q2 单季营收 ≈ 64.23 − 26.81 = <strong>37.42 亿</strong>，单季净利 ≈ 19.32 − 7.91 = <strong>11.41 亿</strong>，Q2 单季营收较 Q1 环比 <strong>+39.6%</strong>（以上均为据库内财务累计数推算的派生值）。</li>
+<li><strong>毛利率是这轮最硬的证据</strong>（置信度：高）。42.14%（25 全年）→ 43.49%（26Q1）→ 44.32%（26H1），三期单调抬升。据累计毛利额倒推，26Q2 单季毛利率约 <strong>44.9%</strong>（据推算），高于 Q1 的 43.49%——<strong>量增的同时价也在涨</strong>，这与 F 节的行业涨价周期方向一致。</li>
+<li><strong>ROE 在质变</strong>（置信度：高）。半年 ROE 8.72%，已达 2025 全年 12.61% 的 69%；EPS 半年 1.01 元，已达 2025 全年 1.37 元的 73.7%。若下半年不失速，全年 ROE 大概率显著超越 2025 年。</li>
+<li><strong>资产负债表极干净，但有一处需要盯</strong>（置信度：中）。负债率 20.36% 在制造业里属于极低水平，几乎无财务风险。但<strong>它较 Q1 的 17.14% 上升了 3.22 个百分点</strong>——在 H 股 IPO 募资到账（见 F 节）本该摊薄负债率的季度里负债率反而上升，说明经营性负债（应付/合同负债）扩张较快。这<strong>可能</strong>是订单饱满的正面信号，也<strong>可能</strong>是采购备货压力，<strong>库内无资产负债表明细，无法判定方向</strong>——记入 M 节缺口。</li>
+<li><strong>TTM 口径校验</strong>：据市值 2,180.82 亿 ÷ PE_TTM 65.82 推算 TTM 归母净利约 <strong>33.1 亿元</strong>；用库内四期数据独立推算（26H1 19.32 + 2025 全年 26.18 − 2025H1 12.37）= <strong>33.13 亿</strong>，两条路径吻合（置信度：高，两个库内取数交叉验证）。据同法推算 TTM 营收约 <strong>112.8 亿元</strong>。</li>
+</ol>
+<p><strong>仅估值口径的结论</strong>：以 TTM 净利 33.1 亿对 2,180.82 亿市值，PE_TTM 65.82；若按 F/J 节的成长斜率外推，估值消化速度取决于下半年增速能否维持——<strong>这是估值口径判断，不等于好坏结论</strong>。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比给出同属&quot;元器件&quot;行业的三家可比公司（财务期均为 20260630）：</p>
+<ul>
+<li><strong>三环集团 300408</strong> · 市值 2,180.82 亿 · PE_TTM 65.82 · PB 9.63 · H1 营收 64.23 亿 · H1 净利 19.32 亿 · ROE 8.72%</li>
+<li><strong>立讯精密 002475</strong> · 市值 4,404.37 亿 · PE_TTM 24.75 · PB 4.73 · H1 营收 1,745.04 亿 · H1 净利 78.43 亿 · ROE 8.79%</li>
+<li><strong>生益科技 600183</strong> · 市值 3,507.97 亿 · PE_TTM 67.53 · PB 18.96 · H1 营收 190.26 亿 · H1 净利 32.87 亿 · ROE 18.66%</li>
+<li><strong>东山精密 002384</strong> · 市值 3,456.06 亿 · PE_TTM 96.40 · PB 14.18 · H1 营收 277.98 亿 · H1 净利 29.57 亿 · ROE 12.90%</li>
+</ul>
+<p><strong>位置判读（置信度：高，数据均来自库内同一取数）：</strong></p>
+<ul>
+<li><strong>营收体量最小、盈利质量最高</strong>。三环 H1 营收 64.23 亿，只有立讯的 3.7%、东山的 23%，但净利率 30.08% 远超同侪——按库内数字推算，立讯 H1 净利率约 4.5%、生益约 17.3%、东山约 10.6%（据库内同业对比营收/净利推算）。<strong>这是完全不同的商业模式：三环卖材料与元件，同行主要做组装/制造代工</strong>。</li>
+<li><strong>估值排序</strong>：PE_TTM 三环 65.82 低于生益 67.53 与东山 96.40，高于立讯 24.75；PB 9.63 低于生益 18.96 与东山 14.18，高于立讯 4.73。<strong>在这组里三环既不是最贵也不是最便宜，处在中间偏上</strong>。</li>
+<li><strong>ROE 是短板还是季节性？</strong> 三环 H1 ROE 8.72% 低于生益 18.66% 与东山 12.90%，与立讯 8.79% 基本持平。但三环负债率仅 20.36%——<strong>低杠杆天然压低 ROE</strong>。若做杜邦拆解，三环的低 ROE 来自&quot;不加杠杆&quot;而非&quot;不赚钱&quot;（净利率 30% 是全组最高）。<strong>这是相对优势不是劣势</strong>（置信度：中，库内无三家的负债率对比数据，此判断依赖三环单边负债率 + 净利率推理）。</li>
+</ul>
+<h2>E. 护城河与商业模式</h2>
+<p>基于库内公司档案的主营/经营范围 + 联网产业信息，诚实分级：</p>
+<p><strong>结构性护城河（置信度：中）</strong></p>
+<ul>
+<li><strong>垂直一体化的材料自给</strong>。公司自述&quot;集材料、产品、装备研发与制造为一体&quot;，且经营范围同时覆盖&quot;电子专用材料研发/制造&quot;与&quot;电子专用设备制造&quot;——<strong>上游陶瓷粉体材料、中游元件、专用装备三段自己做</strong>。在电子陶瓷这个&quot;配方即壁垒&quot;的行业里，材料端自给是同行难以短期复制的（依据：库内经营范围原文 + 公司简介的&quot;承担并完成多项国家、省级科研项目&quot;）。</li>
+<li><strong>单品全球份额</strong>。公司简介明确&quot;光纤连接器陶瓷插芯、氧化铝陶瓷基板、电阻器用陶瓷基体产销量均居全球前列&quot;。<strong>这是公司自述、非第三方核实</strong>，但与 C 节 44.32% 的毛利率是自洽的——没有份额与定价权撑不起这个毛利率（置信度：中）。</li>
+</ul>
+<p><strong>阶段性优势（置信度：中）</strong></p>
+<ul>
+<li><strong>客户绑定 + 认证壁垒</strong>。联网信息显示公司高容 MLCC 已供华为、浪潮等服务器客户（来源：搜狐财经《三环集团 MLCC 业务如何受益于 AI 服务器需求爆发？》；东方财富财富号 2026-06-24《三环集团：AI 服务器高端高容 MLCC 细分国产龙头》）。服务器级被动元件认证周期长，一旦入围切换成本高。⚠️ <strong>单一渠道类来源、非公司公告，标&quot;单源未交叉验证·置信度低&quot;</strong>；库内无客户结构数据可核。</li>
+</ul>
+<p><strong>看不出的部分</strong></p>
+<ul>
+<li><strong>无法从库内信息判断三环在 SOFC（固体氧化物燃料电池）上的技术代差</strong>。经营范围含&quot;电池制造/电池零配件生产&quot;，但主营描述未点名 SOFC，库内也无该业务营收（置信度：低）。</li>
+</ul>
+<p><strong>商业模式一句话</strong>：卖&quot;看不见的关键零件&quot;——单价低、用量大、认证难、材料自给带来高毛利，下游景气度直接决定量价。<strong>周期属性强于成长属性</strong>：C 节的增速跃升与 F 节的行业涨价周期高度同步，意味着<strong>下行周期同样会放大</strong>。</p>
+<h2>F. 政策与监管</h2>
+<p>库内无政策数据，本节以联网为主，每条带来源与日期。</p>
+<p><strong>F-1｜MLCC 全球原厂涨价周期（非政策，但是最强的外生变量）· 传导方向：利好 · 置信度：中（多源交叉）</strong></p>
+<ul>
+<li>村田 2026 年 3 月决定对 AI 服务器与高端车规级 MLCC 全面提价 <strong>15%–35%</strong>，4 月 1 日生效；三星电机随后宣布 4 月起跟涨（来源：EET-China《村田/三星/太诱全线调价：MLCC 涨价传导链全梳理》；新浪财经《MLCC 涨价》专题）。</li>
+<li>2026-07-29，三星电机宣布 8 月 1 日起<strong>全品类</strong> MLCC 出货价上调；太阳诱电 7 月 23 日通知客户 <strong>9 月 1 日起</strong>对部分产品调价（来源：21 财经 2026-08-04；界面新闻《2026 MLCC 超级涨价潮》）。</li>
+<li>供需侧：村田 2026 年 2 月披露 MLCC 询单量为其现有产能的两倍；4 月主要供应商 B/B ratio 稳定在 1.0 以上（来源：界面新闻 2026；OFweek 2026-06《一颗 MLCC，引爆百亿供应链暗战》）。高盛将本轮定性为该行业&quot;规模最大、持续最久&quot;的上行周期（来源：新浪财经 2026-06-15）。</li>
+<li><strong>传导链</strong>：AI 服务器单机用 2–3 万颗 MLCC、整机柜可达 44 万颗（约为传统服务器的 10–15 倍）→ 高容 MLCC 结构性紧缺 → 原厂涨价 → 国产厂商获得份额与提价窗口 → 三环 C 节毛利率抬升。<strong>这条链与 C 节 26Q2 单季毛利率约 44.9% 的推算方向一致</strong>（置信度：中）。</li>
+</ul>
+<p><strong>F-2｜国产算力硬件强制采购比例 · 传导方向：利好（间接）· 置信度：中</strong></p>
+<ul>
+<li>《2026-2028 年全国算力基础设施建设行动方案》<strong>2026-09-01 起正式执行</strong>：央国企新建智算中心，AI 芯片/服务器/光模块国产采购占比强制不低于 <strong>75%</strong>，不达标不批（来源：库内事件日历，importance 8，policy 类）。</li>
+<li><strong>传导</strong>：国产服务器与光模块放量 → 陶瓷基板、陶瓷插芯、高容 MLCC 需求上行。⚠️ 这是<strong>二阶传导</strong>，三环不直接受益于采购比例条款本身。</li>
+</ul>
+<p><strong>F-3｜美方对华算力/光模块限制 · 传导方向：双向 · 置信度：中</strong></p>
+<ul>
+<li>美国商务部拟 2026 年 9 月就封堵中国 AI 企业&quot;远程调用海外算力&quot;新规征求意见（库内事件日历 2026-09-15，importance 8）——<strong>对国产算力链偏利好</strong>。</li>
+<li>美国 FCC 拟禁止进口中国下一代高速光模块（800G/1.6T），草案推进中，目标年内落地（库内事件日历 2026-09-20，importance 8，援引路透社报道）——<strong>对光模块出口链偏利空</strong>。三环卖的是光模块里的陶瓷插芯/陶瓷封装件，<strong>若中国产光模块被限制进入美国市场，三环作为上游零部件供应商会被间接波及</strong>（置信度：低，传导路径长且未见量化）。</li>
+</ul>
+<p><strong>F-4｜氢能/SOFC 政策 · 传导方向：利好（远期）· 置信度：低</strong></p>
+<ul>
+<li>&quot;十四五&quot;将氢能列为六大未来产业之一；2026 年政府工作报告将其定位为&quot;新的增长点&quot;并设立国家低碳转型基金（来源：知乎《SOFC 行业深度》慧博出品；观研报告网 2026-07《AI 算力催生新战场固体氧化物燃料电池行业商业化拐点临近》）。</li>
+<li><strong>⚠️ 单源未充分交叉验证</strong>，且库内<strong>无三环 SOFC 营收数据</strong>——政策利好与本票的业绩相关性无法量化。</li>
+</ul>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签给出 13 个同花顺概念标签。<strong>逐个分级</strong>——标签沾边不等于有营收：</p>
+<p><strong>真有业务（有主营描述或经营范围佐证）</strong></p>
+<ul>
+<li><strong>光纤概念</strong>：公司简介明确&quot;光纤连接器陶瓷插芯…产销量居全球前列&quot;，主营业务含&quot;通信器件&quot;。<strong>真有业务，且是公司自述的优势品类</strong>（置信度：高）。⚠️ 库内无该品类营收占比。</li>
+<li><strong>消费电子概念</strong>：主营业务原文明确列出&quot;消费电子&quot;为核心应用领域（置信度：高）。</li>
+<li><strong>MLCC 概念</strong>：库内经营范围含&quot;电容器及其配套设备制造/销售&quot;；库内研报两篇研报标题直接点名 MLCC（开源证券《MLCC 量价齐升…》、国金证券《业绩符合预期，MLCC 景气度提升》，均 2026-08-31）。<strong>判定为真有业务，但研报标题属卖方观点、非营收佐证；库内无 MLCC 分产品营收，占比不明</strong>（置信度：中）。</li>
+<li><strong>数据中心（AIDC）</strong>：主营业务原文明确写&quot;覆盖通信、<strong>AI 及数据中心</strong>、消费电子…&quot;。<strong>公司主营描述有佐证，但无营收拆分</strong>（置信度：中）。</li>
+<li><strong>5G</strong>：与光通信器件业务有实质关联，但 5G 是应用场景标签而非产品线，<strong>库内无 5G 专项营收佐证</strong>（置信度：中）。</li>
+<li><strong>燃料电池</strong>：库内经营范围含&quot;电池制造/电池零配件生产/储能技术服务&quot;；库内研报标题点名 SOFC（开源证券 2026-08-31《…光通信与 SOFC 共拓长期成长空间》）。<strong>经营范围有佐证 + 卖方点名，但库内无营收拆分</strong>（置信度：中）。</li>
+</ul>
+<p><strong>仅概念标签，未见营收佐证</strong></p>
+<ul>
+<li><strong>共封装光学（CPO）</strong>：主营业务有&quot;通信器件&quot;&quot;高端器件及组件&quot;，但<strong>未点名 CPO</strong>，库内无相关营收或订单数据。<strong>仅概念标签</strong>（置信度：低）。产业逻辑上陶瓷封装件是 CPO 的必备零组件（来源：财联社《AI 算力需求打开增量空间！通信类电子陶瓷外壳乃光模块必备零组件》），但这是<strong>行业逻辑不是本公司佐证</strong>。</li>
+<li><strong>华为概念</strong>：库内无任何佐证。联网有&quot;已供华为服务器客户&quot;的渠道类信息（E 节），<strong>单源未交叉验证</strong>。<strong>仅概念标签</strong>（置信度：低）。</li>
+<li><strong>小米概念</strong>：库内无任何佐证。<strong>仅概念标签</strong>（置信度：低）。</li>
+</ul>
+<p><strong>交易属性标签（非业务）</strong></p>
+<ul>
+<li>沪深 300 样本股 / 深股通 / 融资融券 / 证金持股——这四个描述的是<strong>流动性与资金准入属性</strong>，与业务无关。其中&quot;沪深 300 样本股 + 深股通 + 融资融券&quot;三者叠加意味着<strong>被动资金、北向资金、杠杆资金三条通道同时开放</strong>，这既放大上行也放大下行（置信度：高）。</li>
+</ul>
+<p><strong>产业链位置</strong></p>
+<pre>上游：陶瓷粉体原料（氧化铝/氧化锆等）、贵金属电极浆料
+        ↓（三环自制部分材料 —— 这是它的议价来源）
+中游：★ 三环集团 ★  陶瓷插芯 / 陶瓷基板 / 封装基座 / 高容 MLCC / SOFC 隔膜片
+        ↓
+下游：光模块厂 → 数据中心/电信运营商
+      服务器/消费电子/汽车电子整机厂</pre>
+<p><strong>议价能力在哪端（置信度：中）</strong>：上游原料端三环部分自给，议价压力小；下游光模块与服务器厂在 AI 需求爆发下产能紧张，<strong>当前周期议价能力偏向三环这一侧</strong>——这正是 C 节毛利率抬升的解释。但下游客户集中度高（服务器/光模块行业本身集中），<strong>周期反转时议价权会快速倒向下游</strong>。</p>
+<h2>H. 消息面与市场情绪</h2>
+<h3>新闻（库内新闻，近 60 日共 20 条，按重要性挑选）</h3>
+<ol>
+<li><strong>2026-08-27 · 2026 年半年度报告及摘要披露</strong>（cninfo 公告）——同日财联社/东方财富报道&quot;上半年净利润同比增长 56.18%&quot;。<strong>对基本面有实质影响，且与 C 节库内数字完全一致</strong>（置信度：高）。</li>
+<li><strong>2026-09-01 · 回购股份比例达到 1%；已累计回购 A 股 733.97 万股、成交总金额 8.52 亿元</strong>（东方财富/财联社）。<strong>有实质影响</strong>：8.52 亿元真金白银是管理层态度的硬证据，且回购股份用于股权激励/员工持股（见下条）而非注销，对 EPS 无摊薄改善（置信度：高）。据库内数字推算回购均价约 116.1 元/股，<strong>高于 09-01 收盘价 109.22 元</strong>（据库内新闻金额与股数推算）。</li>
+<li><strong>2026-08-28 · 2026 年 A 股员工持股计划（草案）及摘要、管理办法、董事会合规性说明、薪酬与考核委员会审核意见</strong>（五份公告同日发布）。<strong>方向上是正面信号</strong>（把回购股份用于绑定核心员工），但<strong>库内只有标题、无草案条款</strong>，联网亦未检索到受让价格与业绩考核目标——<strong>记入 M 节缺口</strong>（置信度：低，无法评估激励强度）。</li>
+<li><strong>2026-08-27 · 关于会计政策变更的公告 + 公司章程（2026 年 8 月修订）</strong>。会计政策变更需关注是否影响可比性——<strong>库内无变更内容，无法判断对 C 节数字的影响</strong>（置信度：低，记入缺口）。</li>
+<li><strong>2026-08-31 · H 股公告-翌日披露报表</strong>（cninfo）。常规港股披露，佐证 A+H 双重上市状态运行中（置信度：高，与库内 A/H 对照一致）。</li>
+<li><strong>2026-09-01 · &quot;冠军基金经理&quot;金梓才下半年看好这个赛道（隐形重仓股曝光）</strong>（东方财富）。<strong>媒体转述、无实质基本面信息</strong> 亦标为&quot;噪音其他&quot;（置信度：低）。</li>
+</ol>
+<p>⚠️ 以上新闻标题内未出现行情涨跌幅数字，故无需&quot;曾&quot;表述转换；全部行情口径以 B 节库内行情为准。</p>
+<h3>涨停史（库内涨停记录，近 180 日）</h3>
+<p><strong>近 180 日无任何涨停记录</strong>（置信度：高）。这本身是有价值的信息：这只票的上涨（若有）是<strong>机构定价型的连续爬升</strong>，不是游资情绪型的脉冲——<strong>没有短线情绪资金的接力盘作为下方支撑</strong>。跌起来也缺少&quot;打板资金抄底&quot;这类缓冲。</p>
+<h3>资金与筹码（库内资金筹码）</h3>
+<p><strong>资金流（近 20 个交易日，2026-08-05 ~ 2026-09-01）：</strong></p>
+<ul>
+<li>资金净流入合计 <strong>−26.95 亿元</strong>（净流出）</li>
+<li>特大单（主力）净流入合计 <strong>−4.41 亿元</strong>（净流出）</li>
+<li>净流入为正 <strong>8 天</strong> / 净流入为负 <strong>12 天</strong></li>
+<li><strong>判读</strong>：一个月净流出近 27 亿，且正流入天数不足半数——<strong>这是持续性的、而非单日恐慌性的资金撤离</strong>（置信度：高）。</li>
+</ul>
+<p><strong>筹码（数据时点 2026-08-07，⚠️ 距今近一个月，已滞后）：</strong></p>
+<ul>
+<li>获利盘比例 <strong>76.13%</strong></li>
+<li>加权平均成本 <strong>119.56 元</strong></li>
+<li>15% 分位成本 <strong>104.00 元</strong>｜50% 分位成本 <strong>116.80 元</strong>｜85% 分位成本 <strong>132.80 元</strong></li>
+<li><strong>两面读法</strong>（纪律要求）：76.13% 的获利盘意味着<strong>上方套牢盘稀薄</strong>（不到 1/4 的筹码被套），反弹时阻力小；但同时意味着<strong>短线获利抛压极重</strong>——每四个筹码就有三个处于盈利、随时可能兑现。</li>
+<li>⚠️ <strong>关键时点差</strong>：8-07 的加权均本 119.56 元与 50% 分位 116.80 元，<strong>都已高于 09-01 收盘 109.22 元</strong>。这意味着 8-07 时的那批筹码，如今<strong>多数已由盈转亏</strong>——获利盘比例 76.13% 是一个月前的旧照片，当前真实获利盘比例大概率显著更低（置信度：中，推理依据是库内两个时点数据的对照，非实测）。</li>
+</ul>
+<p><strong>股东户数（股东户数，季度披露、天然滞后）：</strong></p>
+<ul>
+<li>截止 <strong>2026-06-30</strong>：<strong>127,113 户</strong>；上期截止 2026-03-31：<strong>38,909 户</strong>；环比 <strong>+226.7%</strong></li>
+<li><strong>判读</strong>：一个季度股东户数增至 3.27 倍，<strong>筹码从集中急剧转向分散</strong>（置信度：高）。户均持股量降至上期的约 30.6%（据股东户数推算）。这种量级的分散通常出现在股价大幅上涨后的散户涌入阶段，<strong>是典型的筹码结构恶化信号</strong>。</li>
+<li>⚠️ 数据截止 6-30，<strong>7-09 H 股上市后的两个月变化不在此数据内</strong>——需等三季报披露的股东户数才能更新。</li>
+</ul>
+<div class="callout"><strong>纪律声明</strong>：本节的资金流与筹码数据是<strong>盘面/筹码现象，不是基本面证据</strong>。它们只在 H 节作为情绪面佐证使用，<strong>不进入 J 节逻辑链充当决定性一环，也不单独作为任何操作结论的依据</strong>。</div>
+<h2>I. 未来 13 周事件日历</h2>
+<p>来源：库内事件日历（近 120 日）返回 20 条（<strong>全部为概念标签匹配而来的行业/宏观事件，无一条是公司自身日程</strong>——这是重要缺口，见 M 节）+ 法规常识补充。</p>
+<ul>
+<li><strong>W1（2026-09-01 起）</strong>：
+<ul>
+<li>09-01｜《2026-2028 年全国算力基础设施建设行动方案》正式执行（国产算力硬件采购≥75%）· 政策 · 重要性高 · 影响：验证 F-2 的二阶传导是否落地</li>
+<li>09-01｜公司回购比例达 1%、累计 8.52 亿元 · 公司 · 重要性中 · 影响：管理层态度锚点（见 H 节）</li>
+<li>09-01｜戴尔 FY2027Q2 财报（AI 服务器需求风向标）· 海外公司 · 重要性中</li>
+<li>09-02｜博通 FY2026Q3 财报（美股盘后，AI 定制芯片/光互联风向标）· 海外公司 · 重要性高</li>
+<li>09-02~04｜SEMICON Taiwan 2026（南港，聚焦 AI 半导体/HBM/硅光子）· 行业会议 · 重要性中高</li>
+<li>09-02~04｜2026 开放数据中心大会（ODX）暨首届算博会（北京）· 行业会议 · 重要性中高</li>
+</ul></li>
+<li><strong>W2（2026-09-07 起）</strong>：
+<ul>
+<li>09-07｜华为全场景新品发布会（鸿蒙 7 正式版 + 三折叠 Mate XT 2）· 公司事件 · 重要性中高 · 影响：G 节&quot;华为概念&quot;标签的情绪催化</li>
+<li>09-07~08｜第 24 届讯石光通信大会 IFOC 2026（深圳，议题 800G/1.6T/CPO）· 行业会议 · 重要性中高 · <strong>影响：与三环陶瓷插芯业务直接相关，最值得盯的行业会议之一</strong></li>
+<li>09-08｜小米 18 Fold 折叠屏发布（首发自研玄戒 O3）· 公司事件 · 重要性中</li>
+<li>09-09｜苹果秋季新品发布会（首款折叠屏 iPhone）· 公司事件 · 重要性高 · 影响：消费电子概念情绪</li>
+<li>09-09~11｜第 27 届中国国际光电博览会 CIOE（深圳）· 行业会议 · 重要性高 · <strong>影响：光模块/CPO/光器件订单与新品集中释放，是本票产业链最直接的催化窗口</strong></li>
+<li>09-10｜第 16 次 APEC 能源部长会议（北京，&quot;AI+能源&quot;）· 行业会议 · 重要性中高</li>
+<li>09-11~13｜2026 中国算力大会（工信部主办，河北廊坊）· 行业会议 · 重要性高</li>
+</ul></li>
+<li><strong>W3（2026-09-14 起）</strong>：
+<ul>
+<li>09-14｜甲骨文季度财报（AI 云基建资本开支指引）· 海外公司 · 重要性中高</li>
+<li>09-15｜美国商务部就封堵中国 AI 企业&quot;远程调用海外算力&quot;新规征求意见 · 政策 · 重要性高 · 影响：F-3 双向传导的第一个观察点</li>
+<li>09-15~16｜2026 第四届 AI 算力产业大会（北京国家会议中心）· 行业会议 · 重要性中</li>
+<li>09-17~19｜2026 华为全联接大会（上海，&quot;智启新未来&quot;）· 行业会议 · 重要性高</li>
+<li>09-20｜美国 FCC 拟禁止进口中国 800G/1.6T 光模块草案推进 · 政策 · 重要性高 · <strong>影响：本票产业链最主要的外部利空观察点（F-3）</strong></li>
+</ul></li>
+<li><strong>W4（2026-09-21 起）</strong>：
+<ul>
+<li>09-22~24｜2026 中国国际信息通信展 PT 展（北京）· 行业会议 · 重要性中高</li>
+<li>09-23｜华为 Mate 90 系列发布会（首发新麒麟芯片）· 公司事件 · 重要性中高</li>
+<li>09-23~25｜高通 2026 骁龙峰会（首款 2nm 旗舰芯片）· 行业会议 · 重要性中高</li>
+</ul></li>
+<li><strong>W5（2026-09-28 起）</strong>：库内无事件。<strong>待定事件</strong>：2026 年 A 股员工持股计划（8-28 草案）需提交股东大会审议，按 A 股惯例草案后 15–30 日内召开——<strong>预计落在 9 月下旬至 10 月，具体日期未公告</strong>（置信度：低，属惯例推测，非已知事件）。另：国庆长假前最后交易周，流动性通常收缩。</li>
+<li><strong>W6（2026-10-05 起）</strong>：<strong>A 股国庆假期休市</strong>（具体休市安排以交易所公告为准）· 日历 · 重要性中 · 影响：持仓过节的外部消息风险敞口</li>
+<li><strong>W7（2026-10-12 起）</strong>：本周无已知事件。三季报预约披露安排通常在此窗口前后由交易所公布——留意公司预约日落点。</li>
+<li><strong>W8（2026-10-19 起）</strong>：本周无已知事件</li>
+<li><strong>W9（2026-10-26 起）</strong>：<strong>2026 年第三季度报告法定披露截止 10-31</strong>（依据：创业板上市规则对季报披露时限的规定）· 财报 · 重要性 <strong>最高</strong> · <strong>影响：本报告全部核心判断的验证时点——验证 C 节的增速与毛利率抬升是否延续、H 节的股东户数是否继续分散</strong></li>
+<li><strong>W10（2026-11-02 起）</strong>：本周无已知事件（三季报后的机构调研与研报更新窗口）</li>
+<li><strong>W11（2026-11-09 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-11-16 起）</strong>：本周无已知事件</li>
+<li><strong>W13（2026-11-23 起）</strong>：本周无已知事件</li>
+</ul>
+<p>⚠️ <strong>日历质量说明</strong>：W1–W4 密集、W5–W13 稀疏，<strong>不是因为后面没事，而是因为库内事件日历的覆盖窗口与概念匹配机制只捞到了近月的行业事件</strong>。W5 之后的空白应理解为&quot;库内无数据&quot;而非&quot;确定无事&quot;。</p>
+<h2>J. 逻辑链（可证伪）</h2>
+<p><strong>主链：</strong></p>
+<div class="callout"><strong>因为</strong>〔事实 1〕全球 MLCC 原厂（村田/三星电机/太阳诱电）自 2026 年 3 月起对 AI 服务器与高端品类连续提价 15%–35%，且村田披露询单量达其产能两倍（F-1，置信度：中，多源） <strong>且</strong>〔事实 2〕三环 26H1 毛利率 44.32%、较 2025 全年 42.14% 连续三期抬升，26Q2 单季毛利率据推算约 44.9%（C 节，置信度：高，库内硬数据） <strong>且</strong>〔事实 3〕三环 26H1 营收同比 +54.82%、净利同比 +56.18%，增速较 2025 全年的 +22.13%/+19.54% 翻倍以上（C 节，置信度：高） <strong>→ 所以</strong>〔推论 A〕三环的业绩跃升是<strong>量价齐升驱动</strong>、且<strong>价的部分与行业涨价周期同步</strong>，不是一次性因素（置信度：中） <strong>→ 如果</strong>推论 A 成立，<strong>应该能观察到</strong>：2026 年三季报（W9，10-31 前）单季营收同比仍在 40% 以上、且累计毛利率不低于 26H1 的 44.32%（可核验） <strong>→ 如果</strong>观察不到（三季度增速掉到 30% 以下或毛利率回落），<strong>推论 A 被证伪</strong>——说明 H1 的高增长里有渠道备货/抢单的一次性成分。</div>
+<p><strong>副链（估值与筹码的对冲）：</strong></p>
+<div class="callout"><strong>因为</strong>〔事实 4〕PE_TTM 65.82、PB 9.63，股息率仅 0.347%（B 节，置信度：高） <strong>且</strong>〔事实 5〕H 股 06951.HK 同步交易，A/H 溢价仅 15.8%，港股给出了接近的估值（B 节，置信度：高） <strong>→ 所以</strong>〔推论 B〕当前估值虽高，但<strong>不是 A 股单边情绪推上去的</strong>——有一个独立市场的定价背书，估值泡沫化程度低于同类高 PE 成长股（置信度：中） <strong>→ 如果</strong>推论 B 成立，<strong>应该能观察到</strong>：A/H 溢价在后续波动中维持在相对低位（比如不快速扩张到 40% 以上），且 A 股回调时 H 股同步而非背离（09-01 当日 A −5.03%、H −4.10%，<strong>目前是同步的</strong>，可核验）。</div>
+<p><strong>⚠️ 整条链最弱的一环（命门）：</strong></p>
+<p><strong>〔事实 2〕与〔事实 1〕之间的因果连接，在库内是断的。</strong></p>
+<p>我知道行业在涨价（F-1，联网多源），也知道三环毛利率在涨（C 节，库内硬数据），但<strong>我没有任何库内数据能证明三环的毛利率提升来自 MLCC 涨价</strong>——因为库内<strong>没有分产品营收拆分</strong>。这个连接目前靠三条间接证据支撑：① 公司经营范围含电容器制造；② 库内两篇券商研报标题直接点名&quot;MLCC 量价齐升&quot;；③ 时间上高度同步。<strong>但这三条都不是营收佐证。</strong></p>
+<p><strong>如果 MLCC 只占三环营收的一小部分</strong>，那么 F-1 的行业涨价对本票的解释力会被严重高估，而 H1 的增长可能主要来自陶瓷插芯（光通信）或其他品类——那样的话，J 节该盯的外部变量就应该从&quot;MLCC 原厂涨价函&quot;换成&quot;光模块出货量与 FCC 禁令进展&quot;（F-3）。<strong>这个分叉目前无法在库内解决</strong>（见 M 节补法）。</p>
+<p><strong>纪律声明</strong>：H 节的资金流与筹码数据<strong>未进入本节任何一环</strong>——它们是盘面现象，不是基本面证据。</p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（30%）</strong>｜<strong>触发</strong>：2026 年三季报（W9，10-31 前）累计营收同比 ≥50% 且累计毛利率 ≥ 26H1 的 44.32%；同时库内资金筹码近 20 日资金净流入转正、正流入天数 ≥12/20｜<strong>路径</strong>：J 节推论 A 被证实，业绩增速消化高估值的叙事重新占上风，价格向 8-07 加权均本上方修复，估值分位向元器件行业中位数以上靠拢</li>
+<li><strong>中性（45%）</strong>｜<strong>触发</strong>：三季报累计营收同比落在 30%–50% 区间，毛利率在 26H1 的 44.32% 附近持平微降；资金面仍在净流出但幅度收窄｜<strong>路径</strong>：业绩兑现但无超预期，在 8-07 筹码 15% 分位成本与 50% 分位成本构成的区间内宽幅震荡，跟随元器件板块 beta 波动，等待员工持股计划考核目标与 Q4 订单指引给新方向</li>
+<li><strong>悲观（25%）</strong>｜<strong>触发</strong>：三季报累计营收同比跌破 30%，或累计毛利率较 26H1 的 44.32% 回落 1.5 个百分点以上；或 F-3 的美国 FCC 光模块禁令在 W3 后实质推进落地；或下期股东户数继续大幅增加｜<strong>路径</strong>：J 节推论 A 被证伪，市场重新定价&quot;一次性抢单&quot;假设，跌破 8-07 筹码 15% 分位成本后进入无成本支撑区，估值向立讯精密所在的低 PE 档位靠拢</li>
+</ul>
+<p>（30% + 45% + 25% = 100%）</p>
+<h2>L. 决策与风控</h2>
+<h3>条件式操作倾向</h3>
+<ol>
+<li><strong>如果</strong> 2026 年三季报（W9，10-31 前）累计营收同比 ≥50% <strong>且</strong>累计毛利率 ≥ 26H1 的 44.32%，<strong>同时</strong>价格已站上 8-07 筹码 50% 分位成本，<strong>那么</strong>可考虑<strong>试仓</strong>（业绩验证与筹码修复同时成立，J 节推论 A 得到确认）。</li>
+<li><strong>如果</strong>三季报前库内资金筹码近 20 日资金净流入仍为负、且正流入天数低于 10/20，<strong>那么</strong><strong>观望</strong>——不在资金持续撤离期做左侧介入（H 节 −26.95 亿净流出尚未看到拐点）。</li>
+<li><strong>如果</strong>价格跌破 8-07 筹码 15% 分位成本，<strong>那么</strong><strong>回避</strong>——该位置以下 8-07 的筹码分布已无成本支撑，属 K 节悲观情景路径。</li>
+<li><strong>如果</strong> F-3 的美国 FCC 禁止进口中国 800G/1.6T 光模块草案在 W3（09-20 观察点）后进入实质立法程序，<strong>那么</strong>对光通信相关敞口<strong>减仓</strong>——三环作为光模块上游陶瓷件供应商会被间接波及。</li>
+<li><strong>如果</strong>员工持股计划股东大会审议通过且公告的公司层面业绩考核目标低于 26H1 已实现的增速水平（营收同比 +54.82%），<strong>那么</strong><strong>观望</strong>——管理层自己设的门槛低于当期表现，是对后续增速可持续性的负面信号（置信度：中，此为激励机制的常规解读）。</li>
+</ol>
+<h3>风控要点（什么情况下这份判断应当被推翻）</h3>
+<ul>
+<li><strong>推翻条件 1</strong>：若后续披露显示 MLCC 在三环营收中占比很低（比如低于 20%），<strong>J 节主链的外部变量选错了</strong>，整份报告的驱动因素排序需要重排——F-1 的权重应大幅下调，F-3 上调。</li>
+<li><strong>推翻条件 2</strong>：若 2026-08-27 的&quot;会计政策变更&quot;被证实影响了收入或成本确认口径，<strong>C 节的同比数字可比性存疑</strong>，54.82%/56.18% 的增速需要按新口径重算。</li>
+<li><strong>推翻条件 3</strong>：若 A/H 溢价从 15.8% 快速扩张至 40% 以上且 H 股走势与 A 股背离，<strong>J 节副链的推论 B 被证伪</strong>——说明 A 股在独立情绪定价，估值背书消失。</li>
+<li><strong>注意</strong>：我给的不是止损价，是<strong>判断被推翻的条件</strong>。价格跌到某个位置只说明市场在定价别的东西，不等于我的逻辑错了；上面三条才是逻辑错了。</li>
+</ul>
+<h3>仓位思路</h3>
+<ul>
+<li>当前时点（09-01，三季报前、资金净流出未见拐点、筹码大幅分散）：<strong>轻或不参与</strong>为宜。</li>
+<li>若倾向 1 的两个条件同时满足：可从<strong>轻</strong>起步，<strong>不建议一次性到中等以上</strong>——K 节乐观情景只给了 30% 概率，且 J 节命门（MLCC 占比未知）在三季报披露分产品数据前无法解除。</li>
+<li><strong>不给具体金额、不给股数、不给目标价。</strong></li>
+</ul>
+<h2>M. 逻辑自查</h2>
+<h3>最依赖的假设是哪一条？错了会怎样？</h3>
+<p><strong>最依赖：「三环 26H1 的毛利率与增速跃升，主要由 MLCC 及光通信陶瓷件的行业性量价齐升驱动，且该周期尚未见顶。」</strong></p>
+<p>这条假设撑起了 A 节的驱动 1 与 2、F 节的全部传导链、J 节的主链、K 节三情景的触发条件设计。</p>
+<p><strong>它错了会怎样</strong>：如果 H1 的高增长实际是&quot;下游客户对涨价预期的提前备货&quot;（渠道抢单）而非真实终端需求，那么 Q3–Q4 会出现<strong>典型的备货后遗症</strong>：营收增速断崖、毛利率见顶回落、存货与应收账款同步走高。这种情况下 K 节的悲观情景概率应从 25% 大幅上调。<strong>这个风险在 C 节负债率上升 3.22 个百分点这条线索里已经有微弱信号</strong>（经营性负债扩张可能对应大量备货采购），但库内无明细无法坐实。</p>
+<h3>有没有为了让逻辑好看而忽略的反面证据？</h3>
+<p>有三条，我把它们放在这里而不是埋掉：</p>
+<ol>
+<li><strong>资金已经用脚投票了一个月</strong>。−26.95 亿净流出、8/20 正流入天数——这不是噪音，是持续性行为。我在 J 节按纪律没让它进逻辑链（它是盘面现象），但<strong>在概率分配上它是我把中性情景给到 45%、而不是让乐观情景更高的主要原因</strong>。诚实地说：如果只看基本面，26H1 这份财报值得更乐观的方向判断；是 H 节的资金与筹码把结论压回了&quot;震荡&quot;。</li>
+<li><strong>09-01 的价格形态是弱的</strong>。当日 −5.03%、最低 −5.96%、最高仅 +0.43%——全天几乎没有上攻、收在低位附近，且成交 43.70 亿并不小。同日 H 股 −4.10%，两地同向——<strong>这不是 A 股孤立的情绪杀跌</strong>。</li>
+<li><strong>股东户数 +226.7% 我给的解释偏温和了</strong>。我写的是&quot;典型的股价上涨后散户涌入&quot;。但另一种可能是<strong>机构在这个季度系统性减持、把筹码派发给了散户</strong>——库内无机构持股比例数据，我无法区分这两种。这两种情形对后市的含义差别很大。</li>
+</ol>
+<h3>信息缺口清单</h3>
+<ol>
+<li><strong>【最重要】库中无分产品/分业务营收拆分</strong>。库内财务只给合并报表口径，MLCC / 陶瓷插芯 / 陶瓷基板 / 封装基座 / SOFC 各占多少完全不知道。</li>
+</ol>
+<p><strong>影响</strong>：J 节主链的命门（见 J 节最弱一环）；F-1 与本票的相关性无法量化；G 节多个概念标签无法从&quot;沾边&quot;升级为&quot;有营收佐证&quot;。 <strong>补法</strong>：读 2026 年半年度报告全文（库内新闻已给出公告 PDF 链接，2026-08-27 发布）的&quot;主营业务分产品情况&quot;表；或等三季报后重跑本调研。</p>
+<ol>
+<li><strong>员工持股计划（2026-08-28 草案）的关键条款缺失</strong>。库内新闻只有五份公告的标题，无受让价格、参加人数、股票规模、<strong>公司层面业绩考核目标</strong>、锁定期。</li>
+</ol>
+<p><strong>影响</strong>：L 节倾向 5 无法执行——我设计了以考核目标为触发条件的规则，但目前拿不到那个数字。考核目标是管理层对未来增速的自我承诺，是<strong>验证 J 节主链最直接的内部证据</strong>。 <strong>补法</strong>：直接读 cninfo 公告 PDF（http://static.cninfo.com.cn/finalpage/2026-08-28/1225530756.PDF，本次环境无 PDF 解析工具，未能提取）；或等股东大会决议公告。</p>
+<ol>
+<li><strong>2026-08-27「会计政策变更」的具体内容未知</strong>。</li>
+</ol>
+<p><strong>影响</strong>：C 节全部同比数字的可比性存疑（见风控推翻条件 2）。 <strong>补法</strong>：读该公告 PDF（库内已有链接）。</p>
+<ol>
+<li><strong>筹码分布筹码数据时点为 2026-08-07，滞后近一个月</strong>。当前价 109.22 元已低于该时点的加权均本 119.56 元与 50% 分位 116.80 元，获利盘比例 76.13% 已明显失真。</li>
+</ol>
+<p><strong>影响</strong>：H 节的获利盘判读只能定性不能定量；L 节的价位锚仍可用（成本分位是历史事实，不因时间失效），但&quot;获利抛压有多重&quot;这个判断置信度降为低。 <strong>补法</strong>：等下一期筹码数据更新后重看获利盘比例。⚠️ 库内筹码仅覆盖关注票，该票有数据但更新频率受限。</p>
+<ol>
+<li><strong>库内事件日历返回的 20 条全部是概念标签匹配的行业/宏观事件，无一条公司自身日程</strong>（无股东大会日、无限售解禁表、无三季报预约披露日）。</li>
+</ol>
+<p><strong>影响</strong>：I 节的 W5–W13 几乎全空，13 周日历的后半段是&quot;库内无数据&quot;而非&quot;确无事件&quot;；限售解禁尤其是盲区——H 股 2026-07-09 上市，基石投资者禁售期届满时点（按港股惯例约 6 个月）落在本 13 周窗口之外，但 A 股侧是否有解禁完全未知。 <strong>补法</strong>：查交易所三季报预约披露时间表；查公司限售股解禁明细表。</p>
+<ol>
+<li><strong>库内研报的字段口径不一致，已排除使用</strong>。开源证券 2026 年 EPS 预测 2.35 元对应库内字段 23.0，隐含股价约 54 元（据推算），与库内行情的 09-01 收盘 109.22 元差距过大；中金公司 EPS 2.76 对应 40.7，隐含约 112 元（据推算），与库内收盘价吻合。</li>
+</ol>
+<p><strong>影响</strong>：J 节与 B 节的估值讨论<strong>只用库内估值的 PE_TTM 65.82</strong>，未采用任何研报字段。 <strong>补法</strong>：核对各家研报的定价基准日；本报告已按&quot;存疑不用&quot;处理。</p>
+<ol>
+<li><strong>库内涨停记录近 180 日返回空 —— 这是信息不是缺口</strong>，已在 H 节作为&quot;无游资情绪盘&quot;的判据使用。</li>
+</ol>
+<ol>
+<li><strong>本报告未使用任何历史行情序列</strong>（库内行情事实源只用了库内行情单点，按铁律 2）。</li>
+</ol>
+<p><strong>影响</strong>：L 节与 K 节的价位锚统一使用<strong>筹码分位成本</strong>与<strong>09-01 收盘</strong>，未使用均线、前低等需要历史序列的技术锚。这是有意选择，不是遗漏。</p>
+<h3>库内取数点使用情况（自查）</h3>
+<p>本次调用并在正文引用的库内取数：库内公司档案（B/E/G）· 库内财务（C/J）· 库内估值（B/D）· 库内行情（B/H）· 库内概念标签（G）· 库内涨停记录（H）· 库内新闻（H/I）· 库内同业对比（D）· 库内事件日历（F/I）· 库内研报（下方卖方预期段/M-6）· 库内 A/H 对照（B/J 副链）· 库内资金筹码（H）——<strong>12 个取数点全部调用且全部在正文引用</strong>。</p>
+<h2>附：卖方预期（库内研报，库内近 90 天，共 5 篇研报 / 5 家机构）</h2>
+<p>⚠️ <strong>以下全部是别人的预测，不是账上的事实。</strong> 库内评级分布：最高档评级 4 篇、&quot;跑赢行业&quot; 1 篇——<strong>全部为正面方向，无一篇负面，这本身就说明卖方样本存在方向性偏差</strong>。</p>
+<p>〔卖方预期〕来源：开源证券研报（库内）· 日期：2026-08-31 · 观点：《MLCC 量价齐升，光通信与 SOFC 共拓长期成长空间》；预测 2026 年 EPS 2.35 元 / 归母净利 45.07 亿元，2027 年 EPS 4.14 元 / 净利 79.36 亿元，2028 年 EPS 5.28 元 / 净利 101.10 亿元 · 置信度：低（卖方预期非事实，未经交叉验证；其字段与库内收盘价不自洽，见 M-6，故不引用）</p>
+<p>〔卖方预期〕来源：中金公司研报（库内）· 日期：2026-08-30 · 观点：预测 2026 年 EPS 2.76 元 / 归母净利 55.03 亿元，2027 年 EPS 4.34 元 / 净利 86.73 亿元 · 置信度：低（卖方预期非事实，未经交叉验证）</p>
+<p>〔卖方预期〕来源：国海证券研报（库内）· 日期：2026-08-16 · 观点：预测 2026 年 EPS 1.78 元 / 归母净利 35.54 亿元，2027 年 EPS 2.27 元 / 净利 45.33 亿元 · 置信度：低（卖方预期非事实，未经交叉验证）</p>
+<p>〔卖方预期〕来源：申万宏源证券研报（库内）· 日期：2026-07-08 · 观点：预测 2026 年 EPS 1.943 元 / 归母净利 37.23 亿元 · 置信度：低（卖方预期非事实，未经交叉验证；发布于半年报披露前）</p>
+<p>〔卖方预期〕来源：国金证券研报（库内）· 日期：2026-08-31 · 观点：《业绩符合预期，MLCC 景气度提升》· 置信度：低（库内该篇无结构化盈利预测数据）</p>
+<p><strong>⚠️ 卖方预测的离散度极大，请自行注意</strong>：同为 2026 年归母净利预测，最低 35.54 亿（国海）到最高 55.03 亿（中金），<strong>相差 54.8%</strong>（据库内净利润（万元）推算）。作为对照，库内实际 TTM 归母净利约 33.1 亿元（据库内估值市值与 PE_TTM 推算，见 C 节）。<strong>这么大的分歧本身说明：卖方对这轮景气度能持续多久也没有共识。</strong></p>
+<p><strong>Sources（本报告联网部分）：</strong></p>
+<ul>
+<li><a href="https://www.jiemian.com/article/14555422.html" target="_blank" rel="noopener">2026 MLCC 超级涨价潮：缺货、交期拉长 — 界面新闻</a></li>
+<li><a href="https://www.eet-china.com/mp/a496587.html" target="_blank" rel="noopener">村田/三星/太诱全线调价：MLCC 涨价传导链全梳理 — 电子工程专辑</a></li>
+<li><a href="https://finance.sina.cn/stock/jdts/2026-06-15/detail-inicnuhn9923395.d.html" target="_blank" rel="noopener">AI 引爆 MLCC，村田积极扩产、三星电机拿下 1.5 万亿韩元大单 — 新浪财经 2026-06-15</a></li>
+<li><a href="https://m.21jingji.com/article/20260804/herald/e074c44ec500b5ead7dbb92ec1295996.html" target="_blank" rel="noopener">MLCC 涨价潮升级！A 股概念板块狂飙 — 21 财经 2026-08-04</a></li>
+<li><a href="https://finance.eastmoney.com/a/202608123838281088.html" target="_blank" rel="noopener">客户提前锁定产能高端 MLCC 景气度或延续至 2028 年 — 东方财富 2026-08-12</a></li>
+<li><a href="https://www.ofweek.com/ai/2026-06/ART-201714-8420-30691004.html" target="_blank" rel="noopener">一颗 MLCC，引爆百亿供应链暗战 — OFweek 2026-06</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/1989398581224944063" target="_blank" rel="noopener">SOFC 行业深度：行业背景、现状、产业链梳理（慧博）— 知乎</a></li>
+<li><a href="https://www.chinabaogao.com/market/202607/809569.html" target="_blank" rel="noopener">AI 算力催生新战场 SOFC 行业商业化拐点临近 — 观研报告网 2026-07</a></li>
+<li><a href="https://news.qq.com/rain/a/20260709A064IM00" target="_blank" rel="noopener">三环集团（06951.HK），实现&quot;A+H&quot;两地上市 — 腾讯新闻 2026-07-09</a></li>
+<li><a href="https://finance.ifeng.com/c/8ud9vx4k4Qh" target="_blank" rel="noopener">三环集团（300408.SZ）：境外上市股份（H 股）挂牌并上市交易 — 凤凰网财经</a></li>
+<li><a href="https://www.cfi.net.cn/p20260707002021.html" target="_blank" rel="noopener">三环集团（300408）：境外上市股份（H 股）公开发行价格 — 中财网 2026-07-07</a></li>
+<li><a href="https://www.cls.cn/detail/1339789" target="_blank" rel="noopener">AI 算力需求打开增量空间！通信类电子陶瓷外壳乃光模块必备零组件 — 财联社</a></li>
+<li><a href="https://www.sohu.com/a/1026151324_122757765" target="_blank" rel="noopener">三环集团 MLCC 业务如何受益于 AI 服务器需求爆发？— 搜狐财经</a></li>
+<li><a href="https://caifuhao.eastmoney.com/news/20260624141214313478840" target="_blank" rel="noopener">三环集团：AI 服务器高端高容 MLCC 细分国产龙头 — 东方财富财富号 2026-06-24</a></li>
+<li><a href="http://static.cninfo.com.cn/finalpage/2026-07-30/1225449458.PDF" target="_blank" rel="noopener">三环集团 2026 年第二期回购公司股份方案的公告 — 巨潮资讯 2026-07-30</a></li>
+<li><a href="https://www.stcn.com/article/detail/4050548.html" target="_blank" rel="noopener">三环集团拟 5 亿元至 10 亿元回购股份 — 证券时报网</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-02），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>近20日资金净流出26.95亿</li>
+      <li>股东户数季度环比+226.7%</li>
+      <li>PE_TTM 65.8股息率仅0.347%</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>限售解禁</dt><dd>首发或定增取得的股份锁定期届满、可以上市流通。解禁本身不等于减持，但增加了潜在供给。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.jiemian.com/article/14555422.html" target="_blank" rel="noopener">2026 MLCC 超级涨价潮：缺货、交期拉长 — 界面新闻</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.eet-china.com/mp/a496587.html" target="_blank" rel="noopener">村田/三星/太诱全线调价：MLCC 涨价传导链全梳理 — 电子工程专辑</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.cn/stock/jdts/2026-06-15/detail-inicnuhn9923395.d.html" target="_blank" rel="noopener">AI 引爆 MLCC，村田积极扩产、三星电机拿下 1.5 万亿韩元大单 — 新浪财经 2026-06-15</a> <em>2026-06-15</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.21jingji.com/article/20260804/herald/e074c44ec500b5ead7dbb92ec1295996.html" target="_blank" rel="noopener">MLCC 涨价潮升级！A 股概念板块狂飙 — 21 财经 2026-08-04</a> <em>2026-08-04</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.eastmoney.com/a/202608123838281088.html" target="_blank" rel="noopener">客户提前锁定产能高端 MLCC 景气度或延续至 2028 年 — 东方财富 2026-08-12</a> <em>2026-08-12</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.ofweek.com/ai/2026-06/ART-201714-8420-30691004.html" target="_blank" rel="noopener">一颗 MLCC，引爆百亿供应链暗战 — OFweek 2026-06</a> <em>2026-06</em></li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://zhuanlan.zhihu.com/p/1989398581224944063" target="_blank" rel="noopener">SOFC 行业深度：行业背景、现状、产业链梳理（慧博）— 知乎</a></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.chinabaogao.com/market/202607/809569.html" target="_blank" rel="noopener">AI 算力催生新战场 SOFC 行业商业化拐点临近 — 观研报告网 2026-07</a> <em>2026-07</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260709A064IM00" target="_blank" rel="noopener">三环集团（06951.HK），实现&quot;A+H&quot;两地上市 — 腾讯新闻 2026-07-09</a> <em>2026-07-09</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.ifeng.com/c/8ud9vx4k4Qh" target="_blank" rel="noopener">三环集团（300408.SZ）：境外上市股份（H 股）挂牌并上市交易 — 凤凰网财经</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cfi.net.cn/p20260707002021.html" target="_blank" rel="noopener">三环集团（300408）：境外上市股份（H 股）公开发行价格 — 中财网 2026-07-07</a> <em>2026-07-07</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/1339789" target="_blank" rel="noopener">AI 算力需求打开增量空间！通信类电子陶瓷外壳乃光模块必备零组件 — 财联社</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.sohu.com/a/1026151324_122757765" target="_blank" rel="noopener">三环集团 MLCC 业务如何受益于 AI 服务器需求爆发？— 搜狐财经</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://caifuhao.eastmoney.com/news/20260624141214313478840" target="_blank" rel="noopener">三环集团：AI 服务器高端高容 MLCC 细分国产龙头 — 东方财富财富号 2026-06-24</a> <em>2026-06-24</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://static.cninfo.com.cn/finalpage/2026-07-30/1225449458.PDF" target="_blank" rel="noopener">三环集团 2026 年第二期回购公司股份方案的公告 — 巨潮资讯 2026-07-30</a> <em>2026-07-30</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.stcn.com/article/detail/4050548.html" target="_blank" rel="noopener">三环集团拟 5 亿元至 10 亿元回购股份 — 证券时报网</a></li>
+      <li><span class="src-tag src-media">媒体</span> 搜狐财经《三环集团 MLCC 业务如何受益于 AI 服务器需求爆发？》 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富财富号 2026-06-24《三环集团：AI 服务器高端高容 MLCC 细分国产龙头》 <em>2026-06-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> EET-China《村田/三星/太诱全线调价：MLCC 涨价传导链全梳理》 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经《MLCC 涨价》专题 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 界面新闻《2026 MLCC 超级涨价潮》 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 界面新闻 2026 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> OFweek 2026-06《一颗 MLCC，引爆百亿供应链暗战》 <em>2026-06</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内事件日历，importance 8，policy 类 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 知乎《SOFC 行业深度》慧博出品 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-research">研究</span> 观研报告网 2026-07《AI 算力催生新战场固体氧化物燃料电池行业商业化拐点临近》 <em>2026-07</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社《AI 算力需求打开增量空间！通信类电子陶瓷外壳乃光模块必备零组件》 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 库内新闻已给出公告 PDF 链接，2026-08-27 发布 <em>2026-08-27</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-02 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
