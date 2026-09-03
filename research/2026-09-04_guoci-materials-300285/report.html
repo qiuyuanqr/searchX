@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>国瓷材料（300285.SZ） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>国瓷材料（300285.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-04（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>关联板块</b> AI应用 · 算力 · 航天 · 机器人</span>
+      <span><b>申万行业</b> 电子化学品Ⅱ</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 牙科医疗 · MLCC概念 · 3D打印 · 共封装光学(CPO) · 卫星导航 · 固态电池 · 宁德时代概念 · 氢能源</span>
+      <span><b>来源</b> 22 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    国瓷材料（300285）主要做的是高端功能陶瓷材料的研发、生产和销售。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——涨价预期已被估值吃满，财报还没兑现。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：涨价预期已被估值吃满，财报还没兑现。支撑在于氧化锆粉体7-27起提价10%-40%；东曹断供留出6000吨/年缺口；H1营收同比+16.64%环比提速。主要风险是PE_TTM 98.92倍估值已透支；H1净利增速9.36%远落后营收；近20日主力净流出22.36亿。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>氧化锆粉体7-27起提价10%-40%</li>
+      <li>东曹断供留出6000吨/年缺口</li>
+      <li>H1营收同比+16.64%环比提速</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据基准：库内行情数据时点 <strong>9-03 16:29</strong>（收盘后快照）；估值取数日 20260903；财报最新期 2026 年半年报（20260630，披露日 20260806）。报告生成日 2026-09-04。 本报告不含任何账户 / 持仓 / 自选信息，为全局共享档案。</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中） <strong>一句话逻辑</strong>：涨价预期已被估值吃满，财报还没兑现。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li>公司 2026-07-20 公告、自 <strong>7 月 27 日起上调氧化锆粉体售价 10%–40%</strong>，这部分价格从 Q3 才开始进报表，H1 财报里一分钱都没体现（置信度：高——公司公告，财联社 / 证券时报 / 新浪财经 2026-07-20 三源一致）。</li>
+<li>日本东曹（Tosoh）因氧化钇断供停产，全球高端氧化锆出现约 <strong>6000 吨/年</strong>刚性缺口，国产替代窗口打开（置信度：中——多家财经媒体交叉，但库内无营收佐证）。</li>
+<li>库内 H1 营收 <strong>25.13 亿元、同比 +16.64%</strong>，增速较 Q1 的 +9.15% 明显提速（置信度：高——库内财务）。</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>估值已在高位</strong>：PE_TTM <strong>98.92 倍</strong>、PB <strong>8.66 倍</strong>，高于所处行业 PE 中位数 70.43（置信度：高——库内估值）。</li>
+<li><strong>增收不增利</strong>：H1 净利同比仅 <strong>+9.36%</strong>，明显落后营收的 +16.64%，剪刀差在扩大（置信度：高——库内财务）。</li>
+<li><strong>筹码与资金双弱</strong>：近 20 个交易日（0807–0903）主力资金净流出 <strong>22.36 亿元</strong>、特大单净流出 17.93 亿元、净流入仅 5/20 天；股东户数从 3-31 的 78753 户增至 6-30 的 <strong>213051 户（环比 +170.5%）</strong>（置信度：高——库内资金筹码；筹码结论只作情绪面佐证）。</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ul>
+<li>信号一：<strong>三季报单季净利与毛利率</strong>——核验时点按库内披露规律推算在 10 月下旬（2025 年三季报公告日为 20251028）。</li>
+<li>信号二：<strong>近 20 日主力资金净流入天数能否由 5/20 天转正</strong>——可每周用库内资金筹码复核。</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong>：我默认了「涨价传导是慢档」。若氧化锆提价 10%–40% 叠加放量在 Q3 单季就打满，利润可以在一个季度内把近百倍 PE 消化掉一大截，那么「估值透支」这条主风险会先于我预期失效。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li>名称 / 代码：<strong>国瓷材料 · 300285</strong>（库内基础资料确认该代码在库内唯一对应此票，行业「陶瓷」）</li>
+<li>上市状态：<strong>L（正常上市）</strong>，创业板，上市日 <strong>2012-01-13</strong>（至今约 14.6 年，据上市日推算）</li>
+<li>主营：<strong>高端功能陶瓷材料的研发、生产和销售</strong></li>
+<li>产品线（来自库内公司档案公司简介，非营收拆分）：电子陶瓷介电材料（MLCC 粉体）、结构陶瓷材料（纳米复合氧化锆、氧化铝）、建筑陶瓷材料（陶瓷墨水、釉料）、电子金属浆料（银浆 / 铝浆 / 铜浆 / 镍浆）、催化材料（蜂窝陶瓷、分子筛、铈锆固溶体）</li>
+<li>经营资质：营业执照含<strong>第二类、第三类医疗器械生产与经营</strong>许可（这是齿科方向真有业务的硬佐证）</li>
+<li>研发底子：累计发明专利 28 项、实用新型 51 项；「一种连续制备钛酸钡粉体的工艺」获中国专利金奖；主持制定《电子工业用高纯钛酸钡》行业标准及两项国际标准</li>
+<li>员工：5170 人｜注册资本：99704.83 万元</li>
+</ul>
+<p><strong>当前行情与估值</strong>（库内行情 / 库内估值，取数日 20260903）</p>
+<ul>
+<li>收盘 <strong>63.63 元</strong>，涨跌幅 <strong>+1.48%</strong>，当日最高 +3.19%、最低 −0.48%，成交额 <strong>36.50 亿元</strong>，换手率 <strong>6.72%</strong>（数据时点 16:29）</li>
+<li>总市值 <strong>634.42 亿元</strong> ｜ PE_TTM <strong>98.92</strong> ｜ PB <strong>8.66</strong> ｜股息率 <strong>0.3125%</strong></li>
+<li>行业（陶瓷）内可比 5 只，行业 PE 中位数 <strong>70.43</strong>，本股 PE 排名第 <strong>3</strong></li>
+</ul>
+<p>库内 A/H 对照返回 None——非 A+H 两地上市票，按规程不涉及跨市场溢价参照。</p>
+<p><strong>判断</strong>：换手率 6.72% 配 36.50 亿元成交额，属高活跃度状态；PE_TTM 98.92 倍在自身行业分类内偏贵（置信度：高，仅估值口径，不等于好坏结论）。</p>
+<h2>C. 财务健康</h2>
+<p>近 4 期（库内财务，累计口径，新→旧）：</p>
+<ul>
+<li><strong>2026H1（20260630 · 披露 20260806）</strong>：营收 25.13 亿｜净利 3.63 亿｜营收同比 <strong>+16.64%</strong> ｜净利同比 <strong>+9.36%</strong> ｜毛利率 37.66% ｜净利率 15.37% ｜ ROE 5.01% ｜ EPS 0.37 ｜资产负债率 <strong>26.61%</strong></li>
+<li><strong>2026Q1（20260331）</strong>：营收 10.64 亿｜净利 1.42 亿｜营收同比 +9.15% ｜净利同比 +4.79% ｜毛利率 36.74% ｜净利率 13.94% ｜ ROE 1.98% ｜ EPS 0.14 ｜资产负债率 22.41%</li>
+<li><strong>2025 全年（20251231）</strong>：营收 45.83 亿｜净利 6.10 亿｜营收同比 +13.24% ｜净利同比 <strong>+0.91%</strong> ｜毛利率 37.57% ｜净利率 14.63% ｜ ROE 8.80% ｜ EPS 0.62 ｜资产负债率 18.91%</li>
+<li><strong>2025 前三季（20250930）</strong>：营收 32.84 亿｜净利 4.89 亿｜营收同比 +10.71% ｜净利同比 +1.50% ｜毛利率 37.83% ｜净利率 16.80% ｜ ROE 7.13% ｜ EPS 0.49 ｜资产负债率 21.41%</li>
+</ul>
+<p><strong>趋势读法（三条，按重要性排）</strong></p>
+<ol>
+<li><strong>营收增速在提速，且拐点发生在 Q2</strong>：H1 累计同比 +16.64% 高于 Q1 的 +9.15%，数学上意味着 Q2 单季增速必然快于 Q1（置信度：高）。据库内财务推算，Q2 单季营收约 14.49 亿元（25.13 − 10.64）、单季净利约 2.21 亿元（3.63 − 1.42）。</li>
+<li><strong>利润跟不上收入，剪刀差在拉大</strong>：2025 全年净利同比只有 +0.91%（几乎停滞），2026 修复到 H1 的 +9.36%，但仍显著落后营收的 +16.64%。毛利率并没有塌（H1 37.66% 已从 Q1 的 36.74% 回升，与 2025 全年 37.57% 基本持平），所以差额更可能出在毛利率以下的环节——费用、减值或少数股东损益。<strong>库内财务不含利润表明细，这一环是信息缺口</strong>（置信度：中）。</li>
+<li><strong>在加杠杆</strong>：资产负债率 18.91%（2025 全年）→ 22.41%（Q1）→ <strong>26.61%</strong>（H1），半年抬升近 8 个百分点。绝对值仍属健康区间，但方向是明确的加杠杆扩张（置信度：高）。</li>
+</ol>
+<p><strong>估值口径的一句话</strong>：以 H1 的 EPS 0.37 元与 ROE 5.01%（半年）对照 PE_TTM 98.92 倍、PB 8.66 倍，当前定价隐含的是「未来盈利大幅上台阶」，而不是「现有盈利水平的延续」（置信度：高，仅估值口径）。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比返回同属「陶瓷」行业、市值最接近的 3 家（对比期 20260630）：</p>
+<ul>
+<li><strong>国瓷材料（300285）</strong>｜市值 634.42 亿｜ PE_TTM 98.92 ｜ PB 8.66 ｜ H1 营收 25.13 亿｜ H1 净利 3.63 亿｜ ROE 5.01%</li>
+<li><strong>东鹏控股（003012）</strong>｜市值 53.92 亿｜ PE_TTM 33.36 ｜ PB 0.73 ｜ H1 营收 24.17 亿｜ H1 净利 0.28 亿｜ ROE 0.38%</li>
+<li><strong>开尔新材（300234）</strong>｜市值 53.74 亿｜ PE_TTM 无｜ PB 4.78 ｜ H1 营收 0.99 亿｜ H1 净利 −0.01 亿｜ ROE −0.11%</li>
+<li><strong>蒙娜丽莎（002918）</strong>｜市值 45.05 亿｜ PE_TTM 41.94 ｜ PB 1.38 ｜ H1 营收 17.49 亿｜ H1 净利 0.49 亿｜ ROE 1.49%</li>
+</ul>
+<p><strong>这组对比最重要的结论是：它本身不太可比</strong>（置信度：高）。东鹏控股、蒙娜丽莎是建筑陶瓷（瓷砖）企业，开尔新材是搪瓷板材，三家都是地产链品种；国瓷材料是电子 / 结构 / 催化功能陶瓷粉体，下游是 MLCC、齿科、汽车催化。行业分类把它们放进同一个「陶瓷」桶里，导致库内估值的「行业 PE 中位数 70.43、排名第 3」这个分位数参考价值有限。</p>
+<p>值得注意的一处佐证：库内涨停记录里 2026-07-21 涨停当日，库内给这只票打的行业标签是<strong>「电子化学」</strong>而非「陶瓷」——同一个库里两套口径，说明分类本身存在歧义（置信度：高，两个库内取数返回值直接对照）。</p>
+<p>在这组里的相对位置：营收体量与国瓷接近的东鹏控股，H1 净利只有 0.28 亿（国瓷 3.63 亿，约 13 倍）、ROE 0.38%（国瓷 5.01%）。<strong>盈利能力上国瓷是碾压级的，估值上也是最贵的</strong>（PE 98.92 vs 33.36 / 41.94；PB 8.66 vs 0.73 / 1.38）（置信度：高）。</p>
+<p><strong>信息缺口</strong>：真正的可比对象（MLCC 粉体、齿科氧化锆、蜂窝陶瓷的同业公司）不在库内「陶瓷」行业分类中，库内同业对比取不到。影响：D 节无法给出有效的同业估值分位。补法：如需横向估值，应改用概念成分股口径（库内概念标签给出的 MLCC 概念 886112.TI）自行圈定可比集。</p>
+<h2>E. 护城河与商业模式</h2>
+<p>分级判断（依据库内公司档案的资质 / 专利 / 标准信息 + 联网产业信息）：</p>
+<p><strong>结构性护城河（置信度：中）</strong></p>
+<ul>
+<li><strong>标准制定权 + 专利壁垒</strong>：主持制定《电子工业用高纯钛酸钡》行业标准与《纳米级二氧化钛》《硅橡胶用气相二氧化硅》两项国际标准；累计发明专利 28 项；「多层陶瓷电容器用钛酸钡基介电陶瓷材料的产业化关键技术及应用」获国家科技进步二等奖（来源：库内公司档案）。粉体材料是典型的「配方 + 工艺 know-how」行业，客户认证周期长，这构成真实的转换成本。</li>
+<li><strong>医疗器械资质</strong>：营业执照含二类、三类医疗器械生产与经营许可（来源：库内公司档案经营范围）。齿科氧化锆走的是医疗器械注册路径，牌照本身是准入壁垒。</li>
+</ul>
+<p><strong>阶段性优势（置信度：中）</strong></p>
+<ul>
+<li><strong>供给缺口带来的替代窗口</strong>：日本东曹是全球高端纳米氧化锆粉体龙头（全球市占约 18%，齿科专用粉体细分 40%–45%），2026 年 6 月 17 日向下游客户发出中长期停供通知，高端氧化锆年产能约 1.2 万吨、预计造成全球约 6000 吨/年刚性缺口（来源：OFweek 新材料网 2026-07 转载〈氧化锆的&quot;断供时刻&quot;〉、36 氪 2026-06〈全线飙涨，氧化锆疯了〉、观研报告网 2026-08〈需求多点爆发+海外断供氧化锆粉体行业价格走高〉三源交叉）。这是<strong>窗口期红利、不是永久壁垒</strong>——它依赖出口管制政策的持续性。</li>
+</ul>
+<p><strong>看不出结构性护城河的部分（置信度：中）</strong></p>
+<ul>
+<li>建筑陶瓷材料（陶瓷墨水、釉料）与电子金属浆料属于竞争相对充分的环节，从库内信息看不出定价权来源。</li>
+</ul>
+<p><strong>商业模式一句话</strong>：上游买原材料（锆英砂、稀土氧化物、贵金属），中间做粉体配方与烧结工艺，下游卖给 MLCC 厂、齿科加工厂、汽车催化剂厂——是典型的<strong>「材料平台型 + 多下游分散」</strong>模式，好处是单一下游波动可被平滑，坏处是每条线都要各自打客户认证，规模效应弱于单品爆款型公司（置信度：中）。</p>
+<h2>F. 政策与监管</h2>
+<p><strong>政策一：稀土 / 氧化钇出口管制（直接、强利好，置信度：中高）</strong></p>
+<ul>
+<li>事实：2026 年 1 月，中国商务部收紧对日两用物项出口管制，<strong>氧化钇被纳入管制清单</strong>，对日出口审批全面从严；2026 年 1–2 月对日氧化钇、氧化镝出口量同比骤减超 93%，4 月对日出库量逼近零（来源：同花顺 2026-06-29、OFweek 新材料网 2026-07、东方财富财富号 2026-06-19，三源一致）。</li>
+<li>传导链条：氧化钇是钇稳定氧化锆（YSZ）的关键稳定剂 → 全球氧化钇分离产能九成以上在中国 → 日本本土无规模化提纯产线 → 日企库存 30–45 天耗尽 → <strong>东曹 2026-06-17 发出中长期停供通知</strong> → 全球高端氧化锆供给缺口 → <strong>国瓷 2026-07-20 公告、7-27 起提价 10%–40%</strong>（来源：36 氪 2026-06、网易 2026-06、财联社 2026-07-20）。</li>
+<li>这条链的每一环都有独立来源，且<strong>终点落在公司自己的公告上</strong>，是本报告里传导最完整的一条政策链。</li>
+</ul>
+<p><strong>政策二：价格端的量化佐证（置信度：低，单一价格数据未二次交叉）</strong></p>
+<ul>
+<li>国内氧化钇价格 2026 年 6 月涨至 60.7 元/公斤、较年初上涨 21%；海外氧化钇价格从 2025 年 1 月的 7.9 美元/公斤涨至 2026 年 5 月的 441 美元/公斤（来源：同花顺 2026-06-29 / 网易 2026-06）。<strong>这两个数字来自媒体转述、未见权威价格机构原始口径，标为单源未交叉验证</strong>。</li>
+</ul>
+<p><strong>政策三：管制的两面性（风险侧，置信度：中）</strong></p>
+<ul>
+<li>出口管制是国瓷提价的前提，也是它的悬顶之剑：管制若因外交谈判放松，供给缺口收敛，涨价逻辑会同步松动。这是本报告里<strong>唯一一条「利好来源与最大风险来源是同一件事」</strong>的结构。</li>
+</ul>
+<p><strong>信息缺口</strong>：未检索到直接针对功能陶瓷 / 新材料行业的 2026 年新增产业扶持或限制性政策（如专项补贴、环保限产）。影响：F 节只覆盖了出口管制这一条主线。补法：三季报或下次调研时补搜工信部新材料首批次应用保险补偿目录等常规政策窗口。</p>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 18 个同花顺概念标签，逐个分级：</p>
+<p><strong>真有业务（有主营描述、资质或公司公告佐证）</strong></p>
+<ul>
+<li><strong>MLCC 概念（886112.TI）</strong>：库内公司档案明写「电子陶瓷介电材料」为核心产品线，钛酸钡粉体获国家科技进步奖并主持制定行业标准——这是公司的立身之本（置信度：高）。</li>
+<li><strong>牙科医疗（885926.TI）</strong>：结构陶瓷（纳米复合氧化锆）+ 经营范围含二类/三类医疗器械生产经营许可（置信度：高）。</li>
+<li><strong>新能源汽车（885431.TI）</strong>：库内公司档案明写产品应用于「新能源汽车」；催化材料（蜂窝陶瓷、分子筛、铈锆固溶体）对应汽车尾气催化（置信度：中高）。</li>
+<li><strong>3D 打印（885537.TI）</strong>：库内 2026-08-08 董秘问答记录直接问到「3D 打印光固化氧化锆粉体客户端验证通过率如何、何时批量供货」（来源：库内新闻，库内投资者关系问答）——<strong>说明产品真实存在，但仍在客户验证阶段、尚未见批量供货佐证</strong>（置信度：中）。</li>
+</ul>
+<p><strong>沾边但未见营收佐证（仅概念标签）</strong></p>
+<ul>
+<li><strong>芯片概念（885756.TI）/ 5G（885556.TI）/ 消费电子（885800.TI）</strong>：均为 MLCC 粉体的下游应用场景，属<strong>间接关联</strong>——公司卖的是粉体，不是芯片或终端（置信度：中，标签合理但无独立营收支撑）。</li>
+<li><strong>固态电池（886032.TI）</strong>：库内公司档案主营与产品线中<strong>未出现固态电池、电解质、隔膜涂覆</strong>等表述——<strong>仅概念标签，未见营收佐证</strong>（置信度：高，指「无佐证」这个判断本身）。</li>
+<li><strong>共封装光学 CPO（886033.TI）</strong>：主营描述中无光模块 / 光通信相关产品——<strong>仅概念标签，未见营收佐证</strong>。</li>
+<li><strong>商业航天（886078.TI）/ 卫星导航（885574.TI）</strong>：库内公司档案提到产品应用领域含「航空航天」，但无具体产品或客户佐证——<strong>沾边，未见营收佐证</strong>。</li>
+<li><strong>氢能源（885823.TI）</strong>：主营中无氢能相关表述（氧化锆理论上可用于固体氧化物燃料电池电解质，但这是推测，<strong>库内无佐证</strong>）——<strong>仅概念标签</strong>。</li>
+<li><strong>宁德时代概念（885789.TI）/ 比亚迪概念（885997.TI）/ 锂电池概念（885710.TI）</strong>：均属客户关联型标签，库内无供货关系佐证——<strong>仅概念标签</strong>。</li>
+</ul>
+<p><strong>非业务标签（交易属性）</strong></p>
+<ul>
+<li>中证 500 成份股（883304.TI）、深股通（885694.TI）、融资融券（885338.TI）——这三个只说明它是被指数纳入、可外资买、可两融的中大市值票，与业务无关，但对<strong>波动性与资金结构有实际影响</strong>（置信度：高）。</li>
+</ul>
+<p><strong>产业链位置</strong></p>
+<ul>
+<li>上游：锆英砂、稀土氧化物（氧化钇）、钛酸钡原料、贵金属（银、铜、镍）——<strong>上游正是被管制卡住的环节，公司作为国内厂商反而是受益方</strong>。</li>
+<li>本环节：功能陶瓷粉体（配方 + 烧结工艺）。</li>
+<li>下游：MLCC 厂（风华高科、三环等国内厂 + 日韩系）、齿科加工厂、汽车催化剂厂、建陶厂、光伏组件厂。</li>
+<li><strong>议价能力</strong>：当前时点议价权明显偏向本环节——上游被管制约束、下游 MLCC 因 AI 服务器需求缺货（见 H 节），公司能在 7-27 直接提价 10%–40% 就是议价权的直接证据（置信度：中高）。</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<p><strong>新闻（库内新闻，近 60 日共 20 条，挑 7 条）</strong></p>
+<ol>
+<li><strong>2026-09-02 · 关于回购公司股份的进展公告</strong>（cninfo）——公司仍在按月披露回购进展。⚠️ 联网补充：截至 2026-07-31 累计回购 326.61 万股、占总股本 0.3276%、成交总额 1.0009 亿元；回购方案总额区间为不低于 1 亿元、不超过 2 亿元；回购价格上限在 2026-06-02 因 2025 年年度权益分派调整为不超过 39.90 元/股（来源：搜狐财经 2026-08 转载公司公告、证券之星 2026-06-02 公告转载）。<strong>这意味着按 9-03 收盘 63.63 元的价格，回购上限 39.90 元已远低于市价、回购实际上无法继续执行</strong>（置信度：中——上限数值为联网来源，8-31 公告已再次调整但新数值未取到）。</li>
+<li><strong>2026-08-31 · 关于 2026 年中期权益分派实施后调整回购股份价格上限的公告</strong> + <strong>调整 2026 年限制性股票激励计划授予价格的公告</strong> + <strong>法律意见书</strong>（cninfo）——中期分派实施完毕后的机械性调整，对基本面无实质影响（置信度：高）。</li>
+<li><strong>2026-08-31 · 关于部分董事辞职暨补选第六届董事会董事的公告</strong> + 独立董事候选人（海闻）声明与承诺 + 董事会决议 + <strong>关于召开 2026 年第二次临时股东会的通知</strong>（cninfo）——治理层变动，需在临时股东会审议。<strong>董事辞职原因与补选背景库内无内容，属信息缺口</strong>（置信度：中，指「有此事」为高，指「无实质影响」为中）。</li>
+<li><strong>2026-08-21 13:27 · 「MLCC 概念震荡反弹国瓷材料涨超 10%」</strong>（财联社）——⚠️ 该标题里的涨幅是<strong>发稿时点的盘中旧快照</strong>：8 月 21 日盘中<strong>曾</strong>涨超 10%。当前状态以库内行情为准：9-03 收盘 63.63 元、+1.48%。</li>
+<li><strong>2026-08-19 · 「MLCC 概念持续下挫洁美科技等多股跌停」</strong>（财联社 13:13）+ <strong>「MLCC 板块走弱博迁新材跌停」</strong>（东方财富 10:40）——与第 4 条相隔仅两天，<strong>8 月中下旬 MLCC 概念在两个交易日内从跌停到涨超 10%</strong>，说明这条主线当前是<strong>高波动的情绪博弈状态、而非稳态趋势</strong>（置信度：高，两条独立库内新闻互证）。</li>
+<li><strong>2026-08-11 · 2026 年中期权益分派实施的公告</strong>（cninfo）——中期分红落地，与库内估值的股息率 0.3125% 相互印证（分红比例很低，公司仍在投入期）（置信度：高）。</li>
+<li><strong>2026-08-08 · 【董秘问答】3D 打印光固化氧化锆粉体客户端验证通过率如何、何时批量供货</strong>，以及同日<strong>【董秘问答】截至 8 月 6 日公司股东户数是多少</strong>（库内投资者关系问答）——两个问题的提问方向本身就是信号：投资者在追新产品进度与筹码集中度。<strong>库内只有问题、没有答复内容，属信息缺口</strong>。</li>
+</ol>
+<p><strong>涨停史（库内涨停记录，近 180 日）</strong></p>
+<ul>
+<li>仅 <strong>1 次</strong>：<strong>2026-07-21，涨幅 +19.99%（创业板 20cm 涨停），1 连板，11:03 封板、全天 0 次开板，封单 1.78 亿元</strong>，当日行业标签「电子化学」。</li>
+<li>读法：7-20 晚公告涨价 → 7-21 一字级情绪兑现，<strong>封板早、零开板、封单 1.78 亿</strong>说明当时承接坚决（置信度：高）。近 180 日只有这一次涨停，意味着这只票<strong>不是情绪常客，那一次是事件驱动的孤例</strong>——事件不重复，涨停也不会重复（置信度：中高）。</li>
+</ul>
+<p><strong>资金与筹码（库内资金筹码，仅作情绪面佐证，不进 J 节逻辑链）</strong></p>
+<ul>
+<li><strong>主力资金</strong>：近 20 个交易日（20260807–20260903）净流入 <strong>−22.36 亿元</strong>、其中特大单净流入 <strong>−17.93 亿元</strong>；净流入为正仅 <strong>5/20 天</strong>、为负 15 天。<strong>这是持续、单向的流出，不是一两天的脉冲</strong>（置信度：高）。</li>
+<li><strong>筹码（截止 20260807，注意与当前相隔近一个月）</strong>：获利盘比例 <strong>91.67%</strong>、加权均本 <strong>66.24 元</strong>、15% 分位成本 <strong>60.60 元</strong>、50% 分位成本 <strong>67.80 元</strong>、85% 分位成本 <strong>70.20 元</strong>。
+<ul>
+<li><strong>两面读</strong>：91.67% 的获利盘意味着上方几乎没有套牢盘、拉升阻力小；但反过来，<strong>九成以上筹码处于浮盈状态，短线获利抛压是这只票当前最大的内生卖压来源</strong>（置信度：中——数据本身高置信，但为 8-07 快照，其后一个月筹码结构已变）。</li>
+<li>对照当前：9-03 收盘 63.63 元<strong>低于</strong> 8-07 筹码 50% 分位成本 67.80 元、也低于 8-07 筹码加权均本 66.24 元——说明 8-07 时点建仓的筹码现已多数转为浮亏，那部分「获利盘」已被回撤吃掉（置信度：中）。</li>
+</ul></li>
+<li><strong>股东户数</strong>：20260630 为 <strong>213051 户</strong>，较 20260331 的 <strong>78753 户</strong> 环比 <strong>+170.5%</strong>。<strong>筹码在急剧分散</strong>——一个季度内户数接近翻三倍，与上半年股价大幅上行的时间窗吻合，是典型的散户涌入形态（置信度：中——数据为库内季度披露值、天然滞后两个月；且 170.5% 的环比幅度异常大，建议在三季报披露时用新一期数据复核）。</li>
+</ul>
+<p><strong>情绪面小结</strong>：高换手（6.72%）+ 主力持续净流出（15/20 天为负）+ 户数三倍化 + 概念板块两日内跌停与涨 10% 反复横跳——<strong>这是一个筹码松散、情绪主导、缺乏机构承接的盘面结构</strong>（置信度：中高）。</p>
+<h2>I. 未来 13 周事件日历</h2>
+<p>数据来源：库内事件日历（概念匹配的全市场事件）+ 库内新闻公告 + 库内财务的历史披露规律 + 联网补充。<strong>标 ★ 的是与本票直接相关的公司级事件</strong>，其余为概念联动事件。</p>
+<ul>
+<li><strong>W1（2026-09-01 起）</strong>：★ 9-02 回购股份进展公告已披露 · 公司公告 · 重要性中 · 影响：验证回购在上限 39.90 元失效后是否已停滞｜ 9-07 第 24 届讯石光通信大会（IFOC，深圳，9/7–8）· 行业会议 · 重要性中低 · 影响：CPO 概念联动，但本票 CPO 属<strong>仅概念标签</strong>，关联弱</li>
+<li><strong>W2（2026-09-08 起）</strong>：9-09 苹果秋季发布会（iPhone 18 Pro / 折叠屏）· 公司事件 · 重要性中 · 影响：消费电子 → MLCC 需求侧情绪｜ 9-09 第 27 届中国国际光电博览会 CIOE（深圳 9/9–11）· 行业会议 · 重要性中低｜ 9-09 IICIE 国际集成电路创新博览会 · 行业会议 · 重要性中低｜ 9-09 乘联会 / 中汽协 8 月汽车销量 · 数据发布 · 重要性中 · 影响：验证催化材料与新能源车下游需求｜ 9-08 小米 18 Fold 发布 · 重要性低</li>
+<li><strong>W3（2026-09-15 起）</strong>：★ <strong>2026 年第二次临时股东会</strong>（8-31 已发通知）· 公司事件 · 重要性中 · 影响：审议董事补选等议案——<strong>具体召开日期未取到，为信息缺口，实际可能落在本周或 W4</strong> ｜ 9-20 美国 FCC 拟禁止进口中国高速光模块草案推进 · 政策 · 重要性中（对本票间接）｜ 9-15 英伟达中国特供 B30A 送样 · 重要性低｜ 9-17 长征十二号发射星网卫星 · 重要性低（商业航天属仅概念标签）</li>
+<li><strong>W4（2026-09-22 起）</strong>：9-22 2026 世界新能源汽车大会 WNEVC（海口 9/22–24）· 行业会议 · 重要性中 · 影响：新能源车政策风向 → 催化材料需求｜ 9-22 中国国际信息通信展 PT 展（北京 9/22–24）· 行业会议 · 重要性中低｜ 9-23 华为 Mate 90 发布 · 重要性中低｜ 9-23 高通骁龙峰会（2nm 旗舰芯片）· 重要性低</li>
+<li><strong>W5（2026-09-29 起）</strong>：9-30 美光 2026 财年 Q4 财报 · 公司事件 · 重要性中 · 影响：存储与被动元件景气风向标｜ <strong>国庆长假休市（具体休市安排以交易所公告为准）</strong> · 重要性高（时间成本与假期外盘风险敞口）</li>
+<li><strong>W6（2026-10-06 起）</strong>：长假后首个交易周 · 重要性中 · 影响：观察节前主力净流出（近 20 日 −22.36 亿）是否延续｜ ★ 关键观察点：<strong>太阳诱电 MLCC 提价 9 月 1 日生效后的下游传导</strong>（来源：新浪财经 2026-07-29 报道三星电机与太阳诱电分别自 8/1、9/1 起提价约 30%）</li>
+<li><strong>W7（2026-10-13 起）</strong>：★ 创业板 Q3 业绩预告窗口（触发式披露，仅在业绩大幅变动时强制）· 财报 · 重要性高 · 影响：<strong>若出现预告，是氧化锆提价传导速度的第一个硬证据</strong>；不出现也是信息</li>
+<li><strong>W8（2026-10-20 起）</strong>：日系被动元件厂（村田等）季度财报陆续披露 · 行业数据 · 重要性中 · 影响：交叉验证 MLCC 景气是否延续——<strong>具体日期未核实，时点待确认</strong></li>
+<li><strong>W9（2026-10-27 起）</strong>：★★ <strong>2026 年三季报披露</strong> · 财报 · 重要性 <strong>最高</strong> · 影响：本报告全部核心判断的验证点。时点依据：库内财务中 2025 年三季报公告日为 <strong>20251028</strong>，据此推算落在 10 月下旬，<strong>具体以深交所预约披露表为准（未取到，属信息缺口）</strong></li>
+<li><strong>W10（2026-11-03 起）</strong>：★ 回购方案期限观察 · 公司事件 · 重要性中 · 影响：回购方案于 2025-11-06 审议通过（来源：搜狐财经转载公司公告），若为常见的 12 个月期限则于本周前后到期——<strong>期限条款未核实，置信度低</strong> ｜三季报后机构调研与研报密集期</li>
+<li><strong>W11（2026-11-10 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-11-17 起）</strong>：本周无已知事件</li>
+<li><strong>W13（2026-11-24 起）</strong>：本周无已知事件 · 提示：11 月末为年度业绩预期调整窗口，可复核库内研报的 2026 年盈利预测是否被下修</li>
+</ul>
+<p><strong>日历读法</strong>：这 13 周里真正能改变基本面判断的只有 <strong>W7 的业绩预告窗口</strong>与 <strong>W9 的三季报</strong>两处，其余全是情绪型催化。<strong>中间的 6 周（W1–W6）基本是消息真空期</strong>，这段时间的价格波动更可能由资金面而非基本面驱动（置信度：中高）。</p>
+<h2>J. 逻辑链</h2>
+<p><strong>主链（正向）</strong></p>
+<ol>
+<li>因为 <strong>2026 年 1 月中国将氧化钇纳入对日出口管制</strong>（置信度：中高，三源交叉）<strong>且</strong> <strong>氧化钇是钇稳定氧化锆的必需稳定剂、全球分离产能九成以上在中国</strong>（置信度：中，媒体多源），</li>
+<li>→ 所以 <strong>日本东曹于 2026-06-17 发出中长期停供通知、高端氧化锆出现约 6000 吨/年全球缺口</strong>（置信度：中，媒体多源，无一手公告核实）；</li>
+<li>→ 所以 <strong>国内龙头获得提价空间</strong>——公司 2026-07-20 公告自 7-27 起上调氧化锆粉体售价 10%–40%（置信度：<strong>高</strong>，公司公告 + 三家财经媒体同日一致）；</li>
+<li>→ 同时 <strong>MLCC 主线独立走强</strong>：村田自 7/1、三星电机自 8/1、太阳诱电自 9/1 分别提价 10%–40% / 约 30%，交期拉长至 12–16 个月（置信度：中，多源媒体，来源：搜狐 / 新浪 2026-07-29、虎嗅、证券时报），公司 MLCC 介质粉体处于该链条上游；</li>
+<li>→ <strong>如果这两条链成立，应该能观察到</strong>：<strong>2026 年三季报单季毛利率高于 H1 的 37.66%，且单季净利显著高于 Q2 单季约 2.21 亿元（据库内财务推算）</strong>。这就是整条链的可证伪出口。</li>
+</ol>
+<p><strong>反链（估值端的对冲）</strong></p>
+<ol>
+<li>但是 <strong>PE_TTM 98.92 倍、PB 8.66 倍</strong>（置信度：高）意味着上述涨价预期已被大幅计入；</li>
+<li>且 <strong>H1 财报是提价生效前的报表</strong>（7-27 生效，6-30 截止），H1 净利同比仅 +9.36%——<strong>当前近百倍估值没有任何一期财报支撑</strong>（置信度：高）；</li>
+<li>→ 所以真实的问题不是「涨价是真是假」（这是真的），而是「<strong>涨价兑现的速度与幅度，能不能追上已经跑在前面的估值</strong>」。</li>
+</ol>
+<p><strong>最弱的一环（整条链的命门）</strong></p>
+<p><strong>第 2 环与第 3 环之间的定量传导，我完全没有证据。</strong> 具体说：公司提价 10%–40% 覆盖的是氧化锆粉体这一条产品线，而<strong>氧化锆粉体在公司总营收中占多大比重，库内财务只给合并总量、不给分部拆分</strong>；联网口径的分部营收数据按本报告的取数纪律不予采信（财务数字只认库内）。</p>
+<p>这意味着：<strong>即便提价 40% 全额落地，如果该产品线只占营收的一小部分，对 EPS 的拉动也可能远小于市场预期。</strong> 这一环塌了，整条正向链条就只剩情绪。（置信度：高——指「这是命门」这个判断本身是高置信的）</p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜触发：三季报（W9）单季净利高于 Q2 单季推算值 2.21 亿元的 50% 以上，<strong>且</strong>单季毛利率高于 H1 的 37.66% ｜路径：提价传导被证实，盈利预测上修，估值从「透支」重新变成「合理」，股价重心上移至 8-07 筹码 85% 分位成本一线并尝试突破，主力资金由近 20 日的净流出转为持续净流入</li>
+<li><strong>中性（50%）</strong>｜触发：三季报单季净利较 Q2 单季推算值增长 10%–50%，毛利率与 H1 的 37.66% 基本持平｜路径：涨价确实进了报表但幅度不足以消化近百倍 PE，价格在 8-07 筹码 15% 分位成本与 85% 分位成本构成的区间内反复，跟随 MLCC 概念板块 beta 高波动，成交与换手维持在高位</li>
+<li><strong>悲观（25%）</strong>｜触发：三季报单季净利未超过 Q2 单季推算值 2.21 亿元，<strong>或</strong>出现资产减值 / 费用大幅上升导致净利同比转负，<strong>或</strong>氧化钇出口管制出现放松信号｜路径：涨价故事被证伪，前期涌入的散户筹码（户数环比 +170.5%）集中出逃，估值向行业 PE 中位数 70.43 的方向压缩，价格失守 8-07 筹码 15% 分位成本后进入下行通道</li>
+</ul>
+<p>三情景概率合计 100%。<strong>三个触发条件全部锚定在同一份三季报上</strong>——这是有意为之：本票未来 13 周的信息含量高度集中在 W9。</p>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向（3 条，条件全部来自本报告已出现的指标）</strong></p>
+<ol>
+<li><strong>如果</strong> 三季报（预计 10 月下旬，见 I 节 W9）单季净利高于据库内财务推算的 Q2 单季值 2.21 亿元的 50% 以上，<strong>且</strong> 单季毛利率高于 H1 的 37.66%，<strong>那么</strong> 可考虑轻仓试仓——这是提价逻辑被财报证实的最低门槛。</li>
+<li><strong>如果</strong> 在三季报出来之前，价格跌破 8-07 筹码 15% 分位成本，<strong>且</strong> 库内资金筹码显示近 20 日主力净流入天数仍不足 10/20 天，<strong>那么</strong> 观望或回避——盘面在用脚投票，而基本面证据要到 W9 才出现，此时参与是纯赌。</li>
+<li><strong>如果</strong> 价格重新站上 8-07 筹码 50% 分位成本，<strong>但</strong> 近 20 日主力资金净流入仍为负值，<strong>那么</strong> 减仓或不追——量价背离说明推动力来自散户接力而非机构建仓，而当前股东户数已环比 +170.5%，这种结构的持续性差。</li>
+</ol>
+<p><strong>这笔判断在什么情况下应当被推翻</strong></p>
+<ul>
+<li><strong>推翻「震荡」方向的条件（向上）</strong>：公司公告氧化锆粉体二次提价，或披露高端氧化锆 / MLCC 粉体的大额长单——那说明缺口比我评估的更持久，J 节第 8 环的「速度追不上估值」不成立。</li>
+<li><strong>推翻「震荡」方向的条件（向下）</strong>：出现氧化钇对日出口管制放松的官方信号——F 节整条政策链是本票当前最核心的支撑，它一松，J 节主链从第 1 环就断了。</li>
+<li><strong>推翻本报告全部结论的条件</strong>：三季报披露分部数据后，若显示氧化锆粉体营收占比很低——J 节命门被证实，这份报告的正向逻辑基本作废，需立即重跑调研。</li>
+</ul>
+<p><strong>仓位思路</strong>：在 W9 三季报落地之前，本票属于<strong>「证据不足、估值在高位、筹码松散」</strong>的组合，倾向<strong>轻仓或不参与</strong>；证据出现后再按情景重新定档。不给具体金额、不给股数、不给价位目标。</p>
+<h2>M. 逻辑自查</h2>
+<p><strong>最依赖的假设是哪一条？</strong></p>
+<p>「氧化锆粉体提价能在 2026Q3–Q4 实质改善公司整体盈利」。它错了会怎样：如果该产品线营收占比不高，或提价被下游以减量对冲（公司公告本身也提示「提价对销售量的影响尚不确定」，来源：财联社 2026-07-20），那么三季报会出现「营收增长但净利率不动」的形态——<strong>这恰好是 2026H1 已经出现过的形态</strong>（营收 +16.64% vs 净利 +9.36%）。<strong>换句话说，我担心的失效模式，在最近一期财报里已经预演过一次了。</strong></p>
+<p><strong>有没有为了让逻辑好看而忽略的反面证据？</strong></p>
+<p>有三条，我把它们摆出来：</p>
+<ol>
+<li><strong>2025 年全年净利同比只有 +0.91%，几乎零增长</strong>（库内财务）。我在 A 节把重点放在 2026H1 的修复上，但一个刚经历过盈利停滞年份的公司，配 98.92 倍 PE，本身就是需要解释的异常。</li>
+<li><strong>主力资金近 20 日净流出 22.36 亿元、15/20 天为负</strong>。如果涨价逻辑真有那么强，这个体量的单向流出很难解释。我在 J 节按纪律没把它放进逻辑链（资金流是盘面现象不是基本面证据），但它作为反面信号的分量不轻。</li>
+<li><strong>券商预测隐含的下半年增速高得离谱</strong>。据库内财务推算：2025H1 净利约 3.32 亿元（由 H1 同比 +9.36% 反推）、2025 全年 6.10 亿元，故 2025H2 约 2.79 亿元。而按广发证券 2026 年净利预测 8.63 亿元，公司 2026H2 需做出约 5.00 亿元，<strong>同比增幅约 +80%</strong>（据库内研报与库内财务推算）；按山西证券 8.38 亿元推算需 +70%，按中信证券 7.96 亿元推算需 +55%。<strong>三家机构的预测都隐含了下半年利润的断层式跳升。</strong> 这个门槛我认为被低估了讨论。</li>
+</ol>
+<p><strong>〔卖方预期〕（库内研报，近 90 天窗口，17 篇研报 / 15 家机构）</strong></p>
+<ul>
+<li>〔卖方预期〕来源：广发证券研报（库内）· 日期：2026-08-25 · 观点：预测 2026 年 EPS 0.87 元、归母净利 8.63 亿元，2027 年 EPS 1.14 元 / 净利 11.32 亿元，2028 年 EPS 1.43 元 / 净利 14.30 亿元 · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：山西证券研报（库内）· 日期：2026-08-18 · 观点：预测 2026 年 EPS 0.84 元 / 净利 8.38 亿元，2027 年 EPS 1.11 元，2028 年 EPS 1.33 元；报告主题为「AI 驱动相关材料快速放量，多元化发展支撑业绩稳健增长」 · 置信度：低（卖方预期非事实）</li>
+<li>〔卖方预期〕来源：中信证券研报（库内）· 日期：2026-08-18 · 观点：预测 2026 年 EPS 0.80 元 / 净利 7.96 亿元，2027 年 EPS 1.13 元 / 净利 11.30 亿元 · 置信度：低（卖方预期非事实）</li>
+<li>〔卖方预期〕来源：华鑫证券研报（库内）· 日期：2026-08-02 · 观点：报告主题「氧化锆粉体涨价开启价值重估新篇章」 · 置信度：低（卖方预期非事实，且该标题本身即是「涨价—重估」叙事的代表）</li>
+<li>〔卖方预期〕来源：西南证券研报（库内）· 日期：2026-08-19 · 观点：报告主题「新材料平台型公司，电子材料和精密陶瓷驱动公司快速成长」 · 置信度：低（卖方预期非事实）</li>
+<li>评级分布（库内近 90 天 17 篇）：最高档评级 8 篇、增持 5 篇、强烈推荐 1 篇、跑赢行业 1 篇、中性（Neutral）1 篇、未标注 1 篇——<strong>卖方几乎一致偏正面，这本身也是一种风险信号：预期已经很满，边际上更容易出现下修而非上修</strong>（置信度：中）。</li>
+</ul>
+<p>按 9-03 收盘 63.63 元推算的动态估值（据库内行情与库内研报推算）：2026 年约 73 倍（用广发 EPS 0.87 元）、约 76 倍（山西 0.84 元）、约 80 倍（中信 0.80 元）；2027 年约 56–57 倍。<strong>即便按卖方最乐观的盈利预测，估值也谈不上便宜</strong>（置信度：高，算术推算）。</p>
+<p><strong>信息缺口清单（7 项）</strong></p>
+<ol>
+<li><strong>分部营收拆分缺失</strong>。库中库内财务只给合并总量，无氧化锆粉体 / MLCC 粉体 / 齿科 / 催化材料各自的营收与毛利。影响：<strong>这是 J 节命门</strong>，直接导致无法量化提价对 EPS 的拉动。补法：三季报或年报披露分部数据后重跑调研。</li>
+<li><strong>利润表明细缺失</strong>。库内无费用率、减值、少数股东损益。影响：C 节「增收不增利」只能定位到毛利率以下环节，说不清具体是哪一项。补法：同上。</li>
+<li><strong>临时股东会具体日期未取到</strong>。库内 8-31 已有通知公告（库内新闻），但公告 PDF 文本层无法解析、联网检索未命中。影响：I 节 W3 的事件时点为估计值。补法：查巨潮资讯网该公告原文。</li>
+<li><strong>三季报预约披露日期未取到</strong>。I 节 W9 的时点是按库内财务中 2025 年三季报公告日（20251028）推算的。影响：可能偏差 1–2 周。补法：查深交所定期报告预约披露表。</li>
+<li><strong>董事辞职原因未知</strong>。8-31 公告只有事实、库内无内容。影响：治理层变动的性质无法判断（正常轮换 vs 异常信号）。补法：读公告原文。</li>
+<li><strong>筹码数据为 8-07 快照</strong>。库内资金筹码的筹码分布段交易日为 20260807，与报告日相隔近一个月，其间价格已明显回落。影响：H 节的 91.67% 获利盘比例不代表当前状态；但本报告的 L 节触发锚（15% / 50% / 85% 分位成本）作为<strong>历史成本刻度</strong>使用仍然有效。补法：下次调研时以最新筹码日期复核。</li>
+<li><strong>股东户数 +170.5% 的幅度异常大</strong>，需以三季报新一期数据复核是否为披露口径变化。影响：若为口径问题，H 节「筹码急剧分散」的结论要打折。补法：三季报披露后对照。</li>
+</ol>
+<p><strong>已调用但按规程未着墨的取数块（1 项）</strong>：库内 A/H 对照返回 None——本票非 A+H 两地上市，按方法论规定不涉及跨市场溢价参照，故 B 节未写。这是有意为之，不是遗漏。</p>
+<p><strong>联网信息来源清单</strong>（对应 E / F / G / H / I 各节引用）</p>
+<ul>
+<li><a href="https://www.cls.cn/detail/2431559" target="_blank" rel="noopener">国瓷材料：7月27日起上调氧化锆粉体销售价格10%-40%（财联社，2026-07-20）</a></li>
+<li><a href="https://www.stcn.com/article/detail/4030431.html" target="_blank" rel="noopener">国瓷材料：上调氧化锆粉体销售价格，上调幅度约为10%—40%不等（证券时报，2026-07-20）</a></li>
+<li><a href="https://finance.sina.com.cn/jjxw/2026-07-20/doc-iniimzhe8281315.shtml" target="_blank" rel="noopener">国瓷材料：上调氧化锆粉体销售价格（新浪财经，2026-07-20）</a></li>
+<li><a href="https://xincailiao.ofweek.com/news/2026-07/ART-180422-8420-30692747.html" target="_blank" rel="noopener">氧化锆的&quot;断供时刻&quot;：从陶瓷原料到战略金属的全线蜕变（OFweek 新材料网，2026-07）</a></li>
+<li><a href="https://m.10jqka.com.cn/20260629/c677801800.shtml" target="_blank" rel="noopener">氧化锆的&quot;断供时刻&quot;（同花顺，2026-06-29）</a></li>
+<li><a href="https://www.chinabaogao.com/market/202608/810443.html" target="_blank" rel="noopener">需求多点爆发+海外断供氧化锆粉体行业价格走高（观研报告网，2026-08）</a></li>
+<li><a href="https://36kr.com/p/3865022505686020" target="_blank" rel="noopener">全线飙涨，氧化锆疯了（36氪，2026-06）</a></li>
+<li><a href="https://www.163.com/dy/article/L06C4E1P0556BUO3.html" target="_blank" rel="noopener">东曹停产！氧化钇库存归零（网易，2026-06）</a></li>
+<li><a href="https://k.sina.com.cn/article_7879849009_1d5acf43106801bk6y.html?from=finance" target="_blank" rel="noopener">AI服务器引爆MLCC涨价潮，三星太阳诱电齐涨30%（新浪，2026-07-29）</a></li>
+<li><a href="https://www.huxiu.com/article/4864863.html" target="_blank" rel="noopener">MLCC行业面临结构性涨价：AI服务器需求推动高端产能紧张（虎嗅）</a></li>
+<li><a href="https://www.stcn.com/article/detail/4070777.html" target="_blank" rel="noopener">MLCC涨价调查：AI抢占高容料供给通用料&quot;退烧&quot;（证券时报）</a></li>
+<li><a href="https://m.sohu.com/a/1059366867_120988533" target="_blank" rel="noopener">国瓷材料：累计回购326.61万股股份（搜狐财经转载公司公告，2026-08）</a></li>
+<li><a href="https://stock.stockstar.com/notice/SN2026060200036291.shtml" target="_blank" rel="noopener">国瓷材料：关于2025年年度权益分派实施后调整回购股份价格上限的公告（证券之星，2026-06-02）</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-04），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>PE_TTM 98.92倍估值已透支</li>
+      <li>H1净利增速9.36%远落后营收</li>
+      <li>近20日主力净流出22.36亿</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>业绩预告</dt><dd>上市公司在正式财报前发布的盈利区间预告，达到规定变动幅度时强制披露。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2431559" target="_blank" rel="noopener">国瓷材料：7月27日起上调氧化锆粉体销售价格10%-40%（财联社，2026-07-20）</a> <em>2026-07-20</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.stcn.com/article/detail/4030431.html" target="_blank" rel="noopener">国瓷材料：上调氧化锆粉体销售价格，上调幅度约为10%—40%不等（证券时报，2026-07-20）</a> <em>2026-07-20</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/jjxw/2026-07-20/doc-iniimzhe8281315.shtml" target="_blank" rel="noopener">国瓷材料：上调氧化锆粉体销售价格（新浪财经，2026-07-20）</a> <em>2026-07-20</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://xincailiao.ofweek.com/news/2026-07/ART-180422-8420-30692747.html" target="_blank" rel="noopener">氧化锆的&quot;断供时刻&quot;：从陶瓷原料到战略金属的全线蜕变（OFweek 新材料网，2026-07）</a> <em>2026-07</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.10jqka.com.cn/20260629/c677801800.shtml" target="_blank" rel="noopener">氧化锆的&quot;断供时刻&quot;（同花顺，2026-06-29）</a> <em>2026-06-29</em></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.chinabaogao.com/market/202608/810443.html" target="_blank" rel="noopener">需求多点爆发+海外断供氧化锆粉体行业价格走高（观研报告网，2026-08）</a> <em>2026-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://36kr.com/p/3865022505686020" target="_blank" rel="noopener">全线飙涨，氧化锆疯了（36氪，2026-06）</a> <em>2026-06</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.163.com/dy/article/L06C4E1P0556BUO3.html" target="_blank" rel="noopener">东曹停产！氧化钇库存归零（网易，2026-06）</a> <em>2026-06</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://k.sina.com.cn/article_7879849009_1d5acf43106801bk6y.html?from=finance" target="_blank" rel="noopener">AI服务器引爆MLCC涨价潮，三星太阳诱电齐涨30%（新浪，2026-07-29）</a> <em>2026-07-29</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.huxiu.com/article/4864863.html" target="_blank" rel="noopener">MLCC行业面临结构性涨价：AI服务器需求推动高端产能紧张（虎嗅）</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.stcn.com/article/detail/4070777.html" target="_blank" rel="noopener">MLCC涨价调查：AI抢占高容料供给通用料&quot;退烧&quot;（证券时报）</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://m.sohu.com/a/1059366867_120988533" target="_blank" rel="noopener">国瓷材料：累计回购326.61万股股份（搜狐财经转载公司公告，2026-08）</a> <em>2026-08</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://stock.stockstar.com/notice/SN2026060200036291.shtml" target="_blank" rel="noopener">国瓷材料：关于2025年年度权益分派实施后调整回购股份价格上限的公告（证券之星，2026-06-02）</a> <em>2026-06-02</em></li>
+      <li><span class="src-tag src-media">媒体</span> 库内公司档案 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内公司档案经营范围 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 同花顺 2026-06-29、OFweek 新材料网 2026-07、东方财富财富号 2026-06-19，三源一致 <em>2026-06-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 36 氪 2026-06、网易 2026-06、财联社 2026-07-20 <em>2026-06</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 同花顺 2026-06-29 / 网易 2026-06 <em>2026-06-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内新闻，库内投资者关系问答 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 搜狐财经 2026-08 转载公司公告、证券之星 2026-06-02 公告转载 <em>2026-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-07-29 报道三星电机与太阳诱电分别自 8/1、9/1 起提价约 30% <em>2026-07-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 置信度：高——公司公告，财联社 / 证券时报 / 新浪财经 2026-07-20 三源一致 <em>2026-07-20</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-04 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
