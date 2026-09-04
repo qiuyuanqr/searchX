@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>出版传媒（601999.SH） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>出版传媒（601999.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-04（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 出版</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 知识产权保护 · 参股保险 · 数据确权 · 参股券商 · 在线教育 · IP经济(谷子经济) · 文化传媒概念 · 数字经济</span>
+      <span><b>来源</b> 23 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    出版传媒（601999）主要做的是出版业务、出版物发行业务、票据印刷业务和印刷物资供应业务，主要从事图书出版和发行业务。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——营收连续四期同比下滑、降幅从 -5.90% 扩大到 -20.94%，当前 41.99 倍市盈率靠的是「参与设立 AI 文化基金 + 板块题材」，不是账面业绩。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向偏跌、置信度中：营收连续四期同比下滑、降幅从 -5.90% 扩大到 -20.94%，当前 41.99 倍市盈率靠的是「参与设立 AI 文化基金 + 板块题材」，不是账面业绩。支撑在于拟出资2.4亿参与AI文化基金；AI长剧带动出版板块集中上涨；市值仅39.39亿，题材弹性大。主要风险是上半年营收同比降20.94%，降幅扩大；板块龙头因AI信披被监管警示；PE41.99倍高于行业中位32.62倍。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>拟出资2.4亿参与AI文化基金</li>
+      <li>AI长剧带动出版板块集中上涨</li>
+      <li>市值仅39.39亿，题材弹性大</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据基准：2026-09-04（库内行情数据时点 15:34，为当日收盘值）｜数据源：项目本地行情/财务库 + 联网补充（政策 / 产业链 / 事件时点）</div>
+<h2>A. 一屏结论（BLUF）</h2>
+<p><strong>方向</strong>：偏跌（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：营收连续四期同比下滑、降幅从 -5.90% 扩大到 -20.94%，当前 41.99 倍市盈率靠的是「参与设立 AI 文化基金 + 板块题材」，不是账面业绩。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li>9 月 2 日公告拟出资 2.4 亿元参与设立数智产业投资基金，投向人工智能在文化产业的应用——这是公司在 AI 方向上第一笔可核验的真金白银动作（置信度：高，公告标题来自库内新闻，金额经联网两源确认）</li>
+<li>出版 / 影视板块 8 月 31 日起因首部上星 AI 长剧《后西游记》出现集中上涨，同板块 9 月 4 日有龙版传媒（5 连板）、中国出版（1 板）涨停，本票当日盘中触及涨停（最高 +9.96%）（置信度：高，库内涨停池数据）</li>
+<li>总市值仅 39.39 亿元，是出版板块中的小市值标的（凤凰传媒 220.13 亿、中南传媒 182.47 亿），题材行情中价格弹性大（置信度：高）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li>2026 年上半年营收 7.85 亿元、同比下降 20.94%，净利润 0.32 亿元、同比下降 25.83%；营收同比降幅已连续三期扩大（置信度：高，库内财务）</li>
+<li>板块领涨标的龙版传媒于 9 月 4 日被上交所因「AI 视频业务信息披露不准确、风险揭示不充分」予以监管警示——同题材下的信息披露尺度被明确收紧（置信度：高，两个独立来源）</li>
+<li>估值贵于同行龙头：市盈率 TTM 41.99 倍 vs 中南传媒 12.08 倍 / 凤凰传媒 16.91 倍；市净率 1.4715 vs 两者的 1.12 / 1.10，而净资产收益率 1.20% 只有两者（5.74% / 5.47%）的约五分之一（置信度：高）</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ul>
+<li>三季报（参考 2025 年三季报披露日 2025-10-30，库内财务的公告日，2026 年大概率落在 10 月下旬）：营收同比降幅是继续扩大还是收窄——秋季教材季是本公司全年营收最大的一个季度（据库内数据推算，2025 年三季度单季营收约 6.92 亿元，占前三季度的 41%）</li>
+<li>临时股东会对「参与设立数智产业投资基金」议案的表决结果，以及基金首期实缴 4800 万元是否到位</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong>：我把「基本面走弱」当成了 13 周维度的主导变量。但从 9 月 3 日、9 月 4 日的成交量（45.5 万手、73.5 万手，相当于 9 月 2 日 11.0 万手的 4.1 倍和 6.7 倍）看，当前定价权在题材资金手里，基本面在这个时间尺度上可能根本不参与定价。如果 AI 内容产业出现新的、且本公司能挂上钩的实质进展，本报告的偏跌判断会失效。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>名称 / 代码</strong>：出版传媒（601999）·上市状态（正常上市）</li>
+<li><strong>全称</strong>：北方联合出版传媒（集团）股份有限公司，辽宁出版集团有限公司控股</li>
+<li><strong>行业</strong>：出版业（主板）</li>
+<li><strong>上市日期</strong>：2007-12-21（上市已逾 18 年）</li>
+<li><strong>员工人数</strong>：1883 人｜ <strong>注册资本</strong>：55091.47 万元（约 5.51 亿股）</li>
+<li><strong>主营业务</strong>（库内公司档案）：出版业务、出版物发行业务、票据印刷业务和印刷物资供应业务，主要从事图书出版和发行业务</li>
+<li><strong>经营范围要点</strong>：图书 / 报刊 / 音像 / 电子出版物编辑出版、总批发与零售、印刷复制、版权贸易、互联网出版发行、广告会展文化服务、境内外投资与资产管理、计算机信息系统集成及软件开发、教育辅助服务</li>
+</ul>
+<p><strong>当前行情（库内行情，数据时点 2026-09-04 15:34，即当日收盘）</strong></p>
+<ul>
+<li>收盘价 7.15 元｜当日涨跌幅 +6.24%</li>
+<li>当日最高 +9.96%（盘中触及涨停）｜当日最低 -4.90%</li>
+<li>当日成交额 5.20 亿元</li>
+<li>当日振幅约 14.9 个百分点——盘中触板后回落，是明显的多空分歧形态（置信度：高）</li>
+</ul>
+<p><strong>估值（库内估值，交易日 2026-09-04）</strong></p>
+<ul>
+<li>总市值 39.39 亿元｜市盈率 TTM 41.988 倍｜市净率 1.4715 倍</li>
+<li>股息率 0.8392% ｜当日换手率 13.335%</li>
+<li>出版业行业市盈率中位数 32.6163 倍，行业内共 29 只标的，本票市盈率排名第 16 便宜——即处在行业中游偏贵一侧，且高于行业中位数（置信度：高）</li>
+<li>按市值与市净率推算，归母净资产约 26.77 亿元；按市值与市盈率推算，滚动 12 个月净利润约 0.94 亿元（与库内财务交叉验证一致：2025 全年 1.05 亿 − 2025 上半年推算 0.43 亿 + 2026 上半年 0.32 亿 = 0.94 亿）</li>
+</ul>
+<p><strong>A/H 溢价</strong>：库内 A/H 对照返回 None——本票非两地上市，本节不适用。</p>
+<h2>C. 财务健康</h2>
+<p>近 4 期数据（库内财务，新→旧，金额单位亿元）</p>
+<ul>
+<li><strong>2026 年中报（截止 20260630，公告日 20260827）</strong>：营收 7.85 ｜同比 -20.94% ｜净利润 0.32 ｜同比 -25.83% ｜每股收益 0.06 元｜净资产收益率 1.2028% ｜毛利率 27.5301% ｜净利率 3.8411% ｜资产负债率 33.1723%</li>
+<li><strong>2026 年一季报（截止 20260331，公告日 20260429）</strong>：营收 4.87 ｜同比 -12.71% ｜净利润 0.07 ｜同比 -4.73% ｜每股收益 0.01 元｜净资产收益率 0.2475% ｜毛利率 24.2691% ｜净利率 1.1547% ｜资产负债率 34.3613%</li>
+<li><strong>2025 年年报（截止 20251231，公告日 20260410）</strong>：营收 20.96 ｜同比 -13.63% ｜净利润 1.05 ｜同比 +2.79% ｜每股收益 0.19 元｜净资产收益率 3.9755% ｜毛利率 23.6305% ｜净利率 4.7543% ｜资产负债率 33.8860%</li>
+<li><strong>2025 年三季报（截止 20250930，公告日 20251030）</strong>：营收 16.85 ｜同比 -5.90% ｜净利润 0.77 ｜同比 +75.74% ｜每股收益 0.14 元｜净资产收益率 2.9234% ｜毛利率 21.2259% ｜净利率 4.4258% ｜资产负债率 37.6431%</li>
+</ul>
+<p><strong>趋势判断</strong></p>
+<ol>
+<li><strong>营收持续下滑，且降幅在扩大</strong>：同比 -5.90% → -13.63% → -12.71% → -20.94%。这是四期里最确定的一条趋势线，不是单期波动（置信度：高）</li>
+<li><strong>利润端由「增收不增利的反面」转为同比下滑</strong>：2025 年三季报净利润同比 +75.74%、2025 年全年 +2.79%，到 2026 年一季度转为 -4.73%、上半年扩大到 -25.83%。<strong>公司仍然盈利，没有出现亏损</strong>，是净利润同比下滑幅度在加深（置信度：高）</li>
+<li><strong>毛利率是唯一持续变好的指标</strong>：21.2259% → 23.6305% → 24.2691% → 27.5301%，四期连续上升，上半年比 2025 年全年高 3.90 个百分点。可能来自低毛利业务（印刷物资供应等）收缩带来的结构性改善——<strong>这是「营收降幅扩大」和「毛利率上升」同时出现的一种解释，库内无分部数据可以证实（置信度：低）</strong></li>
+<li><strong>资产负债表干净</strong>：资产负债率 33.17%，四期在 33%–38% 区间，无杠杆压力（置信度：高）</li>
+<li><strong>净资产收益率偏低</strong>：上半年 1.2028%，2025 年全年 3.9755%。即使按全年年化，盈利能力也明显弱于同行龙头（见 D 节）（置信度：高）</li>
+</ol>
+<p><strong>据库内数据推算的季度切片</strong>（派生值，非库内直接字段）</p>
+<ul>
+<li>2026 年二季度单季：营收 7.85 − 4.87 = 2.98 亿元；净利润 0.32 − 0.07 = 0.25 亿元——<strong>二季度单季仍然盈利</strong>，且单季净利润高于一季度</li>
+<li>2025 年二季度单季净利润推算约 0.36 亿元（由 2025 年上半年推算 0.43 亿元减去 2025 年一季度推算 0.07 亿元），据此二季度单季净利润同比下滑约 31%（置信度：中，为多重推算叠加）</li>
+<li>2025 年三季度单季营收推算约 6.92 亿元、四季度单季约 4.11 亿元——<strong>三季度是本公司全年营收最大的季度</strong>（秋季教材发行季），因此三季报的信息量高于中报（置信度：中）</li>
+</ul>
+<p><strong>仅估值口径的判断</strong>：市盈率 TTM 41.99 倍对应约 0.94 亿元的滚动净利润和持续下滑的营收，属于「以远高于盈利能力的价格定价」（置信度：高）。这是估值口径，不等于对公司好坏的结论。</p>
+<p><strong>信息缺口</strong>：库内财务不含分业务收入拆分、经营性现金流、应收账款与存货明细，因此无法判断「营收下滑是教材教辅、一般图书还是印刷物资供应哪一块造成的」。影响：C 节的毛利率改善原因只能推测。补法：调取 2026 年中期报告全文的分部数据后重跑本节。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比（出版业，截止 20260630 财务口径 + 当前估值）</p>
+<ul>
+<li><strong>出版传媒（601999）</strong>：总市值 39.39 亿 · 市盈率 TTM 41.99 · 市净率 1.4715 · 上半年营收 7.85 亿 · 上半年净利 0.32 亿 · 净资产收益率 1.20%</li>
+<li><strong>凤凰传媒（601928）</strong>：总市值 220.13 亿 · 市盈率 TTM 16.91 · 市净率 1.0998 · 上半年营收 61.00 亿 · 上半年净利 10.92 亿 · 净资产收益率 5.4679%</li>
+<li><strong>中南传媒（601098）</strong>：总市值 182.47 亿 · 市盈率 TTM 12.08 · 市净率 1.1199 · 上半年营收 58.43 亿 · 上半年净利 9.33 亿 · 净资产收益率 5.7447%</li>
+<li><strong>中文在线（300364）</strong>：总市值 187.30 亿 · 市盈率 TTM 无（亏损）· 市净率 71.1027 · 上半年营收 5.78 亿 · 上半年净利 -0.43 亿 · 净资产收益率 -15.3814%</li>
+</ul>
+<p><strong>位置判断</strong></p>
+<ol>
+<li><strong>规模上是小体量参与者</strong>：营收只有凤凰传媒的 12.9%、中南传媒的 13.4%；净利润只有两者的 2.9% 和 3.4%（置信度：高）</li>
+<li><strong>贵在哪</strong>：市净率 1.4715 比凤凰传媒（1.0998）高 34%、比中南传媒（1.1199）高 31%，而净资产收益率（1.20%）只有它们的约五分之一。<strong>同样一元净资产，本票要贵三成买，但赚回来的钱少八成</strong>（置信度：高）</li>
+<li><strong>便宜在哪</strong>：与另一极的中文在线（市净率 71.10、上半年亏损 0.43 亿元）相比，本票有真实盈利、有 33% 的低负债率、有 0.8392% 的股息率。若把出版板块分成「传统主业盈利股」和「纯题材估值股」两类，本票在资产质量上属前者、在估值上正在向后者靠拢（置信度：中）</li>
+<li><strong>相对优势</strong>：小市值带来的价格弹性——同样一笔资金推动 39 亿市值和推动 220 亿市值，效果完全不同。这是交易层面的优势，不是经营层面的（置信度：高）</li>
+</ol>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>：内容出版（图书、教材教辅） → 发行 → 印刷 / 印刷物资供应的纵向一体化链条，控股股东为辽宁出版集团有限公司，属地方国有出版集团整体上市平台（库内公司档案）。</p>
+<p><strong>分级判断</strong></p>
+<ul>
+<li><strong>结构性护城河（存在，但是行政赋予的）</strong>：出版业在中国实行出版许可证制度，非持牌主体不能从事图书出版；地方教材教辅的区域发行更是长期形成的地方格局。这是牌照 + 区域壁垒型护城河，不是靠技术或品牌挣来的（置信度：中——牌照制度是公开事实，但库内无本公司教材发行份额数据，无法量化壁垒厚度）</li>
+<li><strong>阶段性优势</strong>：辽宁出版集团控股带来的区域资源绑定；纵向一体化（出版 + 发行 + 印刷 + 印刷物资）在成本端有一定协同（置信度：低，仅由经营范围与主营描述推断，无财务分部数据佐证）</li>
+<li><strong>护城河正在被什么侵蚀</strong>：① 学龄人口进入下降通道（见 F 节），教材教辅的需求总量是行政壁垒挡不住的；② 生成式 AI 大幅降低内容生产成本，出版方原有的「内容组织能力」溢价被压缩（置信度：中）</li>
+</ul>
+<p><strong>一句话</strong>：这是一门有牌照壁垒、但需求端在收缩、且被 AI 重新定价的生意。牌照能保住它不被新进入者抢走，保不住它的营收不下滑——2026 年上半年营收同比 -20.94% 就是证据（置信度：中）。</p>
+<h2>F. 政策与监管</h2>
+<p><strong>① AI 与出版融合被明确列为政策鼓励方向（利好，传导偏慢）</strong></p>
+<ul>
+<li>国家新闻出版署实施 2026 年度出版融合发展工程，对「应用生成式人工智能等前沿技术成效显著的项目」予以重点考虑，鼓励申报纸数融合读物、数智型出版产品等（来源：国家新闻出版署 / 中国网转载，2025-12-26；<a href="http://cul.china.com.cn/2025-12/26/content_43319940.htm" target="_blank" rel="noopener">中国网</a>）</li>
+<li>国家新闻出版署等印发《网络出版科技创新引领计划》，加强涉人工智能、游戏引擎、虚拟现实等网络出版领域知识产权保护（来源：国家新闻出版署，2025-04-18；<a href="https://www.nppa.gov.cn/xxfb/tzgs/202504/t20250418_891793.html" target="_blank" rel="noopener">nppa.gov.cn</a>）</li>
+<li>国家新闻出版署印发《印刷业数字化三年行动计划（2025—2027年）》（来源：国家新闻出版署，2025-06-09；<a href="https://www.nppa.gov.cn/xxfb/tzgs/202506/t20250609_899420.html" target="_blank" rel="noopener">nppa.gov.cn</a>）——本公司有印刷与印刷物资供应业务，此项直接相关</li>
+<li><strong>传导链条</strong>：政策鼓励 → 出版企业申报数智化项目 → 拿到项目支持 / 形成新产品 → 若干年后可能体现为营收。<strong>这是慢变量，不构成 13 周内的业绩变化</strong>（置信度：中）</li>
+</ul>
+<p><strong>② 学龄人口进入下降通道（利空，直接冲击教材教辅需求）</strong></p>
+<ul>
+<li>教育部政府门户网站文章讨论「教育资源如何适配学龄人口变化」，指出小学在校生数在 2024—2035 年间持续下降，初中、高中将分别在 2026 年和 2029 年开始下降（来源：教育部，2026-03-23；<a href="http://www.moe.gov.cn/jyb_xwfb/s5148/202603/t20260323_1431815.html" target="_blank" rel="noopener">moe.gov.cn</a>）</li>
+<li>另一独立来源指出 2021—2035 年全国学龄人口总量将从 3.28 亿降至约 2.5 亿，初中适龄人口 2026 年触顶后进入下降通道（来源：中国教育在线，2025-09-15；<a href="https://www.eol.cn/news/guancha/202509/t20250915_2689958.shtml" target="_blank" rel="noopener">eol.cn</a>）</li>
+<li><strong>传导链条</strong>：学龄人口下降 → 教材教辅印数下降 → 出版发行收入下降。这与 C 节观察到的营收连续四期同比下滑方向一致（置信度：中——两个独立官方 / 权威来源支持人口趋势，但库内无本公司教材收入占比数据，无法量化这条链对本公司的具体影响权重）</li>
+</ul>
+<p><strong>③ 交易所对「蹭 AI 概念」的信息披露监管明显收紧（利空，直接、即时）</strong></p>
+<ul>
+<li>2026 年 9 月 4 日，上交所对黑龙江出版传媒股份有限公司（龙版传媒，605577）及时任董事会秘书予以监管警示，理由是半年度报告未对 AI 视频业务的营收规模、占比及对经营业绩的实际影响作出充分说明，且异动公告与风险提示公告中关于 AI 视频业务的营收情况前后披露不一致（来源①：财联社，2026-09-04 18:46，本项目新闻库原文；来源②：<a href="https://www.jiemian.com/article/15057862.html" target="_blank" rel="noopener">界面新闻</a>，2026-09-04）</li>
+<li><strong>传导链条</strong>：监管明确表态 → 同板块公司在披露 AI 相关业务时会更谨慎、更强调「对业绩无显著影响」→ 题材的想象空间被压缩。这对包括本公司在内的整个出版 AI 概念群是即时利空（置信度：中）</li>
+</ul>
+<p><strong>⚠️ 重要更正</strong>：本项目库内新闻把上述监管警示新闻以 100 分相关度关联到了出版传媒（601999），关联依据是别名「出版传媒」命中了「黑龙江<strong>出版传媒</strong>股份有限公司」这个全称子串。<strong>经核对新闻正文，该监管警示的对象是龙版传媒（605577），与出版传媒（601999）无关，本公司未被监管警示</strong>（置信度：高，已读取新闻原文并经界面新闻交叉验证）。读者切勿把这条读成本公司的负面事件。</p>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 11 个同花顺概念标签，逐个分级：</p>
+<ul>
+<li><strong>文化传媒概念（885418.TI）</strong>——<strong>真有业务</strong>。主营即图书出版、发行、印刷，2026 年上半年营收 7.85 亿元全部来自该链条（置信度：高）</li>
+<li><strong>国企改革（886021.TI）</strong>——<strong>属性真实，但无营收含义</strong>。控股股东为辽宁出版集团有限公司，是地方国有出版集团上市平台；标签反映股权属性，不对应任何业务收入（置信度：高）</li>
+<li><strong>AI 应用（886108.TI）</strong>——<strong>当前仅概念标签，未见营收佐证；但有一笔可核验的资金承诺</strong>。9 月 2 日公告拟出资 2.4 亿元参与设立数智产业投资基金，基金重点投向人工智能、新一代信息技术在文化和互联网产业中的应用（见 H 节）。<strong>这是「出钱投 AI 方向的基金」，不是「公司自己有 AI 收入」——两者差别很大</strong>（置信度：高）</li>
+<li><strong>在线教育（885480.TI）</strong>——<strong>仅概念标签，未见营收佐证</strong>。经营范围含「教育辅助服务」，但主营业务描述与财务数据中均无在线教育收入（置信度：高）</li>
+<li><strong>IP 经济 / 谷子经济（886095.TI）</strong>——<strong>仅概念标签，未见营收佐证</strong>。图书出版天然持有作品版权，但库内无 IP 授权、衍生品相关收入数据（置信度：高）</li>
+<li><strong>数字经济（885976.TI）／数据确权（886023.TI）／知识产权保护（885791.TI）</strong>——<strong>均为仅概念标签，未见营收佐证</strong>。出版业与版权、数据天然相关，但公司未单独披露这三块的收入（置信度：高）</li>
+<li><strong>参股券商（885620.TI）／参股保险（885623.TI）</strong>——<strong>仅概念标签，未见营收佐证</strong>。库内无任何金融股权持仓数据；联网检索到 2025 年年报中相关栏目标注为「不适用」（单源未交叉验证 · 置信度：低）。公司简介中提及的「文化金融产业」是战略表述，不等于持有券商 / 保险股权（置信度：中）</li>
+<li><strong>融资融券（885338.TI）</strong>——交易属性标签（标的证券资格），不是业务（置信度：高）</li>
+</ul>
+<p><strong>产业链位置</strong></p>
+<ul>
+<li><strong>上游</strong>：纸张、油墨、印刷设备供应商（公司自身还经营印刷物资供应，部分自供）。上游为大宗商品性质，公司议价能力弱</li>
+<li><strong>本环节</strong>：内容组织（选题策划、编辑、版权）+ 印制 + 发行</li>
+<li><strong>下游</strong>：教育系统（教材教辅统一采购，需求由行政与学龄人口决定，公司议价能力弱）+ 图书零售渠道（新华书店体系、电商平台，平台侧议价能力强）</li>
+<li><strong>议价能力结论</strong>：两端都不占优——上游是大宗定价，下游是行政采购与强势平台。这是传统出版商普遍的处境，也解释了为什么 2026 年上半年营收下滑 20.94% 的同时公司只能靠毛利率结构改善来护住利润（置信度：中）</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<h3>新闻（库内新闻，近 60 日仅 4 条）</h3>
+<ol>
+<li><strong>2026-09-02 · 公司公告</strong>：《出版传媒关于参与设立数智产业投资基金暨关联交易的公告》。库内财联社同日 17:08 快讯标题为「出版传媒：拟出资 2.4 亿元参与设立数智产业投资基金」。联网补充细节：基金全称为辽宁省数智文化产业投资基金合伙企业（有限合伙）（暂定名），总认缴规模 10 亿元，公司作为有限合伙人以自有资金认缴 2.4 亿元、占 24%，首期实缴 20% 即 4800 万元；基金聚焦文化与科技深度融合，重点投向人工智能、新一代信息技术在文化和互联网产业中的应用（来源：智通财经 / investing.com 香港站，2026-09-02；同一数字亦见于另一次独立检索的公告摘要）。<strong>对基本面的实质影响</strong>：2.4 亿元约相当于按市值与市净率推算的净资产 26.77 亿元的 9.0%，首期实缴 4800 万元约相当于其 1.8%（派生值，据 B 节推算）。作为有限合伙人出资，短期形成的是长期股权投资而非营业收入；<strong>公告标题明确写有「暨关联交易」，说明交易对手方与公司存在关联关系</strong>（置信度：高）</li>
+<li><strong>2026-09-02 · 公司公告</strong>：《出版传媒关于召开 2026 年第一次临时股东会的通知》——上述基金出资事项需提交股东会审议的直接证据（置信度：高）</li>
+<li><strong>2026-09-02 · 公司公告</strong>：《出版传媒第四届董事会第三次会议决议公告》——与前两项为同一次董事会的配套披露（置信度：高）</li>
+<li><strong>2026-08-26 · 财联社</strong>：「出版传媒：上半年净利润 3220.41 万元同比下降 25.83%」——与库内财务完全一致，互为验证（置信度：高）</li>
+<li><strong>2026-09-04 · 财联社（⚠️ 归属误配）</strong>：「上交所对龙版传媒及有关责任人予以监管警示」——<strong>本条经核对新闻正文，对象为龙版传媒（605577），非本公司</strong>，详见 F 节③的更正说明。作为板块环境信息有价值，作为本公司事件则是错误的（置信度：高）</li>
+</ol>
+<p><strong>信息缺口</strong>：近 60 日库内仅 4 条相关记录，且 3 条是同一天的配套公告。9 月 3 日、9 月 4 日两个放量交易日期间，库内没有任何本公司自身的新增消息——<strong>这意味着这两天的上涨没有公司层面的新信息支撑，驱动来自板块</strong>（置信度：中）。</p>
+<h3>板块环境（库内涨停池数据 + 联网背景）</h3>
+<ul>
+<li>首部全 AI 生成的长剧《后西游记》于 2026-08-31 在湖南卫视黄金档与芒果 TV 同步开播，带动 A 股影视传媒板块集中上涨（来源①：<a href="https://m.thepaper.cn/newsDetail_forward_33983133" target="_blank" rel="noopener">澎湃新闻</a>；来源②：<a href="https://m.21jingji.com/article/20260901/herald/52b592d8c9ab7741bfb262ec04acdd75.html" target="_blank" rel="noopener">21 财经</a>，2026-09-01）</li>
+<li>库内涨停池记录的板块热度（8 月 28 日至 9 月 4 日）：龙版传媒 8 月 31 日首板起至 9 月 4 日已 5 连板；中国出版 9 月 4 日 1 板；时代出版 8 月 28 日至 9 月 1 日 3 连板；欢瑞世纪 8 月 31 日至 9 月 4 日多次涨停；博纳影业、中广天择、上海电影、荣信文化、粤传媒均有涨停记录（置信度：高，库内数据）</li>
+<li><strong>本票是这轮板块行情的跟随者、不是领涨者</strong>：9 月 4 日盘中触及涨停但未封住，收于 +6.24%（置信度：高）</li>
+</ul>
+<h3>涨停史（库内涨停记录，近 180 日）</h3>
+<ul>
+<li><strong>2026-08-13</strong>：涨幅 9.95%，首次封板 09:53:07，最后封板 14:21:19，<strong>开板 2 次</strong>，封单 0.13 亿元，1 连板（涨停统计 1/1）</li>
+<li><strong>2026-04-10</strong>：涨幅 10.01%，09:35 一字后封板，开板 0 次，封单 1.05 亿元，1 连板</li>
+<li><strong>2026-03-25</strong>：涨幅 10.01%，10:19:57 封板，开板 0 次，封单 1.02 亿元，1 连板</li>
+</ul>
+<p><strong>读法</strong>：近 180 日有 3 次涨停，全部是 1 连板、无连续涨停记录——<strong>说明本票有情绪面关注度，但从未成为过资金持续做多的核心标的</strong>（置信度：高）。值得注意的是封单质量在退化：3 月 25 日、4 月 10 日封单均超 1 亿元且当日不开板，8 月 13 日封单只有 0.13 亿元且开板 2 次，9 月 4 日更是盘中触板后未能封住。<strong>同样的位置，愿意排队买的钱在减少</strong>（置信度：中）。</p>
+<h3>资金与筹码（库内资金筹码）</h3>
+<ul>
+<li><strong>主力资金（近 20 个交易日，2026-08-10 至 2026-09-04）</strong>：全口径资金净流出 2.91 亿元；其中特大单净流入 1.23 亿元；净流入为正的天数 10 天 / 20 天，为负 10 天 / 20 天（置信度：高，库内数据）
+<ul>
+<li>读法：<strong>特大单在买、全口径在卖</strong>——即最大单笔的资金在进，中小单合计在出，20 天内多空天数完全对半。这是分歧格局，不是单边格局</li>
+</ul></li>
+<li><strong>筹码分布</strong>：筹码分布返回 None。<strong>筹码数据库内仅覆盖关注票，该票暂无</strong>——这是数据覆盖范围问题，不是「本票筹码结构有问题」</li>
+<li><strong>股东户数</strong>：截止 2026-06-30 为 21690 户；库内无上一期数据（为 None），<strong>无法计算环比变化</strong>。股东户数为季度披露、天然滞后，当前值反映的是 6 月 30 日的状态，与 8 月底以来的行情无关（置信度：高）</li>
+</ul>
+<h3>量价形态（库内日 K 数据）</h3>
+<ul>
+<li>成交量：9 月 2 日 11.04 万手 → 9 月 3 日 45.53 万手 → 9 月 4 日 73.46 万手，两日分别放大到 4.1 倍和 6.7 倍；9 月 4 日成交量也高于 8 月 13 日涨停当天的 30.60 万手和次日的 37.62 万手（置信度：高）</li>
+<li>均线位置（不复权收盘价计算，窗口跨越 8 月 20 日除权日，存在约 1% 的口径偏差）：MA5 = 6.61 元、MA10 = 6.36 元、MA20 = 6.29 元、MA60 = 5.95 元；当前 7.15 元的收盘价站在全部均线之上（置信度：中，因除权口径偏差）</li>
+<li>关键价格锚：9 月 4 日当日最低 6.40 元、当日最高 7.40 元、当日收盘 7.15 元；9 月 3 日收盘 6.73 元；8 月 13 日涨停收盘 6.74 元；8 月 24 日阶段低点收盘 6.01 元；2026 年内最高价 8.75 元（4 月 13 日盘中）</li>
+<li><strong>除权提示</strong>：复权因子在 2026-08-20 由 1.1398 变为 1.1514，即 8 月 20 日为 2025 年年度权益分派的除权除息日。跨该日的价格比较需注意口径（置信度：高，库内）</li>
+</ul>
+<div class="callout">⚠️ 纪律说明：本节的资金流向、量价形态、涨停封单质量都是<strong>盘面现象，不是基本面证据</strong>。它们只用于描述当前的情绪状态，不进入 J 节的逻辑链，也不单独构成任何操作结论的依据。</div>
+<h2>I. 未来 13 周事件日历</h2>
+<p>数据来源：库内事件日历（概念匹配，已过滤推测项）+ 联网补充 + 库内财报披露节奏推算。<strong>说明：库内事件日历返回的 11 条事件全部是通过「AI 应用」「数字经济」概念标签匹配来的行业级 / 全球级事件，没有一条是出版传媒的公司专属事件</strong>——这本身是重要信息：库内没有本公司未来的确定性日程。</p>
+<ul>
+<li><strong>W1（2026-09-07 起）</strong>
+<ul>
+<li>2026 全球工业互联网大会在沈阳开幕（09-08）· 会议 · 重要性中 · 影响：主题「AI+制造」，与出版主业无直接关系，仅通过「AI 应用」标签间接影响情绪</li>
+<li>2026 浦江创新论坛在上海举行（09-11 至 09-14，含 AI 赋能科学研究专题）· 会议 · 重要性中 · 影响：AI 题材情绪的行业风向标，对本票为边缘事件</li>
+<li><strong>本周核心观察点</strong>：9 月 4 日板块领涨标的被监管警示后的首个完整交易周，验证 F 节③判断——板块热度是回落还是延续</li>
+</ul></li>
+<li><strong>W2（2026-09-14 起）</strong>
+<ul>
+<li>2026 上合组织数字经济论坛在乌鲁木齐举办（09-14 至 09-16，国家数据局主办）· 会议 · 重要性中 · 影响：数据要素题材轻度催化，对本票为边缘事件</li>
+<li>美国商务部拟就封堵中国 AI 企业远程调用海外算力新规征求意见（09-15）· 政策 · 重要性高 · 影响：影响算力方向，对本票无直接传导，仅影响 AI 板块整体情绪</li>
+<li><strong>本周潜在事件</strong>：2026 年第一次临时股东会可能在本周或下周召开（据 9 月 2 日发布股东会通知、A 股上市公司通知与召开间隔通常 15 至 20 日推算，<strong>具体日期库内与联网均未取到，属信息缺口</strong>）</li>
+</ul></li>
+<li><strong>W3（2026-09-21 起）</strong>
+<ul>
+<li>2026 云栖大会在杭州开幕（09-22 至 09-24，阿里云主办）· 会议 · 重要性高 · 影响：AI 应用题材的重要催化窗口</li>
+<li>2026 中国国际信息通信展览会在北京举行（09-22 至 09-24）· 会议 · 重要性中高 · 影响：算力 / 通信方向，对本票无直接传导</li>
+<li>第五届全球数字贸易博览会在杭州开幕（09-23 至 09-27，商务部主办，主题 AI 赋能数字贸易）· 会议 · 重要性中高 · 影响：数字经济题材催化</li>
+</ul></li>
+<li><strong>W4（2026-09-28 起）</strong>
+<ul>
+<li>OpenAI 2026 开发者大会在旧金山举行（09-29）· 会议 · 重要性高 · 影响：全球 AI 主线情绪催化，A 股 AI 应用概念常有跟随反应</li>
+<li>Anthropic 据报最快 9 月底或 10 月初启动美股 IPO（09-30 前后）· 公司事件 · 重要性中高 · 影响：全球 AI 板块情绪</li>
+<li><strong>本周核心观察点</strong>：三季度最后一个交易周，机构调仓窗口</li>
+</ul></li>
+<li><strong>W5（2026-10-05 起）</strong>：国庆假期（10 月 1 日至 8 日为法定假期区间，实际交易日安排以交易所公告为准）· 本周交易日极少，无已知公司事件</li>
+<li><strong>W6（2026-10-12 起）</strong>：本周无已知事件。可关注三季报预约披露日期的公布（上交所通常在季度结束后陆续更新预约表）</li>
+<li><strong>W7（2026-10-19 起）</strong>：本周无已知事件</li>
+<li><strong>W8（2026-10-26 起）</strong>：<strong>2026 年三季报披露（高概率落在本周，据 2025 年三季报公告日 2025-10-30 推算，库内财务的公告日）· 财报 · 重要性高 · 影响：本报告最关键的验证节点</strong>。要核对三件事——① 前三季度营收同比降幅是继续扩大还是收窄（中报为 -20.94%）② 三季度单季是否守住全年营收最大季的地位（2025 年三季度单季推算约 6.92 亿元）③ 毛利率能否延续四期上升趋势（中报 27.5301%）</li>
+<li><strong>W9（2026-11-02 起）</strong>：本周无已知事件。若三季报已披露，本周是市场消化期</li>
+<li><strong>W10（2026-11-09 起）</strong>：本周无已知事件</li>
+<li><strong>W11（2026-11-16 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-11-23 起）</strong>：本周无已知事件</li>
+<li><strong>W13（2026-11-30 起）</strong>：本周无已知事件。可关注数智产业投资基金是否披露首期实缴到位或首笔投资项目</li>
+</ul>
+<p><strong>日历的信息缺口</strong>：① 2026 年第一次临时股东会的确切召开日期、股权登记日、审议议案清单——公告 PDF 在本环境无法解析文本，联网检索未取到；② 2026 年三季报预约披露日——联网检索未取到，只能按去年同期推算；③ 限售解禁安排——库内无数据。<strong>影响：W2 与 W8 的事件定位有不确定性，其余周的「无已知事件」也可能只是「未检索到」。补法：从上交所信息披露平台调取本公司公告原文与三季报预约披露表后修订本节。</strong></p>
+<h2>J. 逻辑链</h2>
+<p><strong>主链（可证伪）</strong></p>
+<ol>
+<li><strong>事实 1</strong>：营收同比连续四期下滑，降幅 -5.90% → -13.63% → -12.71% → -20.94%（置信度：高）</li>
+<li><strong>事实 2</strong>：净利润从 2025 年三季报的同比 +75.74% 转为 2026 年中报的同比 -25.83%，公司仍盈利但盈利在收缩（置信度：高）</li>
+<li><strong>事实 3</strong>：当前市盈率 TTM 41.99 倍高于行业中位数 32.62 倍，市净率 1.4715 高于凤凰传媒 1.0998 与中南传媒 1.1199，而净资产收益率 1.20% 仅为两者的约五分之一（置信度：高）</li>
+<li><strong>事实 4</strong>：近 60 日库内仅 4 条本公司相关消息，9 月 3 日、9 月 4 日两个放量日期间无本公司新增消息，同期出版 / 影视板块出现集中涨停（置信度：中——「无消息」的判据受限于库内新闻覆盖度）</li>
+<li><strong>推论 A</strong>：本轮上涨的定价依据不是本公司的经营改善，而是板块题材外溢 + 9 月 2 日基金公告提供的「AI 抓手」（置信度：中）</li>
+<li><strong>事实 5</strong>：2.4 亿元出资是以有限合伙人身份认缴、首期实缴 4800 万元，投向由基金管理人决定的 AI+文化项目（置信度：高，公告标题来自库内，金额经两源确认）</li>
+<li><strong>推论 B</strong>：该出资在 13 周内不会产生营业收入，最快只可能产生投资收益或长期股权投资的账面变动。<strong>因此三季报不会因为这笔基金而变好</strong>（置信度：高）</li>
+<li><strong>事实 6</strong>：交易所已就同板块公司「AI 业务信披不充分、前后不一致」作出监管警示（置信度：高，两源）</li>
+<li><strong>推论 C</strong>：本公司在后续披露中会更审慎地强调该基金对当期业绩无显著影响，题材的想象空间被约束（置信度：中）</li>
+<li><strong>总推论</strong>：如果推论 A + B + C 成立，那么在 W8 三季报窗口应能观察到——<strong>股价的支撑来自题材热度而非财报，一旦三季报确认营收降幅未收窄且基金无并表贡献，价格缺乏基本面接力</strong>（置信度：中）</li>
+</ol>
+<p><strong>可观察的证伪点</strong>（这条链错了会看到什么）</p>
+<ul>
+<li>三季报显示前三季度营收同比降幅收窄到 10% 以内 → 事实 1 的趋势被打断，主链失效</li>
+<li>公司公告数智产业投资基金取得可确认收入的实质进展，或公告新的、能并表的 AI 相关业务 → 推论 B 失效</li>
+<li>板块热度回落但本票价格不跟随回落 → 推论 A 失效，说明有本报告未识别的独立支撑</li>
+</ul>
+<p><strong>最弱的一环（命门）</strong>：<strong>事实 4 与推论 A</strong>。判断「上涨没有公司层面新信息支撑」依赖的是「库内近 60 日只有 4 条消息」，但库内新闻覆盖度本身是有限的——库内新闻甚至把别家公司的监管新闻误配给了本票（见 F 节③），说明这条数据通道的精度不足以支撑「不存在某消息」这种否定性结论。<strong>如果实际存在库外的公司信息（如互动易回复、调研纪要、地方媒体报道），推论 A 会直接被推翻，进而动摇整条主链</strong>（置信度：低——这是对自己判断的可靠性评估）。</p>
+<h2>K. 三情景推演（未来 13 周，合计 100%）</h2>
+<ul>
+<li><strong>乐观（20%）</strong>｜<strong>触发</strong>：三季报（W8）显示前三季度营收同比降幅收窄至 10% 以内，且毛利率延续中报 27.5301% 的上升趋势；或临时股东会通过基金议案后，公司公告基金首期实缴到位并披露首个可核验的 AI+文化投资项目｜<strong>路径</strong>：题材从纯标签转为有落地进度的叙事，估值溢价获得部分基本面支撑，价格在 9 月高点上方站稳并向年内高点区域靠拢，板块内相对强度提升</li>
+<li><strong>中性（33%）</strong>｜<strong>触发</strong>：三季报营收同比降幅维持在 15% 至 25% 区间、公司仍保持盈利；基金按公告推进但无新增实质信息；出版 / 影视板块热度逐步回落但未出现连续大幅回调｜<strong>路径</strong>：题材资金分批退出，价格在 MA20 与 9 月 4 日当日最高之间宽幅震荡，成交量从当前的极端放大水平逐步回落至 8 月中下旬的常态区间，走势跟随出版板块贝塔</li>
+<li><strong>悲观（47%）</strong>｜<strong>触发</strong>：三季报前三季度营收同比降幅继续扩大到 25% 以上，或单季出现由盈转亏；或监管对 AI 概念披露的约束进一步扩散，出版板块出现连续多日的普遍回调；或成交量在 5 个交易日内萎缩至 9 月 2 日水平以下而价格无法守住 MA10｜<strong>路径</strong>：题材溢价回吐，价格回补 9 月 3 日与 9 月 4 日形成的放量上涨区间，向 MA20 乃至 MA60 回归，估值向同行龙头的市净率水平靠拢</li>
+</ul>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong></p>
+<ol>
+<li><strong>如果</strong> 收盘价跌破 9-04 当日最低，<strong>那么</strong> 回避——该价位是本轮放量上涨日的多空分界，跌破意味着 9 月 4 日买入的资金整体处于亏损状态，题材驱动的定价基础被削弱（依据：H 节量价形态）</li>
+<li><strong>如果</strong> 收盘价跌破 MA20（不复权）6.29 元，<strong>那么</strong> 减仓或回避——这同时低于 8-13 涨停收盘 6.74 元和 9-03 收盘 6.73 元，意味着 8 月中旬以来的两次题材上涨全部被回吐（依据：H 节均线与关键价格锚）</li>
+<li><strong>如果</strong> 2026 年三季报（预计 W8，约 10 月下旬）显示前三季度营收同比降幅收窄至 10% 以内，且毛利率不低于中报的 27.5301%，<strong>那么</strong> 由观望转为可试仓——这是 C 节营收下滑趋势被打断的第一个可核验证据（依据：C 节 + I 节 W8）</li>
+<li><strong>如果</strong> 临时股东会通过参与设立数智产业投资基金议案，且公司后续公告首期实缴 4800 万元到位并披露具体投资标的，<strong>那么</strong> 可将本票从「仅概念标签」重估为「有 AI 方向实质投入」，但仍需等三季报或年报确认对损益的影响后再考虑加仓（依据：G 节 + H 节 + J 节推论 B）</li>
+<li><strong>如果</strong> 收盘价站上 9-04 当日最高但成交量低于 9-04 的 73.46 万手，<strong>那么</strong> 观望——价格新高伴随量能不接续，通常意味着承接力度不足（依据：H 节量价形态）</li>
+</ol>
+<p><strong>风控要点（什么情况下本报告的判断应当被推翻）</strong></p>
+<ul>
+<li>出现库外的公司层面新信息（互动易回复、机构调研纪要、新业务公告）证明本公司已有可确认的 AI 相关收入——则 J 节推论 A 与 B 同时失效，「偏跌」判断作废</li>
+<li>三季报营收同比降幅收窄且净利润同比转正——则 C 节的核心趋势判断作废</li>
+<li>出版板块整体估值中枢因政策或产业事件系统性抬升，且本票市净率仍低于板块内可比公司——则 D 节「贵」的判断需要重新校准</li>
+<li><strong>本报告未使用止损价概念</strong>：推翻条件是上面这几条事实性变化，不是某个价格数字</li>
+</ul>
+<p><strong>仓位思路</strong></p>
+<ul>
+<li>在三季报（W8）落地前，本票属于「基本面在走弱、定价由题材主导、且题材领涨标的刚被监管警示」的组合——<strong>不参与或极轻仓</strong>是与本报告结论一致的姿态</li>
+<li>若第 3 条或第 4 条触发条件成立，可考虑从不参与转为轻仓试探</li>
+<li><strong>不给具体金额、不给股数、不给目标价位</strong></li>
+</ul>
+<h2>M. 逻辑自查</h2>
+<p><strong>这份判断最依赖的假设是哪一条？错了会怎样？</strong></p>
+<p>最依赖的是：<strong>「13 周尺度上，营收连续下滑的基本面会重新成为定价依据」</strong>。这个假设在题材行情中经常是错的——9 月 3 日、9 月 4 日的成交量放大到 9 月 2 日的 4.1 倍和 6.7 倍，说明当下的定价权完全在题材资金手里，它们不看营收同比。如果这轮 AI 内容产业的叙事在四季度继续发酵（W3 的云栖大会、W4 的 OpenAI 开发者大会都是潜在催化窗口），价格可能在整个 13 周里都不给基本面留说话的机会。届时本报告的「偏跌」会是错的，且错的方式是「方向对但时间尺度选错了」。</p>
+<p><strong>有没有为了让逻辑好看而忽略的反面证据？</strong></p>
+<p>有三条，在此明确列出：</p>
+<ol>
+<li><strong>毛利率连续四期上升</strong>（21.2259% → 23.6305% → 24.2691% → 27.5301%），上半年比 2025 年全年高 3.90 个百分点。我在 C 节把它归因为「低毛利业务收缩」，但<strong>这个归因没有分部数据支持</strong>。如果它其实来自产品结构升级或成本控制,那公司的经营质量比本报告呈现的要好</li>
+<li><strong>特大单近 20 日净流入 1.23 亿元</strong>，方向与全口径净流出 2.91 亿元相反。我按纪律把它放在 H 节作为盘面现象、没有进逻辑链，但如果这批大单代表的是有信息优势的资金,那我可能低估了某些我不知道的东西</li>
+<li><strong>资产负债率仅 33.17%、股息率 0.8392%、市值仅 39.39 亿元</strong>。一家账面干净、有分红、体量小的地方国有出版平台，在国企改革与文化产业整合的语境下有资产运作的想象空间——本报告完全没有给这条线权重，因为库内和联网都找不到任何具体证据</li>
+</ol>
+<p><strong>信息缺口清单</strong></p>
+<ol>
+<li><strong>库内研报返回 None——库内近 90 天无本票研报</strong>。联网检索也未找到任何针对 601999 的近期券商评级或盈利预测。影响：本报告全文<strong>没有任何〔卖方预期〕条目</strong>，J 节缺少「市场一致预期」这个参照系，无法判断当前价格相对预期是高是低。这对一只 39 亿市值的小盘股是常态（覆盖度低），但它意味着本报告的判断是完全独立的、没有外部交叉验证。补法：等待研报覆盖或从其他数据源补齐</li>
+<li><strong>库内资金筹码的筹码分布为 None</strong>——筹码数据库内仅覆盖关注票，本票暂无。影响：H 节无法给出获利盘比例，因而无法判断「上方套牢盘密集程度」与「短线获利抛压」这两面。这直接削弱了 L 节触发条件的精细度——<strong>我只能用均线和当日高低点作锚，用不了筹码分位成本这类更贴近真实成本分布的刻度</strong>。补法：将 601999 加入筹码数据采集范围后重跑</li>
+<li><strong>库内资金筹码的股东户数缺上一期数据</strong>（为 None）——股东户数只有 2026-06-30 的 21690 户，无法算环比。影响：无法判断筹码是趋于集中还是分散。补法：补齐历史股东户数序列</li>
+<li><strong>库内财务无分部收入、无现金流、无应收存货明细</strong>。影响：C 节的毛利率改善原因、E 节的护城河量化、G 节的「真有业务 vs 仅概念标签」分级都只能做到定性。补法：解析 2026 年中期报告全文</li>
+<li><strong>临时股东会日期、三季报预约披露日、限售解禁安排均未取到</strong>。公告 PDF 在本运行环境缺少解析工具（无 poppler / pypdf），联网检索亦未命中。影响：I 节的 W2 和 W8 是推算定位，不是确定日期。补法：从上交所信息披露平台取公告原文</li>
+<li><strong>一条被排除的未验证信息</strong>：某财经门户的公告列表页显示本公司有「2026 年第一次临时股东会延期召开的公告」和「2025 年股权激励计划实施结果的通知」。<strong>两条均为单一来源、且第二条与联网检索到的「2025 年年报中股权激励栏目标注为不适用」相互矛盾，因此本报告未采信、未写入正文</strong>。记录在此供后续核实（置信度：低）</li>
+<li><strong>一条已修正的数据缺陷</strong>：库内新闻把上交所对龙版传媒（605577）的监管警示以 100 分相关度关联到了本票，关联依据是别名「出版传媒」命中「黑龙江出版传媒股份有限公司」的全称子串。本报告已读原文核实并作出更正（F 节③）。<strong>这是本次调研中唯一一处库内数据与事实不符的地方，也提醒后续读者：本票的新闻通道存在同名子串误配风险，凡涉及「XX 出版传媒」字样的新闻都需核对主体</strong></li>
+</ol>
+<p>*本报告仅为投研档案，不构成任何投资建议。全文数据取自项目本地行情财务库与公开联网信息，联网结论均标注来源与日期。*</p>
+<p><strong>Sources（联网部分）</strong>： <a href="http://cul.china.com.cn/2025-12/26/content_43319940.htm" target="_blank" rel="noopener">国家新闻出版署·2026 年度出版融合发展工程（中国网转载）</a> · <a href="https://www.nppa.gov.cn/xxfb/tzgs/202504/t20250418_891793.html" target="_blank" rel="noopener">国家新闻出版署·网络出版科技创新引领计划</a> · <a href="https://www.nppa.gov.cn/xxfb/tzgs/202506/t20250609_899420.html" target="_blank" rel="noopener">国家新闻出版署·印刷业数字化三年行动计划（2025—2027年）</a> · <a href="http://www.moe.gov.cn/jyb_xwfb/s5148/202603/t20260323_1431815.html" target="_blank" rel="noopener">教育部·教育资源如何适配学龄人口变化</a> · <a href="https://www.eol.cn/news/guancha/202509/t20250915_2689958.shtml" target="_blank" rel="noopener">中国教育在线·2023 见顶、2026 承压：人口曲线与教师编制</a> · <a href="https://www.jiemian.com/article/15057862.html" target="_blank" rel="noopener">界面新闻·上交所对龙版传媒及有关责任人予以监管警示</a> · <a href="https://hk.investing.com/news/stock-market-news/article-1639178" target="_blank" rel="noopener">智通财经/investing.com·出版传媒拟出资 2.4 亿元参与设立数智产业投资基金</a> · <a href="https://m.thepaper.cn/newsDetail_forward_33983133" target="_blank" rel="noopener">澎湃新闻·首部 AI 长剧《后西游记》带起 A 股影视板块涨停潮</a> · <a href="https://m.21jingji.com/article/20260901/herald/52b592d8c9ab7741bfb262ec04acdd75.html" target="_blank" rel="noopener">21 财经·AI 长剧登陆卫视，传媒板块迎行情催化</a></p>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-04），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>上半年营收同比降20.94%，降幅扩大</li>
+      <li>板块龙头因AI信披被监管警示</li>
+      <li>PE41.99倍高于行业中位32.62倍</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>限售解禁</dt><dd>首发或定增取得的股份锁定期届满、可以上市流通。解禁本身不等于减持，但增加了潜在供给。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>BLUF</dt><dd>Bottom Line Up Front，结论先行——把最重要的判断放在最前面。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>一致预期</dt><dd>多家券商盈利预测的平均值。是别人的观点，不是事实。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="http://cul.china.com.cn/2025-12/26/content_43319940.htm" target="_blank" rel="noopener">中国网</a></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.nppa.gov.cn/xxfb/tzgs/202504/t20250418_891793.html" target="_blank" rel="noopener">nppa.gov.cn</a></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.nppa.gov.cn/xxfb/tzgs/202506/t20250609_899420.html" target="_blank" rel="noopener">nppa.gov.cn</a></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="http://www.moe.gov.cn/jyb_xwfb/s5148/202603/t20260323_1431815.html" target="_blank" rel="noopener">moe.gov.cn</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.eol.cn/news/guancha/202509/t20250915_2689958.shtml" target="_blank" rel="noopener">eol.cn</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.jiemian.com/article/15057862.html" target="_blank" rel="noopener">界面新闻</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.thepaper.cn/newsDetail_forward_33983133" target="_blank" rel="noopener">澎湃新闻</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.21jingji.com/article/20260901/herald/52b592d8c9ab7741bfb262ec04acdd75.html" target="_blank" rel="noopener">21 财经</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://hk.investing.com/news/stock-market-news/article-1639178" target="_blank" rel="noopener">智通财经/investing.com·出版传媒拟出资 2.4 亿元参与设立数智产业投资基金</a></li>
+      <li><span class="src-tag src-media">媒体</span> 国家新闻出版署 / 中国网转载，2025-12-26 <em>2025-12-26</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [中国网](http://cul.china.com.cn/2025-12/26/content_43319940.htm <em>2025-12-26</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 国家新闻出版署，2025-04-18 <em>2025-04-18</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [nppa.gov.cn](https://www.nppa.gov.cn/xxfb/tzgs/202504/t20250418_891793.html — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 国家新闻出版署，2025-06-09 <em>2025-06-09</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [nppa.gov.cn](https://www.nppa.gov.cn/xxfb/tzgs/202506/t20250609_899420.html — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 教育部，2026-03-23 <em>2026-03-23</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [moe.gov.cn](http://www.moe.gov.cn/jyb_xwfb/s5148/202603/t20260323_1431815.html — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 中国教育在线，2025-09-15 <em>2025-09-15</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [eol.cn](https://www.eol.cn/news/guancha/202509/t20250915_2689958.shtml — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 智通财经 / investing.com 香港站，2026-09-02 <em>2026-09-02</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 同一数字亦见于另一次独立检索的公告摘要 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 参考 2025 年三季报披露日 2025-10-30，库内财务的公告日，2026 年大概率落在 10 月下旬 <em>2025-10-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 高概率落在本周，据 2025 年三季报公告日 2025-10-30 推算，库内财务的公告日 <em>2025-10-30</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-04 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
