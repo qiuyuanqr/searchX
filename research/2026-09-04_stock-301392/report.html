@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>汇成真空（301392.SZ） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>汇成真空（301392.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-04（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 专用设备</span>
+      <span style="flex-basis:100%"><b>概念标签</b> PET铜箔 · 玻璃基板 · TOPCON电池 · 钙钛矿电池 · 富士康概念 · 苹果概念 · 第三代半导体 · 光伏概念</span>
+      <span><b>来源</b> 9 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    汇成真空（301392）主要做的是真空镀膜设备的研发、生产、销售及其技术服务。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——故事在半导体 PVD 定增，业绩却在二季度掉头亏损。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：故事在半导体 PVD 定增，业绩却在二季度掉头亏损。支撑在于9.55亿定增主投半导体PVD；先进封装入十五五+TGV设备已交付；近20日主力净流入1.5亿。主要风险是H1营收-33.9%、Q2单季推算亏损；激励目标6亿营收H1仅完成1.74亿；PB24.3倍配ROE2.1%估值极贵。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>9.55亿定增主投半导体PVD</li>
+      <li>先进封装入十五五+TGV设备已交付</li>
+      <li>近20日主力净流入1.5亿</li>
+    </ul>
+  </div>
+
+  <main>
+    <h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中） <strong>一句话逻辑</strong>：故事在半导体 PVD 定增，业绩却在二季度掉头亏损。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li>2026-08-10 披露 9.55 亿元定增预案，主投「超精密半导体及连续式 PVD 设备产业化项目」（总投资 7.65 亿元、拟投募资 6.69 亿元、建设期 2 年）+ 补流 2.86 亿元，把估值叙事从消费电子镀膜切到半导体/先进封装设备（置信度：高，证券时报 stcn.com 2026-08-10 与中财网 cfi.net.cn 2026-08-11 两源一致）。</li>
+<li>政策端「先进封装」被写入「十五五」清单，玻璃基板/TGV 被列为下一代先进封装方向；公司已交付应用于三维堆叠封装 TGV 方案的 PVD 设备（公司自述「少量」）（置信度：中，两源：新浪财经 2026-06-23、证券日报网 2026-06-23）。</li>
+<li>库内近 20 个交易日（20260807–20260903）特大单净流入 1.50 亿元、全口径净流入 0.58 亿元、净流入为正 12/20 天，资金面未撤（置信度：高，库内资金筹码；仅作情绪面佐证，不进逻辑链）。</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li>2026 中报（20260827 披露）营收 1.74 亿元、同比 −33.94%，归母净利 0.16 亿元、同比 −63.13%；据库内财务推算，Q2 单季营收仅 0.60 亿元、单季归母净利约 −0.12 亿元（由亏转负）（置信度：高）。</li>
+<li>股权激励 2026 年考核目标为营收 ≥6 亿元、扣非归母净利 ≥0.6 亿元；H1 只完成营收 1.74 亿元，据此推算下半年需做 4.26 亿元（占全年 71%）才达标（置信度：高，目标值来自巨潮/新浪披露的《2026 年限制性股票激励计划（草案修订稿）》原文，进度为据库内财务推算）。</li>
+<li>估值极端：PB 24.31 倍（20260903），总市值 179.2 亿元；库内估值的 PE(TTM) 为 null 无法直接读 PE，但按库内研报里 2026 年最乐观的盈利预测 1.12 亿元推算，对应约 160 倍（据两库数据推算）（置信度：高）。</li>
+</ol>
+<p><strong>最该盯的信号</strong> ① 2026 年三季报（预计 10 月下旬披露 —— 2025 年三季报公告日为 20251030）里前三季度累计营收能否过 3 亿元、单季能否重回盈利；② 9.55 亿元定增的深交所受理/问询进展（时点未定）。</p>
+<p><strong>这份判断最可能错在哪</strong>：库内 /营收构成拆分与 2026H1 合同负债、在手订单全部缺失，而设备公司的真实景气就藏在订单和合同负债里 —— 如果 H1 收入下滑只是「验收确认节奏后移」而订单在涨，我把周期性延迟误读成了经营恶化，方向会偏保守。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>公司</strong>：汇成真空（301392）· 广东汇成真空科技股份有限公司 · 上市状态（正常上市）</li>
+<li><strong>行业 / 板块</strong>：专用机械 · 创业板 · 上市日 20240605（至今约 1 年 3 个月）</li>
+<li><strong>主营</strong>：真空镀膜设备的研发、生产、销售及其技术服务</li>
+<li><strong>产品线</strong>（来自库内公司档案简介与经营范围）：光学镀膜设备 · 功能性薄膜涂层设备 · 装饰涂层设备 · 卷绕镀膜设备 · 汽车零部件镀膜设备 · 连续式磁控溅射镀膜生产线 · 超高真空系统 · 半导体设备 · 光伏设备 · 动力电池设备</li>
+<li><strong>规模</strong>：员工 524 人（库内公司档案；简介文本自述「约 300 余人」，两者不一致，以结构化字段 524 为准）· 注册资本 10000 万元 · 成立于 2006 年</li>
+</ul>
+<p><strong>估值与行情</strong>（唯一行情事实源库内行情）</p>
+<ul>
+<li>现价 165.68 元 · 当日 −7.54% · 数据时点 = <strong>14:05</strong>（=realtime，<strong>盘中值、非当日收盘</strong>）· 当日成交 8.0 亿元 · 当日振幅区间对应涨跌 +3.51% ~ −7.92%</li>
+<li>据现价与当日跌幅推算，9-03 收盘约 179.19 元、9-04 当日最低约 165.00 元、当日最高约 185.48 元（均为推算值，非库内直取）</li>
+<li>库内估值（交易日 20260903）：总市值 179.2 亿元 · PB 24.31 倍 · 股息率 0.1674% · 换手率 9.34% · PE(TTM) = <strong>null</strong>（库内缺失）· 行业「专用机械」共 294 只、行业 PE 中位数 59.38 倍 · 行业内 PE 排名 = <strong>null</strong>（因本票 PE 缺失，无法定分位）</li>
+<li>按总市值 179.2 亿元与推算的 9-03 收盘 179.19 元反推，总股本约 1.0001 亿股，与注册资本 10000 万元自洽（据两库数据推算，作为数据一致性校验）</li>
+<li>A/H：库内 A/H 对照返回 None，非两地上市，本节不展开</li>
+</ul>
+<p><strong>仅估值口径的一句话</strong>：PB 24.31 倍配 2026H1 年化 ROE 约 4.3%（2.14%×2 推算），是把未来 2–3 年的半导体设备叙事一次性定价进来的水平（置信度：高）。</p>
+<h2>C. 财务健康</h2>
+<p>库内财务（近 4 期），新→旧，金额单位亿元：</p>
+<ul>
+<li><strong>2026H1（20260630，20260827 披露）</strong>：营收 1.74 · 归母净利 0.16 · 同比 −33.94% / −63.13% · 毛利率 46.26% · 净利率 9.05% · ROE 2.14% · EPS 0.16 · 资产负债率 41.39%</li>
+<li><strong>2026Q1（20260331，20260428 披露）</strong>：营收 1.14 · 归母净利 0.27 · 同比 +16.56% / +230.38% · 毛利率 55.95% · 净利率 24.22% · ROE 3.70% · EPS 0.2749 · 资产负债率 40.47%</li>
+<li><strong>2025 全年（20251231，20260417 披露）</strong>：营收 4.70 · 归母净利 0.22 · 同比 −9.73% / −67.32% · 毛利率 23.46% · 净利率 4.74% · ROE 3.03% · EPS 0.22 · 资产负债率 43.18%</li>
+<li><strong>2025Q1–Q3（20250930，20251030 披露）</strong>：营收 3.04 · 归母净利 0.18 · 同比 −29.54% / −72.62% · 毛利率 25.52% · 净利率 5.81% · ROE 2.41% · EPS 0.18 · 资产负债率 38.87%</li>
+</ul>
+<p><strong>趋势判断（不是罗列）</strong></p>
+<ol>
+<li><strong>拐点出现在 2026Q2，方向朝下。</strong> 据库内财务推算：Q2 单季营收 0.60 亿元（1.74−1.14）、单季归母净利约 −0.12 亿元（0.16−0.27），即<strong>二季度单季亏损</strong>，把 Q1 的 +230% 高增长几乎抹平（置信度：高，推算基础为库内两期累计值相减）。</li>
+<li><strong>毛利率有两层完全相反的信号。</strong> 长周期看是大幅改善：2025 全年 23.46% → 2026H1 46.26%，翻了近一倍；但短周期看在恶化：据 H1 与 Q1 毛利额倒推，Q2 单季毛利率约 28.0%（推算），比 Q1 的 55.95% 掉了近 28 个百分点。<strong>「结构性提毛利」和「季度大幅波动」同时成立</strong>，最合理的解释是收入体量小（单季 0.60 亿元）时产品结构一单一变、规模摊薄不足 —— 但库内无营收构成拆分，这个解释未被证实（置信度：中）。</li>
+<li><strong>利润的绝对量始终很薄。</strong> 四期里最好的一期（2026Q1）归母净利也只有 0.27 亿元；2025 全年 0.22 亿元。ROE 从未超过 3.7%。这意味着<strong>利润端对单季验收节奏极度敏感</strong>，用季度同比外推全年风险很高（置信度：高）。</li>
+<li><strong>资产负债表不紧张。</strong> 资产负债率四期在 38.87%–43.18% 区间小幅波动，无恶化趋势；本次 9.55 亿元定增里 2.86 亿元补流，属于扩张性融资而非救急（置信度：中，负债率来自库内，融资性质属推断）。</li>
+</ol>
+<p><strong>估值贵贱只做「仅估值口径」判断</strong>：PB 24.31 倍对应 ROE 2–4% 的盈利能力，是典型的「靠未来定价」结构 —— 这句话只描述估值，不构成好坏结论。</p>
+<p><strong>信息缺口</strong>：库内财务不提供扣非归母净利润，而股权激励考核口径正是扣非（见 I 节 / M 节）；库内也无 2026H1 合同负债、存货、在手订单，无法验证「收入是延后了还是丢了」。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比（取 3 家）（同属「专用机械」，报告期均为 20260630）：</p>
+<ul>
+<li><strong>汇成真空（301392）</strong>｜市值 179.2 亿元 · PB 24.31 · PE_TTM 库内缺失 · H1 营收 1.74 亿元 · H1 归母净利 0.16 亿元 · ROE 2.14%</li>
+<li><strong>宇树科技（688836）</strong>｜市值 2226.37 亿元 · PB 77.31 · PE_TTM 381.08 · H1 营收 11.52 亿元 · H1 归母净利 2.74 亿元 · ROE 9.99%</li>
+<li><strong>大族数控（301200）</strong>｜市值 1316.26 亿元 · PB 10.93 · PE_TTM 86.72 · H1 营收 49.85 亿元 · H1 归母净利 9.57 亿元 · ROE 10.56%</li>
+<li><strong>华工科技（000988）</strong>｜市值 995.25 亿元 · PB 8.32 · PE_TTM 57.01 · H1 营收 78.22 亿元 · H1 归母净利 11.86 亿元 · ROE 10.31%</li>
+</ul>
+<p><strong>位置判断</strong></p>
+<ol>
+<li><strong>体量上是小弟，而且不是小一点。</strong> 三家可比公司 H1 营收分别是本票的 6.6 倍 / 28.7 倍 / 45.0 倍（据上表推算），净利差距 17–74 倍。汇成真空在这组里是<strong>收入规模最小、盈利能力最弱</strong>的一家（ROE 2.14% vs 三家均在 10% 上下）（置信度：高）。</li>
+<li><strong>PB 却排到第二贵。</strong> 24.31 倍高于大族数控（10.93）与华工科技（8.32）两三倍，仅次于宇树科技（77.31）—— 但宇树的 ROE 是本票的 4.7 倍。<strong>「盈利能力垫底 + 估值倍数居前」是这组对比里最刺眼的一条</strong>（置信度：高）。</li>
+<li><strong>注意可比性的局限。</strong> 库内同业对比按「专用机械」大类取，宇树科技（机器人）、大族数控（PCB 设备）、华工科技（激光+连接器）三家的下游与本票（真空镀膜设备）几乎不重叠，行业分类相同不等于业务可比。这组对比的有效结论只有一条：<strong>在「专用机械」这个资金定价篮子里，本票是用最小的盈利体量拿了偏高的估值倍数</strong>（置信度：中）。</li>
+<li>行业 PE 中位数 59.38 倍（294 只）可作背景刻度，但本票 PE_TTM 库内缺失，无法做分位比较（置信度：高，这是数据事实）。</li>
+</ol>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>：卖真空镀膜设备（PVD 单体机 + 连续式产线）+ 配套技术服务，客户定制化。收入按设备验收确认，天然「块状」—— 这解释了为什么单季营收能从 1.14 亿元掉到 0.60 亿元（置信度：中）。</p>
+<p><strong>分级判断</strong></p>
+<ul>
+<li><strong>阶段性优势 —— 头部客户绑定（置信度：中，两源）</strong>：公司主要客户包括苹果、富士康、比亚迪、捷普、沃格光电等；2017 年成为富士康供应商、2018 年进入苹果与捷普供应链（来源：证券市场周刊 2025-04-25；新浪财经 2025-01-06）。消费电子大客户认证周期长，一旦进入有换供成本，但<strong>这类绑定随客户资本开支周期摆动，不是穿越周期的护城河</strong>。</li>
+<li><strong>阶段性优势 —— 高端 PVD 的先发切入（置信度：低，单源为公司口径）</strong>：公司自述「已成功研发出应用于超精密光学元器件和三维堆叠封装 TGV 方案的 PVD 设备，并陆续向部分高校、科研院所以及相关厂商交付少量产品」（来源：证券时报 stcn.com 2026-08-10 引述定增预案）。<strong>关键词是「少量」和「高校、科研院所」—— 这是验证阶段，不是量产订单阶段。</strong></li>
+<li><strong>无明显结构性护城河（置信度：中）</strong>：从库内公司档案的经营范围与库内财务看不出牌照壁垒、网络效应或规模成本优势；毛利率在 23%–56% 之间大幅摆动，本身就说明定价权不稳定。公司自述持有多项发明/实用新型/外观设计专利与软件著作权，但库内无专利数量与质量数据，无法据此定级。</li>
+</ul>
+<p><strong>一句话</strong>：这家的商业模式是「定制设备 + 大客户认证」，护城河目前落在<strong>阶段性优势</strong>这一档；把它当半导体设备平台型公司定价，需要看到半导体收入真实起量，而这一步在库内和公开信息里都还没发生（置信度：中）。</p>
+<h2>F. 政策与监管</h2>
+<p>库内无政策数据，本节全部来自联网，每条带来源与日期。</p>
+<ol>
+<li><strong>「先进封装」进入「十五五」国家清单（置信度：中，两源）</strong></li>
+</ol>
+<p>来源：新浪财经《&quot;十五五&quot;政策背景下我国半导体封装行业发展前景展望》2026-06-23；ZAKER 转载《先进封装被写入&quot;十五五&quot;清单！玻璃基板/TGV 材料跟着沾光》2026-06。 传导链条：先进封装被列为绕开先进制程的替代路径（Chiplet / 3D 堆叠）→ 带动玻璃基板、TGV 上游材料与设备需求 → 公司的 TGV 方案 PVD 设备属于该链条的种子层沉积环节。 方向：<strong>中性偏利好</strong>。链条成立，但从「政策列名」到「本公司拿到量产订单」中间隔着客户产线落地，传导时滞以年计（置信度：中）。</p>
+<ol>
+<li><strong>半导体设备国产化率有明确的十五五目标（置信度：低，单源未交叉验证）</strong></li>
+</ol>
+<p>来源：CSDN 技术博客转述「十五五规划」解读，2026 年。观点：2030 年半导体设备国产化率目标 60%–70%，刻蚀/清洗在成熟制程达 80% 以上。 注：该数字来自二手解读而非规划原文，<strong>单源未交叉验证，置信度低</strong>，只作为方向性背景，不进逻辑链。</p>
+<ol>
+<li><strong>全球与中国半导体设备资本开支处于上行期（置信度：中，两源）</strong></li>
+</ol>
+<p>来源：国际电子商情 esmchina.com（引 SEMI 预测，2026 年全球设备市场约 1450 亿美元、连续三年创新高）；中金在线 mp.cnfol.com《半导体设备行业：国产替代下的 2026 年前景展望》（引伯恩斯坦 2026 年 1 月预测，2026 年中国 WFE 市场增长 10% 至 550 亿美元、中国大陆设备厂商收入约 150 亿美元、同比 +36%）。 方向：<strong>利好行业 beta</strong>。但注意本票 2026H1 营收同比 −33.94%，<strong>行业上行与公司下滑背离</strong> —— 这是 J 节要处理的关键矛盾。</p>
+<ol>
+<li><strong>未见针对本公司的监管处罚或问询类负面政策事件</strong>（置信度：低 —— 这是「没搜到」，不是「不存在」；库内新闻库内为空，联网也未检索到，属信息缺口而非结论）。</li>
+</ol>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 14 个同花顺概念标签。<strong>关键前提：库内财务不提供分产品/分行业营收拆分，因此本节没有任何一个概念能用「营收占比」佐证</strong> —— 下面的分级用的是「有无产品线/客户关系的公开佐证」，请读者按这个降级后的标准读。</p>
+<p><strong>有客户关系或产品交付佐证（但无营收占比佐证）</strong></p>
+<ul>
+<li><strong>苹果概念</strong>（885376.TI）：2018 年进入苹果供应链（证券市场周刊 2025-04-25 / 新浪财经 2025-01-06 两源）。真有客户关系，占比未知。</li>
+<li><strong>富士康概念</strong>（885786.TI）：2017 年成为富士康供应商（同上两源）。真有客户关系，占比未知。</li>
+<li><strong>比亚迪概念</strong>（885997.TI）：比亚迪列于主要客户名单（同上两源）。真有客户关系，占比未知。</li>
+<li><strong>玻璃基板</strong>（886111.TI）：已交付 TGV 方案 PVD 设备，公司自述为「少量」，客户含高校与科研院所（证券时报 2026-08-10 引定增预案，单源为公司口径）。<strong>有产品、无规模，不能按量产业务读。</strong></li>
+</ul>
+<p><strong>有产品线对应，但未见营收佐证（仅经营范围/产品目录支撑）</strong></p>
+<ul>
+<li><strong>芯片概念</strong>（885756.TI）/ <strong>第三代半导体</strong>（885908.TI）：经营范围含「半导体设备」，定增主投超精密半导体 PVD —— 但这是<strong>在建项目</strong>（建设期 2 年），不是当期营收。</li>
+<li><strong>光伏概念</strong>（885531.TI）/ <strong>TOPCON 电池</strong>（886007.TI）/ <strong>钙钛矿电池</strong>（886006.TI）：经营范围含「光伏设备」，钙钛矿工艺依赖真空镀膜。<strong>仅概念标签，未见营收佐证。</strong></li>
+<li><strong>锂电池概念</strong>（885710.TI）：经营范围含「动力电池设备」。<strong>仅概念标签，未见营收佐证。</strong></li>
+<li><strong>PET 铜箔</strong>（886020.TI）：产品线含「卷绕镀膜设备」，是 PET 铜箔的工艺设备类型。<strong>仅概念标签，未见营收佐证。</strong></li>
+</ul>
+<p><strong>非业务类标签（不构成任何业务判断）</strong></p>
+<ul>
+<li><strong>专精特新</strong>（885929.TI）：库内公司档案记载的是「国家高新技术企业」，库内未见「专精特新」认定记录 —— <strong>仅概念标签</strong>。</li>
+<li><strong>深股通</strong>（885694.TI）/ <strong>融资融券</strong>（885338.TI）：交易制度标签，与业务无关。</li>
+</ul>
+<p><strong>产业链位置</strong> 上游：真空泵、腔体、靶材、电源与控制系统、伺服件（多为通用工业件，公司议价能力中等偏弱，库内无供应商数据佐证，置信度：低）。 本环节：真空镀膜设备整机与产线集成。 下游：消费电子结构件/外观件镀膜（苹果链、富士康、捷普）→ 汽车零部件（比亚迪）→ 光伏/锂电设备 → 半导体先进封装（TGV，在建）。 <strong>议价能力在下游。</strong> 苹果链与大型代工厂是典型的强势买方，设备定制化又意味着开发成本前置。这与 C 节看到的毛利率剧烈摆动是一致的（置信度：中）。</p>
+<h2>H. 消息面与市场情绪</h2>
+<p><strong>新闻（库内新闻）</strong> 库内新闻（近 60 日）返回<strong>空列表</strong>；扩到仍为空。 <strong>信息缺口</strong>：库内近 90 天无该票新闻收录。影响：H 节失去了「市场当下在讲什么故事」的库内证据，本节的事件线索全部来自 F 节的联网检索与库内事件日历。补法：新闻库补收该票后重跑本调研。 （按纪律，本报告不引用任何新闻标题里的行情数字。）</p>
+<p><strong>涨停史（库内涨停记录，近 180 日）</strong> 仅 1 条记录：</p>
+<ul>
+<li><strong>20260401</strong>｜涨幅 20.0%（创业板涨停）｜连板数 1（涨停统计 1/1，即区间内仅此 1 次涨停）｜首次封板 13:15:00 · 最后封板 14:54:21 · <strong>开板 5 次</strong> · 封单金额 0.19 亿元｜所属行业归属记为「专用设备」</li>
+</ul>
+<p>解读：近半年只有一次涨停，且<strong>下午才首封、盘中开板 5 次、封单仅 0.19 亿元</strong> —— 这是典型的「弱封板」，说明当时没有稳定的资金合力，情绪面记录很淡（置信度：高）。换句话说，这只票近半年的上涨不是靠情绪脉冲打上去的，这一点对判断「回调时有没有情绪盘承接」是负面信息。</p>
+<p><strong>资金与筹码（库内资金筹码）</strong></p>
+<ul>
+<li><strong>资金流</strong>（近 20 个交易日，20260807–20260903）：全口径净流入 0.58 亿元 · 特大单（主力）净流入 1.50 亿元 · 净流入为正 12/20 天。</li>
+</ul>
+<p>解读：主力口径明显强于全口径（1.50 &gt; 0.58），意味着<strong>大单在买、中小单在卖</strong>，是筹码从散户向大资金转移的形态（置信度：中）。<strong>纪律提醒：这是盘面现象，不是基本面证据，不进 J 节逻辑链。</strong></p>
+<ul>
+<li><strong>筹码</strong>：筹码分布为 None —— 筹码数据库内仅覆盖关注票，该票暂无。因此获利盘比例（获利盘比例）无法给出，「上方套牢盘 vs 获利抛压」两面都无法量化（这是数据覆盖范围问题，不是事实缺失）。</li>
+<li><strong>股东户数</strong>：截至 20260630 为 20842 户；上一报告期与均为 None，<strong>环比变化无法计算</strong>。季度披露天然滞后，该数字已落后当前约两个月。</li>
+</ul>
+<p><strong>当日盘面（库内行情，数据时点 14:05，盘中）</strong> 现价 165.68 元、−7.54%，成交 8.0 亿元；当日曾一度上探 +3.51%、下探 −7.92%，日内振幅约 11.4 个百分点（据 high_pct/low_pct 推算）。叠加 20260903 换手率 9.34%，<strong>当前是高换手、大振幅、当日冲高回落的状态</strong>（置信度：高）。</p>
+<h2>I. 未来 13 周事件日历</h2>
+<p>库内事件日历（近 120 日）返回 9 条，<strong>全部是通过概念标签（885756.TI 芯片 / 885376.TI 苹果）匹配到的行业级事件，没有一条是公司自身事件</strong> —— 这本身是个信号：库内未登记本公司未来的确定性日程。以下用库内事件打底，公司事件按库内公告日规律与联网信息推断（推断项已明确标注）。</p>
+<ul>
+<li><strong>W1（2026-09-07 起）</strong>：小米 18 Fold 折叠屏发布（首发自研玄戒 O3 芯片，9-08）· 公司事件类 · 重要性 6 · 影响：消费电子/国产芯片情绪催化，与本票「苹果概念、芯片概念」标签联动，<strong>对营收无直接影响</strong></li>
+<li><strong>W1（2026-09-07 起）</strong>：苹果秋季发布会 iPhone 18 Pro 与首款折叠屏 iPhone Ultra（9-09 美西）· 公司事件类 · 重要性 8 · 影响：本票是苹果供应链成员（G 节），<strong>苹果链新机型若涉及新外观件镀膜工艺，是最直接的需求侧观察窗口</strong></li>
+<li><strong>W1（2026-09-07 起）</strong>：IICIE 国际集成电路创新博览会（深圳，9-09~09-11，与光博会同期）· 会议 · 重要性 6 · 影响：半导体设备板块阶段性催化</li>
+<li><strong>W2（2026-09-14 起）</strong>：模拟芯片龙头 ADI 全线产品涨价生效（9-13）· 公司事件类 · 重要性 6 · 影响：半导体涨价链情绪，与本票业务无直接关系</li>
+<li><strong>W2（2026-09-14 起）</strong>：英伟达中国特供 AI 芯片 B30A 最快 9 月送样（9-15）· 公司事件类 · 重要性 6 · 影响：算力链情绪，与本票业务无直接关系</li>
+<li><strong>W3（2026-09-21 起）</strong>：华为 Mate 90 系列发布会（预计 9-23，首发新麒麟芯片）· 公司事件类 · 重要性 7 · 影响：华为链/国产芯片情绪催化</li>
+<li><strong>W3（2026-09-21 起）</strong>：高通 2026 骁龙峰会（9-23~09-25，发布首款 2nm 旗舰芯片）· 会议 · 重要性 7 · 影响：消费电子与芯片链情绪</li>
+<li><strong>W3（2026-09-21 起）</strong>：美国或放行苹果采购中国存储芯片（预计习特会后公布，9-24）· 政策 · 重要性 8 · 影响：苹果链政策面，间接</li>
+<li><strong>W4（2026-09-28 起）</strong>：美光 2026 财年 Q4 财报（9-30 盘后）· 公司事件类 · 重要性 8 · 影响：存储与半导体设备景气风向标，影响板块 beta</li>
+<li><strong>W5（2026-10-05 起）</strong>：本周无已知事件（国庆假期前后，具体休市安排以交易所公告为准）</li>
+<li><strong>W6（2026-10-12 起）</strong>：本周无已知事件</li>
+<li><strong>W7（2026-10-19 起）</strong>：本周无已知事件</li>
+<li><strong>W8（2026-10-26 起）</strong>：<strong>2026 年三季报（推断，重要性高）</strong> · 财报 · 影响：<strong>本报告最关键的验证点</strong> —— 验证 C 节的 Q2 亏损是季度波动还是趋势，以及全年 6 亿元营收目标的进度。依据：库内财务里 2025 年三季报公告日为 20251030（置信度：中，为按去年节奏推断，具体以公司预约披露公告为准）</li>
+<li><strong>W9（2026-11-02 起）</strong>：本周无已知事件</li>
+<li><strong>W10（2026-11-09 起）</strong>：本周无已知事件</li>
+<li><strong>W11（2026-11-16 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-11-23 起）</strong>：本周无已知事件</li>
+<li><strong>W13（2026-11-30 起）</strong>：本周无已知事件</li>
+</ul>
+<p><strong>时点未定、但会落在这 13 周内外的两件事（无法定周，单列）</strong></p>
+<ul>
+<li><strong>9.55 亿元定增的推进流程</strong>：2026-08-10 披露预案（证券时报 / 中财网两源），后续需经股东大会审议 → 深交所受理与审核问询 → 证监会注册 → 发行。<strong>每一步都是可核验的公告事件，但时点未定</strong>（置信度：中，流程为再融资通例；本票具体进度联网未检索到确定信息）。</li>
+<li><strong>股权激励限售解禁</strong>：2026 年限制性股票激励计划首次授予于 2026 年 6 月完成，第二类限制性股票通常授予满 12 个月起分批归属，<strong>首个归属窗口约在 2027 年 6 月之后，不在本 13 周窗口内</strong>（置信度：中）。IPO 层面，18.3%（1829.59 万股）首发股东限售已于 2025-06-05 解禁（新浪财经 2025-05-30 / 中金在线 2025-06-05 两源），控股股东 36 个月锁定期指向 2027 年 6 月，<strong>同样不在本窗口内</strong>（置信度：中）。</li>
+</ul>
+<h2>J. 逻辑链</h2>
+<p><strong>主链（可证伪）</strong></p>
+<ol>
+<li><strong>因为</strong>〔事实〕2026-08-10 公司披露 9.55 亿元定增预案，6.69 亿元投向「超精密半导体及连续式 PVD 设备产业化项目」，建设期 2 年（置信度：高，两源）；</li>
+<li><strong>且</strong>〔事实〕政策端把先进封装列入「十五五」清单、玻璃基板/TGV 被点名为下一代方向（置信度：中，两源）；</li>
+<li><strong>且</strong>〔事实〕公司已交付 TGV 方案 PVD 设备，但自述为「少量」、客户含高校与科研院所（置信度：低，单源且为公司口径）；</li>
+<li><strong>所以</strong>〔推论一〕市场当前给的 PB 24.31 倍与 179.2 亿元市值，定价的是「2028 年前后半导体 PVD 产能落地并放量」的期权，而不是当期盈利（置信度：中）。</li>
+<li><strong>但是</strong>〔反向事实〕2026H1 营收 1.74 亿元、同比 −33.94%，Q2 单季推算亏损约 0.12 亿元；而同期行业 beta 是向上的（SEMI 预测 2026 全球设备市场创新高、中国 WFE +10%）。<strong>公司下滑与行业上行背离</strong>（置信度：高）。</li>
+<li><strong>所以</strong>〔推论二〕这只票现在是「叙事在前、报表在后」的典型结构：<strong>叙事已经充分定价，报表还没开始兑现，中间的时间差就是全部风险所在</strong>（置信度：中）。</li>
+<li><strong>如果推论二成立，应该能观察到</strong>：
+<ul>
+<li>三季报（W8）前三季度累计营收显著低于 4.5 亿元（对应 6 亿元年目标的 75% 进度），且扣非利润远离 0.6 亿元目标；</li>
+<li>半导体/先进封装相关收入在年报里仍无法单独拆出规模；</li>
+<li>股价对定增流程公告的反应大于对财报的反应。</li>
+</ul></li>
+<li><strong>如果推论二不成立（我错了），应该能观察到</strong>：三季报单季营收回到 1.5 亿元以上且恢复盈利，说明 Q2 只是验收节奏坑；同时合同负债/在手订单披露出显著增长。</li>
+</ol>
+<p><strong>最弱的一环 —— 整条链的命门在第 3 环。</strong> 「TGV 方案 PVD 设备已交付」这条,<strong>唯一来源是公司自己在定增预案里的表述，联网未找到第二个独立来源，也没有任何客户名称、订单金额、验收数量</strong>。整个「半导体设备平台化」叙事就架在这句话上。如果这批交付长期停留在样机与科研院所层面，第 4 环的期权定价就没有落地路径 —— 而这一点在三季报和年报里<strong>未必会被单独披露</strong>，可能要等到相关收入大到必须拆分时才看得见（置信度：高，指的是「这一环最弱」这个判断本身）。</p>
+<p><strong>次弱环</strong>：第 5 环用「行业上行 vs 公司下滑」推出背离，但设备公司收入按验收确认、季度块状波动是常态，单看两个季度不足以定性为「掉队」。需要三季报再确认一次（置信度：中）。</p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜触发：2026 年三季报（W8）前三季度累计营收 ≥4.5 亿元（对应股权激励 6 亿元年目标 75% 进度）<strong>且</strong>单季恢复盈利｜路径：Q2 被证伪为验收节奏坑，激励目标重回可达轨道，半导体 PVD 叙事获得报表侧背书，估值分歧收敛，股价重心随行业 beta 上移</li>
+</ul>
+<ul>
+<li><strong>中性（50%）</strong>｜触发：三季报前三季度累计营收落在 3.0–4.5 亿元区间，单季盈利在盈亏平衡附近，定增按流程推进但未落地｜路径：报表既不证实也不证伪叙事，资金在「定增题材」与「业绩兑现存疑」之间反复拉锯，维持高换手、大振幅的宽幅震荡，重心跟随半导体设备板块整体波动</li>
+</ul>
+<ul>
+<li><strong>悲观（25%）</strong>｜触发：三季报前三季度累计营收 &lt;3.0 亿元（全年 6 亿元目标进度不足 50%）<strong>或</strong>单季继续亏损<strong>或</strong>出现存货跌价等减值｜路径：股权激励 2026 年考核目标事实上不可达，「叙事在前报表在后」的时间差被拉长，前期靠预期堆起来的估值溢价面临系统性重估，PB 向可比公司区间靠拢</li>
+</ul>
+<p>（三档概率加总 100%。触发条件全部可用三季报数字核对。）</p>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong></p>
+<ol>
+<li><strong>如果</strong> 2026 年三季报（预计 W8，10 月下旬）显示前三季度累计营收 ≥4.5 亿元且单季归母净利转正（对照口径：H1 累计 1.74 亿元、Q2 单季推算 −0.12 亿元），<strong>那么</strong> 可按小仓位<strong>试仓</strong>，并把股权激励 2026 年 6 亿元营收/0.6 亿元扣非目标作为后续持续跟踪的硬标尺。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> 三季报前三季度累计营收 &lt;3.0 亿元，<strong>或</strong> 单季继续亏损，<strong>或</strong> 财报中出现存货跌价/合同资产减值，<strong>那么</strong> <strong>回避</strong> —— 此时激励目标基本不可达，J 节推论二被证实，叙事与报表的时间差从「季度级」变成「年度级」。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> 股价在三季报披露前<strong>跌破 MA20</strong> 且库内资金筹码的近 20 日特大单净流入由当前的 1.50 亿元转为负值（两个条件同时成立），<strong>那么</strong> 对已有仓位<strong>减仓</strong>；若股价进一步<strong>跌破 9-04 当日最低</strong>（据库内行情 low_pct 推算）并连续 3 个交易日不收复，<strong>那么</strong> 视为短期结构破坏，转为<strong>观望</strong>至三季报落地。</li>
+</ol>
+<ol>
+<li><strong>极端情形参照</strong>：<strong>如果</strong> 股价回落至 <strong>2026 年限制性股票授予价</strong> 附近，<strong>那么</strong> 意味着市场已把整个半导体 PVD 期权定价清零、并与管理层的成本线对齐，届时应<strong>重新调研</strong>而不是机械执行上述任何一条（此位距当前价甚远，仅作为估值坍缩的参照刻度，不是预期路径）。</li>
+</ol>
+<p><strong>推翻条件（这笔判断在什么情况下应当被推翻）</strong></p>
+<ul>
+<li>公司披露<strong>具名的半导体/先进封装 PVD 量产订单</strong>（含客户名称与金额），或在定期报告中把半导体相关收入单独拆分且规模显著 → J 节第 3 环（最弱环）被补强，本报告的「叙事未兑现」定性失效，需重写。</li>
+<li>公司披露 2026H1/Q3 <strong>合同负债与在手订单同比大幅增长</strong> → C 节「经营恶化」的读法被推翻，应改读为「收入确认延后」。</li>
+<li>9.55 亿元定增被否决、撤回或大幅缩减 → 驱动 1 消失，需按纯消费电子镀膜设备公司重估。</li>
+<li>库内新闻恢复收录后出现库内未覆盖的重大事项（诉讼、监管问询、大客户流失等）→ 本报告 H 节整段失效。</li>
+</ul>
+<p><strong>仓位思路</strong>：在三季报落地前，这只票的报表侧证据不足以支撑重仓；叙事侧的期权价值又已被 PB 24.31 倍充分定价。相对概念上属于<strong>轻仓或不参与</strong>，把仓位决策权留给 W8 的三季报数字。<strong>不给具体金额、不给股数、不给目标价。</strong></p>
+<h2>M. 逻辑自查</h2>
+<p><strong>这份判断最依赖的假设是哪一条？</strong> 最依赖的是：<strong>「2026H1 的营收下滑（−33.94%）与 Q2 单季亏损，反映的是真实经营承压，而不只是设备验收确认的季度错位。」</strong> 它错了会怎样：如果 Q2 只是验收坑、订单其实在增长，那么 C 节的「拐点朝下」、J 节的「叙事在前报表在后」、K 节 50% 的中性权重和 25% 的悲观权重，全部要向乐观方向重排 —— 结论方向可能从「震荡」翻成「偏涨」。 <strong>这个假设我没有直接证据</strong>：判定它需要合同负债与在手订单，而库内 2026H1 这两项都没有。这是本报告最大的单点脆弱性（置信度：本条自我评估为高 —— 我确信这是软肋所在）。</p>
+<p><strong>有没有为了让逻辑好看而忽略的反面证据？</strong> 有三条，在此显式列出：</p>
+<ol>
+<li><strong>毛利率的长周期改善被我弱化了。</strong> 2025 全年 23.46% → 2026H1 46.26%，这是翻倍级的结构改善，如果它反映的是产品结构真的从低毛利光伏/锂电设备切向高毛利光学/半导体设备，那是个强正面信号。我把它归因为「小体量下的结构噪声」，但库内没有营收拆分来支持或否定任一解释 —— <strong>我选了偏保守的那个读法，这是主观选择，不是数据结论。</strong></li>
+<li><strong>主力资金近 20 日在净流入（特大单 1.50 亿元、12/20 天为正）。</strong> 按纪律这不进逻辑链，但它确实与我「叙事已充分定价、缺乏新增买盘」的隐含预设相左。</li>
+<li><strong>2025 年三季报口径的合同负债 2.29 亿元、同比 +95.91%，存货 4.06 亿元、同比 +33.95%</strong>（来源：新浪财经 2025-10-30）—— 这是一年前的数据、且非库内数据，不足以支撑当期判断，但它至少说明这家公司历史上出现过「合同负债大增而收入未同步」的形态，<strong>支持「验收错位」这个反面解释</strong>。我把它放在了次要位置。</li>
+</ol>
+<p><strong>信息缺口清单</strong></p>
+<ol>
+<li><strong>库中无该票近 90 天新闻</strong>（库内新闻（近 60 日）与均返回空列表）。影响：H 节失去库内消息面证据，无法判断市场当下在交易什么叙事，也无法排查负面事项。补法：新闻库补收后重跑本调研。</li>
+<li><strong>库中无 2026H1 合同负债 / 在手订单 / 存货</strong>（库内财务只给营收、净利、率值、负债率）。影响：<strong>这是本报告最关键的缺口</strong>，直接决定 M 节首条假设的真伪。补法：查阅 2026 年半年度报告全文（20260827 披露）资产负债表与管理层讨论段。</li>
+<li><strong>库中无扣非归母净利润</strong>。影响：股权激励考核口径是扣非（2026 年 ≥0.6 亿元），而 C 节只有归母 0.16 亿元，两者无法直接对齐，我对「目标进度」的推算因此偏乐观（扣非通常低于归母）。补法：半年报原文取扣非数。</li>
+<li><strong>库中无营收构成拆分（分产品/分行业）</strong>。影响：G 节 14 个概念标签<strong>没有一个能用营收占比佐证</strong>，「真有业务 vs 仅概念标签」的分级只能降级为「有无客户/产品线佐证」。补法：年报「主营业务分行业、分产品情况」表。</li>
+<li><strong>库内估值与行业内 PE 排名均为 null</strong>。影响：无法做本票在 294 只「专用机械」中的 PE 分位比较，B/D 两节只能用 PB 与市值/预测净利推算值替代。补法：待 PE_TTM 数据回补。</li>
+<li><strong>库内资金筹码为 None</strong>（筹码数据库内仅覆盖关注票，该票暂无）。影响：获利盘比例缺失，「上方套牢盘 vs 获利抛压」两面都无法量化。这是数据覆盖范围问题，不是事实缺失。</li>
+<li><strong>库内资金筹码无上期数据</strong>（上一报告期/ 为 None）。影响：股东户数 20842 户（20260630）无法算环比，「筹码趋散还是集中」判断不了。</li>
+<li><strong>库内事件日历无一条公司自身事件</strong>（9 条全部是通过芯片/苹果概念标签匹配的行业事件）。影响：I 节的三季报时点、定增流程时点均为推断而非库内登记，<strong>W8 的三季报周次可能有一周误差</strong>。补法：以公司预约披露公告为准。</li>
+</ol>
+<p>影响：J 节缺少卖方视角的反面论证材料。</p>
+<ol>
+<li><strong>联网数字与库内冲突一例，已按纪律处理</strong>：检索过程中 gu.qq.com 的行情页快照显示价格 244.76 元，与库内行情的 165.68 元（数据时点 14:05）严重冲突。<strong>按纪律以库内行情为准</strong>，该联网数字未被采用于本报告任何一处；</li>
+<li><strong>股权激励考核目标为单一来源（官方公告原文）</strong>：6 亿元/0.6 亿元（2026）与 8 亿元/0.8 亿元（2027）取自新浪财经转载的《2026 年限制性股票激励计划（草案修订稿）》及其摘要两个页面，属同一份官方文件的两处呈现，<strong>不构成两个独立来源</strong>。授予价 76.49 元/股、激励对象 44 人、首次授予 34.75 万股同此。置信度：中（官方原文，但未获第三方独立复核）。</li>
+</ol>
+<h3>卖方观点（单列，与库内事实严格分开）</h3>
+<p>以下全部来自库内研报（近 90 天窗口，库内 2 篇研报 / 2 家机构）。<strong>评级分布：最高档正面评级 1 篇（国金证券）· 推荐 1 篇（方正证券）</strong> —— 按本报告纪律不复述具体评级词。</p>
+<p>〔卖方预期〕来源：国金证券研报（库内）·《定增加码高端 PVD，半导体及先进封装布局提速》· 日期：2026-08-10（研报文件日期 20260811）· 观点：预测 2026 年 EPS 1.12 元、归母净利 1.12 亿元，对应 PE 128.2 倍；2027 年 EPS 1.509 元、归母净利 1.51 亿元，对应 PE 95.2 倍；2028 年 EPS 2.156 元、归母净利 2.16 亿元，对应 PE 66.6 倍 · 置信度：低（卖方预期非事实，未经交叉验证）</p>
+<p>〔卖方预期〕来源：方正证券研报（库内）· 日期：2026-07-21 · 观点：预测 2026 年 EPS 1.17 元、归母净利 1.17 亿元，对应 PE 153.91 倍；2027 年 EPS 1.57 元、归母净利 1.57 亿元，对应 PE 114.29 倍；2028 年 EPS 1.98 元、归母净利 1.98 亿元，对应 PE 90.8 倍 · 置信度：低（卖方预期非事实，未经交叉验证）</p>
+<p><strong>对照库内事实（这一段是事实，不是预期）</strong>：两家机构对 2026 年归母净利的预测为 1.12–1.17 亿元，而库内财务显示 2026H1 实际归母净利仅 0.16 亿元、2025 全年 0.22 亿元。<strong>即两份预测都隐含「下半年做出 1 亿元左右净利」的假设，是 H1 实际值的 6 倍以上</strong>（据两库数据推算）。按库内估值的总市值 179.2 亿元（20260903）对这两个预测值推算，对应约 160 倍 / 153 倍 —— 与研报自报的 128.2 / 153.91 倍存在差异，原因是研报以其发布日股价为基准，而本报告以 20260903 市值为基准（置信度：高，差异来源已确认）。</p>
+<p>*本报告所有库内数字取自库内取数，行情唯一事实源为库内行情（数据时点 14:05，盘中值）。联网内容均标注来源与日期。全文不含目标价、不含评级复述、不含任何用户持仓/自选/账户信息。*</p>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-04），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>H1营收-33.9%、Q2单季推算亏损</li>
+      <li>激励目标6亿营收H1仅完成1.74亿</li>
+      <li>PB24.3倍配ROE2.1%估值极贵</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>限售解禁</dt><dd>首发或定增取得的股份锁定期届满、可以上市流通。解禁本身不等于减持，但增加了潜在供给。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> 证券市场周刊 2025-04-25 <em>2025-04-25</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2025-01-06 <em>2025-01-06</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 证券时报 stcn.com 2026-08-10 引述定增预案 <em>2026-08-10</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2025-10-30 <em>2025-10-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 置信度：高，证券时报 stcn.com 2026-08-10 与中财网 cfi.net.cn 2026-08-11 两源一致 <em>2026-08-10</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 置信度：中，两源：新浪财经 2026-06-23、证券日报网 2026-06-23 <em>2026-06-23</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 证券市场周刊 2025-04-25 / 新浪财经 2025-01-06 两源 <em>2025-04-25</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 证券时报 2026-08-10 引定增预案，单源为公司口径 <em>2026-08-10</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2025-05-30 / 中金在线 2025-06-05 两源 <em>2025-05-30</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-04 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
