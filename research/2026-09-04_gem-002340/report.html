@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>格林美（002340.SZ） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>格林美（002340.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-04（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 电池</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 汽车拆解概念 · 金属钴 · 金属镍 · 稀土永磁 · 石墨烯 · 黄金概念 · 金属回收 · 土壤修复</span>
+      <span><b>来源</b> 40 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    格林美（002340）主要做的是废弃钴镍资源与电子废弃物的循环利用，以及钴镍粉体材料与塑木型材的生产、销售。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——上半年表观净利润同比增长 34.68%，但其中约 6.9 亿元来自出售欧科亿股票的一次性投资收益，主业盈利质量待三季报验证。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：上半年表观净利润同比增长 34.68%，但其中约 6.9 亿元来自出售欧科亿股票的一次性投资收益，主业盈利质量待三季报验证。支撑在于动力电池回收强制新规4月实施+联合执法；印尼镍配额削减、刚果金钴配额支撑金属价；PB1.52、PE17.75处行业低位第10便宜。主要风险是二季度毛利率推算降至8.6%，主业推算亏损；近20日资金净流出8.89亿、股东户数增2.5%；剔除6.9亿一次性收益后PE约28倍。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>动力电池回收强制新规4月实施+联合执法</li>
+      <li>印尼镍配额削减、刚果金钴配额支撑金属价</li>
+      <li>PB1.52、PE17.75处行业低位第10便宜</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据基准：库内取数于 2026-09-04（行情数据时点 15:35，收盘）；联网信息截至 2026-09-04。 本报告不含任何持仓/自选/账户信息，为全局共享档案。</div>
+<h2>A. 一屏结论（BLUF）</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：上半年表观净利润同比增长 34.68%，但其中约 6.9 亿元来自出售欧科亿股票的一次性投资收益，主业盈利质量待三季报验证。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li>动力电池回收强制新规 2026-04-01 实施 + 4-27 六部门联合执法专项行动，行业从&quot;鼓励引导&quot;转向&quot;强制规范&quot;，正规回收企业的原料集中度有望提升（置信度：中，政策已落地但对公司营收的量化传导尚无库内数据佐证）。</li>
+<li>钴、镍价格的供给端约束同时收紧：印尼 2026 年镍矿 RKAB 配额自 2025 年的 3.79 亿吨削减至 2.5–2.6 亿吨；刚果（金）2026、2027 年钴出口各限 9.66 万吨。公司在印尼有镍冶炼产能、主营含钴镍粉体，属资源端受益方（置信度：中）。</li>
+<li>估值绝对水平低：PB 1.5228、PE(TTM) 17.7451，在&quot;小金属&quot;68 只同行里 PE 排第 10 便宜，行业中位数 41.3316（置信度：高，库内估值直接取数）。</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li>二季度经营性利润大概率为负：据库内财务推算，2026Q2 单季营收 80.05 亿元、毛利 6.90 亿元（毛利率约 8.62%，较一季度 17.47% 下降约 8.9 个百分点），而单季归母净利 5.54 亿元——归母净利已接近全部毛利，公司公告的约 6.9 亿元出售欧科亿股票投资收益（税前）体量大于当季归母净利（置信度：中，库内无扣非与所得税明细）。</li>
+<li>资金面持续净流出：近 20 个交易日（2026-08-10~09-04）资金净流出 8.89 亿元，特大单净流出 2.75 亿元，20 天中仅 4 天净流入；股东户数从 6-30 的 431,896 户增至 7-31 的 442,609 户，环比 +2.5%，筹码趋于分散（置信度：高，库内取数；但属盘面现象、非基本面证据）。</li>
+<li>剔除一次性收益后估值并不便宜：TTM 归母净利 18.57 亿元中含约 6.9 亿元一次性收益，扣除后对应 PE 约 28 倍（据库内估值市值 329.61 亿元与推算净利约 11.7 亿元测算，置信度：中）。</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ol>
+<li>2026 年三季报（法定披露截止 10-31，公司 2025 年三季报公告日为 20251031）——核验单三季度营收与毛利率能否回到一季度 17.47% 附近，以及在没有大额一次性收益的情况下归母净利规模。</li>
+<li>港交所 H 股发行申请进度——2026-04-27 递表，按 6 个月聆讯有效期推算于 10 月下旬到期，进展或再度失效都是股本与情绪的双向变量。</li>
+</ol>
+<p><strong>这份判断最可能错在哪</strong>：我把&quot;二季度经营性利润为负&quot;建立在&quot;6.9 亿元税前投资收益全部计入二季度&quot;这一推算上。若该收益实际分摊或税后金额显著小于 6.9 亿元，主业的实际盈利就比本报告写的好，A 节的偏谨慎基调需要下调一档。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>公司</strong>：格林美股份有限公司（库内公司档案），代码 002340，深交所<strong>主板</strong>，上市日 2010-01-22（至今逾 16 年），上市状态 = L（正常上市）。</li>
+<li><strong>行业归属</strong>：小金属（库内行业归属字段）。</li>
+<li><strong>主营</strong>：废弃钴镍资源与电子废弃物的循环利用，以及钴镍粉体材料与塑木型材的生产、销售。</li>
+<li><strong>经营范围要点</strong>：二次资源循环利用技术研发；生态环境材料、新能源材料、超细粉体材料；超细镍粉/超细钴粉生产销售及废旧电池收集暂存；塑木型材及铜合金制品；废旧金属、电池厂废料、报废电子产品、废旧家电、报废机电设备、废玻璃的回收处置；<strong>废旧车用动力蓄电池的收集、贮存、处置</strong>。</li>
+<li><strong>员工</strong>：9,684 人；注册资本 510,235.9661 万元（对应约 51.02 亿股）。</li>
+</ul>
+<p><strong>当前行情与估值</strong>（库内行情 + 库内估值，交易日 20260904）</p>
+<ul>
+<li>收盘价 6.46 元｜当日涨跌幅 +0.16% ｜当日最高涨幅 +0.93%、最低跌幅 −0.16% ｜成交额 4.4 亿元｜数据时点 15:35（收盘，来源 realtime）</li>
+<li>总市值 329.61 亿元｜ PE(TTM) 17.7451 ｜ PB 1.5228 ｜股息率 1.021% ｜换手率 1.3536%</li>
+<li>同行业（小金属，68 只）PE 中位数 41.3316，本票 PE 排名第 10 便宜（置信度：高）</li>
+</ul>
+<p><strong>A/H 溢价</strong>：库内 A/H 对照返回空——该票非 A+H 两地上市，无此参照系。（注：公开信息显示公司已在瑞士交易所发行 GDR、并正在推进港交所 H 股上市，见 F/I 节；库内 A/H 数据仅覆盖已在港上市的 H 股，故为空，属数据范围而非事实缺失。）</p>
+<h2>C. 财务健康</h2>
+<p>近 4 期（库内财务，新→旧，金额单位亿元）：</p>
+<ul>
+<li><strong>2026H1（ann 20260829）</strong>：营收 179.87（同比 +2.43%）· 归母净利 10.76（同比 +34.68%）· ROE 5.0024% · 毛利率 13.5317% · 净利率 6.5121% · EPS 0.21 · 资产负债率 65.9442%</li>
+<li><strong>2026Q1（ann 20260430）</strong>：营收 99.82（同比 +5.12%）· 归母净利 5.22（同比 +2.18%）· ROE 2.4186% · 毛利率 17.4716% · 净利率 6.4951% · EPS 0.10 · 资产负债率 65.4089%</li>
+<li><strong>2025 全年（ann 20260422）</strong>：营收 371.24（同比 +11.82%）· 归母净利 15.80（同比 +54.87%）· ROE 7.7449% · 毛利率 14.7082% · 净利率 4.6376% · EPS 0.31 · 资产负债率 65.8037%</li>
+<li><strong>2025Q1–Q3（ann 20251031）</strong>：营收 274.98（同比 +10.55%）· 归母净利 11.09（同比 +22.66%）· ROE 5.5347% · 毛利率 12.6713% · 净利率 4.7754% · EPS 0.22 · 资产负债率 64.9553%</li>
+</ul>
+<p><strong>趋势判断</strong></p>
+<ol>
+<li><strong>营收增速放缓</strong>：营收同比从 2025 全年的 +11.82%、2026Q1 的 +5.12%，降到 2026H1 的 +2.43%。据上述数据推算，单二季度营收 80.05 亿元、2025 年同期约 80.64 亿元，<strong>单季营收同比转负（约 −0.7%）</strong>（置信度：中，为推算值）。</li>
+<li><strong>毛利率是本期最明显的负向拐点</strong>：H1 毛利率 13.5317%，低于 Q1 的 17.4716%。据两期累计数推算，<strong>单二季度毛利率约 8.62%，较一季度下降约 8.9 个百分点</strong>（置信度：中，推算值）。这一档毛利率低于 2025 全年的 14.71%，也低于 2025 前三季度的 12.67%。</li>
+<li><strong>利润的质量问题</strong>：单二季度归母净利推算为 5.54 亿元，而同期毛利仅约 6.90 亿元——在计入销售、管理、研发、财务费用之前，归母净利已吃掉几乎全部毛利。公司 2026-08-05 公告披露，2026 年上半年出售欧科亿股票预计实现投资收益约 6.9 亿元（不考虑所得税等影响）并计入半年报（来源：同花顺财经 2026-08-05；减持事项另见新浪财经 2026-05-26 报道，8.42 亿元成交、873.30 万股）。<strong>据此推算，扣除这笔一次性投资收益后，上半年经营性归母利润约 3.9 亿元量级，低于 2025 年上半年归母净利 7.99 亿元（由 H1 同比数反推，并与公开报道的 2025H1 归母 7.99 亿元交叉一致）</strong>（置信度：中——6.9 亿元为税前口径，且 2025 年同期是否含非经常项库内无数据）。</li>
+<li><strong>ROE 与净利率</strong>：H1 ROE 5.0024%，年化后约 10%，高于 2025 全年 7.74%；但该改善同样含一次性收益成分（置信度：中）。</li>
+<li><strong>杠杆维持高位</strong>：资产负债率四期在 64.96%~65.94% 之间，2026H1 为 65.94%，是四期中最高（置信度：高）。港股招股相关报道亦以&quot;负债率攀升至 66%&quot;为标题（新京报 / 新浪财经 2026-05-18）。</li>
+</ol>
+<p><strong>仅估值口径的判断</strong>：PE(TTM) 17.75、PB 1.52 在小金属行业属偏低分位；但 TTM 净利含一次性收益，剔除后 PE 约 28 倍，估值优势明显收窄（置信度：中）。<strong>这只是估值口径的判断，不等于对公司好坏的结论。</strong></p>
+<p><strong>信息缺口</strong>：库内财务不含扣非净利润、经营活动现金流量净额、少数股东损益、分业务营收拆分。影响：C 节关于&quot;主业盈利&quot;的所有推算都只能用毛利与一次性收益倒推，精度有限。补法：查阅 2026 年半年度报告全文（cninfo，公告日 2026-08-29）后重跑本节。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比（取 3 家），同为&quot;小金属&quot;行业，财务口径均为 20260630：</p>
+<ul>
+<li><strong>格林美（002340）</strong>：市值 329.61 亿 · PE(TTM) 17.7451 · PB 1.5228 · H1 营收 179.87 亿 · H1 归母净利 10.76 亿 · ROE 5.0024%</li>
+<li><strong>洛阳钼业（603993）</strong>：市值 3953.67 亿 · PE(TTM) 14.2118 · PB 4.4091 · H1 营收 1353.20 亿 · H1 归母净利 161.52 亿 · ROE 18.7382%</li>
+<li><strong>北方稀土（600111）</strong>：市值 1397.95 亿 · PE(TTM) 41.4436 · PB 5.3245 · H1 营收 257.99 亿 · H1 归母净利 20.53 亿 · ROE 8.0650%</li>
+<li><strong>中国铀业（001280）</strong>：市值 1363.14 亿 · PE(TTM) 72.9782 · PB 7.8724 · H1 营收 105.83 亿 · H1 归母净利 9.87 亿 · ROE 5.7721%</li>
+</ul>
+<p><strong>位置判断</strong></p>
+<ol>
+<li><strong>市值最小、PB 最低</strong>：格林美市值仅为洛阳钼业的 8.3%，PB 1.52 远低于三家可比的 4.41 / 5.32 / 7.87（置信度：高）。</li>
+<li><strong>低 PB 对应的是低 ROE，不是单纯的便宜</strong>：格林美 ROE 5.00% 为四家中最低，洛阳钼业 18.74% 是其 3.7 倍。以&quot;PB ÷ ROE&quot;粗看，格林美 1.52/5.00 与中国铀业 7.87/5.77 相比确实便宜，与洛阳钼业 4.41/18.74 相比则并不占优（置信度：中，为推算比较）。</li>
+<li><strong>收入体量大、利润率薄</strong>：H1 营收 179.87 亿元高于北方稀土的 257.99 亿元之外的两家中的中国铀业（105.83 亿元），但归母净利 10.76 亿元低于北方稀土 20.53 亿元。这是资源循环利用&quot;重资产、加工费型&quot;的典型形态——赚的是加工与回收价差，不是矿端资源租金（置信度：中）。</li>
+<li><strong>可比性提示</strong>：洛阳钼业（铜钴矿）、北方稀土（稀土）、中国铀业（铀）在&quot;小金属&quot;标签下与格林美的商业模式差异很大，横向 PE/PB 对比只能作参照，不宜当作定价依据（置信度：高）。</li>
+</ol>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>：两端在手的循环制造——上游端回收废旧电池、电子废弃物、报废汽车，中游端做钴镍粉体与三元前驱体/正极材料，下游端供给动力电池与消费电池产业链；同时在印尼自建镍冶炼产能，把资源端往上补。</p>
+<p><strong>护城河分级（诚实分级）</strong></p>
+<ul>
+<li><strong>阶段性优势（置信度：中）</strong>：
+<ol>
+<li><strong>牌照与资质端的先发</strong>：公司经营范围明确含&quot;废旧车用动力蓄电池的收集、贮存、处置&quot;，且库内公司档案介绍中列有国家&quot;城市矿产&quot;示范基地、国家电子废弃物循环利用工程技术研究中心依托单位等资质。在 2026-04-01 起施行的强制性回收新规下，资质与网点是准入门槛，先发者受益（置信度：中，政策已落地，公司受益幅度无库内数据佐证）。</li>
+<li><strong>回收网络的规模成本</strong>：废旧电池回收的核心成本是收运半径与网点密度，规模一旦建成对新进入者是实质门槛（置信度：低，库内无网点数量数据）。</li>
+<li><strong>客户绑定</strong>：公开信息层面挂有宁德时代、比亚迪、特斯拉概念标签（见 G 节），但库内无营收占比佐证。</li>
+</ol></li>
+<li><strong>无明显结构性护城河的部分（置信度：中）</strong>：三元前驱体与正极材料属于加工制造环节，产品同质化程度高、议价能力弱，二季度毛利率推算降至约 8.62% 本身就是这一点的证据。</li>
+<li><strong>总体</strong>：从库内信息看，公司拥有资质与网络带来的<strong>阶段性优势</strong>，但<strong>未见能长期锁定超额利润的结构性护城河</strong>（置信度：中）。</li>
+</ul>
+<h2>F. 政策与监管</h2>
+<p>本节以联网信息为主（库内无政策表）。每条标来源与日期。</p>
+<ol>
+<li><strong>动力电池回收强制新规（利好·传导链条清晰）</strong></li>
+</ol>
+<p>工信部、国家发改委、生态环境部等六部门联合发布《新能源汽车废旧动力电池回收和综合利用管理暂行办法》，<strong>2026-04-01 起正式实施</strong>，以&quot;强制性、全链条闭环管理&quot;为核心，车企与电池企业承担回收责任、须建立与销售量匹配的回收服务网点（来源：工信部官网政策发布页；每日经济新闻 2026-04-03 报道称业内称之为&quot;史上最严&quot;）。 配套执法：工信部等五部门 <strong>2026-04-27</strong> 联合印发《关于开展规范废旧动力电池回收利用联合执法专项行动的通知》，在全国范围开展专项行动（来源：商务部政策库 policy.mofcom.gov.cn；国家发改委官网 2026-03-17 亦发布《废旧动力电池综合利用红线划定》政策解读）。 <strong>传导方向</strong>：利好。链条为——强制回收责任 + 联合执法压缩&quot;小散乱&quot;渠道 → 废旧电池原料向持证正规企业集中 → 公司回收板块的原料获取量与议价能力提升（置信度：中，多源交叉验证政策事实为高，但&quot;公司具体受益幅度&quot;无量化证据）。</p>
+<ol>
+<li><strong>印尼镍矿 RKAB 配额收紧（对公司双向）</strong></li>
+</ol>
+<p>印尼 2026 年镍矿 RKAB 生产配额自 2025 年的 3.79 亿吨削减至 2.5–2.6 亿吨，降幅约 30%–34%；印尼能矿部对放宽持谨慎态度，配额随价格与本土冶炼需求动态调整（来源：新浪财经 2026-08-03「印尼 RKAB 配额收紧矿端成本支撑镍价底部防线」、新浪财经 2026-07-10「印尼 RKAB 配额悬念待解」、煤炭资源网 sxcoal 报道；多源一致）。 <strong>传导方向</strong>：<strong>双向</strong>——公司在印尼自有镍冶炼产能，镍价上行利好其镍金属出货的售价端；但矿石配额收紧同时抬高冶炼厂的原料采购成本，印尼国内冶炼厂原料缺口扩大（2026 年 1–5 月印尼自菲律宾进口镍矿同比增约 116.8%，来源同上）（置信度：中）。</p>
+<ol>
+<li><strong>刚果（金）钴出口配额（对公司双向）</strong></li>
+</ol>
+<p>刚果（金）ARECOMS 于 2025-09-20 发布钴出口配额制度，2025-10-16 起实行，<strong>2026、2027 年各限出口 9.66 万吨</strong>（8.7 万吨基础配额 + 0.96 万吨战略配额），约相当于该国 2024 年矿山产量的 44%（来源：天风证券研究观点经新浪财经 2025-09-24 转述；新浪财经 2026-06-30「刚果（金）钴配额作废或导致 70% 供应收紧」；智研咨询钴行业动态报告）。 <strong>传导方向</strong>：<strong>双向</strong>——公司主营含钴粉体与回收钴，钴价上行利好其资源与回收端的价差；但对下游三元前驱体环节而言，硫酸镍与硫酸钴价格高企<strong>推高生产成本</strong>，SMM 相关分析指出前驱体生产成本亏损加剧、盐类系数报价上抬（来源：上海有色网 SMM 三元前驱体分析）（置信度：中）。 <strong>这是本报告认为最容易被误读的一条</strong>：钴镍涨价对&quot;资源循环+材料制造&quot;一体化公司不是单边利好，二季度毛利率推算降至约 8.62% 与这一成本传导方向一致（置信度：中）。</p>
+<ol>
+<li><strong>境外上市监管路径（中性偏事件性）</strong></li>
+</ol>
+<p>公司 2025-09-22 首次向港交所递交 H 股上市申请，2026-03-22 因 6 个月聆讯期届满失效；<strong>2026-04-27 二次递表</strong>，摩根大通、中信证券、中信建投联席保荐（来源：新浪财经 2026-04-28；OFweek 锂电网 2026-04；财联社「已向香港联交所更新递交 H 股发行上市申请」）。若成功，将形成深交所、瑞交所、港交所三地上市布局（置信度：中，多源一致；上市结果不确定）。</p>
+<p><strong>信息缺口</strong>：库内无政策/监管数据表，本节全部依赖联网，且&quot;政策 → 公司营收&quot;的量化传导无法用库内数据核验。补法：三季报及年报的分业务营收与毛利率披露出来后回补。</p>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 35 个同花顺概念标签。<strong>标签沾边不等于有营收</strong>，逐类分级如下：</p>
+<p><strong>一、真有业务（有主营描述或公开披露佐证）</strong></p>
+<ul>
+<li><strong>动力电池回收（885944.TI）</strong>：经营范围明确含&quot;废旧车用动力蓄电池的收集、贮存、处置&quot;——真有业务（置信度：高）。</li>
+<li><strong>金属回收（885972.TI）/ 固废处理（885410.TI）/ 垃圾分类（885854.TI）/ 汽车拆解概念（885902.TI）</strong>：经营范围含废旧金属、报废电子产品、废旧家电、报废机电设备及零部件、废造纸原料、废玻璃的回收处置与销售——真有业务（置信度：高）。</li>
+<li><strong>金属钴（885865.TI）/ 金属镍（885969.TI）/ 小金属概念（885552.TI）</strong>：主营即&quot;废弃钴镍资源循环利用及钴镍粉体材料生产销售&quot;，行业归属亦为小金属——真有业务（置信度：高）。</li>
+<li><strong>锂电池概念（885710.TI）/ 新能源汽车（885431.TI）</strong>：三元前驱体与正极材料业务，公开信息称三元前驱体月出货量达 5,000 吨、在三元前驱体与四氧化三钴领域全球供应量排名第二、四氧化三钴占全球市场 20% 以上（来源：同花顺财经 2026-06-30；财闻网）——真有业务，但<strong>份额数据来自公开报道非库内财报，置信度：中</strong>。</li>
+<li><strong>金属铜（885973.TI）</strong>：经营范围含&quot;铜合金制品的生产、销售&quot;——有业务基础，营收规模未见佐证（置信度：中）。</li>
+<li><strong>碳中和（885919.TI）</strong>：循环经济主业与之直接相关（置信度：中）。</li>
+<li><strong>回购增持再贷款概念（886089.TI）</strong>：2026-07-23 公司公告取得不超过 1.44 亿元股票回购专项贷款承诺函（库内新闻，库内公告 + eastmoney 双源）——<strong>对应真实事件</strong>（置信度：高）。</li>
+</ul>
+<p><strong>二、有研发/小批量出货表述，但未见营收规模佐证</strong></p>
+<ul>
+<li><strong>固态电池（886032.TI）</strong>：公开报道称公司在固态电池用高镍、超高镍、富锂锰基正极材料各技术路线均实现<strong>吨级以上</strong>产品出货，富锂锰基前驱体进入吨级认证阶段（来源：同花顺财经 2026-06-30；NE 时代报道公司与厦钨新能签署战略合作开发固态电池材料）。<strong>吨级 = 研发验证阶段，不是营收量级</strong>（置信度：中）。</li>
+<li><strong>宁德时代概念（885789.TI）/ 比亚迪概念（885997.TI）/ 特斯拉概念（885467.TI）</strong>：客户关系类标签，库内无客户营收占比数据——<strong>未见营收佐证</strong>（置信度：低）。</li>
+</ul>
+<p><strong>三、仅概念标签，未见营收佐证</strong></p>
+<ul>
+<li>人形机器人（886069.TI）、机器人概念（885517.TI）、低空经济（886067.TI）、氢能源（885823.TI）、燃料电池（885775.TI）、石墨烯（885355.TI）、稀土永磁（885343.TI）、黄金概念（885530.TI）、钠离子电池（885928.TI）、储能（885921.TI）、土壤修复（885962.TI）、污水处理（885412.TI）、一带一路（885494.TI）——<strong>均未在主营或经营范围中找到对应表述</strong>（置信度：高，即&quot;没找到佐证&quot;这一判断本身可靠）。</li>
+<li><strong>一个现成的反例</strong>：2026-08-05 公司明确回应&quot;目前主营业务暂未直接涉及六氟化钨的制造&quot;（库内新闻，东方财富）；同日另有&quot;正在积极推进 MLCC 用纳米级镍粉的技术研发与产业化准备工作&quot;（财联社）——后者是<strong>研发与产业化准备</strong>，同样不是营收（置信度：高）。这两条正好说明标签与业务的距离。</li>
+</ul>
+<p><strong>四、交易属性/地域标签（非业务）</strong></p>
+<ul>
+<li>中证 500 成份股（883304.TI）、深股通（885694.TI）、融资融券（885338.TI）、专精特新（885929.TI）、粤港澳大湾区（885521.TI，公司注册于深圳）。</li>
+</ul>
+<p><strong>产业链位置</strong></p>
+<p>上游：废旧电池/电子废弃物回收网络 + 印尼镍冶炼（自建资源端）+ 外购钴镍原料。 本环节：钴镍粉体、三元前驱体、三元正极材料、四氧化三钴。 下游：动力电池厂与消费电池厂 → 新能源整车。 <strong>议价能力判断</strong>：原料端受制于钴镍价格与配额政策（印尼 RKAB、刚果金配额），产品端面对头部电池厂集中采购，<strong>两端议价能力都偏弱，中间加工环节赚的是价差与加工费</strong>——这与二季度毛利率推算降至约 8.62% 相互印证（置信度：中）。</p>
+<h2>H. 消息面与市场情绪</h2>
+<p><strong>近 60 日新闻（库内新闻，挑重要 8 条）</strong></p>
+<ol>
+<li><strong>2026-08-31 · 格林美：拟继续出售欧科亿不超 779.05 万股</strong>（cls）——公司在 5 月已出售 873.30 万股基础上拟继续减持。<strong>对基本面有实质影响</strong>：可继续带来一次性投资收益并改善现金与资产结构，但同时说明利润中的非经常性成分还会延续，进一步推高对&quot;主业真实盈利&quot;的核验必要性（置信度：高，为公司公告事项）。</li>
+<li><strong>2026-08-05 · 【董秘问答】关于&quot;上半年减持欧科亿股净利润 6.9 亿，这笔收入是否计算在公司上半年度利润&quot;的提问</strong>（库内投资者关系问答）——与公司同日公告口径一致：约 6.9 亿元投资收益（不考虑所得税等影响）计入 2026 年半年度报告（联网交叉源：同花顺财经 2026-08-05）。<strong>对基本面有实质影响</strong>（置信度：高）。</li>
+<li><strong>2026-08-05 · 【董秘问答】&quot;印尼亏损多少，这样的问题在公告里没有呢&quot;</strong>（库内投资者关系问答）——投资者对印尼板块盈利与披露透明度的关切。<strong>提问不等于事实</strong>，但它指向 C 节推算的同一个方向（置信度：低，仅为提问内容）。</li>
+<li><strong>2026-08-05 · 关于首次回购公司股份的公告</strong>（库内公告，cninfo）+ <strong>2026-08-04 · 回购股份进展公告</strong> + <strong>2026-07-23 · 取得不超过 1.44 亿元股票回购专项贷款承诺函</strong> + <strong>2026-07-17 · 回购报告书</strong>——回购从方案、融资到实施逐步推进。联网补充方案要件：2026-07-16 董事会通过，回购金额 1.0 亿~1.6 亿元，<strong>回购上限 10.60 元/股</strong>，用途为股权激励或员工持股计划，实施期 12 个月（来源：cninfo 公告 2026-053 / 2026-055；新浪财经 2026-07-17 双源一致）。<strong>对基本面影响有限（金额约占净资产 0.73%），但是管理层态度信号</strong>（置信度：中）。</li>
+<li><strong>2026-07-30 · 控股股东质押股份全部解除质押的公告</strong>（库内公告）——控股股东质押风险解除，<strong>对基本面为正向的边际改善</strong>（置信度：中，库内无质押比例明细）。</li>
+<li><strong>2026-09-03 · &quot;可持续锂电池行业工作组&quot;启动，二十余家锂电企业参与</strong>（cls）——行业组织类消息，<strong>对基本面无直接实质影响</strong>（置信度：高）。</li>
+<li><strong>2026-08-10 / 2026-08-07 · 钴概念活跃</strong>（cls，标题分别提及寒锐钴业、腾远钴业<strong>曾</strong>涨超 10%）——⚠️ 这两条标题里的涨幅是<strong>发稿当时其他个股的盘中旧快照</strong>，与格林美无关、也不代表当前状态。它们的意义只是：8 月上旬钴板块有过情绪面关注（置信度：中）。</li>
+<li><strong>2026-08-05 · 【董秘问答】提问文本自述&quot;今天是 7 月 10 日，自一季度报发布后公司股价已经跌了 2 个月，从 9.…&quot;</strong>（库内投资者关系问答，入库时点 2026-08-05）——投资者自述的历史股价区间，<strong>属发问者的旧时点描述</strong>，当前价以库内行情的 9-04 收盘 6.46 元为准（置信度：低）。</li>
+</ol>
+<p><strong>涨停史（库内涨停记录，近 180 日）</strong></p>
+<p><strong>近 180 日无涨停记录</strong>（置信度：高）。这本身是信息：该票在过去半年没有出现过情绪面的集中爆发，尽管它挂着 35 个概念标签、且 8 月钴板块有过活跃——<strong>说明概念标签没有转化成本票的实际情绪溢价</strong>（置信度：中）。</p>
+<p><strong>资金与筹码（库内资金筹码，仅作情绪面佐证，不进 J 节逻辑链）</strong></p>
+<ul>
+<li><strong>资金流</strong>：近 20 个交易日（20260810~20260904）资金净流出 <strong>8.89 亿元</strong>，其中特大单净流出 <strong>2.75 亿元</strong>；20 天中净流入 4 天、净流出 16 天（置信度：高，库内取数）。</li>
+<li><strong>筹码（截至 2026-08-07，已滞后近一个月）</strong>：获利盘比例 <strong>70.22%</strong>；加权平均成本 <strong>6.84 元</strong>；15% / 50% / 85% 分位成本分别为 <strong>6.40 / 6.70 / 7.30 元</strong>。</li>
+</ul>
+<p><strong>两面读法</strong>：8-07 当时 70.22% 的获利盘意味着上方套牢盘少、反弹阻力小，但同时短线获利抛压大。而当前 9-04 收盘 6.46 元已低于 8-07 的 50% 分位成本 6.70 元与加权均本 6.84 元——若筹码分布未大幅变化，当前对应的获利盘比例应已明显低于 70.22%（价格落在 15% 分位成本 6.40 元与 50% 分位成本 6.70 元之间），即上方深套盘转厚、反弹时会遇到解套抛压（置信度：中，筹码数据滞后近一个月）。</p>
+<ul>
+<li><strong>股东户数</strong>：2026-07-31 为 <strong>442,609 户</strong>，较 2026-06-30 的 431,896 户环比 <strong>+2.5%</strong>，筹码趋于分散（置信度：中，为月度披露、天然滞后）。</li>
+</ul>
+<p><strong>再次强调纪律</strong>：以上资金流与筹码是盘面现象，不是基本面证据，本报告不据此单独下任何操作结论。</p>
+<h2>I. 未来 13 周事件日历</h2>
+<p>来源：库内事件日历（近 120 日）（含概念匹配项与直接点名项）+ 联网补充。概念匹配项已注明&quot;与本票主营关联弱&quot;者。</p>
+<ul>
+<li><strong>W1（2026-09-07 起）</strong>：</li>
+</ul>
+<p>· 09-08 第二十六届中国国际投资贸易洽谈会（厦门，9/8–9/11）· 会议 · 重要性低（概念 885494「一带一路」匹配，与本票主营关联弱） · 09-09 前后乘联会/中汽协公布 8 月汽车销量（含新能源渗透率）· 数据 · 重要性 <strong>中</strong> · 影响：验证 G 节下游需求强弱，是三元前驱体订单的领先指标 · 09-10 杭州国际人工智能与机器人创新博览会（9/10–9/12）· 会议 · 重要性低（概念 886069「人形机器人」匹配，本票该标签属&quot;仅概念标签&quot;） · 09-12 第 18 届金砖国家峰会（新德里，9/12–9/13）· 会议 · 重要性低（概念匹配）</p>
+<ul>
+<li><strong>W2（2026-09-14 起）</strong>：</li>
+</ul>
+<p>· 09-15 工信部人形机器人&quot;首台套&quot;首批申报开启 · 政策 · 重要性低（概念匹配，与本票主营无关） · 09-15 特斯拉 Model Y L 美国启动交付 · 公司事件 · 重要性低（概念 885467 匹配，美国本土生产、对 A 股产业链拉动有限） · 09-17 第 23 届中国-东盟博览会（南宁，9/17–9/21）· 会议 · 重要性低（概念匹配）</p>
+<ul>
+<li><strong>W3（2026-09-21 起）</strong>：</li>
+</ul>
+<p>· 09-22 2026 世界新能源汽车大会 WNEVC（海口，9/22–9/24）· 会议 · 重要性 <strong>中</strong> · 影响：常释放行业趋势与政策风向，对电池材料产业链有指引意义</p>
+<ul>
+<li><strong>W4（2026-09-28 起）</strong>：本周无已知公司事件。临近国庆长假（A 股休市，具体安排以交易所公告为准），假期前流动性通常收缩。</li>
+<li><strong>W5（2026-10-05 起）</strong>：本周无已知公司事件。行业侧关注长假后 LME 镍/钴与沪镍的重新定价（时点不定，置信度：低）。</li>
+<li><strong>W6（2026-10-12 起）</strong>：本周无已知公司事件。行业侧关注海关 9 月及三季度进出口数据（钴镍原料进口口径），发布时点以海关总署安排为准。</li>
+<li><strong>W7（2026-10-19 起）</strong>：本周无已知公司事件。宏观侧三季度经济数据发布窗口；A 股三季报进入密集披露期。</li>
+<li><strong>W8（2026-10-26 起）</strong>：</li>
+</ul>
+<p>· <strong>2026 年三季报披露</strong> · 财报 · 重要性 <strong>高</strong> · 影响：<strong>本报告的头号验证点</strong>——核验单三季度营收增速、毛利率能否回到一季度 17.4716% 附近、以及在无大额一次性收益下的归母净利规模。法定披露截止 10-31；公司 2025 年三季报公告日为 20251031（库内），具体预约日以交易所安排为准（信息缺口） · <strong>港交所 H 股申请 6 个月聆讯有效期到期（约 10-27，据 2026-04-27 递表推算）</strong> · 公司事件 · 重要性 <strong>中</strong> · 影响：通过聆讯/更新递表/再次失效，三种结果对股本预期与情绪的方向不同（置信度：中，日期为推算）</p>
+<ul>
+<li><strong>W9（2026-11-02 起）</strong>：</li>
+</ul>
+<p>· <strong>11-05 限售股解禁 887 万股，占流通盘约 0.2%（40 名股东，交易所官方解禁计划）</strong> · 公司事件 · 重要性低 · 影响：占比极小，冲击有限（库内事件日历直接点名 002340）</p>
+<ul>
+<li><strong>W10（2026-11-09 起）</strong>：本周无已知公司事件。行业侧关注乘联会 10 月新能源汽车销量。</li>
+<li><strong>W11（2026-11-16 起）</strong>：本周无已知公司事件。</li>
+<li><strong>W12（2026-11-23 起）</strong>：本周无已知公司事件。</li>
+<li><strong>W13（2026-11-30 起）</strong>：本周无已知公司事件。行业侧关注刚果（金）2026 年 9.66 万吨钴出口配额进入年末执行尾声、以及印尼 2027 年 RKAB 配额的吹风窗口（时点未定，置信度：低）。</li>
+</ul>
+<p><strong>日历的信息缺口</strong>：库内事件日历对本票的<strong>直接点名</strong>事件只有 1 条（11-05 解禁），其余 8 条均为概念标签匹配的宏观/行业事件，与公司基本面的相关度普遍偏弱。三季报预约披露日、股东大会、H 股聆讯排期均无库内数据，W4–W13 中多周为&quot;无已知事件&quot;，是真实的日历稀疏，不是遗漏。</p>
+<h2>J. 逻辑链（可证伪）</h2>
+<p><strong>主链</strong></p>
+<ul>
+<li><strong>环节 1（事实，置信度：高）</strong>：2026H1 营收 179.87 亿元同比仅 +2.43%，单二季度营收推算同比转负；单二季度毛利率推算约 8.62%，较一季度 17.4716% 下降约 8.9 个百分点。</li>
+<li><strong>环节 2（事实，置信度：高）</strong>：2026H1 归母净利 10.76 亿元同比 +34.68%，公司公告披露其中含出售欧科亿股票的投资收益约 6.9 亿元（税前）。</li>
+<li><strong>环节 3（推论，置信度：中）</strong>：环节 1 + 环节 2 → 上半年的利润增长主要由一次性投资收益贡献，经营性利润较去年同期是下降的；二季度经营性利润大概率为负。</li>
+<li><strong>环节 4（推论，置信度：中）</strong>：钴镍价格因印尼 RKAB 配额削减与刚果金出口配额而上行，对公司是<strong>双向</strong>作用——资源与回收端受益、前驱体制造端成本承压。二季度毛利率的下降方向与&quot;成本端先于售价端反映&quot;一致。</li>
+<li><strong>环节 5（可证伪的观察项，置信度：中）</strong>：如果环节 3、4 成立，那么<strong>三季报应能观察到</strong>：① 单三季度毛利率仍在 10% 附近或以下；② 在没有同等规模一次性收益的情况下，单三季度归母净利显著低于二季度的 5.54 亿元（推算值）。</li>
+<li><strong>环节 6（反向可证伪项，置信度：中）</strong>：库内两家券商都预测 2026 年全年归母净利约 19 亿元（见下）。以 H1 实际 10.76 亿元推算，<strong>下半年需实现约 8.25 亿元归母净利，且下半年不存在已知的同等规模一次性收益</strong>——这意味着卖方预测隐含&quot;主业在下半年大幅改善&quot;。<strong>三季报会直接检验这个隐含假设是否成立</strong>（置信度：中，为推算）。</li>
+</ul>
+<p><strong>最弱的一环（命门）</strong>：环节 3。它依赖&quot;6.9 亿元投资收益全部落在 2026 年上半年、且税后规模与税前接近&quot;这一假设。公司公告原文写的是&quot;不考虑所得税等影响&quot;，实际税后金额必然小于 6.9 亿元；若税后仅为 5 亿元量级，上半年经营性利润会相应上修至 5.7 亿元量级，&quot;二季度经营性利润为负&quot;的结论就会变弱甚至不成立。<strong>验证办法</strong>：读半年报的&quot;非经常性损益明细表&quot;与&quot;扣除非经常性损益后的净利润&quot;两栏。</p>
+<p><strong>卖方观点（单列，不与库内事实混陈）</strong></p>
+<p>〔卖方预期〕来源：中金公司研报（库内研报）· 日期：2026-09-02 · 观点：评级「跑赢行业」；预测 2026 年 EPS 0.37 元、归母净利 19.01 亿元，对应 PE 17.5 倍；2027 年 EPS 0.52 元、归母净利 26.33 亿元，对应 PE 12.6 倍 · 置信度：低（卖方预期非事实）</p>
+<p>〔卖方预期〕来源：湘财证券研报（库内研报）· 日期：2026-08-26 · 观点：评级为看多档（评级原词按本报告红线不转录）；预测 2026 年 EPS 0.374 元、归母净利 19.06 亿元，对应 PE 18.04 倍；2027 年 EPS 0.506 元、归母净利 25.81 亿元，对应 PE 13.32 倍；2028 年 EPS 0.702 元、归母净利 35.83 亿元，对应 PE 9.6 倍 · 置信度：低（卖方预期非事实）</p>
+<p>〔卖方预期〕来源：东方财富证券研报（联网检索到的 PDF，2026-01-25，《正极材料不断突破，镍钴自供能力强化》）· 日期：2026-01-25 · 观点：首次覆盖并给出看多档评级，主线为正极材料突破与镍钴自供能力强化 · 置信度：低（单源、发布于中报之前，未反映二季度毛利率变化）</p>
+<p><strong>库内研报覆盖度</strong>：库内研报显示近 90 天仅 <strong>2 篇研报、2 家机构</strong>，评级分布为「跑赢行业」1 篇 + 看多档 1 篇。覆盖机构数偏少，意味着卖方一致预期的样本基础很薄，参考价值有限（置信度：高）。</p>
+<h2>K. 三情景推演（未来约 13 周，至 2026 年 12 月上旬）</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜<strong>触发</strong>：2026 年三季报单三季度毛利率回升至 12% 以上（对比 2025 前三季度累计 12.6713%），且在无大额一次性收益的情况下单三季度归母净利不低于 3 亿元；同时港交所 H 股申请在 10 月下旬前取得实质进展（通过聆讯或更新递表）｜<strong>路径</strong>：主业改善被证实，市场把估值锚从&quot;含一次性收益的 PE 17.75&quot;切换到经营性口径并接受，PB 向可比公司区间靠拢，行情跟随钴镍价格与回收政策主题走强</li>
+<li><strong>中性（50%）</strong>｜<strong>触发</strong>：单三季度毛利率维持在 9%–12% 区间，单三季度归母净利在 1.5 亿~3 亿元之间，全年离卖方预期的约 19 亿元有明显距离但未出现大幅低于预期｜<strong>路径</strong>：基本面无定论，估值在低 PB 支撑与低 ROE 压制之间拉锯，股价跟随小金属板块 beta 与钴镍价格波动，成交与换手维持在当前偏低水平</li>
+<li><strong>悲观（25%）</strong>｜<strong>触发</strong>：单三季度毛利率仍在 9% 以下、单三季度归母净利低于 1 亿元或出现单季亏损；或出现资产减值、印尼板块亏损被明确披露；或港交所申请在 10 月下旬再次失效｜<strong>路径</strong>：卖方全年约 19 亿元的预期被迫大幅下修，市场按经营性口径重新定价，低 PB 不构成支撑，估值继续下探</li>
+</ul>
+<p>三档概率合计 100%。三条触发条件均可用三季报数字与交易所公告直接核对。</p>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong></p>
+<ol>
+<li><strong>如果</strong>三季报（W8，约 10 月下旬至 10-31）显示单三季度毛利率回升至 12% 以上，<strong>且</strong>在无大额一次性投资收益的情况下单三季度归母净利不低于 3 亿元，<strong>那么</strong>可以把它从&quot;仅估值便宜&quot;重新归入&quot;主业改善&quot;一档，考虑<strong>小仓位试仓</strong>。</li>
+<li><strong>如果</strong>三季报显示单三季度毛利率仍低于 9%，<strong>或</strong>公司披露出售欧科亿股票之外再无经营性利润来源（扣非后单季为负），<strong>那么</strong><strong>回避</strong>，等下一份财报重新验证。</li>
+<li><strong>如果</strong>股价跌破 8-07 筹码 15% 分位成本且资金流维持当前形态（近 20 日净流出 8.89 亿元的量级未收窄），<strong>那么</strong><strong>观望</strong>，不做左侧承接——筹码分位成本被击穿意味着 8 月以来的持仓者已整体处于亏损，反弹会遇到解套抛压。</li>
+<li><strong>如果</strong>股价站上 8-07 筹码 50% 分位成本并站稳，<strong>且</strong>近 20 日资金流由净流出转为净流入，<strong>那么</strong>可视作情绪面修复的确认信号，但<strong>仍需以三季报为准</strong>——此条只用于择时，不用于判断基本面。</li>
+<li><strong>如果</strong>公司公告港交所 H 股发行取得实质进展并披露拟发行股本规模，<strong>那么</strong>需要重新计算每股口径的摊薄影响后再评估，在此之前<strong>观望</strong>。</li>
+</ol>
+<p><strong>风控要点（什么情况下本判断应当被推翻）</strong></p>
+<ul>
+<li><strong>向上推翻</strong>：半年报&quot;扣除非经常性损益后的净利润&quot;若显著高于本报告推算的约 3.9 亿元量级（例如 6 亿元以上），说明我对一次性收益的归属期与税负假设错了，A 节的谨慎基调应当撤销。</li>
+<li><strong>向下推翻</strong>：若三季报出现商誉/存货/在建工程减值，或印尼板块被明确披露为亏损且规模超过单季归母净利，则连&quot;中性情景&quot;都过于乐观，应下调至悲观情景。</li>
+<li><strong>结构性推翻</strong>：若钴镍价格出现单边大幅下跌（印尼放宽 RKAB 配额、刚果金配额被作废或放松），则 F 节第 2、3 条的驱动逻辑同时失效，资源端与回收端的价差优势不复存在。</li>
+</ul>
+<p><strong>仓位思路</strong>：在三季报落地前，本票属于&quot;基本面待验证 + 资金面偏弱 + 估值仅在表观口径便宜&quot;的组合，<strong>相对仓位建议为轻，或不参与</strong>；三季报后按 K 节情景重新评估。不给具体金额、不给股数、不给目标价。</p>
+<h2>M. 逻辑自查</h2>
+<p><strong>1. 这份判断最依赖的假设是哪一条？错了会怎样？</strong></p>
+<p>最依赖的是：<strong>&quot;2026 年上半年 10.76 亿元归母净利中，约 6.9 亿元来自出售欧科亿股票的一次性投资收益&quot;</strong>。这条来自公司 2026-08-05 公告（同花顺财经转述）与董秘问答的双重印证，事实层面可靠度高；但<strong>&quot;6.9 亿元&quot;是税前口径</strong>，税后实际贡献必然更小。如果税后仅 4~5 亿元，则上半年经营性利润上修至 5.7~6.7 亿元，虽仍低于 2025 年上半年的 7.99 亿元，但&quot;二季度经营性利润为负&quot;的强判断就不成立，A 节的风险 1 需要降级。<strong>这是本报告全部谨慎基调的单点依赖，读者应优先自行核对半年报的扣非净利润一栏。</strong></p>
+<p><strong>2. 有没有为了让逻辑好看而忽略的反面证据？</strong></p>
+<p>有三条，在此明确列出：</p>
+<ul>
+<li><strong>回收政策的利好我给的权重可能偏低</strong>。2026-04-01 实施的强制新规 + 4-27 联合执法，对持证的头部回收企业是实质性的原料集中利好，而这种利好在财报上体现有滞后期（先是原料获取量提升，再是毛利率修复）。我用二季度毛利率下降来支撑谨慎结论，可能是在用&quot;政策生效前&quot;的数据否定&quot;政策生效后&quot;的逻辑。</li>
+<li><strong>PB 1.5228 的绝对低位我处理得偏轻</strong>。相对可比公司 4.41/5.32/7.87，格林美的 PB 折价幅度很大，即便 ROE 只有 5.00%，这个折价也已经包含了不少悲观预期。</li>
+<li><strong>回购与解押是正向信号</strong>。7-16 回购方案（回购上限 10.60 元/股）、7-23 回购专项贷款、8-05 首次回购、7-30 控股股东质押全部解除——这一串动作方向一致，我在 H 节只给了&quot;中&quot;置信度，可能低估了管理层的信号价值。</li>
+</ul>
+<p><strong>3. 信息缺口清单</strong></p>
+<ul>
+<li><strong>缺口 1：扣非净利润与经营活动现金流</strong>。库内财务不含这两个字段，导致 C/J 节所有关于&quot;主业盈利&quot;的论述只能靠毛利与一次性收益倒推。影响：<strong>大</strong>——这是本报告命门所在。补法：读 2026 年半年度报告全文（cninfo，公告日 2026-08-29）的主要会计数据与非经常性损益明细表。</li>
+<li><strong>缺口 2：分业务营收与毛利率拆分</strong>。库内无&quot;资源循环 / 新能源材料 / 印尼镍&quot;的分部数据，无法判断二季度毛利率下降来自哪一块。影响：<strong>中</strong>——直接影响 F 节&quot;钴镍涨价双向作用&quot;的定量归因。补法：半年报分部报告。</li>
+<li><strong>缺口 3：三季报预约披露日</strong>。联网未查到确切日期，只能按法定截止 10-31 与去年同期公告日 20251031 推断。影响：<strong>小</strong>——影响 I 节 W8 的精确性，不影响结论。补法：查交易所定期报告预约披露时间表。</li>
+<li><strong>缺口 4：印尼板块盈利数据</strong>。2026-08-05 董秘问答中投资者直接提出&quot;印尼亏损多少，公告里没有&quot;，说明该口径未单独披露。影响：<strong>中</strong>。补法：关注后续投资者关系活动记录表与年报分部披露。</li>
+<li><strong>缺口 5：库内 A/H 对照返回空</strong>。该票非 A+H 两地上市，无跨市场估值参照系可用；瑞交所 GDR 价格亦不在库内。影响：<strong>小</strong>。</li>
+<li><strong>缺口 6：库内涨停记录近 180 日为空</strong>。无涨停记录本身是有效信息（见 H 节），不构成数据缺失。</li>
+<li><strong>缺口 7：库内研报样本过薄</strong>。库内研报近 90 天仅 2 篇、2 家机构，一致预期的代表性有限。影响：<strong>中</strong>——J 节环节 6 的&quot;卖方隐含假设&quot;论证建立在两家机构的预测上。</li>
+</ul>
+<p><strong>4. 一条必须向读者提示的信息冲突</strong></p>
+<p>联网检索中出现一条自媒体内容（东方财富&quot;财富号&quot;，2026-07-14，标题含&quot;请问千问&quot;字样的 AI 生成问答）称&quot;格林美已发布 2026 年半年度业绩预告，预计归母净利润 13 亿~15 亿元，同比增长 110%~140%&quot;。<strong>该说法与库内财务的 2026H1 归母净利 10.76 亿元、同比 +34.68% 直接冲突。</strong>按本报告纪律，<strong>以库内财报数据为准</strong>（置信度：高）；该自媒体内容为非官方来源，读者在其他渠道看到类似数字时应当留意（置信度：高，冲突事实本身已核对）。</p>
+<p><strong>5. 本报告未使用的数据块说明</strong></p>
+<p>第 2 步的 12 个库内取数全部调用：库内公司档案（B/E/G 节）、库内财务（C/J 节）、库内估值（B/C/D 节）、库内行情（B/H 节）、库内概念标签（G 节）、库内涨停记录（H 节）、库内新闻（H/G 节）、库内同业对比（D 节）、库内事件日历（I 节）、库内研报（J 节）、库内资金筹码（H 节）、库内 A/H 对照（B 节，返回空已说明）。</p>
+<p><strong>来源清单（联网部分）</strong></p>
+<ul>
+<li><a href="http://yuanchuang.10jqka.com.cn/20260805/c678692322.shtml" target="_blank" rel="noopener">格林美：2026年上半年出售欧科亿股票预计可实现投资收益约6.9亿元 · 同花顺财经 2026-08-05</a></li>
+<li><a href="https://finance.sina.com.cn/jjxw/2026-05-26/doc-inhzfwqf2111185.shtml" target="_blank" rel="noopener">十年投资浮盈超20倍！格林美减持欧科亿，34家机构接盘，或套现8.42亿 · 新浪财经 2026-05-26</a></li>
+<li><a href="https://www.miit.gov.cn/gyhxxhb/jgsj/cyzcyfgs/bmgz/jdcjxl/art/2026/art_392462fdc40c415ea4a4129cac3028c2.html" target="_blank" rel="noopener">《新能源汽车废旧动力电池回收和综合利用管理暂行办法》 · 工业和信息化部</a></li>
+<li><a href="https://www.ndrc.gov.cn/fggz/hjyzy/zyzhlyhxhjj/202603/t20260317_1404213.html" target="_blank" rel="noopener">废旧动力电池综合利用红线划定（政策解读） · 国家发展和改革委员会 2026-03-17</a></li>
+<li><a href="https://policy.mofcom.gov.cn/claw/policyInfo.shtml?id=9006" target="_blank" rel="noopener">关于开展规范废旧动力电池回收利用联合执法专项行动的通知 · 商务部政策库 2026-04-27</a></li>
+<li><a href="https://www.nbd.com.cn/articles/2026-04-03/4324766.html" target="_blank" rel="noopener">&quot;史上最严&quot;动力电池回收新规落地 · 每日经济新闻 2026-04-03</a></li>
+<li><a href="https://finance.sina.com.cn/money/future/roll/2026-08-03/doc-inikzqsp5984163.shtml" target="_blank" rel="noopener">印尼RKAB配额收紧矿端成本支撑镍价底部防线 · 新浪财经 2026-08-03</a></li>
+<li><a href="https://finance.sina.cn/2026-07-10/detail-inihisps7005306.d.html" target="_blank" rel="noopener">印尼RKAB配额悬念待解，镍价承压等待&quot;靴子落地&quot; · 新浪财经 2026-07-10</a></li>
+<li><a href="https://www.sohu.com/a/976402544_121123881" target="_blank" rel="noopener">印尼计划将2026年镍矿石生产配额削减至2.5-2.6亿吨 · 搜狐财经</a></li>
+<li><a href="https://finance.sina.com.cn/stock/hkstock/ggscyd/2025-09-24/doc-infrqtxn8190304.shtml" target="_blank" rel="noopener">天风证券：刚果金配额政策落地钴中长期逻辑夯实 · 新浪财经 2025-09-24</a></li>
+<li><a href="https://finance.sina.com.cn/stock/usstock/summary/2026-06-30/doc-inifayqu3764122.shtml" target="_blank" rel="noopener">刚果（金）钴配额作废或导致70%供应收紧 · 新浪财经 2026-06-30</a></li>
+<li><a href="https://new-energy.smm.cn/content/14042/103464953" target="_blank" rel="noopener">三元前驱体2025年1-7月回顾与下半年展望 · 上海有色网 SMM</a></li>
+<li><a href="http://static.cninfo.com.cn/finalpage/2026-07-17/1225427639.PDF" target="_blank" rel="noopener">格林美股份有限公司关于回购公司股份方案的公告（2026-053） · 巨潮资讯 2026-07-17</a></li>
+<li><a href="http://static.cninfo.com.cn/finalpage/2026-07-18/1225429842.PDF" target="_blank" rel="noopener">格林美股份有限公司回购报告书（2026-055） · 巨潮资讯 2026-07-18</a></li>
+<li><a href="https://finance.sina.com.cn/stock/aigc/zjchg/2026-07-17/doc-iniiccuy4216673.shtml" target="_blank" rel="noopener">格林美拟以1亿元至1.6亿元回购股份 · 新浪财经 2026-07-17</a></li>
+<li><a href="https://finance.sina.com.cn/wm/2026-04-28/doc-inhvzshh8473550.shtml" target="_blank" rel="noopener">格林美递交IPO招股书拟赴香港上市 · 新浪财经 2026-04-28</a></li>
+<li><a href="https://finance.sina.com.cn/jjxw/2026-05-18/doc-inhyiewk0698327.shtml" target="_blank" rel="noopener">负债率攀升至66%，格林美二度冲港股 · 新京报 / 新浪财经 2026-05-18</a></li>
+<li><a href="https://www.cls.cn/detail/2357473" target="_blank" rel="noopener">格林美：已向香港联交所更新递交H股发行上市申请 · 财联社</a></li>
+<li><a href="https://yuanchuang.10jqka.com.cn/20260630/c677848875.shtml" target="_blank" rel="noopener">格林美：公司固态电池材料实现吨级以上产品出货 · 同花顺财经 2026-06-30</a></li>
+<li><a href="https://ne-time.cn/web/article/36983" target="_blank" rel="noopener">格林美与厦钨新能签署战略合作协议：将开发固态电池材料 · NE时代</a></li>
+<li><a href="https://cj.sina.com.cn/articles/view/1850649324/6e4eaaec02002c8q8" target="_blank" rel="noopener">格林美：现有印尼青美邦园区的镍资源项目稳定运行 · 新浪财经</a></li>
+<li><a href="https://pdf.dfcfw.com/pdf/H3_AP202601261818411999_1.pdf" target="_blank" rel="noopener">格林美（002340.SZ）公司动态研究报告：正极材料不断突破，镍钴自供能力强化 · 东方财富证券 2026-01-25</a></li>
+<li><a href="https://static.cninfo.com.cn/finalpage/2025-08-29/1224615887.pdf" target="_blank" rel="noopener">格林美2025年半年度报告全文 · 巨潮资讯 2025-08-29</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-04），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>二季度毛利率推算降至8.6%，主业推算亏损</li>
+      <li>近20日资金净流出8.89亿、股东户数增2.5%</li>
+      <li>剔除6.9亿一次性收益后PE约28倍</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>扣非净利</dt><dd>扣除非经常性损益后的净利润。剔除卖资产、政府补助、公允价值变动等一次性项目，更接近主业真实盈利。</dd><dt>非经常性损益</dt><dd>与主营业务无关、偶发的收益或损失，如处置资产、政府补助、金融资产公允价值变动。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>商誉</dt><dd>收购时溢价支付的部分记在账上的资产。被收购方业绩不达预期时要计提减值、直接冲减利润。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>业绩预告</dt><dd>上市公司在正式财报前发布的盈利区间预告，达到规定变动幅度时强制披露。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>BLUF</dt><dd>Bottom Line Up Front，结论先行——把最重要的判断放在最前面。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>一致预期</dt><dd>多家券商盈利预测的平均值。是别人的观点，不是事实。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="http://yuanchuang.10jqka.com.cn/20260805/c678692322.shtml" target="_blank" rel="noopener">格林美：2026年上半年出售欧科亿股票预计可实现投资收益约6.9亿元 · 同花顺财经 2026-08-05</a> <em>2026-08-05</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://finance.sina.com.cn/jjxw/2026-05-26/doc-inhzfwqf2111185.shtml" target="_blank" rel="noopener">十年投资浮盈超20倍！格林美减持欧科亿，34家机构接盘，或套现8.42亿 · 新浪财经 2026-05-26</a> <em>2026-05-26</em></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.miit.gov.cn/gyhxxhb/jgsj/cyzcyfgs/bmgz/jdcjxl/art/2026/art_392462fdc40c415ea4a4129cac3028c2.html" target="_blank" rel="noopener">《新能源汽车废旧动力电池回收和综合利用管理暂行办法》 · 工业和信息化部</a></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.ndrc.gov.cn/fggz/hjyzy/zyzhlyhxhjj/202603/t20260317_1404213.html" target="_blank" rel="noopener">废旧动力电池综合利用红线划定（政策解读） · 国家发展和改革委员会 2026-03-17</a> <em>2026-03-17</em></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://policy.mofcom.gov.cn/claw/policyInfo.shtml?id=9006" target="_blank" rel="noopener">关于开展规范废旧动力电池回收利用联合执法专项行动的通知 · 商务部政策库 2026-04-27</a> <em>2026-04-27</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.nbd.com.cn/articles/2026-04-03/4324766.html" target="_blank" rel="noopener">&quot;史上最严&quot;动力电池回收新规落地 · 每日经济新闻 2026-04-03</a> <em>2026-04-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/money/future/roll/2026-08-03/doc-inikzqsp5984163.shtml" target="_blank" rel="noopener">印尼RKAB配额收紧矿端成本支撑镍价底部防线 · 新浪财经 2026-08-03</a> <em>2026-08-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.cn/2026-07-10/detail-inihisps7005306.d.html" target="_blank" rel="noopener">印尼RKAB配额悬念待解，镍价承压等待&quot;靴子落地&quot; · 新浪财经 2026-07-10</a> <em>2026-07-10</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.sohu.com/a/976402544_121123881" target="_blank" rel="noopener">印尼计划将2026年镍矿石生产配额削减至2.5-2.6亿吨 · 搜狐财经</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/hkstock/ggscyd/2025-09-24/doc-infrqtxn8190304.shtml" target="_blank" rel="noopener">天风证券：刚果金配额政策落地钴中长期逻辑夯实 · 新浪财经 2025-09-24</a> <em>2025-09-24</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/usstock/summary/2026-06-30/doc-inifayqu3764122.shtml" target="_blank" rel="noopener">刚果（金）钴配额作废或导致70%供应收紧 · 新浪财经 2026-06-30</a> <em>2026-06-30</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://new-energy.smm.cn/content/14042/103464953" target="_blank" rel="noopener">三元前驱体2025年1-7月回顾与下半年展望 · 上海有色网 SMM</a> <em>2025-01-07</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://static.cninfo.com.cn/finalpage/2026-07-17/1225427639.PDF" target="_blank" rel="noopener">格林美股份有限公司关于回购公司股份方案的公告（2026-053） · 巨潮资讯 2026-07-17</a> <em>2026-05</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://static.cninfo.com.cn/finalpage/2026-07-18/1225429842.PDF" target="_blank" rel="noopener">格林美股份有限公司回购报告书（2026-055） · 巨潮资讯 2026-07-18</a> <em>2026-05</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://finance.sina.com.cn/stock/aigc/zjchg/2026-07-17/doc-iniiccuy4216673.shtml" target="_blank" rel="noopener">格林美拟以1亿元至1.6亿元回购股份 · 新浪财经 2026-07-17</a> <em>2026-07-17</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://finance.sina.com.cn/wm/2026-04-28/doc-inhvzshh8473550.shtml" target="_blank" rel="noopener">格林美递交IPO招股书拟赴香港上市 · 新浪财经 2026-04-28</a> <em>2026-04-28</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/jjxw/2026-05-18/doc-inhyiewk0698327.shtml" target="_blank" rel="noopener">负债率攀升至66%，格林美二度冲港股 · 新京报 / 新浪财经 2026-05-18</a> <em>2026-05-18</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2357473" target="_blank" rel="noopener">格林美：已向香港联交所更新递交H股发行上市申请 · 财联社</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://yuanchuang.10jqka.com.cn/20260630/c677848875.shtml" target="_blank" rel="noopener">格林美：公司固态电池材料实现吨级以上产品出货 · 同花顺财经 2026-06-30</a> <em>2026-06-30</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://ne-time.cn/web/article/36983" target="_blank" rel="noopener">格林美与厦钨新能签署战略合作协议：将开发固态电池材料 · NE时代</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://cj.sina.com.cn/articles/view/1850649324/6e4eaaec02002c8q8" target="_blank" rel="noopener">格林美：现有印尼青美邦园区的镍资源项目稳定运行 · 新浪财经</a></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://pdf.dfcfw.com/pdf/H3_AP202601261818411999_1.pdf" target="_blank" rel="noopener">格林美（002340.SZ）公司动态研究报告：正极材料不断突破，镍钴自供能力强化 · 东方财富证券 2026-01-25</a> <em>2026-01-25</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://static.cninfo.com.cn/finalpage/2025-08-29/1224615887.pdf" target="_blank" rel="noopener">格林美2025年半年度报告全文 · 巨潮资讯 2025-08-29</a> <em>2025-08-29</em></li>
+      <li><span class="src-tag src-disc">披露</span> 减持事项另见新浪财经 2026-05-26 报道，8.42 亿元成交、873.30 万股 <em>2026-05-26</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 工信部官网政策发布页 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 每日经济新闻 2026-04-03 报道称业内称之为&quot;史上最严&quot; <em>2026-04-03</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 商务部政策库 policy.mofcom.gov.cn — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 国家发改委官网 2026-03-17 亦发布《废旧动力电池综合利用红线划定》政策解读 <em>2026-03-17</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 多源一致 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-research">研究</span> 天风证券研究观点经新浪财经 2025-09-24 转述 <em>2025-09-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-06-30「刚果（金 <em>2026-06-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 上海有色网 SMM 三元前驱体分析 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> OFweek 锂电网 2026-04 <em>2026-04</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社「已向香港联交所更新递交 H 股发行上市申请」 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> NE 时代报道公司与厦钨新能签署战略合作开发固态电池材料 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> cninfo 公告 2026-053 / 2026-055 <em>2026-05</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-07-17 双源一致 <em>2026-07-17</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> cninfo，公告日 2026-08-29 <em>2026-08-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 联网交叉源：同花顺财经 2026-08-05 <em>2026-08-05</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富&quot;财富号&quot;，2026-07-14，标题含&quot;请问千问&quot;字样的 AI 生成问答 <em>2026-07-14</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-04 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
