@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>茂莱光学（688502.SH） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>茂莱光学（688502.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-04（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 光学光电子</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 光刻机 · 眼科医疗 · 基因测序 · 光刻胶 · 智能穿戴 · 机器视觉 · 虚拟现实 · 无人驾驶</span>
+      <span><b>来源</b> 41 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    茂莱光学（688502）主要做的是精密光学器件、光学镜头和光学系统的研发、设计、制造及销售。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——营收高增但利润塌了——高估值等一份能证明毛利止跌的三季报。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：营收高增但利润塌了——高估值等一份能证明毛利止跌的三季报。支撑在于半导体收入占61.26%增34.65%；AR/VR检测收入增168.93%；SEMI预测2026设备销售+23.2%。主要风险是毛利率同比降8.70个百分点；经营现金流-8309万元由正转负；卖方2026净利预测面临大幅下修。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>半导体收入占61.26%增34.65%</li>
+      <li>AR/VR检测收入增168.93%</li>
+      <li>SEMI预测2026设备销售+23.2%</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据基准：库内取数（库内取数）截至库内估值 = 2026-09-03；行情为库内行情数据时点 <strong>2026-09-04 14:10（盘中未收盘）</strong>。联网信息均标来源与日期。本报告不含任何持仓 / 自选 / 账户信息。</div>
+<h2>A. 一屏结论（BLUF）</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：营收高增但利润塌了——高估值等一份能证明毛利止跌的三季报。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>半导体量检测放量是真实的、有营收佐证的</strong>：2026H1 营收 4.27 亿元、同比 +33.97%（库内财务），其中半导体领域占 61.26%、收入增 34.65%，AR/VR 检测占 13.04%、收入增 168.93%（财联社 2026-08-28）。（置信度：高，库内营收与外部披露完全对得上）</li>
+<li><strong>行业景气在上行通道</strong>：SEMI 2026-07-14 预测 2026 年全球半导体设备销售额 1659 亿美元、同比 +23.2%，其中<strong>测试设备增 31% 至 153 亿美元</strong>（新浪财经 2026-07-24 / 中国电子专用设备工业协会 / 俄罗斯卫星通讯社 2026-07-14，三源一致）。测试设备这一档正是公司量检测业务的直接需求端。（置信度：中，行业预测非公司订单）</li>
+<li><strong>可转债 5.625 亿元募投明确指向 248nm / 193nm DUV 光刻物镜与照明</strong>（上交所问询函回复 2025-07-17 / 上海证券报 2026-07-04），产能与技术方向不是概念。（置信度：中）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>盈利已实质转负，且不是一次性</strong>：2026H1 净利 -0.13 亿元、同比 -140.96%，ROE -1.07%，毛利率从 FY2025 的 46.71% 掉到 40.95%（库内）。公司自述主因是「某国际半导体量检测客户业务量显著提升但毛利较低」+「适度下调部分产品售价」（财联社 2026-08-28）——<strong>这是结构性的、会延续的毛利稀释</strong>。（置信度：高）</li>
+<li><strong>经营现金流大幅失血</strong>：2026H1 经营活动现金流净额 <strong>-8309.19 万元</strong>，上年同期 +752.51 万元，同比 -1204.20%（半年报摘要，中财网 2026-08-28）。同时计提存货跌价 1505.79 万元（公告 2026-08-29）。（置信度：高，公司公告原文）</li>
+<li><strong>卖方盈利预测与实际存在巨大缺口</strong>：库内唯一一篇研报（2026-06-09，<strong>披露于半年报之前</strong>）预测 2026 年净利 8800 万元；而上半年实际为 <strong>-1341.62 万元</strong>（库内）。若要兑现该预测，下半年需实现约 1.01 亿元净利（据两者推算），而 2025 全年净利仅 0.46 亿元。<strong>预测下修压力极高。</strong>（置信度：高，纯算术缺口）</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ul>
+<li><strong>信号一（W3·2026-09-17 15:00-16:00）</strong>：半年度业绩说明会（上海证券报 2026-08-29），核验点＝管理层对「低毛利大客户占比会否继续上升」「毛利率何时见底」的口径。</li>
+<li><strong>信号二（W9·法定截止 2026-10-31）</strong>：三季报单季毛利率能否较 2026H1 的 <strong>40.95%</strong> 环比回升，以及经营现金流能否收窄。这是本报告全部推论的总闸门。</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong>：我把「低毛利客户放量」当成了会延续的结构性问题。若该客户只是导入期让价、后续随规模摊薄或产品组合切换而毛利回升，那么当前的亏损就是<strong>扩张期一次性代价</strong>，报告的悲观权重给高了。另一软肋是<strong>新闻库对该票 365 天零覆盖</strong>（见 M 节），H 节情绪面的库内证据比常规报告薄一档。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>名称 / 代码</strong>：茂莱光学 · 688502 · 科创板 · 上市状态 = <strong>L（正常上市）</strong>（库内公司档案）</li>
+<li><strong>上市日</strong>：2023-03-09，至今约 3 年半（据上市日期推算）</li>
+<li><strong>库内行业分类</strong>：元器件｜员工 1386 人｜注册资本 5280.0444 万元</li>
+<li><strong>主营</strong>：精密光学器件、光学镜头和光学系统的研发、设计、制造及销售</li>
+<li><strong>公司自述定位</strong>：精密光学综合解决方案提供商，服务于<strong>全球半导体光刻机及检测装备、生命科学及医疗（基因测序 / 核酸检测）、航空航天、无人驾驶、生物识别、AR/VR 检测设备</strong>等领域，具备「光、机、电、算」一体化研发、光学薄膜、精密制造、高精度主动装调能力（库内公司简介原文归纳）</li>
+<li><strong>经营范围</strong>：光学光电元件、仪器设备研发生产销售及设计服务；进出口业务；另含发电 / 输电 / 供配电许可项目（库内经营范围）</li>
+</ul>
+<p><strong>当前行情（唯一行情事实源库内行情，数据时点 = 2026-09-04 14:10，盘中未收盘）</strong></p>
+<ul>
+<li>现价 <strong>408.90 元</strong> ｜涨跌幅 <strong>-3.33%</strong> ｜日内最高 +3.07% / 最低 -3.81% ｜成交额 4.70 亿元｜数据源 realtime</li>
+<li>日内振幅接近 6.9 个百分点（据 high_pct 与 low_pct 推算），当日波动不小。（置信度：高）</li>
+</ul>
+<p><strong>估值（库内估值，交易日 = 2026-09-03 收盘口径）</strong></p>
+<ul>
+<li>总市值 <strong>223.35 亿元</strong> ｜ PB <strong>18.85</strong> ｜换手率 2.17% ｜股息率 <strong>0.08%</strong></li>
+<li>PE(TTM) = <strong>140894.14</strong> —— 这个数字<strong>没有参考意义</strong>，成因是 TTM 净利润已被摊薄到接近 0：FY2025 净利 0.46 亿元，而 2026H1 净利 -0.13 亿元、同比 -140.96%（意味着 2025 上半年是盈利的），一进一出把 TTM 分母吃掉了。（置信度：高，机制清晰）</li>
+<li>行业（元器件）PE 中位数 68.59，同行业共 312 只，该票 PE 排名 <strong>229 / 312</strong>（越靠后越贵，处后 27% 档）——但排名同样因分母趋零而失真，<strong>只能当&quot;贵&quot;的定性提示，不能当分位数用</strong>。（置信度：中）</li>
+<li>按现价推算市值约 <strong>215.9 亿元</strong>（据 408.90 元 × 5280 万股推算；股本数来自 2026 年限制性股票激励计划公告的 52,800,000 股，与库内注册资本 5280.0444 万元一致）。（置信度：中，为派生值）</li>
+</ul>
+<div class="callout">库内 A/H 对照返回 None＝非 A+H 两地上市，本节不设跨市场溢价参照。</div>
+<p><strong>一句话估值定性</strong>：以 PB 18.85、约 216 亿元市值（推算）对应上半年 4.27 亿元营收与 -0.13 亿元净利，属于<strong>用未来 2–3 年的兑现预期在定价当下</strong>。（置信度：中，仅估值口径，不构成好坏结论）</p>
+<h2>C. 财务健康</h2>
+<p>库内财务（近 4 期）四期（新 → 旧），单位亿元：</p>
+<ul>
+<li><strong>2026H1</strong>（报告期 20260630，ann 20260829）：营收 <strong>4.27</strong>（同比 <strong>+33.97%</strong>）· 净利 <strong>-0.13</strong>（同比 <strong>-140.96%</strong>）· 毛利率 <strong>40.95%</strong> · 净利率 <strong>-3.14%</strong> · ROE <strong>-1.07%</strong> · 资产负债率 <strong>46.69%</strong> · EPS -0.2553</li>
+<li><strong>2026Q1</strong>（20260331，ann 20260430）：营收 <strong>1.83</strong>（同比 +28.63%）· 净利 <strong>-0.11</strong>（同比 -166.75%）· 毛利率 <strong>40.36%</strong> · 净利率 -6.07% · ROE -0.88% · 资产负债率 <strong>41.61%</strong> · EPS -0.2114</li>
+<li><strong>FY2025</strong>（20251231，ann 20260411）：营收 <strong>6.91</strong>（同比 +37.42%）· 净利 <strong>0.46</strong>（同比 +30.43%）· 毛利率 <strong>46.71%</strong> · 净利率 6.70% · ROE 3.80% · 资产负债率 <strong>40.64%</strong> · EPS 0.8816</li>
+<li><strong>2025Q1-Q3</strong>（20250930，ann 20251031）：营收 <strong>5.03</strong>（同比 +34.05%）· 净利 <strong>0.46</strong>（同比 +86.57%）· 毛利率 <strong>47.75%</strong> · 净利率 9.08% · ROE 3.85% · 资产负债率 <strong>23.28%</strong> · EPS 0.8695</li>
+</ul>
+<p><strong>趋势读法（四条，逐条标置信度）</strong></p>
+<ol>
+<li><strong>营收增速稳且高，没有失速</strong>：34.05% → 37.42% → 28.63% → 33.97%，四期都在 28% 以上。这是整份报告里<strong>最扎实的一条正面事实</strong>。（置信度：高）</li>
+<li><strong>毛利率是明确的下行拐点</strong>：47.75% → 46.71% → 40.36% → 40.95%，一年内掉了近 7 个百分点。Q1 到 H1 略回升 0.59pct，但幅度太小，<strong>还不能称为止跌</strong>。（置信度：高）</li>
+<li><strong>盈利已连续两期为负，且亏损来源可拆</strong>：库内只到净利口径，成因需看公司公告——2026H1 拖累项包括股权激励费用 1179.33 万元、可转债利息费用 1356.59 万元、汇兑损失 666.86 万元（三项合计约 3202.78 万元，据公告数字推算），财务费用同比增 668.55%，管理费用同比增 37.70%（界面新闻 2026-08-28 / 上海证券报 2026-08-29，两源一致）。另计提资产减值合计 <strong>1907.84 万元</strong>（信用减值 402.05 万元 + 存货跌价 1505.79 万元），减少合并利润总额 1907.84 万元（公告，中财网 2026-08-29）。</li>
+</ol>
+<p>⚠️ <strong>注意口径</strong>：1907.84 万元是利润总额口径，1341.62 万元是归母净利润口径，<strong>两者不可直接相减</strong>。但量级上「减值一项就大于全部净亏损」，说明<strong>剔除减值与股权激励 / 汇兑等非经营性拖累后，主营层面未必是亏的</strong>。（置信度：中，因口径不可严格换算）</p>
+<ol>
+<li><strong>杠杆快速抬升</strong>：资产负债率 23.28% → 40.64% → 41.61% → 46.69%，一年内翻倍。主因是 2025 年 11 月发行 5.625 亿元可转债计入负债（上交所问询函回复 2025-07-17 / 上海证券报）。总资产 23.45 亿元（较上年末 +9.79%）、归母净资产 12.50 亿元（较上年末 <strong>-1.40%</strong>）（半年报摘要，中财网 2026-08-28）——<strong>资产在扩、净资产在缩</strong>，是典型的「举债扩张 + 当期亏损」组合。（置信度：中高）</li>
+</ol>
+<p><strong>两项库外但关键的补充</strong>（库内财务无现金流量表与费用明细字段，此处依赖公司公告，来源已注明）</p>
+<ul>
+<li><strong>经营活动现金流净额 -8309.19 万元</strong>（上年同期 +752.51 万元，同比 -1204.20%）。营收增 34% 而经营现金流由正转负近 -0.83 亿元，<strong>是本报告里最硬的一个负面信号</strong>——它与「低毛利大客户放量 + 存货备货 + 存货跌价 1505.79 万元」互相印证。（置信度：高，公告原文）</li>
+<li><strong>研发投入占营收 12.11%</strong>（上年同期 13.06%）。强度小幅下降，但绝对额是升的：据营收与占比推算，2026H1 约 0.52 亿元、2025H1 约 0.42 亿元，同比约 +24%。（置信度：中，为派生值）</li>
+</ul>
+<p><strong>仅估值口径的结论</strong>：营收在高速增长、盈利在负值区、现金流在失血、杠杆在抬升——这是<strong>扩张期最紧张的那个阶段</strong>。是否值得，取决于毛利率能否随规模回来。（置信度：中）</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比（取 3 家）返回同为「元器件」行业的三只（均为 20260630 期）：</p>
+<ul>
+<li><strong>茂莱光学 · 688502</strong>｜市值 223.35 亿（9-03）· PE(TTM) 140894.14（失真）· PB 18.85 · 营收 4.27 亿 · 净利 -0.13 亿 · ROE -1.07%</li>
+<li><strong>立讯精密 · 002475</strong>｜市值 4346.33 亿 · PE(TTM) 24.42 · PB 4.67 · 营收 1745.04 亿 · 净利 78.43 亿 · ROE 8.79%</li>
+<li><strong>生益科技 · 600183</strong>｜市值 3478.09 亿 · PE(TTM) 66.96 · PB 18.80 · 营收 190.26 亿 · 净利 32.87 亿 · ROE 18.66%</li>
+<li><strong>东山精密 · 002384</strong>｜市值 3281.51 亿 · PE(TTM) 91.54 · PB 13.47 · 营收 190.26→277.98 亿 · 净利 29.57 亿 · ROE 12.90%</li>
+</ul>
+<p><strong>读法</strong></p>
+<ol>
+<li><strong>不是一个量级的对手，可比性有限</strong>：三家同行营收是茂莱的 45–409 倍（据营收数字推算），市值是 15–19 倍。库内「元器件」是个很宽的分类桶，把消费电子 ODM（立讯 / 东山）、覆铜板（生益）和精密光学（茂莱）装在一起了。<strong>真正的可比公司应是半导体光学量检测与光刻配套厂商，库内同业对比没有给出</strong>——这是 D 节最大的局限，见 M 节。（置信度：高）</li>
+<li><strong>PB 维度上茂莱与生益科技几乎并列最贵</strong>（18.85 vs 18.80），但生益的 ROE 是 <strong>18.66%</strong>、茂莱是 <strong>-1.07%</strong>。<strong>同样的账面溢价，一个由高回报支撑，一个由预期支撑</strong>——这是茂莱估值最脆弱的一处。（置信度：高）</li>
+<li><strong>规模效应差距是结构性的</strong>：三家同行 ROE 全部为正（8.79%–18.66%），茂莱为负。（置信度：高）</li>
+</ol>
+<h2>E. 护城河与商业模式</h2>
+<p>诚实分级如下：</p>
+<ul>
+<li><strong>阶段性优势（有证据，置信度：中高）</strong>——<strong>客户认证壁垒</strong>。半导体光刻与量检测的光学件需要长周期验证，一旦切入替换成本高。证据：公司与国际半导体量检测客户自 2025 年 10 月起业务量显著提升，累计获得该客户采购订单约 1.94 亿元（截至半年报披露日）（九方智投公司研究，<strong>单源未交叉验证·置信度低</strong>）；2026Q1 半导体在手订单同比增 82%（经济观察网 2026-05-24，<strong>单源·置信度低</strong>）。库内可交叉印证的是半导体收入确在增长（H1 占比 61.26%、增 34.65%，财联社 2026-08-28）。</li>
+<li><strong>阶段性优势（置信度：中）</strong>——<strong>技术路线卡位</strong>。可转债募投明确聚焦 248nm / 193nm 深紫外波段光学器件与物镜镜头，对应 DUV 光刻机投影与照明系统规格（上交所问询函回复 2025-07-17）；募投项目已于 2025-07-09 取得环评批复。</li>
+<li><strong>结构性护城河：从库内信息看不出</strong>（置信度：低）。库内公司档案只给出主营与经营范围，<strong>没有专利数、没有客户集中度、没有单项技术市占率</strong>。而 2026H1 毛利率被单一大客户结构性拉低 8.70 个百分点（财联社 2026-08-28），<strong>本身就说明议价能力有限</strong>——真有结构性护城河的供应商，不会因为一个客户放量就让出近 9 个点毛利。（置信度：中，为推论）</li>
+</ul>
+<p><strong>商业模式一句话</strong>：定制化精密光学器件 / 镜头 / 系统的项目制供应，收入随下游设备厂商资本开支波动，<strong>利润率取决于客户结构而非自身定价权</strong>。（置信度：中）</p>
+<h2>F. 政策与监管</h2>
+<p>库内无政策字段，本节全部为联网信息，逐条带来源与日期。</p>
+<ol>
+<li><strong>先进光刻机及核心零部件已列入国家重大科技专项优先方向</strong>：科技部与工信部将其纳入「十四五」国家重大科技专项优先方向，累计投入超 200 亿元；2026 年中央科技委成立专班统筹 EUV 与 28nm DUV 光刻量产（中金在线财经号《半导体设备行业：国产替代下的 2026 年前景展望》；麦姆斯咨询《中国大陆半导体设备产业-2026 版》2026-05）。<strong>传导链条</strong>：国家专项 → DUV 光刻整机与零部件国产化 → 光学物镜 / 照明系统需求 → 公司可转债募投方向（248nm/193nm）直接受益。<strong>方向：利好</strong>。（置信度：中，两源同向但均为二手汇编）</li>
+<li><strong>地方半导体产业基金持续加码</strong>：上海、北京、深圳、合肥设立半导体产业基金，上海 2025 年投入 500 亿元支持上海微电子扩产与研发（同上两源）。<strong>传导</strong>：整机厂扩产 → 上游光学件订单。<strong>方向：利好</strong>。（置信度：低，单一口径且未见公司直接关联）</li>
+<li><strong>大基金二期年内投向三家半导体检测 / 量测公司</strong>（中科飞测方向、晶圆检测、上海精测等，中金在线 2026）。<strong>方向：中性偏利好</strong>——资金流入量检测赛道抬升景气，但同时<strong>扶持的是茂莱的下游客户与潜在竞争对手</strong>，不必然利好公司本身。（置信度：低，单源）</li>
+<li><strong>量测检测设备国产化率 2025 年约 12%</strong>（麦姆斯咨询 2026-05）。<strong>方向：中性</strong>——空间大，但也说明这条赛道仍以海外设备商为主，公司的国际客户属性既是优势也是<strong>地缘政策敞口</strong>。（置信度：低，单源）</li>
+</ol>
+<p><strong>监管风险提示</strong>：公司业务涉及半导体光刻链条与国际客户，出口管制 / 实体清单类事件属于<strong>尾部但高影响</strong>的监管变量。<strong>库内与联网均未查到该公司被列入任何管制名单的信息</strong>，此处不做任何推测。（置信度：不适用，属信息缺口，见 M 节）</p>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 13 个同花顺概念标签，逐个分级：</p>
+<p><strong>真有业务（有营收或主营描述佐证）</strong></p>
+<ul>
+<li><strong>光刻机</strong>（886054.TI）——半导体领域 H1 占营收 <strong>61.26%</strong>（财联社 2026-08-28），可转债募投直指 DUV 光刻物镜与照明（问询函回复 2025-07-17）。（置信度：高）</li>
+<li><strong>芯片概念</strong>（885756.TI）——同上，半导体量检测与光刻配套是第一大收入来源。（置信度：高）</li>
+<li><strong>虚拟现实</strong>（885709.TI）——AR/VR 检测领域 H1 占营收 <strong>13.04%</strong>、收入增 <strong>168.93%</strong>，是增速最快的板块（财联社 2026-08-28）。（置信度：高）</li>
+<li><strong>基因测序</strong>（885578.TI）——生命科学领域 H1 占营收 <strong>11.66%</strong>（同上），且库内公司介绍点名「基因测序及核酸检测」。（置信度：中高）</li>
+<li><strong>无人驾驶</strong>（885736.TI）——H1 占营收 <strong>1.95%</strong>（同上）。<strong>真有业务，但占比极小，对业绩几无影响</strong>。（置信度：高）</li>
+<li><strong>机器视觉</strong>（886002.TI）——公司主营含光学检测镜头与定制化检测设备（库内公司简介），但<strong>财报未单独拆分该口径营收</strong>，属「有主营描述佐证、无独立营收佐证」。（置信度：中）</li>
+</ul>
+<p><strong>仅概念标签，未见营收佐证</strong></p>
+<ul>
+<li><strong>光刻胶</strong>（885864.TI）——公司做光学器件，<strong>不生产光刻胶</strong>，仅因同属光刻链条被打标。（置信度：高，属明确的标签错配）</li>
+<li><strong>眼科医疗</strong>（885838.TI）——库内主营与经营范围、以及各领域收入拆分中<strong>均无眼科相关项</strong>。（置信度：中高）</li>
+<li><strong>智能穿戴</strong>（885454.TI）——公司做的是 AR/VR <strong>检测设备</strong>的光学件，不是穿戴产品本身；财报无「智能穿戴」独立营收口径。<strong>属相邻不属本体</strong>。（置信度：中）</li>
+</ul>
+<p><strong>非业务类标签（资质 / 财务 / 交易属性）</strong></p>
+<ul>
+<li><strong>专精特新</strong>（885929.TI）——资质标签。</li>
+<li><strong>沪股通</strong>（885520.TI）/ <strong>融资融券</strong>（885338.TI）——交易属性标签，与业务无关。</li>
+<li><strong>人民币贬值受益</strong>（885840.TI）——⚠️ <strong>该标签与本期实际方向相反</strong>：公司 2026H1 因汇率波动产生<strong>汇兑损失 666.86 万元</strong>、财务费用同比增 668.55%（上海证券报 2026-08-29 / 界面新闻 2026-08-28）。<strong>该标签本期是负贡献而非受益</strong>。（置信度：中高，为标签与公告事实的直接冲突）</li>
+</ul>
+<p><strong>产业链位置</strong></p>
+<ul>
+<li><strong>上游</strong>：光学玻璃 / 晶体原材料、镀膜材料、精密加工与检测装备。议价能力：一般（原材料通用性较强）。</li>
+<li><strong>本体</strong>：精密光学器件 → 镜头 → 光学系统 / 仪器的集成，「光机电算」一体化 + 主动装调是环节壁垒所在。</li>
+<li><strong>下游</strong>：半导体光刻整机与量检测设备厂商（占 61.26%）、AR/VR 检测设备厂（13.04%）、生命科学仪器厂（11.66%）。<strong>议价能力明显在下游</strong>——证据即 H1 因单一大客户放量导致综合毛利率下滑 8.70 个百分点。（置信度：中高）</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<p><strong>新闻（库内新闻）</strong>：⚠️ <strong>返回空</strong>。为确认边界，另以 120 天与 365 天窗口复查，<strong>同样为 0 条</strong>——这不是「近期无消息」，而是<strong>库内新闻池对 688502 完全无覆盖</strong>。本节的消息面证据因此全部来自联网公告与媒体，已逐条标来源。（置信度：高，边界已核实）</p>
+<p>联网补的关键事件（按时间倒序，每条注明对基本面有无实质影响）：</p>
+<ol>
+<li><strong>2026-08-28 / 29 · 2026 年半年报披露</strong>——营收 4.27 亿元 +34.0%、归母净利 -1342 万元、扣非净利 <strong>-1703 万元</strong>（同比 -158.3%）；Q2 单季营收 2.44 亿元 +38.3%、Q2 归母净利 -231 万元（财联社 2026-08-28）。<strong>实质影响：有，且是负面的</strong>——但 Q2 亏损（-231 万）显著小于 Q1（据 Q1 净利 -0.11 亿元与 H1 -0.13 亿元推算），<strong>季度环比在改善</strong>。（置信度：高，库内 H1/Q1 数字与外部报道一致）</li>
+<li><strong>2026-08-29 · 半年度计提资产减值准备公告</strong>——信用减值 402.05 万元、存货跌价 1505.79 万元，合计 1907.84 万元（中财网）。<strong>实质影响：有</strong>，存货跌价指向备货质量或产品降价压力。</li>
+<li><strong>2026-08-29 · 公告将于 2026-09-17 15:00-16:00 召开半年度业绩说明会</strong>，投资者提问窗口 09-10 至 09-16（上海证券报 / 中财网）。<strong>实质影响：暂无，但是最近的一次口径校准机会</strong>。</li>
+<li><strong>2026-07-04 · 关于不提前赎回「茂莱转债」的公告</strong>——2026-05-28 至 2026-07-03 期间，公司股票已满足「连续 30 个交易日中有 15 个交易日收盘价不低于当期转股价 130%」的有条件赎回条件；转股价 2026-06-22 起由 364.43 元/股调整为 <strong>364.15 元/股</strong>；公司决定<strong>不行使</strong>提前赎回权，并承诺<strong>2026-07-04 至 2026-10-03 期间再次触发也不行使</strong>（上海证券报 2026-07-04，公告原文）。<strong>实质影响：有</strong>——短期解除了强制转股的摊薄加速压力，但<strong>该承诺窗口在 W5 内到期</strong>。</li>
+<li><strong>2026-05-27 · 「茂莱转债」进入转股期</strong>（发行 5.625 亿元，2025-11-21 发行、2025-12-10 上市，代码 118061，到期 2031-11-20）（新浪财经 2026-05-21 / 上交所问询函回复）。<strong>实质影响：有</strong>，中期股本摊薄来源。</li>
+<li><strong>2026-02-11 · 2026 年限制性股票激励计划授予公告</strong>——授予价 <strong>204.50 元/股</strong>，授予 248,093 股，占总股本 52,800,000 股的 0.47%；考核目标为<strong>以 2024 年营收为基数，2026 年营收增长率不低于 50%、2027 年不低于 70%</strong>（激励计划草案 2026-01-22 及授予公告）。</li>
+</ol>
+<p>⚠️ <strong>这个目标门槛偏低</strong>：据库内 FY2025 营收 6.91 亿元与同比 +37.42% 反推，2024 年营收约 <strong>5.03 亿元</strong>；则 2026 年考核线约 <strong>7.54 亿元</strong>（推算），仅比 FY2025 高约 <strong>9.2%</strong>（推算）。而 2026H1 已完成 4.27 亿元。<strong>结论：营收考核目标大概率轻松达标，因此它对市场几乎不提供增量信息，也不构成管理层对高增速的承诺</strong>。（置信度：中，关键中间值为派生）</p>
+<ol>
+<li><strong>2026-05-24 · 一季度半导体在手订单同比增 82%</strong>（经济观察网）。<strong>单源未交叉验证·置信度低</strong>。</li>
+<li><strong>2026-08-06 · 融资余额 5.65 亿元</strong>（东方财富）。以推算市值 215.9 亿元计约占 2.6%（推算）。<strong>单源·置信度低</strong>，仅作杠杆资金体量参照。</li>
+</ol>
+<p><strong>涨停史（库内涨停记录，近 180 日）</strong></p>
+<ul>
+<li>仅 <strong>1 次</strong>：2026-06-30，涨幅 <strong>20.0%</strong>（科创板 20cm），连板数 <strong>1</strong>，首次封板 <strong>13:57:18</strong>、最后封板同一时刻，<strong>开板 0 次</strong>，封单金额 <strong>0.47 亿元</strong>，库内行业标注「光学光电」，涨停统计 = 1/1。</li>
+<li><strong>读法</strong>：近半年只有一次涨停，且是下午近尾盘才封、封单不算厚，属于<strong>一次性情绪脉冲，没有形成连板效应</strong>。说明该票<strong>不是游资主战场</strong>，定价更依赖机构与基本面预期。（置信度：中高）</li>
+</ul>
+<p><strong>资金与筹码（库内资金筹码）</strong>——⚠️ 以下属盘面现象，<strong>不作为 J 节逻辑链论据，也不单独支撑任何操作结论</strong></p>
+<ul>
+<li><strong>资金流</strong>（近 20 个交易日，2026-08-07 至 2026-09-03）：特大单（主力）净流入 <strong>-2.18 亿元</strong>，整体净流入 <strong>-0.57 亿元</strong>；净流入为正 <strong>8 天</strong>、为负 <strong>12 天</strong>。<strong>主力资金持续净流出，且流出规模大于整体，意味着大单在减、小单在接</strong>。（置信度：高，为库内聚合值）</li>
+<li><strong>筹码分布</strong>：筹码分布返回 None ——<strong>筹码数据库内仅覆盖关注票，该票暂无</strong>（是数据覆盖范围问题，不是事实缺失）。因此本报告<strong>无法给出获利盘比例（获利盘比例）的两面分析</strong>，套牢盘密度与获利抛压均无从量化。见 M 节。</li>
+<li><strong>股东户数</strong>：截至 <strong>2026-06-30</strong> 为 <strong>10,892 户</strong>；上一报告期与均为 None，<strong>无环比可比数据</strong>，无法判断筹码趋散还是趋集中。季度披露天然滞后，当前已过去两个多月。（置信度：不适用）</li>
+</ul>
+<p><strong>情绪面小结</strong>：主力资金 20 日净流出、无连板效应、当日 -3.33%（14:10）——<strong>情绪面偏冷，与「营收高增」的叙事不同步</strong>。（置信度：中）</p>
+<h2>I. 未来 13 周事件日历</h2>
+<p>（周起始按自然周一；库内事件日历（近 120 日）命中的均为<strong>概念关联事件</strong>、非公司自身事件，已标注）</p>
+<ul>
+<li><strong>W1（2026-08-31 起）</strong>：本周无新增已知公司事件 · 半年报已于 08-28/29 披露完毕 · 重要性低 · 影响：库内估值基准日 09-03 落于本周</li>
+<li><strong>W2（2026-09-07 起）</strong>：
+<ul>
+<li>09-08 · 小米 18 Fold 折叠屏发布（首发自研玄戒 O3 芯片）· 公司事件 · 库内重要性 6 · 概念 885756 · 影响：消费电子链情绪，对 688502 为<strong>间接、弱</strong></li>
+<li>09-09~09-11 · <strong>IICIE 国际集成电路创新博览会（深圳，与光博会同期）</strong> · 会议 · 库内重要性 6 · 概念 885756 · 影响：本周与公司主业最相关的一场，半导体设备板块阶段性催化</li>
+<li>09-10~09-16 · 半年度业绩说明会<strong>提问窗口开放</strong>（上证路演中心）· 公司事件 · 重要性中 · 来源：上海证券报 2026-08-29</li>
+<li>09-13 · ADI 上调全线产品价格 · 公司事件 · 库内重要性 6 · 影响：半导体涨价链信号，对本票<strong>间接</strong></li>
+</ul></li>
+<li><strong>W3（2026-09-14 起）</strong>：
+<ul>
+<li>09-15 · 英伟达中国特供 B30A 送样 · 公司事件 · 库内重要性 6 · 影响：算力链情绪，对本票<strong>间接</strong></li>
+<li><strong>09-17 15:00-16:00 · 公司 2026 半年度业绩说明会</strong> · 公司事件 · <strong>重要性高</strong> · 来源：上海证券报 2026-08-29 · 影响：<strong>验证 A 节信号一</strong>——管理层对毛利率见底时点与大客户结构的口径</li>
+</ul></li>
+<li><strong>W4（2026-09-21 起）</strong>：
+<ul>
+<li>09-22~24 · 2026 世界新能源汽车大会（海口）· 会议 · 库内重要性 7 · 概念 885736 · 影响：对应无人驾驶业务（仅占营收 1.95%），<strong>影响很小</strong></li>
+<li><strong>09-23~24 · Meta Connect 2026（发布 AI 眼镜新品）</strong> · 会议 · 库内重要性 7 · 概念 885709 · 影响：<strong>对应 AR/VR 检测业务（占营收 13.04%、增速 168.93%），本周相关性最高</strong></li>
+<li>09-23 · 华为 Mate 90 系列发布（首发新麒麟芯片）· 公司事件 · 库内重要性 7 · 影响：国产芯片链情绪</li>
+<li>09-23~25 · 高通骁龙峰会（首款 2nm 旗舰芯片）· 会议 · 库内重要性 7 · 影响：先进制程资本开支预期</li>
+</ul></li>
+<li><strong>W5（2026-09-28 起）</strong>：
+<ul>
+<li>09-30 · 美光公布 2026 财年 Q4 财报 · 公司事件 · <strong>库内重要性 8（本次事件池最高）</strong> · 影响：全球半导体资本开支风向标，间接影响设备链景气预期</li>
+<li><strong>10-03 · 「茂莱转债」不提前赎回承诺窗口到期</strong>（承诺期 2026-07-04 至 2026-10-03）· 公司事件 · <strong>重要性高</strong> · 来源：公告 2026-07-04 · 影响：10-04 起若再次触发有条件赎回条款，公司可自主选择是否行使</li>
+<li>10-01 起 · 国庆假期 A 股休市（按历年惯例推断，非公司公告）· 重要性中 · 影响：交易日缺口</li>
+</ul></li>
+<li><strong>W6（2026-10-05 起）</strong>：假期后复市周 · 本周无已知公司事件 · 重要性低</li>
+<li><strong>W7（2026-10-12 起）</strong>：三季报披露窗口开启 · 财报 · 重要性中 · 影响：具体预约披露日<strong>未查到</strong>（见 M 节），科创板法定截止为 10-31</li>
+<li><strong>W8（2026-10-19 起）</strong>：三季报披露窗口（多数科创板公司集中于本周至下周）· 财报 · 重要性中</li>
+<li><strong>W9（2026-10-26 起）</strong>：<strong>10-31 · 2026 年三季报法定披露截止</strong> · 财报 · <strong>重要性最高</strong> · 影响：<strong>验证 A 节信号二</strong>——单季毛利率对 2026H1 的 40.95% 是否环比回升、经营现金流是否收窄、前三季净利是否转正；同时是 J 节整条逻辑链的证伪点</li>
+<li><strong>W10（2026-11-02 起）</strong>：三季报后机构调研 / 业绩说明会窗口 · 重要性中 · 影响：具体日期无公告，<strong>本周无已知确定事件</strong></li>
+<li><strong>W11（2026-11-09 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-11-16 起）</strong>：11-21 前后 · 「茂莱转债」发行满一年、首个计息年度付息节点临近（据发行日 2025-11-21 与 6 年期条款按惯例推断，非公司公告）· 重要性低</li>
+<li><strong>W13（2026-11-23 起）</strong>：本周无已知事件</li>
+</ul>
+<h2>J. 逻辑链</h2>
+<p><strong>主链（每环标置信度）</strong></p>
+<ol>
+<li>因为 <strong>半导体设备行业景气上行</strong>（SEMI 2026-07-14：2026 年全球设备销售 1659 亿美元 +23.2%，测试设备 +31% 至 153 亿美元，三源交叉）〔置信度：中〕</li>
+<li>且 <strong>公司半导体收入确在同步增长</strong>（H1 半导体占营收 61.26%、收入增 34.65%；总营收 +33.97%，库内）〔置信度：高〕</li>
+<li>且 <strong>AR/VR 检测成为第二增长极</strong>（H1 占 13.04%、收入增 168.93%）〔置信度：高〕</li>
+<li>→ <strong>所以营收端的成长叙事是真实的、可被库内数字验证的</strong>〔置信度：高〕</li>
+<li>但是 <strong>增长是以毛利换来的</strong>：毛利率从 FY2025 的 46.71% 降至 40.95%，公司自述主因为「某国际半导体量检测客户业务量显著提升但毛利较低」+ 主动下调部分产品售价（财联社 2026-08-28）〔置信度：高〕</li>
+<li>且 <strong>叠加融资成本与激励费用</strong>：可转债利息 1356.59 万元、股权激励 1179.33 万元、汇兑损失 666.86 万元（公告）〔置信度：中高〕</li>
+<li>且 <strong>经营现金流由 +752.51 万元转为 -8309.19 万元</strong>，同时计提存货跌价 1505.79 万元（公告）〔置信度：高〕</li>
+<li>→ <strong>所以当前是「用利润表和现金流表换收入规模」的扩张阶段</strong>〔置信度：中高〕</li>
+<li>→ <strong>如果这条推论成立，应该能观察到</strong>：(a) 三季报单季毛利率<strong>仍在 40% 附近或更低</strong>而非回到 46% 以上；(b) 三季度经营现金流仍为负或仅小幅改善；(c) 存货 / 应收继续同向增长；(d) 卖方对 2026 年盈利预测被下修〔置信度：中〕</li>
+<li>→ <strong>反证条件（这条链错了会看到什么）</strong>：三季报单季毛利率较 40.95% 环比回升 3 个百分点以上、且经营现金流转正——那说明低毛利客户只是导入期让价，公司议价能力被我低估了。</li>
+</ol>
+<p><strong>最弱的一环（整条链的命门）</strong>：<strong>第 5 环的持续性判断</strong>。我把「大客户低毛利」当成会延续的结构性问题，但<strong>库内和公开披露都没有该客户的合同期限、定价机制、后续毛利率爬坡安排</strong>。这是一条<strong>基于单次财报表述的外推</strong>，样本只有一期半（Q1 40.36%、H1 40.95%）。若该客户订单在规模摊薄后毛利改善，第 8 环及之后全部需要重写。〔置信度：低——这一环本身就是全链最不确定的〕</p>
+<p><strong>第二弱环</strong>：第 1 环的行业景气→公司订单传导。SEMI 预测是<strong>全球口径</strong>，而公司下游是特定几家设备厂商，<strong>行业增长不等于该公司订单增长</strong>。库内无订单数据，联网订单数字（1.94 亿元、在手订单 +82%）均为<strong>单源未交叉验证</strong>。〔置信度：低〕</p>
+<p><strong>卖方观点（严格单列，不与上述事实混陈）</strong></p>
+<ul>
+<li>〔卖方预期〕来源：国金证券研报（库内研报）· 日期：2026-06-09 · 观点：2026Q4 口径 EPS 1.673 元、归母净利 8800 万元、对应 PE 276.2；2027 年 EPS 2.589 元、净利 1.37 亿元、PE 178.51；2028 年 EPS 4.202 元、净利 2.22 亿元、PE 109.98；给予最高档正面评级 · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：国金证券研报《深耕精密光学，半导体领域空间广阔》（库内研报标题）· 日期：2026-06-10 · 观点：看好半导体领域成长空间 · 置信度：低</li>
+<li><strong>库内研报覆盖极薄</strong>：近 90 天窗口内仅 <strong>1 家机构、1 篇研报</strong>，评级分布 {最高档正面评级: 1}。<strong>单一机构覆盖不构成市场共识</strong>。（置信度：高，为库内元数据）</li>
+<li>⚠️ <strong>必须与事实并置的时点问题</strong>：该研报发布于 <strong>2026-06-09/10</strong>，而半年报披露于 <strong>2026-08-28</strong>。<strong>预测 8800 万元 vs 上半年实际 -1341.62 万元</strong>（库内），要兑现需下半年净利约 1.01 亿元（推算），是 2025 全年净利 0.46 亿元的 2.2 倍（推算）。<strong>该预测在半年报后大概率面临下修，读者不应把它当作当前市场预期。</strong>（置信度：高，为算术判断而非对研报的评价）</li>
+</ul>
+<h2>K. 三情景推演（13 周维度，概率合计 100%）</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜<strong>触发</strong>：2026 三季报（W9，法定截止 10-31）显示单季毛利率较 2026H1 的 40.95% 环比回升 3 个百分点以上，<strong>且</strong> 前三季经营活动现金流净额较半年度的 -8309.19 万元明显收窄或转正，<strong>且</strong> 前三季归母净利转正｜<strong>路径</strong>：市场确认「低毛利只是导入期代价」，成长叙事重新占主导，估值中枢向上修复，走势由 J 节第 5 环被证伪驱动</li>
+<li><strong>中性（45%）</strong>｜<strong>触发</strong>：三季报营收同比仍维持在 +25%~+35% 区间（对照 H1 的 +33.97%），但单季毛利率仍在 40% 附近、前三季净利仍在盈亏平衡附近（绝对值小于 0.2 亿元）｜<strong>路径</strong>：多空都拿不到决定性证据，跟随半导体设备板块 beta 宽幅震荡，成交与主力资金流向反复，直到年报或次年一季报才给出方向</li>
+<li><strong>悲观（30%）</strong>｜<strong>触发</strong>：三季报单季毛利率低于 2026H1 的 40.95%，<strong>或</strong> 前三季亏损较半年度的 -0.13 亿元进一步扩大，<strong>或</strong> 再次计提存货跌价（半年度已计提 1505.79 万元），<strong>或</strong> 出现券商将 2026 年净利预测由 8800 万元大幅下修的公开研报｜<strong>路径</strong>：以 PB 18.85 定价的成长预期被迫重估，叠加主力资金 20 日净流出的既有格局，估值向同行业 PE 中位数与可比 PB 方向收敛</li>
+</ul>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong>（触发条件全部来自本报告出现过的指标或事件，可被后来的人拿数据核对）</p>
+<ol>
+<li><strong>如果</strong> 2026 三季报（W9，法定披露截止 10-31）显示单季毛利率较 2026H1 的 40.95% 环比回升 3 个百分点以上，<strong>且</strong> 前三季经营活动现金流净额较半年度的 -8309.19 万元明显收窄，<strong>那么</strong> 可轻仓试仓。</li>
+<li><strong>如果</strong> 三季报显示单季毛利率仍低于 2026H1 的 40.95%，<strong>或</strong> 前三季归母净利亏损较半年度的 -0.13 亿元进一步扩大，<strong>那么</strong> 回避；已有仓位倾向减仓。</li>
+<li><strong>如果</strong> 股价跌破茂莱转债转股价 364.15 元（2026-06-22 起生效的当期转股价），<strong>那么</strong> 观望——该刻度以下转债转股动力消失，通常意味着市场已开始为盈利下修定价，此时应等三季报数据落地再评估。</li>
+<li><strong>如果</strong> 2026-10-04 之后（不提前赎回承诺窗口于 10-03 到期）股价重新站上茂莱转债有条件赎回触发线＝转股价 364.15 元的 130%（据转股价推算 473.40 元）并持续满足「30 个交易日中 15 日」条件，<strong>且</strong> 公司公告本次行使提前赎回权，<strong>那么</strong> 需将转股摊薄加速计入判断，倾向减仓。</li>
+<li><strong>如果</strong> 9-17 业绩说明会（W3）上管理层明确给出「低毛利大客户占比将继续上升」的口径，<strong>那么</strong> 观望，并把 K 节悲观情景的权重上调。</li>
+</ol>
+<p><strong>风控要点（这笔判断在什么情况下应当被推翻）</strong></p>
+<ul>
+<li><strong>推翻条件 A（看多方向被证实）</strong>：三季报单季毛利率回到 46% 附近（对照 FY2025 的 46.71%）——则 J 节第 5 环被证伪，本报告「结构性毛利稀释」的核心假设失效，需整篇重写。</li>
+<li><strong>推翻条件 B（看空方向被证实）</strong>：出现新的减值计提，或经营现金流连续两期为负且规模扩大——则 K 节悲观权重应显著上调。</li>
+<li><strong>推翻条件 C（数据基础失效）</strong>：库内新闻对该票的 365 天零覆盖若在后续被补齐，H 节情绪面结论需重新检视——当前 H 节的库内证据比常规报告薄一档。</li>
+<li><strong>不作为推翻依据的</strong>：主力资金 20 日净流出 2.18 亿元、股东户数、单日 -3.33% 涨跌——这些是盘面现象，<strong>不构成基本面证伪</strong>。</li>
+</ul>
+<p><strong>仓位思路（只讲相对概念，不给金额、不给股数）</strong></p>
+<ul>
+<li>在三季报落地前（W1–W8），信息密度低而估值张力高（PB 18.85、TTM 净利趋零），<strong>倾向不参与或极轻仓观察</strong>。</li>
+<li>若触发条件 1，<strong>轻仓</strong>为宜；即便乐观情景兑现，单一机构覆盖（1 家 1 篇）+ 无筹码数据 + 新闻库零覆盖，意味着这只票的<strong>信息可得性本身就低于常规标的</strong>，不支持中重仓。</li>
+<li>该票日内振幅接近 6.9 个百分点（2026-09-04 14:10，据 high_pct 与 low_pct 推算）且为 20cm 涨跌幅品种，<strong>波动本身就要求更小的单位仓位</strong>。</li>
+</ul>
+<h2>M. 逻辑自查</h2>
+<p><strong>这份判断最依赖的假设是哪一条？错了会怎样？</strong></p>
+<p>最依赖 <strong>「2026H1 的毛利率下滑是结构性的、会延续到下半年」</strong>。它来自公司自己的表述（「某国际半导体量检测客户业务量显著提升但毛利较低」，财联社 2026-08-28）加上两期数据（Q1 40.36%、H1 40.95%）的外推。 <strong>如果错了</strong>：三季报毛利率回到 46% 附近，则 J 节第 5–8 环全部作废，K 节 25% 的乐观概率给低了，L 节第 2、5 条操作倾向方向反了。<strong>这是整份报告风险最集中的单点。</strong></p>
+<p><strong>有没有为了让逻辑好看而忽略的反面证据？</strong></p>
+<p>有三条，在此明确列出：</p>
+<ol>
+<li><strong>Q2 亏损是环比收窄的</strong>——Q1 归母净利约 -0.11 亿元，Q2 约 -231 万元（财联社 2026-08-28），H1 毛利率 40.95% 也较 Q1 的 40.36% 回升 0.59 个百分点。<strong>这是支持乐观情景的证据，我在 A 节没有给它足够权重</strong>，只在 H 节第 1 条提了一句。</li>
+<li><strong>减值 1907.84 万元大于净亏损 1341.62 万元</strong>——虽口径不可严格相减，但量级上提示<strong>剔除减值后主营未必亏损</strong>。我在 C 节标了置信度中，但没让它影响方向判断。</li>
+<li><strong>公司未行使转债提前赎回权（2026-07-04 公告）</strong>——通常被解读为管理层不急于摊薄、对后市有一定信心。我把它当中性事件处理，这可能偏保守。</li>
+</ol>
+<p>以上三条合并起来，足以支撑一个比「震荡」更偏正面的判断。我最终仍取「震荡（置信度：中）」，理由是<strong>经营现金流 -8309.19 万元这一条太硬</strong>，而它无法被上述三条抵消。</p>
+<p><strong>信息缺口清单</strong></p>
+<ol>
+<li><strong>库内新闻池对 688502 完全无覆盖</strong>。库内新闻在 60 / 120 / 365 天三个窗口均返回 0 条（已实测边界）。<strong>影响</strong>：H 节消息面完全依赖联网，无法用库内统一口径做时序对比，情绪面证据强度低一档。<strong>补法</strong>：确认新闻采集是否覆盖科创板小市值票；在覆盖补齐后重跑本调研。</li>
+<li><strong>筹码数据缺失</strong>。库内资金筹码返回 None——<strong>筹码数据库内仅覆盖关注票，该票暂无</strong>（数据范围问题，非事实缺失）。<strong>影响</strong>：无法给出获利盘比例（获利盘比例）的两面分析，H 节缺少「套牢盘密度 / 获利抛压」这一维；L 节的价位锚只能用转股价，用不上筹码分位成本。<strong>补法</strong>：若该票被纳入关注票池，重跑后 H、L 两节可补全。</li>
+<li><strong>股东户数无环比</strong>。股东户数仅有 2026-06-30 的 10,892 户，上一报告期 / 均为 None。<strong>影响</strong>：无法判断筹码趋散或趋集中。<strong>补法</strong>：三季报披露后（W9）该字段应有新值与可比基期。</li>
+<li><strong>库内财务无现金流量表与费用明细字段</strong>。库内财务只到营收 / 净利 / 毛利率 / 净利率 / ROE / 资产负债率 / EPS。<strong>影响</strong>：C 节最关键的「经营现金流 -8309.19 万元」「研发占比 12.11%」「股权激励 1179.33 万元 / 可转债利息 1356.59 万元 / 汇兑损失 666.86 万元」全部来自联网公告。<strong>已交叉验证</strong>：库内净利 -13,416,217.52 元与外部披露的 -1341.62 万元、库内营收 4.27 亿 +33.97% 与外部 4.27 亿 +34.0%、库内毛利率 40.949% 与外部 40.95% <strong>三处完全吻合</strong>，说明两侧数据同源可信；但库内不覆盖的字段无法用库内口径复核。<strong>补法</strong>：若后续为库内财务增补现金流字段，可去掉这层依赖。</li>
+<li><strong>同行对比失真</strong>。库内同业对比返回的立讯精密 / 生益科技 / 东山精密均为千亿级消费电子与覆铜板厂商，<strong>与精密光学不同赛道</strong>。<strong>影响</strong>：D 节的横向对比只能做估值定性、做不了业务可比。<strong>补法</strong>：手工指定半导体量检测 / 光刻配套可比公司重跑对比。</li>
+<li><strong>PB 口径待核</strong>。库内 PB 18.85（9-03）对应的每股净资产，与公告归母净资产 12.50 亿元推算的结果存在约 5% 差异（推算），<strong>可能与可转债权益成分拆分有关，未经核实</strong>（置信度：低）。<strong>影响</strong>：D 节 PB 横向比较的精度受限，方向结论不受影响。</li>
+<li><strong>三季报预约披露具体日期未查到</strong>。多次检索未获公司公告的预约日。I 节 W7–W9 只能按科创板法定截止 10-31 铺开。<strong>影响</strong>：最关键的验证时点在三周区间内浮动。<strong>补法</strong>：上交所披露时间表更新后确认到具体日。</li>
+<li><strong>订单类数据全部单源</strong>。「累计获得国际量检测客户订单约 1.94 亿元」（九方智投）、「一季度半导体在手订单同比 +82%」（经济观察网 2026-05-24）均<strong>单源未交叉验证·置信度低</strong>，已在 E、H 两节标注。<strong>影响</strong>：E 节护城河定级只能停在「阶段性优势」，不能升级。</li>
+<li><strong>无出口管制 / 实体清单相关信息</strong>。库内与联网均未查到该公司相关记录，F 节因此未做任何推测。<strong>影响</strong>：地缘政策这一尾部风险无法量化。</li>
+</ol>
+<p><strong>取数点覆盖说明</strong>：本次 12 个库内取数全部调用。库内 A/H 对照返回 None（非 A+H 两地上市，按规约不落笔）；库内新闻返回空、库内资金筹码返回 None，两者的缺口成因与影响已在上方第 1、2 条写明——<strong>均为有意标注，非遗漏</strong>。</p>
+<p><strong>来源（联网部分）</strong></p>
+<ul>
+<li><a href="https://www.jiemian.com/article/15033398.html" target="_blank" rel="noopener">茂莱光学(688502.SH)2026年中报净利润为-1341.62万元，由盈转亏 · 界面新闻 · 2026-08-28</a></li>
+<li><a href="https://www.cls.cn/detail/2468329" target="_blank" rel="noopener">茂莱光学上半年收入同步增34% 低毛利产品占比提升 · 财联社 · 2026-08-28</a></li>
+<li><a href="https://paper.cnstock.com/html/2026-08/29/content_2262568.htm" target="_blank" rel="noopener">南京茂莱光学科技股份有限公司2026年半年度报告摘要 · 上海证券报 · 2026-08-29</a></li>
+<li><a href="https://www.cfi.net.cn/p20260828005243.html" target="_blank" rel="noopener">茂莱光学(688502)：2026年半年度报告摘要 · 中财网 · 2026-08-28</a></li>
+<li><a href="https://www.cfi.net.cn/p20260828005277.html" target="_blank" rel="noopener">茂莱光学(688502)：公司2026年半年度计提资产减值准备 · 中财网 · 2026-08-29</a></li>
+<li><a href="https://paper.cnstock.com/html/2026-07/04/content_2239554.htm" target="_blank" rel="noopener">关于不提前赎回&quot;茂莱转债&quot;的公告 · 上海证券报 · 2026-07-04</a></li>
+<li><a href="https://static.sse.com.cn/stock/disclosure/announcement/c/202507/688502_20250717_HCLA.pdf" target="_blank" rel="noopener">向不特定对象发行可转换公司债券申请文件审核问询函的回复 · 上交所 · 2025-07-17</a></li>
+<li><a href="https://file.finance.qq.com/finance/hs/pdf/2026/01/22/1224944122.PDF" target="_blank" rel="noopener">2026年限制性股票激励计划（草案）· 2026-01-22</a></li>
+<li><a href="https://vip.stock.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?stockid=688502&amp;id=11960258" target="_blank" rel="noopener">关于向2026年限制性股票激励计划激励对象授予限制性股票的公告 · 新浪财经</a></li>
+<li><a href="https://finance.sina.com.cn/stock/estate/integration/2026-07-24/doc-iniiwkup4979098.shtml" target="_blank" rel="noopener">SEMI预测2026年半导体设备销售额增长23.2%至1659亿美元 · 新浪财经 · 2026-07-24</a></li>
+<li><a href="https://cepea.com/?list_29%2F749.html=" target="_blank" rel="noopener">SEMI报告：2026年全球半导体设备销售额预计达1659亿美元 · 中国电子专用设备工业协会</a></li>
+<li><a href="https://sputniknews.cn/20260714/1072327529.html" target="_blank" rel="noopener">SEMI：2026年全球半导体设备销售额将创历史新高 · 俄罗斯卫星通讯社 · 2026-07-14</a></li>
+<li><a href="http://mp.cnfol.com/58822/article/1767931218-142205664.html" target="_blank" rel="noopener">半导体设备行业：国产替代下的2026年前景展望 · 中金在线财经号</a></li>
+<li><a href="https://www.mems.me/mems/equipment_material_202605/13987.html" target="_blank" rel="noopener">《中国大陆半导体设备产业-2026版》· 麦姆斯咨询 · 2026-05</a></li>
+<li><a href="http://www.eeo.com.cn/2026/0524/888465.shtml" target="_blank" rel="noopener">茂莱光学2026年一季度营收增长半导体在手订单同比增82% · 经济观察网 · 2026-05-24</a></li>
+<li><a href="https://www.9fzt.com/9fztgw_1_bottom_B/809946fc65b9c0ec53a332dd1c5d438a.html" target="_blank" rel="noopener">【公司研究】茂莱光学：深耕光学领域发力半导体与光通信 · 九方智投</a></li>
+<li><a href="https://finance.sina.com.cn/roll/2026-05-21/doc-inhyquqc8480409.shtml" target="_blank" rel="noopener">关于&quot;茂莱转债&quot;开始转股的公告 · 新浪财经 · 2026-05-21</a></li>
+<li><a href="https://finance.eastmoney.com/a/202608063833119980.html" target="_blank" rel="noopener">茂莱光学：融资余额相关数据 · 东方财富 · 2026-08-06</a></li>
+<li><a href="https://www.eet-china.com/mp/a509382.html" target="_blank" rel="noopener">2026年AR眼镜上半场 · 电子工程专辑</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-04），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>毛利率同比降8.70个百分点</li>
+      <li>经营现金流-8309万元由正转负</li>
+      <li>卖方2026净利预测面临大幅下修</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>扣非净利</dt><dd>扣除非经常性损益后的净利润。剔除卖资产、政府补助、公允价值变动等一次性项目，更接近主业真实盈利。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>经营现金流</dt><dd>经营活动产生的现金流量净额。利润是账面数，这个是真金白银进出。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>融资余额</dt><dd>投资者借钱买股尚未偿还的金额。上升代表杠杆资金在加仓，也意味着回撤时的被动抛压更大。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>BLUF</dt><dd>Bottom Line Up Front，结论先行——把最重要的判断放在最前面。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.jiemian.com/article/15033398.html" target="_blank" rel="noopener">茂莱光学(688502.SH)2026年中报净利润为-1341.62万元，由盈转亏 · 界面新闻 · 2026-08-28</a> <em>2026-08-28</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2468329" target="_blank" rel="noopener">茂莱光学上半年收入同步增34% 低毛利产品占比提升 · 财联社 · 2026-08-28</a> <em>2026-08-28</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://paper.cnstock.com/html/2026-08/29/content_2262568.htm" target="_blank" rel="noopener">南京茂莱光学科技股份有限公司2026年半年度报告摘要 · 上海证券报 · 2026-08-29</a> <em>2026-08-29</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.cfi.net.cn/p20260828005243.html" target="_blank" rel="noopener">茂莱光学(688502)：2026年半年度报告摘要 · 中财网 · 2026-08-28</a> <em>2026-08-28</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cfi.net.cn/p20260828005277.html" target="_blank" rel="noopener">茂莱光学(688502)：公司2026年半年度计提资产减值准备 · 中财网 · 2026-08-29</a> <em>2026-08-29</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://paper.cnstock.com/html/2026-07/04/content_2239554.htm" target="_blank" rel="noopener">关于不提前赎回&quot;茂莱转债&quot;的公告 · 上海证券报 · 2026-07-04</a> <em>2026-07-04</em></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://static.sse.com.cn/stock/disclosure/announcement/c/202507/688502_20250717_HCLA.pdf" target="_blank" rel="noopener">向不特定对象发行可转换公司债券申请文件审核问询函的回复 · 上交所 · 2025-07-17</a> <em>2025-07-17</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://file.finance.qq.com/finance/hs/pdf/2026/01/22/1224944122.PDF" target="_blank" rel="noopener">2026年限制性股票激励计划（草案）· 2026-01-22</a> <em>2026-01-22</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://vip.stock.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?stockid=688502&amp;id=11960258" target="_blank" rel="noopener">关于向2026年限制性股票激励计划激励对象授予限制性股票的公告 · 新浪财经</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/estate/integration/2026-07-24/doc-iniiwkup4979098.shtml" target="_blank" rel="noopener">SEMI预测2026年半导体设备销售额增长23.2%至1659亿美元 · 新浪财经 · 2026-07-24</a> <em>2026-07-24</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://cepea.com/?list_29%2F749.html=" target="_blank" rel="noopener">SEMI报告：2026年全球半导体设备销售额预计达1659亿美元 · 中国电子专用设备工业协会</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://sputniknews.cn/20260714/1072327529.html" target="_blank" rel="noopener">SEMI：2026年全球半导体设备销售额将创历史新高 · 俄罗斯卫星通讯社 · 2026-07-14</a> <em>2026-07-14</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="http://mp.cnfol.com/58822/article/1767931218-142205664.html" target="_blank" rel="noopener">半导体设备行业：国产替代下的2026年前景展望 · 中金在线财经号</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.mems.me/mems/equipment_material_202605/13987.html" target="_blank" rel="noopener">《中国大陆半导体设备产业-2026版》· 麦姆斯咨询 · 2026-05</a> <em>2026-05</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="http://www.eeo.com.cn/2026/0524/888465.shtml" target="_blank" rel="noopener">茂莱光学2026年一季度营收增长半导体在手订单同比增82% · 经济观察网 · 2026-05-24</a> <em>2026-05-24</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.9fzt.com/9fztgw_1_bottom_B/809946fc65b9c0ec53a332dd1c5d438a.html" target="_blank" rel="noopener">【公司研究】茂莱光学：深耕光学领域发力半导体与光通信 · 九方智投</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://finance.sina.com.cn/roll/2026-05-21/doc-inhyquqc8480409.shtml" target="_blank" rel="noopener">关于&quot;茂莱转债&quot;开始转股的公告 · 新浪财经 · 2026-05-21</a> <em>2026-05-21</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.eastmoney.com/a/202608063833119980.html" target="_blank" rel="noopener">茂莱光学：融资余额相关数据 · 东方财富 · 2026-08-06</a> <em>2026-08-06</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.eet-china.com/mp/a509382.html" target="_blank" rel="noopener">2026年AR眼镜上半场 · 电子工程专辑</a></li>
+      <li><span class="src-tag src-media">媒体</span> 财联社 2026-08-28 <em>2026-08-28</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-07-24 / 中国电子专用设备工业协会 / 俄罗斯卫星通讯社 2026-07-14，三源一致 <em>2026-07-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-reg">监管</span> 上交所问询函回复 2025-07-17 / 上海证券报 2026-07-04 <em>2025-07-17</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 半年报摘要，中财网 2026-08-28 <em>2026-08-28</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公告 2026-08-29 <em>2026-08-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2026-06-09，披露于半年报之前 <em>2026-06-09</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 上海证券报 2026-08-29 <em>2026-08-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 界面新闻 2026-08-28 / 上海证券报 2026-08-29，两源一致 <em>2026-08-28</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公告，中财网 2026-08-29 <em>2026-08-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-reg">监管</span> 上交所问询函回复 2025-07-17 / 上海证券报 <em>2025-07-17</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 经济观察网 2026-05-24，单源·置信度低 <em>2026-05-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> H1 占比 61.26%、增 34.65%，财联社 2026-08-28 <em>2026-08-28</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-reg">监管</span> 上交所问询函回复 2025-07-17 <em>2025-07-17</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-reg">监管</span> 问询函回复 2025-07-17 <em>2025-07-17</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 上海证券报 2026-08-29 / 界面新闻 2026-08-28 <em>2026-08-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 上海证券报 2026-07-04，公告原文 <em>2026-07-04</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-reg">监管</span> 新浪财经 2026-05-21 / 上交所问询函回复 <em>2026-05-21</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 激励计划草案 2026-01-22 及授予公告 <em>2026-01-22</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 据发行日 2025-11-21 与 6 年期条款按惯例推断，非公司公告 <em>2025-11-21</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 「某国际半导体量检测客户业务量显著提升但毛利较低」，财联社 2026-08-28 <em>2026-08-28</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2026-07-04 公告 <em>2026-07-04</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 经济观察网 2026-05-24 <em>2026-05-24</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-04 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
