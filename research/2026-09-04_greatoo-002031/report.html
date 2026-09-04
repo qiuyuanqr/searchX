@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>巨轮智能（002031.SZ） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>巨轮智能（002031.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-04（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>关联板块</b> 机器人</span>
+      <span><b>申万行业</b> 专用设备</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 航空发动机 · 工业母机 · 减速器 · 冷链物流 · 智能物流 · 机器视觉 · 高端装备 · 人形机器人</span>
+      <span><b>来源</b> 16 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    巨轮智能（002031）主要做的是制造和销售汽车子午线轮胎活络模具、轮胎二半模具及轮胎成型设备等。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——主业营收同比下滑四成、亏损扩大，减速器业务 2025 年收入仅占 1%，股价由人形机器人题材驱动。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：主业营收同比下滑四成、亏损扩大，减速器业务 2025 年收入仅占 1%，股价由人形机器人题材驱动。支撑在于人形机器人题材9月三场事件催化；180日6次涨停有情绪号召力；轮胎模具硫化机机床构成业务底座。主要风险是上半年营收同比-41.87%亏损扩大；RV减速器2025年仅占营收1%；PB6.20为同行最高且无盈利支撑。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>人形机器人题材9月三场事件催化</li>
+      <li>180日6次涨停有情绪号召力</li>
+      <li>轮胎模具硫化机机床构成业务底座</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据基准：库内取数日 2026-09-04，行情时点数据时点 15:36（收盘后）。 数据来源：库内取数的库内基础资料 / 库内公司档案 / 库内财务 / 库内估值 / 库内行情 / 库内概念标签 / 库内涨停记录 / 库内新闻 / 库内同业对比 / 库内事件日历 / 库内研报 / 库内 A/H 对照 / 库内资金筹码，联网部分逐条标来源与日期。</div>
+<h2>A. 一屏结论（BLUF）</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：主业营收同比下滑四成、亏损扩大，减速器业务 2025 年收入仅占 1%，股价由人形机器人题材驱动。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li>人形机器人／减速器题材催化密集：库内事件日历给出 9 月 10 日杭州 AI 与机器人博览会、9 月 15 日工信部人形机器人「首台套」首批申报、9 月 20 日世界制造业大会三个节点（置信度：中——事件来自库内事件日历，其中「首台套」细节联网未能交叉验证）。</li>
+<li>情绪面有反复被激活的记录：库内涨停记录近 180 日 6 次涨停、两次两连板（5-07/5-08、8-11/8-12），8-12 封单 3.07 亿元（置信度：高，库内硬数据）。</li>
+<li>主业属高端装备存量赛道，公司有轮胎模具、硫化机、工业机器人、精密机床四条产品线，库内经营范围明确含工业机器人与机床业务，题材有业务底座而非纯壳（置信度：高，库内公司档案原文）。</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li>基本面持续恶化：2026 上半年营收 2.39 亿元、同比 -41.87%，净利润 -0.74 亿元，亏损同比扩大；毛利率 8.68%，较 2025 年前三季度累计的 12.58% 下降 3.9 个百分点（置信度：高，库内财务）。</li>
+<li>题材与营收严重不匹配：公司 2026-08-12 异动澄清公告披露，2025 年 RV 减速器销售收入 837.03 万元、占当年营业收入 1%，对业绩影响有限（置信度：高，多家媒体转载同一份公司公告）。</li>
+<li>估值在同行里最贵且无盈利支撑：PE(TTM) 为空（亏损无 PE），PB 6.20，高于潍柴动力 2.41、福耀玻璃 3.92、拓普集团 3.29 三家盈利同行（置信度：高，库内估值 + 库内同业对比）。</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ul>
+<li>三季报（法定披露截止 2026-10-31，见 I 节 W8）：营收同比降幅是否从上半年的 -41.87% 收窄、单季毛利率是否回到 12.58% 之上。</li>
+<li>9 月 10–20 日三个题材事件窗口内，20 日全口径资金能否从当前净流出 14.02 亿元转正（库内资金筹码口径，见 H 节）。</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong>：本报告把「减速器收入占比 1%」当作压制估值的硬证据，但那是 2025 年的口径；若 2026 年三季报或后续公告披露减速器／机器人业务收入出现数量级跃升，压制逻辑就不再成立，方向应重估（置信度：中）。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>名称／代码</strong>：巨轮智能（002031），库内基础资料唯一命中，行业「汽车配件」。</li>
+<li><strong>上市状态</strong>：上市状态 'L'（正常上市），上市日 2004-08-16，主板，上市已满 22 年。</li>
+<li><strong>主营</strong>：制造和销售汽车子午线轮胎活络模具、轮胎二半模具及轮胎成型设备等（主营业务原文）。</li>
+<li><strong>经营范围要点</strong>：轮胎模具与设备制造销售、机床零配件加工与机床装配销售、<strong>工业机器人及智能自动化装备的研发制造销售</strong>、普通货物仓储、进出口业务（库内经营范围原文）。</li>
+<li><strong>公司自述</strong>：位于广东揭东，称是「国内规模较大、技术领先和首家上市的轮胎模具开发制造企业」，已形成轮胎模具、轮胎硫化机、工业机器人和精密机床四大业态，在印度、欧洲、美国设有子公司（公司简介原文，属公司自述口径，非第三方核实数据，置信度：中）。</li>
+<li><strong>员工数</strong>：1757 人。<strong>注册资本</strong>：219939.567 万元，据此推算总股本约 21.99 亿股。</li>
+</ul>
+<p><strong>行情（唯一事实源库内行情，数据时点 15:36 即当日收盘）</strong></p>
+<ul>
+<li>收盘价 5.36 元，当日 -3.07%；日内最高 +0.36%、最低 -4.16%；成交额 12.3 亿元。</li>
+<li>交叉核对：117.89 亿元总市值 ÷ 5.36 元 ≈ 21.99 亿股，与注册资本推算的股本一致（置信度：高）。</li>
+</ul>
+<p><strong>估值（库内估值，交易日 20260904）</strong></p>
+<ul>
+<li>总市值 117.89 亿元；<strong>PE(TTM) 为空</strong>——公司处于亏损状态，PE 口径不适用；PB 6.1996；股息率为空；换手率 10.301%。</li>
+<li>行业「汽车配件」共 269 只可比，行业 PE 中位数 30.218；因本股无 PE，行业内 PE 排名为空，<strong>无法给出 PE 分位</strong>（信息缺口，见 M 节）。</li>
+<li>粗口径参考：按上半年营收 2.39 亿元简单年化 4.78 亿元推算，市销率约 24.7 倍（据库内数据推算，仅供量级参考，不构成估值结论，置信度：中）。</li>
+<li>A/H 溢价：库内 A/H 对照返回 None，非两地上市票，本节不适用。</li>
+</ul>
+<p><strong>仅估值口径的判断</strong>：亏损状态下只能看 PB，6.20 倍的 PB 在三家盈利同行中处于最高位，属于「用未来预期定价、当期盈利不支撑」的形态（置信度：高）。这是估值口径描述，不等于好坏结论。</p>
+<h2>C. 财务健康</h2>
+<p>库内财务（近 4 期），金额已换算为亿元，新→旧：</p>
+<ul>
+<li><strong>2026 中报（报告期 20260630 · 公告日 20260826）</strong>：营收 2.39 亿元 · 同比 -41.87% · 净利润 -0.74 亿元 · 净利同比 -32.03% · ROE -3.83% · 毛利率 8.68% · 净利率 -31.71% · EPS -0.0338 元 · 资产负债率 48.59%</li>
+<li><strong>2026 一季报（20260331 · 20260430）</strong>：营收 1.18 亿元 · 同比 -38.95% · 净利润 -0.36 亿元 · 净利同比 -17.04% · ROE -1.83% · 毛利率 10.42% · 净利率 -31.31% · EPS -0.0163 元 · 资产负债率 48.74%</li>
+<li><strong>2025 年报（20251231 · 20260430）</strong>：营收 7.88 亿元 · 同比 -19.78% · 净利润 -2.32 亿元 · 净利同比 -11.34% · ROE -11.06% · 毛利率 10.37% · 净利率 -29.85% · EPS -0.1056 元 · 资产负债率 48.37%</li>
+<li><strong>2025 三季报累计（20250930 · 20251031）</strong>：营收 5.96 亿元 · 同比 -32.86% · 净利润 -0.89 亿元 · 净利同比 -1631.62% · ROE -4.12% · 毛利率 12.58% · 净利率 -15.00% · EPS -0.0407 元 · 资产负债率 46.71%</li>
+</ul>
+<p><strong>趋势怎么读</strong></p>
+<ol>
+<li><strong>营收连续大幅下降，且降幅在扩大</strong>：2025 全年 -19.78%，2026 一季度 -38.95%，2026 上半年 -41.87%。这不是增速放缓，是收入规模同比接近腰斩（置信度：高）。</li>
+<li><strong>亏损扩大而非收窄</strong>：净利同比四期均为负值，且 2025 三季报累计的 -1631.62% 意味着上年同期为微利、当期转为亏损（置信度：中——亏损期的同比口径本身易生歧义，此处按「上年同期基数为小额正值」解读）。2025 全年亏损 2.32 亿元，2026 上半年再亏 0.74 亿元。</li>
+<li><strong>单季拆分</strong>：据半年累计减一季度累计推算，2026 二季度单季营收约 1.21 亿元、单季净利润约 -0.38 亿元（据库内财务累计数推算），亏损环比略有扩大，<strong>未见拐点</strong>（置信度：中，推算值）。</li>
+<li><strong>毛利率是最关键的恶化项</strong>：12.58%（2025 前三季度累计）→ 10.37%（2025 全年）→ 10.42%（2026Q1）→ 8.68%（2026H1），一年时间下降约 3.9 个百分点，说明收入下降的同时单位盈利能力也在下降，不是单纯的规模问题（置信度：高）。</li>
+<li><strong>资产负债率稳定在 46.7%–48.7%</strong>，四期几乎无变化，短期不构成偿债层面的突出压力（置信度：中——库内无有息负债、现金流量、在手货币资金明细，仅凭负债率无法完整判断，见 M 节缺口）。</li>
+</ol>
+<p><strong>联网补充的业绩变动原因（公司业绩预告口径）</strong></p>
+<p>〔来源：中财网／东方财富转载《巨轮智能 2026 年半年度业绩预告》· 日期：2026-07-15〕公司预计 2026 年上半年归母净利润 -7500 万元至 -5000 万元，扣非后 -7900 万元至 -5300 万元；亏损原因表述为「销售收入同比下降、部分境内子公司处于建设期产能未释放、部分境外参控股公司经营亏损」。库内半年报实际净利润 -0.74 亿元落在该预告区间内偏下限，两者互相印证（置信度：中，联网单一口径，但与库内数字自洽）。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比（取 3 家）（同为「汽车配件」行业，财务口径报告期 20260630）：</p>
+<ul>
+<li><strong>巨轮智能（002031）</strong>｜市值 117.89 亿 · PE(TTM) 无（亏损）· PB 6.20 · 上半年营收 2.39 亿 · 净利润 -0.74 亿 · ROE -3.83%</li>
+<li><strong>潍柴动力（000338）</strong>｜市值 2319.90 亿 · PE(TTM) 17.86 · PB 2.41 · 上半年营收 1231.63 亿 · 净利润 77.01 亿 · ROE 8.14%</li>
+<li><strong>福耀玻璃（600660）</strong>｜市值 1496.17 亿 · PE(TTM) 17.65 · PB 3.92 · 上半年营收 219.71 亿 · 净利润 39.70 亿 · ROE 10.49%</li>
+<li><strong>拓普集团（601689）</strong>｜市值 796.28 亿 · PE(TTM) 31.77 · PB 3.29 · 上半年营收 141.99 亿 · 净利润 10.23 亿 · ROE 4.23%</li>
+</ul>
+<p><strong>位置判断</strong></p>
+<ul>
+<li>体量上完全不在一个量级：三家同行上半年营收分别是本股的 515 倍、92 倍、59 倍（据库内营收数据推算），本股在「汽车配件」这个行业归类里属于小市值、小体量标的（置信度：高）。</li>
+<li>盈利能力上是唯一亏损者：三家同行 ROE 均为正（4.23%–10.49%），本股 -3.83%（置信度：高）。</li>
+<li>估值上是最贵的：PB 6.20 高于三家盈利同行的 2.41／3.92／3.29。<strong>即在同一行业里，盈利最差的一家 PB 最高</strong>——这只能由「市场为其题材属性支付溢价」来解释，而非当期基本面（置信度：高）。</li>
+<li><strong>行业归类本身要打个问号</strong>：库内公司档案与库内估值都把本股归为「汽车配件」，但库内涨停记录里每条涨停记录附带的行业字段是「专用设备」；公司主营轮胎模具与硫化机，本质是给轮胎厂供设备，与潍柴、福耀、拓普这类整车零部件供应商的商业模式并不同类（置信度：高，两个库内字段互证）。<strong>上面的横向对比因此只有估值参照意义，不构成同业竞争关系比较</strong>。</li>
+</ul>
+<p><strong>信息缺口</strong>：库内同业对比只能按「汽车配件」拉同行，取不到轮胎模具／硫化机／减速器的真实可比公司（如轮胎模具全球龙头）。影响：D 节无法给出真正的同业竞争位次。补法：需要按「专用设备」或概念成分股维度另建对比集。</p>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>：向轮胎生产企业销售活络模具、二半模具与轮胎成型／硫化设备（主营业务），属于典型的「设备＋耗材件」B2B 模式，收入高度依赖下游轮胎厂的资本开支与新花纹换模节奏；另有工业机器人、智能自动化装备与精密机床三条业务线（库内经营范围），以及印度、欧洲、美国子公司构成的出口通道（公司简介）。</p>
+<p><strong>护城河分级（诚实分级）</strong></p>
+<ul>
+<li><strong>阶段性优势</strong>：上市 22 年、员工 1757 人、在印度／欧洲／美国设有子公司，具备海外交付能力与客户积累；公司自述拥有国家级技术中心、院士工作站、博士后工作站（库内公司档案原文，属自述，置信度：中）。</li>
+<li><strong>结构性护城河：从库内信息看不出</strong>（置信度：中）。判据是财务本身：真正有结构性护城河的设备商，不会在毛利率上一年内下降 3.9 个百分点、同时营收同比 -41.87%。定价权与转换成本若存在，至少毛利率应当有韧性（置信度：中）。</li>
+<li><strong>联网补充的行业格局</strong>：〔来源：观研报告网／华经产业研究院行业分析，检索日 2026-09-04〕全球轮胎模具市场呈现以豪迈科技为首的单寡头格局，2023 年豪迈科技全球份额 33.4%，第二名韩国世和约 3.3%，差距在十倍量级。这与网上流传的「巨轮智能轮胎模具国内市占第一、全球前三」说法存在张力——后者来自东方财富财富号自媒体、非公司公告亦非券商研报（置信度：低，说法冲突未解决，见 M 节缺口）。</li>
+</ul>
+<p><strong>结论</strong>：主业处在一个有明确海外龙头、且自身盈利能力正在下降的赛道；机器人／减速器业务尚未形成可验证的规模优势（置信度：中）。</p>
+<h2>F. 政策与监管</h2>
+<p>库内无政策数据，本节以联网为主，只列与本公司／本行业直接相关的：</p>
+<ol>
+<li><strong>人形机器人「首台套」认定首批申报（政策，2026-09-15）</strong>〔来源：库内事件日历，importance 7，匹配依据「概念 886069.TI」〕：notes 称工信部 8 月将人形机器人整机和核心零部件纳入「首台套」补贴目录，单台最高补 300 万元，首批申报以 9 月 15 日为关键节点。<strong>联网未能独立交叉验证该补贴目录与申报日期</strong>（多轮检索只查到 2026 年 2 月《人形机器人与具身智能标准体系（2026 版）》、6 月 8 日工信部与国资委「实景实训专项行动」等其他政策）。<strong>置信度：低（单源未交叉验证）</strong>。传导链条：若属实，补贴对象是整机与核心零部件（含减速器），本股 RV／XT 减速器理论上在覆盖范围内，但 2025 年该业务收入仅 837.03 万元，短期补贴对业绩的量级影响有限（置信度：中）。</li>
+<li><strong>人形机器人国家级技术攻坚与专项行动</strong>〔来源：腾讯新闻转载《七部门揭榜挂帅首次单列人形机器人专题》· 日期：2026-08-01；新浪财经《工信部和国资委联手搞了个大动作》· 日期：2026-06-10〕：两源共同指向 2026 年国家层面对人形机器人的支持在加码，方向为利好（置信度：中，两源均为媒体转载，非原始文件）。传导链条：政策→板块估值中枢与题材热度→本股作为「减速器＋机器人概念」成分股受情绪面带动，<strong>属估值端传导而非营收端传导</strong>（置信度：中）。</li>
+<li><strong>地方配套政策</strong>〔来源：上海市经信委《2026 年度人形机器人与具身智能实景实训专项行动申报通知》· 日期：2026-06-16；东方财富《多地加码人形机器人扶持政策》· 日期：2026-06-17〕：方向利好，但对广东揭阳的本公司无直接指向（置信度：中）。</li>
+</ol>
+<p><strong>未见的政策类目</strong>：库内与联网均未检索到针对轮胎模具／硫化机行业的专门政策、也未见影响本股的监管问询或处罚记录（置信度：中，属「未检索到」而非「确认没有」）。</p>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 12 个同花顺概念标签，逐个分级：</p>
+<p><strong>真有业务（有主营描述或公开数字佐证）</strong></p>
+<ul>
+<li><strong>高端装备（885427.TI）</strong>：轮胎模具、硫化机、精密机床是主营与经营范围明确项，2026 上半年 2.39 亿元营收主要来自这条线（置信度：高）。</li>
+<li><strong>减速器（886008.TI）</strong>：<strong>有业务但规模极小</strong>。公司 2026-08-12 异动澄清公告：2025 年 RV 减速器销售收入 837.03 万元，占当年营业收入 1%，「相关业务收入对公司业绩影响有限」，并称「受下游行业影响，该业务的发展速度存在较大不确定性」〔来源：央广网、新京报、东方财富、新浪财经同日转载同一份公告 · 日期：2026-08-12〕（置信度：高，多源转载同一公司公告；837.03 万元 ÷ 库内 2025 年营收 7.88 亿元 ≈ 1.06%，与公告「1%」自洽）。</li>
+<li><strong>机器人概念（885517.TI）</strong>：库内经营范围明确含「工业机器人、智能自动化装备的研发、制造和销售」，公司简介将工业机器人列为四大业态之一（置信度：高，但<strong>库内无分产品营收拆分</strong>，无法确认其收入占比）。</li>
+<li><strong>工业母机（885930.TI）</strong>：经营范围含机床零配件加工、机床装配销售，公司简介含「精密机床」业态（置信度：中，有业务描述、无营收佐证）。</li>
+</ul>
+<p><strong>仅概念标签，未见营收佐证</strong></p>
+<ul>
+<li><strong>人形机器人（886069.TI）</strong>：公司公开信息中未见人形机器人整机或专用部件的营收披露。可查到的最接近的公司口径是 2025-08-26 董秘答复：「公司 XT 减速器已完成若干规格的研发工作，目前正在进行场景测试」「成功研发出第一款单一摆线针轮型减速机（XT）」「该产品成果技术鉴定工作尚在筹备」〔来源：新浪财经转载董秘答复 · 日期：2025-08-26〕（置信度：中，来源为一年前的公司答复，未检索到更新的公司层面表述）。</li>
+<li><strong>机器视觉（886002.TI）</strong>、<strong>航空发动机（885884.TI）</strong>：库内主营与经营范围均无对应表述，未见营收佐证（置信度：高，属「库内查无佐证」）。</li>
+<li><strong>冷链物流（885502.TI）</strong>、<strong>智能物流（885770.TI）</strong>：经营范围仅含「普通货物仓储」，与物流题材的关联极弱，未见营收佐证（置信度：中）。</li>
+</ul>
+<p><strong>属性标签，非业务</strong></p>
+<ul>
+<li><strong>人民币贬值受益（885840.TI）</strong>：公司有进出口业务与境外子公司，属汇率敏感属性标签；但业绩预告同时提到「部分境外参控股公司经营亏损」，海外敞口当前是负贡献而非正贡献（置信度：中）。</li>
+<li><strong>深股通（885694.TI）</strong>、<strong>融资融券（885338.TI）</strong>：交易机制标签，与业务无关（置信度：高）。</li>
+</ul>
+<p><strong>产业链位置</strong></p>
+<ul>
+<li>主业：上游是模具钢等金属材料与机床加工能力，下游是轮胎生产企业。设备与模具属于轮胎厂的资本开支项，<strong>议价能力在下游</strong>——轮胎厂扩产／换花纹节奏决定订单，供给端又有全球单寡头压制价格（置信度：中）。</li>
+<li>减速器：上游是精密轴承、齿轮加工与材料，下游是工业机器人本体厂与自动化集成商；人形机器人是潜在增量下游但尚未形成收入（置信度：中）。</li>
+</ul>
+<p><strong>一条重要的预期差</strong>〔来源：金融界《特斯拉人形机器人新进展！上游厂商积极准备量产，关节模组、减速器已供货》· 日期：2026-06-24；券商机械行业 2026 年度策略研报（分析师周尔双）· 日期：2026-02-13〕：当前主流人形机器人方案中，旋转执行器以「无框力矩电机＋谐波减速器」为主、线性执行器用「无框力矩电机＋行星滚柱丝杠」，<strong>RV 减速器的传统主场是工业机器人大负载关节，不是人形机器人的主力方案</strong>。若该技术路线描述成立，本股 RV 产品线与人形机器人题材的对应关系比标签显示的要弱（置信度：中——两源中一源为财经媒体、一源为行业策略摘要，且未见公司层面确认或否认）。</p>
+<h2>H. 消息面与市场情绪</h2>
+<p><strong>新闻（库内新闻（近 60 日），共 20 条）</strong></p>
+<p>全部为「噪音其他」，即近 60 天内<strong>没有一条被系统判定为实质性重大事件</strong>——这本身是信息：本股近期的消息面基本由板块涨跌快讯构成（置信度：高）。挑出有信息量的：</p>
+<ol>
+<li><strong>2026-08-12 19:14／19:19｜「巨轮智能：公司 RV 减速器销售收入占比较小对公司业绩影响有限」</strong>（东方财富、财联社）——<strong>本报告最重要的一条消息</strong>：公司在两连板后主动做风险提示，等于自己否认了题材的业绩兑现度。对基本面无变化，但对「题材定价」是实质性证伪（置信度：高）。</li>
+<li><strong>2026-09-03 09:52｜「减速器概念短线拉升巨轮智能、光洋股份涨停」</strong>（东方财富）——该标题描述的是 9 月 3 日<strong>发稿时点的盘中状态</strong>；库内涨停记录近 180 日涨停记录中<strong>没有 20260903</strong>，说明当日盘中曾涨停但未以涨停收盘（置信度：高，两个库内数据源交叉验证）。当前状态以库内行情为准：9 月 4 日收盘 5.36 元、-3.07%。</li>
+<li><strong>2026-08-19（多条）｜「减速器板块大幅调整巨轮智能等多股跌停」「人形机器人板块跌幅扩大」「收评：创业板指低开低走跌超 6% 全市场逾百股跌停」</strong>——8 月 19 日本股曾出现跌停（发稿时点表述），当日是全市场级别的大幅下跌（置信度：高，来源为发稿时点快照，当前状态以库内行情为准）。</li>
+<li><strong>2026-09-01 / 09-03｜「人形机器人概念局部回暖」「14 点快评：短线情绪分化连板股晋级率降至一成」</strong>（财联社）——9 月初板块情绪处在分化状态，连板晋级率降至约一成（置信度：中，属市场氛围描述）。</li>
+<li><strong>2026-08-11 15:02｜「收评：三大指数集体冲高回落人形机器人概念逆势走强」</strong>——8 月 11 日首板当天的板块背景（置信度：高）。</li>
+</ol>
+<p><strong>涨停史（库内涨停记录（近 180 日），6 次记录，行业字段均标「专用设备」）</strong></p>
+<ul>
+<li>2026-08-12｜+9.93%｜<strong>2 连板</strong>｜首次封板 09:30:30、最后封板 09:32:06｜<strong>开板 1 次</strong>｜封单 3.07 亿元</li>
+<li>2026-08-11｜+9.98%｜首板｜封板 13:06:24｜开板 0 次｜封单 0.69 亿元</li>
+<li>2026-06-23｜+9.95%｜首板｜封板 10:03:15｜开板 0 次｜封单 1.33 亿元</li>
+<li>2026-05-15｜+9.95%｜首板｜封板 10:34:36｜开板 0 次｜封单 2.70 亿元</li>
+<li>2026-05-08｜+9.97%｜<strong>2 连板</strong>｜封板 09:48:39｜开板 0 次｜封单 1.77 亿元</li>
+<li>2026-05-07｜+9.93%｜首板｜封板 09:51:27｜开板 0 次｜封单 1.64 亿元</li>
+</ul>
+<p>读法：180 日内 6 次涨停、两轮两连板，说明本股是板块内有情绪号召力的标的（置信度：高）。但两轮两连板（5 月、8 月）之后公司都发布了减速器收入占比的风险提示——8 月 12 日那次有库内新闻直接记录，5 月那次有联网佐证〔来源：新浪财经《【风口解读】2 连板巨轮智能提示风险，RV 减速器销售收入占比较小》· 日期：2026-05-10〕。<strong>「两连板→公司提示风险」在半年内出现两次</strong>（置信度：中，5 月那次仅联网单一口径）。</p>
+<p><strong>资金与筹码（库内资金筹码）</strong></p>
+<ul>
+<li><strong>资金流（20 个交易日，20260810→20260904）</strong>：全口径净额合计 <strong>-14.02 亿元</strong>（净流出）；其中特大单（主力口径）净额合计 <strong>+8.80 亿元</strong>（净流入）；全口径净流入为正的天数 7 天、为负 13 天。两个口径方向相反，含义是<strong>特大单在净买入的同时中小单净卖出更多</strong>，属于筹码在不同账户类型之间转移的形态（置信度：中，口径差异的解读带推断成分）。</li>
+<li><strong>筹码（交易日 20260807）</strong>：获利盘比例 69.33%；加权平均成本 5.05 元；15%／50%／85% 分位成本分别为 4.60／5.10／5.40 元。<strong>两面读</strong>：获利盘近七成，意味着上方套牢盘相对少、反弹阻力小，但同时短线获利抛压大、一旦情绪转弱容易形成集中卖压（置信度：高，数据为库内硬值；⚠️ 该筹码快照日期为 2026-08-07，距报告日近一个月，其间股价经历 8 月中旬的涨停与随后调整，<strong>当前真实筹码结构可能已明显偏离</strong>，见 M 节缺口）。</li>
+<li><strong>股东户数</strong>：2026-06-30 为 318,088 户，较 2026-03-31 的 304,315 户增加 4.5%，即筹码趋于分散（置信度：高，但季度披露天然滞后，最新一期已是两个多月前的状态）。</li>
+<li><strong>换手率</strong>：库内估值显示 20260904 换手率 10.301%，属高换手状态（置信度：高）。</li>
+</ul>
+<div class="callout">⚠️ 纪律说明：本节的资金流、筹码、股东户数都是盘面现象，不是基本面证据。它们只作为情绪面佐证出现在本节，<strong>不进入 J 节逻辑链，也不单独支撑任何操作结论</strong>。</div>
+<h2>I. 未来 13 周事件日历（2026-09-07 起）</h2>
+<ul>
+<li><strong>W1（2026-09-07 起）</strong>：2026 杭州国际人工智能与机器人创新博览会（AI Show 2026）9 月 10–12 日开幕 · 会议 · 重要性高 · 影响：库内 notes 称多家报道提及特斯拉 Optimus V3 将中国首秀、宇树等本土厂商同台，是人形机器人板块的催化节点，可能带动本股情绪面（来源：库内事件日历，importance 7，置信度：中——展会本身有多方报道，Optimus 首秀属报道口径未经官方确认）</li>
+<li><strong>W2（2026-09-14 起）</strong>：① 9 月 15 日工信部人形机器人「首台套」认定首批申报开启 · 政策 · 重要性高 · 影响：若属实，减速器等核心零部件进入补贴范围，是题材催化（置信度：低，联网未交叉验证）；② 9 月 20 日 2026 世界制造业大会在合肥开幕（9 月 20–23 日，国务院批准）· 会议 · 重要性中高 · 影响：会上常释放装备制造、工业母机政策信号（来源：库内事件日历，importance 7，置信度：中）</li>
+<li><strong>W3（2026-09-21 起）</strong>：世界制造业大会会期延续至 9 月 23 日 · 会议 · 重要性中 · 影响：政策信号与订单签约消息的释放窗口（置信度：中）</li>
+<li><strong>W4（2026-09-28 起）</strong>：本周无个股已知事件；节前最后交易周，情绪面通常趋于收敛 · 重要性低（置信度：低，属常规节奏推断）</li>
+<li><strong>W5（2026-10-05 起）</strong>：国庆假期休市周（具体休市安排以交易所公告为准）· 重要性低 · 影响：外盘与假期期间的产业消息在节后一次性反映（置信度：中）</li>
+<li><strong>W6（2026-10-12 起）</strong>：本周无个股已知事件；三季度业绩预告／快报的自愿披露窗口已开启 · 重要性中 · 影响：若公司发布三季度业绩预告，将提前给出 C 节趋势是否延续的答案（置信度：中，公司是否发预告未知）</li>
+<li><strong>W7（2026-10-19 起）</strong>：本周无个股已知事件；关注国家统计局 10 月中旬公布的 9 月工业增加值与工业机器人产量数据 · 宏观 · 重要性中 · 影响：工业机器人下游景气度是减速器业务的先行指标（置信度：中，统计发布节奏属常规日程）</li>
+<li><strong>W8（2026-10-26 起）</strong>：<strong>2026 年三季报披露截止（法定 10 月 31 日前）· 财报 · 重要性最高</strong> · 影响：验证 C 节营收降幅与毛利率是否见底，是本报告最关键的验证点（置信度：中——联网未查到官方预约披露日，按库内 2025 年三季报公告日 20251031 的历史节奏与深交所法定期限推算）</li>
+<li><strong>W9（2026-11-02 起）</strong>：本周无个股已知事件；三季报数据消化期 · 重要性中（置信度：中）</li>
+<li><strong>W10（2026-11-09 起）</strong>：本周无个股已知事件 · 重要性低</li>
+<li><strong>W11（2026-11-16 起）</strong>：本周无个股已知事件；关注 10 月工业机器人产量与轮胎行业开工率数据 · 宏观 · 重要性低（置信度：低）</li>
+<li><strong>W12（2026-11-23 起）</strong>：本周无个股已知事件 · 重要性低</li>
+<li><strong>W13（2026-11-30 起）</strong>：本周无个股已知事件；年末券商策略会窗口，人形机器人板块年度展望集中发布期 · 重要性低（置信度：低，属常规日程推断）</li>
+</ul>
+<p><strong>信息缺口</strong>：库内事件日历只返回 3 条、且全部是概念联想类事件（匹配依据为概念 ID），<strong>没有一条是公司自身的事件</strong>——限售解禁、股东大会、定增／可转债进度、董监高变动均无数据；联网亦未检索到 2026 年 8 月以后本股的股本融资类公告。影响：I 节 W4 及之后的个股事件基本为空，若期间出现解禁或再融资，本日历会漏掉。补法：接入解禁数据表或定期查深交所公告栏。</p>
+<h2>J. 逻辑链（可证伪）</h2>
+<p><strong>主链</strong></p>
+<p>因为 ① 2026 上半年营收 2.39 亿元、同比 -41.87%，净利润 -0.74 亿元、亏损同比扩大，毛利率降至 8.68%（置信度：高，库内财务）；且 ② 公司 2026-08-12 公告自述 2025 年 RV 减速器收入 837.03 万元、占营收 1%、对业绩影响有限（置信度：高，多源转载同一公告）；且 ③ PE(TTM) 为空、PB 6.20 高于三家盈利同行的 2.41／3.92／3.29（置信度：高，库内估值 + 库内同业对比）——</p>
+<p><strong>所以</strong> 当前 117.89 亿元市值几乎全部由「人形机器人／减速器」的未来预期支撑，与当期经营成果基本脱钩（置信度：中高）。</p>
+<p><strong>如果该推论成立，应该能观察到</strong>：</p>
+<ul>
+<li>股价与板块题材事件高度同步、与公司自身业绩公告方向相反。<strong>已观察到</strong>：8 月 11–12 日两连板发生在人形机器人板块走强当日；8 月 19 日板块大幅调整时本股曾跌停；而 8 月 26 日半年报（净利 -0.74 亿元）披露后并未见对应的正向反应（置信度：中）。</li>
+<li>公司自己会反复做风险提示以撇清题材与业绩的关系。<strong>已观察到</strong>：5 月与 8 月两轮两连板后各有一次（置信度：中）。</li>
+</ul>
+<p><strong>这条链最弱的一环</strong>：③ 的估值判断依赖「减速器收入占比 1%」这个 <strong>2025 年口径</strong>的数字。公司 XT 减速器最近一次可查的公司层面表述停留在 2025-08-26 的「完成若干规格研发、正在场景测试、技术鉴定尚在筹备」，此后一年内我<strong>没有检索到公司层面更新的进度或收入披露</strong>。如果 2026 年三季报或后续公告显示减速器业务收入出现数量级跃升，整条链的前提就被推翻（置信度：中）。<strong>这是命门，也是 W8 三季报必须核的第一件事。</strong></p>
+<p><strong>旁链（信息完备性）</strong>：库内研报返回 None，即<strong>库内近 90 天无该票券商研报</strong>；联网检索到的「小米 CyberOne 订单 8.2 亿–15.2 亿元」「与华为共建联合实验室」「比亚迪 30 万台／年订单」等说法，来源全部是东方财富财富号、ZAKER 等自媒体聚合内容，<strong>既非券商研报也未见公司公告证实</strong>，本报告不将其作为事实采信（置信度：低，见 M 节）。</p>
+<h2>K. 三情景推演（概率合计 100%）</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜触发：2026 三季报（W8）显示前三季度营收同比降幅收窄至 -20% 以内，且单季毛利率回升至 2025 年前三季度累计水平 12.58% 以上，或公司公告披露减速器／机器人业务收入占比提升至两位数百分比｜路径：题材叙事获得报表验证，估值锚从「亏损只能看 PB」切换到有盈利支撑的口径，股价在 8-07 筹码 85% 分位成本上方站稳后向 8-12 涨停日高点方向修复（置信度：低——需要收入趋势在一个季度内发生方向性变化，从当前四期数据看缺乏先兆）</li>
+<li><strong>中性（50%）</strong>｜触发：三季报仍为亏损，营收同比降幅与毛利率大体维持上半年水平（降幅在 -35% 至 -45% 之间、毛利率 8%–11%）｜路径：基本面不提供方向，股价继续由人形机器人板块 beta 主导，在 8-07 筹码 50% 分位成本与 8-12 涨停日高点之间宽幅震荡，高换手与快速轮动特征延续（置信度：中——这是四期财务趋势的直接外推，也是概率权重最大的一支）</li>
+<li><strong>悲观（25%）</strong>｜触发：三季报营收同比降幅仍大于 -35% 且亏损环比继续扩大，或出现商誉／存货／境外参控股公司股权的资产减值，或 9 月中旬三个题材事件窗口过后板块热度回落且 20 日全口径资金净流出继续扩大｜路径：题材催化真空期叠加报表压力，股价跌破 8-07 筹码 15% 分位成本后向 5 月首轮涨停起涨区域回落，获利盘集中兑现放大波动（置信度：中）</li>
+</ul>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong></p>
+<ol>
+<li><strong>如果</strong> 2026 三季报（W8，法定 10 月 31 日前）显示前三季度营收同比降幅收窄至 -20% 以内、<strong>且</strong> 单季毛利率回升至 2025 年前三季度累计的 12.58% 以上，<strong>那么</strong> 可把它从「仅题材驱动」重估为「基本面拐点候选」，轻仓试仓。</li>
+<li><strong>如果</strong> 三季报仍显示营收同比降幅大于 -35%、亏损未收窄，<strong>且</strong> 公告中减速器业务收入占比仍停留在 1% 量级，<strong>那么</strong> 观望，不参与题材催化行情。</li>
+<li><strong>如果</strong> 股价跌破 8-07 筹码 50% 分位成本、<strong>且</strong> 20 日全口径资金维持净流出，<strong>那么</strong> 回避；<strong>如果</strong> 进一步跌破 8-07 筹码 15% 分位成本，<strong>那么</strong> 减仓。</li>
+<li><strong>如果</strong> 股价站上 8-07 筹码 85% 分位成本、<strong>且</strong> 特大单连续 3 个交易日净流入，<strong>那么</strong> 视为情绪面重新占优，观望等待回踩确认，不在高换手日追高。</li>
+</ol>
+<p><strong>风控要点（这笔判断在什么情况下应被推翻）</strong></p>
+<ul>
+<li>推翻「震荡」偏向、转为明确偏多：公司公告披露减速器或人形机器人相关业务的<strong>具名订单金额或收入数字</strong>，且量级相对 2025 年 837.03 万元有数量级提升。</li>
+<li>推翻「震荡」偏向、转为明确偏空：三季报出现资产减值，或营收同比降幅从上半年的 -41.87% 继续扩大。</li>
+<li>推翻本报告的估值判断：库内估值的 PE(TTM) 从空值转为有值（意味着 TTM 口径已扭亏为盈），届时 D 节的横向对比需整套重做。</li>
+<li>报告的时效边界：筹码数据停在 2026-08-07、股东户数停在 2026-06-30、财务停在 2026 中报。<strong>任一新数据到位后本报告的对应结论即需重跑</strong>。</li>
+</ul>
+<p><strong>仓位思路</strong>：在三季报给出营收与毛利率方向之前，只适合<strong>不参与或极轻仓</strong>；本股具备高换手（10.301%）、频繁涨跌停（180 日 6 次涨停、8 月中旬曾出现跌停）的高波动特征，任何参与都应以「题材博弈仓」而非「基本面持有仓」的尺度看待（置信度：中）。不给具体金额、不给股数。</p>
+<h2>M. 逻辑自查</h2>
+<p><strong>最依赖的假设</strong>：「减速器业务 2025 年收入 837.03 万元、占营收 1%」这一公司公告口径在 2026 年内没有发生数量级变化。<strong>若它错了</strong>：本报告 A 节风险 2、G 节概念分级、J 节主链、K 节乐观情景权重、L 节全部四条触发条件都要重写，方向可能从「震荡」上修。这是单点依赖，也是最该盯的验证项（W8 三季报）。</p>
+<p><strong>有没有为了让逻辑好看而忽略的反面证据</strong>：有三处，如实列出——</p>
+<ol>
+<li>本报告倾向于用「题材与营收不匹配」压制估值判断，但<strong>忽略了设备制造业的订单—收入确认时滞</strong>：轮胎模具与减速器都是先接单后确认收入，当期营收下降不等于在手订单同步下降。库内无在手订单数据，这一反面可能性无法证伪（置信度：中）。</li>
+<li>半年报业绩预告的三条原因里，「部分境内子公司处于建设期产能未释放」属于<strong>一次性／阶段性</strong>因素而非经营能力恶化，本报告把毛利率下降整体归因于盈利能力下降，可能高估了恶化的持续性（置信度：中）。</li>
+<li>库内资金筹码显示 20 日特大单净流入 8.80 亿元，这是与「题材已被证伪」相反的盘面证据。本报告按纪律把它限制在 H 节、未让它影响 J 节结论，但读者应知道它存在（置信度：中）。</li>
+</ol>
+<p><strong>信息缺口清单</strong></p>
+<ol>
+<li><strong>无券商研报</strong>：库内研报返回 None，库内近 90 天无该票研报；联网也未检索到近期可署名的个股研报（检索到的均为行业级人形机器人年度策略）。影响：J 节缺少专业卖方视角的对照，K 节情景概率完全由本报告自行赋值。补法：三季报后重跑库内研报，或按券商官网／研报平台定向检索。</li>
+<li><strong>无 PE 分位</strong>：PE(TTM) 与行业内 PE 排名均为空（亏损所致），B 节无法给出行业估值分位。影响：只能用 PB 做横向对比，缺一个维度。补法：TTM 口径扭亏为盈后自然恢复。</li>
+<li><strong>无分产品营收拆分</strong>：库内财务只有合并口径，无法确认轮胎模具、硫化机、工业机器人、精密机床四条线各占多少。影响：G 节的概念分级只能做到「有业务描述 / 无业务描述」，做不到「有多少营收」。补法：读半年报／年报的分产品收入构成表。</li>
+<li><strong>无公司自身事件</strong>：库内事件日历 3 条全部是概念联想类，无解禁、股东大会、再融资进度。影响：I 节 W4 之后的个股事件为空。补法：接入解禁数据源或定期查深交所公告栏。</li>
+<li><strong>筹码数据滞后近一个月</strong>：筹码分布的交易日为 2026-08-07，其间经历 8 月中旬两连板与随后调整，当前真实获利盘比例与各分位成本可能已明显偏离。影响：L 节触发条件里的价位锚仍以 8-07 快照为准，读者引用时须带这个时点。补法：待更新后重取。</li>
+<li><strong>未解决的说法冲突</strong>：网上流传的「轮胎模具国内市占第一、全球前三」（东方财富财富号自媒体）与行业研究口径的「豪迈科技全球份额 33.4%、单寡头格局」（观研报告网／华经产业研究院）之间存在张力，本报告未采信前者。影响：E 节护城河分级偏保守。补法：查公司年报中的市占率表述或第三方行业报告原文。</li>
+<li><strong>政策事件未交叉验证</strong>：I 节 W2 的「9 月 15 日工信部人形机器人首台套首批申报」来自库内事件日历，多轮联网检索未能独立证实。影响：该催化若不存在，K 节乐观／中性情景的近端催化少一个。补法：查工信部官网通知公告栏。</li>
+<li><strong>自媒体传闻未采信</strong>：「小米 CyberOne 订单 8.2 亿–15.2 亿元」「与华为共建 XT-Huawei 联合实验室」「比亚迪约 30 万台／年 RV 减速器订单」「向宇树小批量供货」等说法，来源均为东方财富财富号、ZAKER 等自媒体聚合内容，无公司公告或券商研报佐证，且与公司自己 2026-08-12「RV 减速器收入占比 1%、对业绩影响有限」的公告口径存在明显张力。本报告<strong>不作为事实采信</strong>，仅在此登记，供读者自行核查（置信度：低）。</li>
+</ol>
+<p><strong>自查确认</strong>：本报告全文无目标价、无评级、无交易动作命令词；所有倾向性表述均为「如果 {可核验条件} 那么 {动作}」形态，且每个价位均先写相对锚（8-07 筹码分位成本）；K 节三情景的演化路径只用锚名、不含任何具体数值；所有财务／估值／行情／概念数字均可回溯到库内取数的函数返回值，联网结论均带来源与日期；卖方观点单列并标注置信度低；全文不含任何用户持仓、自选或账户信息；业绩变化统一使用「同比下滑 X%」「亏损扩大」「毛利率下降 X 个百分点」等财报标准说法，未使用比喻动词代替事实陈述。</p>
+<p><strong>卖方观点（单列，与库内事实严格分开）</strong></p>
+<p>〔卖方预期〕来源：库内研报返回 None，<strong>库内近 90 天无该票券商研报</strong> · 日期：2026-09-04 · 观点：无 · 置信度：不适用</p>
+<p>〔卖方预期〕来源：券商机械行业 2026 年度投资策略研报《人形机器人的 2026：&quot;1-10&quot;时刻开启》（分析师孟鹏飞，证书编号 S0790522060001）· 日期：2025-11-04 · 观点：判断人形机器人行业在 2026 年进入「1 到 10」的放量阶段 · 置信度：低（卖方预期非事实；且为行业层面判断，不针对巨轮智能）</p>
+<p>〔卖方预期〕来源：券商机械行业 2026 年度策略研报《人形机器人 2026 年度策略：「以正和，以奇胜」，重视机器人规模化量产元年》（分析师周尔双）· 日期：2026-02-13 · 观点：2026 年为机器人规模化量产元年，旋转执行器主流方案为无框力矩电机＋谐波减速器 · 置信度：低（卖方预期非事实；技术路线描述未经公司层面确认）</p>
+<p><strong>Sources（联网引用）</strong></p>
+<ul>
+<li><a href="https://finance.cnr.cn/ycbd/20260812/t20260812_527759933.shtml" target="_blank" rel="noopener">巨轮智能异动澄清：RV减速器销售收入占比较低对公司业绩影响有限 — 央广网，2026-08-12</a></li>
+<li><a href="https://www.bjnews.com.cn/detail/1778414658129761.html" target="_blank" rel="noopener">巨轮智能：RV减速器销售收入占比较小 — 新京报，2026-08-12</a></li>
+<li><a href="https://finance.eastmoney.com/a/202608123839381790.html" target="_blank" rel="noopener">巨轮智能：RV减速器销售收入占比较小 — 东方财富，2026-08-12</a></li>
+<li><a href="https://finance.sina.com.cn/stock/stockzmt/2026-05-10/doc-inhxmeak3077399.shtml" target="_blank" rel="noopener">【风口解读】2连板巨轮智能提示风险，RV减速器销售收入占比较小 — 新浪财经，2026-05-10</a></li>
+<li>[[业绩预告]巨轮智能(002031)：2026年半年度业绩预告 — 中财网，2026-07-15](https://www.cfi.net.cn/p20260715001850.html)</li>
+<li><a href="https://cj.sina.com.cn/articles/view/1850649324/6e4eaaec02001znv6" target="_blank" rel="noopener">巨轮智能：XT减速器已完成若干规格的研发工作 — 新浪财经，2025-08-26</a></li>
+<li><a href="https://www.chinabaogao.com/market/202504/748335.html" target="_blank" rel="noopener">我国轮胎模具行业主要经济指标均实现增长豪迈科技为全球市场领头羊 — 观研报告网</a></li>
+<li><a href="https://www.huaon.com/channel/trend/827882.html" target="_blank" rel="noopener">全球轮胎模具行业现状及竞争格局分析 — 华经产业研究院</a></li>
+<li><a href="https://view.inews.qq.com/a/20260801A04CRP00" target="_blank" rel="noopener">七部门揭榜挂帅首次单列人形机器人专题 — 腾讯新闻，2026-08-01</a></li>
+<li><a href="https://finance.sina.cn/2026-06-10/detail-iniaxvfm4391267.d.html" target="_blank" rel="noopener">工信部和国资委联手启动人形机器人实景实训专项行动 — 新浪财经，2026-06-10</a></li>
+<li><a href="https://www.sheitc.sh.gov.cn/gg/20260616/92f5e1838e7a4d028e2c1a0e9a65ecea.html" target="_blank" rel="noopener">上海市2026年度人形机器人与具身智能实景实训专项行动申报通知 — 上海市经信委，2026-06-16</a></li>
+<li><a href="https://finance.eastmoney.com/a/202606173774968885.html" target="_blank" rel="noopener">多地加码人形机器人扶持政策 — 东方财富，2026-06-17</a></li>
+<li><a href="https://m.jrj.com.cn/madapter/stock/2026/06/24081157561361.shtml" target="_blank" rel="noopener">特斯拉人形机器人新进展！上游厂商积极准备量产，关节模组、减速器已供货 — 金融界，2026-06-24</a></li>
+<li><a href="https://pdf.dfcfw.com/pdf/H3_AP202511051775526360_1.pdf" target="_blank" rel="noopener">人形机器人的2026：&quot;1-10&quot;时刻开启（机械行业2026年度投资策略）— 2025-11-04</a></li>
+<li><a href="https://pdf.dfcfw.com/pdf/H3_AP202602131819915475_1.pdf" target="_blank" rel="noopener">人形机器人2026年度策略：&quot;以正和，以奇胜&quot;— 2026-02-13</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-04），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>上半年营收同比-41.87%亏损扩大</li>
+      <li>RV减速器2025年仅占营收1%</li>
+      <li>PB6.20为同行最高且无盈利支撑</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>商誉</dt><dd>收购时溢价支付的部分记在账上的资产。被收购方业绩不达预期时要计提减值、直接冲减利润。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>限售解禁</dt><dd>首发或定增取得的股份锁定期届满、可以上市流通。解禁本身不等于减持，但增加了潜在供给。</dd><dt>业绩预告</dt><dd>上市公司在正式财报前发布的盈利区间预告，达到规定变动幅度时强制披露。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>BLUF</dt><dd>Bottom Line Up Front，结论先行——把最重要的判断放在最前面。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.cnr.cn/ycbd/20260812/t20260812_527759933.shtml" target="_blank" rel="noopener">巨轮智能异动澄清：RV减速器销售收入占比较低对公司业绩影响有限 — 央广网，2026-08-12</a> <em>2026-08-12</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.bjnews.com.cn/detail/1778414658129761.html" target="_blank" rel="noopener">巨轮智能：RV减速器销售收入占比较小 — 新京报，2026-08-12</a> <em>2026-08-12</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.eastmoney.com/a/202608123839381790.html" target="_blank" rel="noopener">巨轮智能：RV减速器销售收入占比较小 — 东方财富，2026-08-12</a> <em>2026-08-12</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/stockzmt/2026-05-10/doc-inhxmeak3077399.shtml" target="_blank" rel="noopener">【风口解读】2连板巨轮智能提示风险，RV减速器销售收入占比较小 — 新浪财经，2026-05-10</a> <em>2026-05-10</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://cj.sina.com.cn/articles/view/1850649324/6e4eaaec02001znv6" target="_blank" rel="noopener">巨轮智能：XT减速器已完成若干规格的研发工作 — 新浪财经，2025-08-26</a> <em>2025-08-26</em></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.chinabaogao.com/market/202504/748335.html" target="_blank" rel="noopener">我国轮胎模具行业主要经济指标均实现增长豪迈科技为全球市场领头羊 — 观研报告网</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.huaon.com/channel/trend/827882.html" target="_blank" rel="noopener">全球轮胎模具行业现状及竞争格局分析 — 华经产业研究院</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://view.inews.qq.com/a/20260801A04CRP00" target="_blank" rel="noopener">七部门揭榜挂帅首次单列人形机器人专题 — 腾讯新闻，2026-08-01</a> <em>2026-08-01</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.cn/2026-06-10/detail-iniaxvfm4391267.d.html" target="_blank" rel="noopener">工信部和国资委联手启动人形机器人实景实训专项行动 — 新浪财经，2026-06-10</a> <em>2026-06-10</em></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.sheitc.sh.gov.cn/gg/20260616/92f5e1838e7a4d028e2c1a0e9a65ecea.html" target="_blank" rel="noopener">上海市2026年度人形机器人与具身智能实景实训专项行动申报通知 — 上海市经信委，2026-06-16</a> <em>2026-06-16</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.eastmoney.com/a/202606173774968885.html" target="_blank" rel="noopener">多地加码人形机器人扶持政策 — 东方财富，2026-06-17</a> <em>2026-06-17</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.jrj.com.cn/madapter/stock/2026/06/24081157561361.shtml" target="_blank" rel="noopener">特斯拉人形机器人新进展！上游厂商积极准备量产，关节模组、减速器已供货 — 金融界，2026-06-24</a> <em>2026-06-24</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://pdf.dfcfw.com/pdf/H3_AP202511051775526360_1.pdf" target="_blank" rel="noopener">人形机器人的2026：&quot;1-10&quot;时刻开启（机械行业2026年度投资策略）— 2025-11-04</a> <em>2025-11-04</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://pdf.dfcfw.com/pdf/H3_AP202602131819915475_1.pdf" target="_blank" rel="noopener">人形机器人2026年度策略：&quot;以正和，以奇胜&quot;— 2026-02-13</a> <em>2026-02-13</em></li>
+      <li><span class="src-tag src-media">媒体</span> 库内事件日历，importance 7，置信度：中——展会本身有多方报道，Optimus 首秀属报道口径未经官方确认 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内事件日历，importance 7，置信度：中 — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-04 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
