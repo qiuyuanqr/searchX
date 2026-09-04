@@ -446,6 +446,14 @@ table thead th:first-child{z-index:2; background:var(--paper-2)}
   color:var(--ink); white-space:nowrap; max-width:16em; overflow:hidden; text-overflow:ellipsis;
   opacity:0; transition:opacity .12s ease, top .1s ease}
 .sx-rail-tip.show{opacity:1}
+/* 宽屏（留白够放下目录条 + 标题气泡）把目录条从屏幕最左缘挪到紧挨正文列的左侧：
+   视线不用横跨大片空白。同时气泡翻到条的左侧弹出——条已经贴着正文，再往右弹会盖住正在读的字。
+   1200px 以下留白不够，维持原来的「贴左缘 + 气泡向右」。 */
+@media (min-width:1200px) and (hover:hover){
+  .sx-toc{left:calc((100vw - var(--measure)) / 2 - 3.5rem)}
+  .sx-rail-tip{left:auto; right:100%; margin-right:.5rem;
+    max-width:min(16em, calc((100vw - var(--measure)) / 2 - 5rem))}
+}
 @media (max-width:899px), (hover:none){
   .sx-toc{left:auto; right:6px}
   .sx-toc nav{padding:8px 2px 8px 14px; touch-action:none}
