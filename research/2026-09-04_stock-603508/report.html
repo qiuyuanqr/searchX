@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>思维列控（603508.SH） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>思维列控（603508.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-04（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 计算机设备</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 安防 · 高铁 · 机器视觉 · 高股息精选 · 车联网(车路协同) · 无人驾驶 · 5G · 无人机</span>
+      <span><b>来源</b> 15 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    思维列控（603508）是一家 A 股上市公司。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——低估值高股息，但二季度营收同比转负。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：低估值高股息，但二季度营收同比转负。支撑在于PE14.27倍行业81只中第2便宜；库内股息率15.40%负债率仅5.57%；老旧机车淘汰政策执行至2027年底。主要风险是二季度单季营收同比转负约5.4%；毛利率四期从67.22%降至63.88%；近20日主力净流出0.94亿15天流出。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>PE14.27倍行业81只中第2便宜</li>
+      <li>库内股息率15.40%负债率仅5.57%</li>
+      <li>老旧机车淘汰政策执行至2027年底</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据基准：库内取数日 2026-09-04，行情时点数据时点 = 15:34（收盘后）。本报告不含任何持仓、自选、账户信息。</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：低估值高股息，但二季度营收同比转负。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>估值处于行业最低档</strong>：PE(TTM) 14.27 倍，同行业（IT设备，81 只）PE 中位数 53.29 倍，该股 PE 排名第 2 便宜；PB 1.98 倍。（置信度：高，来自库内估值）</li>
+<li><strong>分红力度大、资产负债表极干净</strong>：库内股息率 15.40%（2026-09-04 口径）；资产负债率仅 5.57%，2026H1 毛利率 63.88%、净利率 45.21%。（置信度：高，来自库内估值与库内财务）</li>
+<li><strong>铁路设备更新政策仍在执行期</strong>：国家铁路局《老旧型铁路内燃机车淘汰更新监督管理办法》要求至 2027 年底重点区域老旧型内燃机车全部退出，公司主营的 LKJ 列控系统是机车标配。（置信度：中，政策为多源确认，但对公司具体订单的传导量级未见库内佐证）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>二季度单季营收同比转负</strong>：一季度营收同比 +18.66%、净利同比 +26.66%，到半年度收敛为营收同比 +5.73%、净利同比 +4.65%；据两期相减推算，二季度单季营收同比约 -5.4%、净利润同比下滑约 11.2%。（置信度：高，H1/Q1 为库内数据，单季拆分为推算）</li>
+<li><strong>毛利率连续下降</strong>：2025 年前三季 67.22% → 2025 年报 66.49% → 2026Q1 62.67% → 2026H1 63.88%，较 2025 年前三季高点下降约 3.3 个百分点。（置信度：高，来自库内财务）</li>
+<li><strong>资金面与筹码面偏弱</strong>：近 20 个交易日（2026-08-10 至 09-04）主力资金净流出 0.94 亿元，净流入天数仅 5/20；股东户数由 2026-06-30 的 34044 户增至 2026-08-10 的 35592 户，环比 +4.5%（筹码趋分散）。（置信度：中，盘面现象非基本面证据）</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ul>
+<li><strong>信号一</strong>：2026 年三季报单季营收同比是否由负转正、毛利率能否止住下降——核验时点为三季报披露（法定截止 2026-10-31，见 I 节 W8）。</li>
+<li><strong>信号二</strong>：2026 年中期分红方案是否公告、每股派息与 2025 年中期的每股 2.1 元相比是高是低——核验时点为公司利润分配公告发布之日（时点未定，见 I 节说明与 M 节缺口）。</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong>：本报告把「低估值＋高股息」当作股价的下方支撑，但库内股息率 15.40% 与公开可查的两笔分红（2025 年中期每股 2.1 元、2025 年度末期每股 0.5245 元，合计 2.6245 元，对应 9-04 收盘价约 12.3%）存在口径差异未能对平。若该股息率实际不可持续（例如 2026 年中期不再派息），支撑逻辑的一半就失效了。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>公司</strong>：河南思维自动化设备股份有限公司，证券简称思维列控，代码 603508（库内基础资料与库内公司档案核对一致）</li>
+<li><strong>干什么的</strong>：列车运行控制系统（LKJ 系列，功能是防超速、防冒进）的研发、升级、产业化及技术支持，向客户提供列车运行控制系统、行车安全监测系统、LKJ 安全管理及信息化系统等整体解决方案。（库内公司档案）</li>
+<li><strong>行业归属</strong>：IT设备（库内 Tushare 行业口径）；上市板块：主板</li>
+<li><strong>上市时间</strong>：2015-12-24，至今约 10 年 9 个月；上市状态 = （正常上市，非退市）</li>
+<li><strong>规模</strong>：员工 1139 人；注册资本 38127.4377 万元（即约 3.81 亿股）</li>
+<li><strong>公司自述</strong>：核心产品 LKJ 已在全国铁路 2 万余台机车和近 50% 的动车组上普及应用；拥有专利 116 项、软件著作权 210 项；研发人员比例超过 45%；拥有 3 家全资子公司、8 家控股子公司、2 家参股子公司。（以上为库内公司档案中的公司自述口径，非独立核实数据，置信度：中）</li>
+</ul>
+<p><strong>当前行情（库内行情，数据时点 2026-09-04 15:34，收盘后）</strong></p>
+<ul>
+<li>现价 21.35 元 · 当日涨跌 +0.71% · 当日最高 +1.75% / 最低 +0.28% · 成交额 0.70 亿元</li>
+</ul>
+<p><strong>估值（库内估值，交易日 2026-09-04）</strong></p>
+<ul>
+<li>总市值 81.4 亿元 · PE(TTM) 14.27 倍 · PB 1.98 倍 · 股息率 15.40% · 换手率 0.85%</li>
+<li>同行业（IT设备）共 81 只，行业 PE 中位数 53.29 倍，该股 PE 在行业内排名第 2（从便宜到贵）</li>
+</ul>
+<p><strong>读法</strong>：81 只同行业股票里第 2 便宜，PE 只有行业中位数的约 27%（14.27 / 53.29，推算）。换手率 0.85%、当日成交额 0.70 亿元，属于交投清淡的中小市值票，进出的冲击成本要预先考虑。（置信度：高）</p>
+<p>库内 A/H 对照返回 None，即该股非 A+H 两地上市，无跨市场估值参照系。</p>
+<h2>C. 财务健康</h2>
+<p>库内财务（近 4 期）返回的四期（新→旧，金额单位亿元）：</p>
+<ul>
+<li><strong>2026H1（截止 20260630，2026-08-08 披露）</strong>：营收 7.29（同比 +5.73%）· 归母净利 3.18（同比 +4.65%）· ROE 7.82% · 毛利率 63.88% · 净利率 45.21% · EPS 0.83 · 资产负债率 5.57%</li>
+<li><strong>2026Q1（截止 20260331，2026-04-29 披露）</strong>：营收 3.79（同比 +18.66%）· 归母净利 1.61（同比 +26.66%）· ROE 3.93% · 毛利率 62.67% · 净利率 44.32% · EPS 0.42 · 资产负债率 6.82%</li>
+<li><strong>2025 年报（截止 20251231，2026-04-11 披露）</strong>：营收 15.20（同比 +0.29%）· 归母净利 5.56（同比 +1.42%）· ROE 12.78% · 毛利率 66.49% · 净利率 37.64% · EPS 1.46 · 资产负债率 9.20%</li>
+<li><strong>2025 前三季（截止 20250930，2025-10-31 披露）</strong>：营收 9.53（同比 +5.25%）· 归母净利 3.96（同比 +20.98%）· ROE 9.28% · 毛利率 67.22% · 净利率 42.91% · EPS 1.04 · 资产负债率 7.21%</li>
+</ul>
+<p><strong>趋势判断（哪一项在变好、哪一项在变坏）</strong></p>
+<ol>
+<li><strong>增速放缓是本期最明确的变化</strong>（置信度：高）。一季度营收同比 +18.66%、净利同比 +26.66%，到半年度分别收敛为 +5.73% 和 +4.65%。<strong>据 H1 与 Q1 相减推算</strong>：二季度单季营收约 3.50 亿元、净利约 1.57 亿元；再据同比率反推去年同期（2025Q2 营收约 3.70 亿元、净利约 1.77 亿元），<strong>二季度单季营收同比转负约 -5.4%、净利润同比下滑约 11.2%</strong>。这三个单季数字均为推算值，非库内直接字段。</li>
+</ol>
+<ol>
+<li><strong>毛利率连续四期下降是第二个变坏项</strong>（置信度：高）。67.22%（2025 前三季）→ 66.49%（2025 年报）→ 62.67%（2026Q1）→ 63.88%（2026H1）。二季度较一季度环比回升 1.21 个百分点，但仍比 2025 年前三季低约 3.3 个百分点。是否是产品结构变化还是价格竞争，库内无分产品营收拆分，<strong>无法判定</strong>。</li>
+</ol>
+<ol>
+<li><strong>资产负债表持续变好</strong>（置信度：高）。资产负债率 9.20%（2025 年报）→ 6.82%（2026Q1）→ 5.57%（2026H1），已属 A 股极低水平。这意味着公司几乎不用有息负债经营，抗风险能力强，但也说明账面资金未被投入扩张。</li>
+</ol>
+<ol>
+<li><strong>盈利质量仍在高位</strong>（置信度：高）。2026H1 净利率 45.21%，ROE 半年 7.82%（年化约 15.6%，推算）。需要注意：半年报净利率天然高于全年——2025 年前三季净利率 42.91%，全年降至 37.64%，<strong>据两期相减推算</strong> 2025 年四季度单季营收约 5.66 亿元、净利约 1.60 亿元，单季净利率仅约 28.2%。所以不能拿 45.21% 直接年化。</li>
+</ol>
+<ol>
+<li><strong>2025 全年是停滞的一年</strong>（置信度：高）：营收同比 +0.29%、净利同比 +1.42%，几乎零增长。2026Q1 的高增长看起来是低基数上的一次修复，二季度没能延续。</li>
+</ol>
+<p><strong>仅估值口径的判断</strong>：PE 14.27 倍、PB 1.98 倍、股息率 15.40%，配合 5.57% 的资产负债率与 45.21% 的净利率，从静态估值看明显便宜（置信度：高）。但<strong>便宜不等于好</strong>——市场给低估值往往是在为「增长停滞」定价，而二季度的单季数字恰好印证了这一担忧（置信度：中）。</p>
+<p><strong>信息缺口</strong>：库内财务只有营收/净利/ROE/毛利率/净利率/EPS/负债率七项，<strong>没有分产品营收拆分、没有经营性现金流、没有应收账款与合同负债</strong>。影响：无法判断毛利率下降来自哪块业务、无法验证「铁路客户回款周期长」这一行业常识对本公司的实际影响。补法：需人工查阅 2026 年半年度报告原文（上交所披露），本报告不引用联网检索到的财务数字（受铁律约束）。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比（取 3 家）按库内「IT设备」行业返回的三只对照票（财报截止期均为 20260630）：</p>
+<ul>
+<li><strong>思维列控（603508）</strong> · 市值 81.4 亿 · PE(TTM) 14.27 · PB 1.98 · 营收 7.29 亿 · 净利 3.18 亿 · ROE 7.82%</li>
+<li><strong>海康威视（002415）</strong> · 市值 3195.79 亿 · PE(TTM) 19.45 · PB 3.79 · 营收 468.23 亿 · 净利 78.96 亿 · ROE 9.42%</li>
+<li><strong>大普微（301666）</strong> · 市值 1768.77 亿 · PE(TTM) 146.53 · PB 48.51 · 营收 47.22 亿 · 净利 13.34 亿 · ROE 65.67%</li>
+<li><strong>协创数据（300857）</strong> · 市值 1237.60 亿 · PE(TTM) 48.14 · PB 20.42 · 营收 125.23 亿 · 净利 18.38 亿 · ROE 35.18%</li>
+</ul>
+<p><strong>一段话读法</strong></p>
+<p>这份同行名单<strong>可比性很弱</strong>（置信度：高）。库内「IT设备」是一个宽口径行业标签：海康威视是安防视频龙头，大普微是存储主控芯片，协创数据是数据存储与智能终端 ODM——三家都不做铁路列控，与思维列控不构成产品竞争或客户重叠。因此表中的对比只能读出两件事：</p>
+<ol>
+<li><strong>规模差距</strong>：思维列控 81.4 亿市值，是四家里最小的，不到海康威视的 1/39。半年营收 7.29 亿元也是最小的。</li>
+<li><strong>估值与盈利能力的错配</strong>：思维列控 ROE 7.82% 低于其余三家（9.42% / 65.67% / 35.18%），但 PE 14.27 倍与 PB 1.98 倍也是四家里最低的。用 PB/ROE 粗看，市场给它的定价对应的是「盈利能力中等、增长预期很低」的组合（置信度：中）。</li>
+</ol>
+<p><strong>真正的同业在哪里</strong>：LKJ 列控系统在国内是行业定点供应模式，公司自述为「我国列车控制领域首家 A 股上市企业」（库内公司档案）。库内没有铁路信号/列控这一细分行业的对照票，<strong>这是本节最大的缺口</strong>（置信度：高）。影响：无法判断公司在细分赛道内的份额变化与议价能力趋势。补法：需人工指定同赛道对照标的（如铁路信号、轨交信息化方向）后重跑对比。</p>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>分级结论：阶段性优势为主，带有部分结构性成分（置信度：中）</strong></p>
+<p><strong>偏结构性的部分</strong></p>
+<ul>
+<li><strong>行业准入与定点资质</strong>：库内公司档案明确写公司是「铁路装备定点企业」，并称拥有专利 116 项、软件著作权 210 项、参与制定行业标准 6 项、铁路技术规章 8 项。铁路行车安全设备属于强监管、需资质与长期验证的领域，新进入者难以短期替代。（置信度：中——资质与标准参与度为公司自述，未独立核实）</li>
+<li><strong>存量装机形成的换代惯性</strong>：公司自述 LKJ 已在全国铁路 2 万余台机车和近 50% 的动车组上普及应用。存量装机大意味着后续升级、换装、维保有天然的路径依赖。（置信度：中，同为公司自述）</li>
+</ul>
+<p><strong>阶段性优势的部分</strong></p>
+<ul>
+<li><strong>单一大客户体系</strong>：下游是国铁集团及其路局体系，客户集中度天然极高。好处是订单可预期、回款主体信用好；坏处是价格与节奏由对方决定，公司几乎没有提价能力。这一点解释了为什么毛利率高达 63.88% 却仍在逐期下降——高毛利来自软件属性，下降压力来自采购端（置信度：中，属推理，库内无分产品数据佐证）。</li>
+</ul>
+<p><strong>看不出护城河的部分</strong></p>
+<ul>
+<li>公司经营范围里列了「智能交通、机器人」等培育业务（库内公司档案），并提出「实体经营＋资本运营」双驱模式。<strong>库内没有任何数据能证明这些新业务已形成营收</strong>（置信度：高）。在得到财报佐证之前，这些方向只能当作愿景陈述，不计入护城河。</li>
+</ul>
+<p><strong>商业模式一句话</strong>：卖的是「装在机车上、必须持证合规、一装十几年」的安全类软硬件，净利率 45.21%、资产负债率 5.57%——是典型的高毛利、轻资产、低杠杆、现金充裕但天花板由铁路投资节奏决定的生意（置信度：高）。</p>
+<h2>F. 政策与监管</h2>
+<p>本节以联网信息为主（库内无政策数据），每条带来源与日期。</p>
+<p><strong>1）老旧内燃机车淘汰更新政策——直接利好，传导链最清晰（置信度：中高）</strong></p>
+<ul>
+<li>国家铁路局印发《老旧型铁路内燃机车淘汰更新监督管理办法》：至 <strong>2027 年底</strong>，重点区域（京津冀及周边、长三角、汾渭平原、广州、重庆、成都、武汉）老旧型铁路内燃机车应当全部退出铁路运输市场；至 2035 年底基本退出。老旧型内燃机车报废运用年限为 30 年。</li>
+<li>来源：<a href="https://www.gov.cn/zhengce/zhengceku/202409/content_6977731.htm" target="_blank" rel="noopener">中国政府网 · 国家铁路局通知（2024-09）</a>、<a href="https://www.thepaper.cn/newsDetail_forward_28936062" target="_blank" rel="noopener">澎湃新闻（2024-10）</a>、<a href="https://zjic.zj.gov.cn/ywdh/nyhj/202506/t20250616_23512328.shtml" target="_blank" rel="noopener">浙江省发改委转载（2025-06）</a>——三源一致。</li>
+<li><strong>传导链</strong>：机车淘汰更新 → 新造机车与改造机车需重新装配 LKJ 列控设备 → 公司主营产品需求增加。<strong>利好方向明确，但量级无法核实</strong>：库内财务数据看不出这块贡献了多少营收，2025 年全年营收同比仅 +0.29%，说明政策红利至少在 2025 年尚未体现为收入增长（置信度：高，这是对政策乐观预期的重要反证）。</li>
+</ul>
+<p><strong>2）铁路固定资产投资维持低速正增长——中性偏弱（置信度：高）</strong></p>
+<ul>
+<li>2026 年上半年全国铁路完成固定资产投资 3632 亿元，同比 <strong>+2.1%</strong>，投产新线 355.2 公里。</li>
+<li>来源：<a href="https://www.chinanews.com.cn/cj/2026/07-17/10661112.shtml" target="_blank" rel="noopener">中新网（2026-07-17）</a>、<a href="https://m.gmw.cn/2026-07/17/content_1304533837.htm" target="_blank" rel="noopener">光明网（2026-07-17）</a>、<a href="https://finance.sina.com.cn/tech/roll/2026-07-17/doc-iniiccvc8167513.shtml" target="_blank" rel="noopener">新浪财经（2026-07-17）</a>——三源一致。</li>
+<li><strong>读法</strong>：+2.1% 是低速增长，与公司 2026H1 营收同比 +5.73% 大体处于同一量级。这条数据的价值在于给出行业天花板：<strong>在铁路投资只有个位数低增长的背景下，指望公司出现高速增长缺乏宏观支撑</strong>（置信度：中）。</li>
+</ul>
+<p><strong>3）动车组采购招标持续推进——中性偏正面（置信度：中）</strong></p>
+<ul>
+<li>2026 年 5 月，国铁集团启动 2026 年第一次复兴号动力集中动车组采购招标，共计 60 组，招标总价值约 40 亿元。</li>
+<li>来源：<a href="https://news.qq.com/rain/a/20260515A079CD00" target="_blank" rel="noopener">腾讯新闻（2026-05-15）</a>、<a href="https://finance.sina.com.cn/wm/2026-05-15/doc-inhxytzh6425684.shtml" target="_blank" rel="noopener">新浪财经（2026-05-15）</a>——两源同日，可能同一通稿转载，<strong>未构成真正独立交叉验证，置信度降为中</strong>。</li>
+<li><strong>传导链</strong>：新造动车组需配套列控与运行监测设备 → 公司自述其产品已覆盖近 50% 动车组 → 有订单机会。但 60 组的采购规模对一家半年营收 7.29 亿元的公司能贡献多少，<strong>无任何公开数据支撑，不做量化推断</strong>。</li>
+</ul>
+<p><strong>4）行业存量规模的单源说法（置信度：低）</strong></p>
+<ul>
+<li>有报道称国内现存老旧机车约 9700 台，更新换代可拉动上下游近万亿元产业规模。来源：<a href="https://finance.sina.com.cn/jjxw/2024-10-21/doc-incthspx2376137.shtml" target="_blank" rel="noopener">新浪财经（2024-10-21）</a>。<strong>单源未交叉验证，且「万亿产业规模」是全产业链口径，与本公司可获取的份额无对应关系，仅作背景参考。</strong></li>
+</ul>
+<p><strong>监管风险面</strong>：未检索到针对公司的监管处罚、立案调查或问询函信息（置信度：低——「没搜到」不等于「没有」，属检索能力局限）。</p>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 10 个同花顺概念标签，逐个分级：</p>
+<p><strong>A 类 · 真有业务（有主营描述或库内数据佐证）</strong></p>
+<ul>
+<li><strong>高铁</strong>（885562.TI）：库内公司档案明确写列车运行控制系统、行车安全监测系统，公司自述产品已用于近 50% 的动车组。<strong>这是唯一与主营完全对得上的标签</strong>（置信度：高）。</li>
+</ul>
+<p><strong>B 类 · 交易属性标签（不是业务，但对流动性有实际影响）</strong></p>
+<ul>
+<li><strong>沪股通</strong>（885520.TI）：说明该股在沪港通标的范围内，北向资金可以买卖。（置信度：高）</li>
+<li><strong>融资融券</strong>（885338.TI）：说明该股是两融标的，可融资买入、可融券。（置信度：高）</li>
+<li><strong>高股息精选</strong>（886072.TI）：与库内估值 15.40% 的事实一致，标签有数据支撑。（置信度：高）</li>
+</ul>
+<p><strong>C 类 · 仅概念标签，未见营收佐证</strong></p>
+<ul>
+<li><strong>5G</strong>（885556.TI）：<strong>仅概念标签，未见营收佐证</strong>。库内主营描述与经营范围中无 5G 通信设备或相关服务。（置信度：高——「无佐证」这一判断本身是确定的）</li>
+<li><strong>无人驾驶</strong>（885736.TI）：<strong>仅概念标签，未见营收佐证</strong>。公司做的是有人驾驶列车的运行监控与超速防护，与通常语境下的汽车无人驾驶不是一件事。这个标签的关联度需要特别提醒读者。（置信度：高）</li>
+<li><strong>车联网/车路协同</strong>（885662.TI）：<strong>仅概念标签，未见营收佐证</strong>。（置信度：高）</li>
+<li><strong>无人机</strong>（885564.TI）：<strong>仅概念标签，未见营收佐证</strong>。经营范围中无航空器相关表述。（置信度：高）</li>
+<li><strong>机器视觉</strong>（886002.TI）：<strong>仅概念标签，未见营收佐证</strong>。公司经营范围提到「自动化控制技术」与「机器人」培育业务，但库内无对应营收数据。（置信度：高）</li>
+<li><strong>安防</strong>（885423.TI）：<strong>仅概念标签，未见营收佐证</strong>。公司做的是行车安全，与通常语境下的安防监控行业不同。（置信度：中）</li>
+</ul>
+<p><strong>小结</strong>：10 个标签里只有 1 个（高铁）对得上主营，3 个是交易属性标签，<strong>6 个属于沾边标签</strong>。这意味着<strong>该股很难被主流题材行情带动</strong>——如果哪天它因「无人驾驶」「机器视觉」等标签跟涨，那属于标签驱动而非基本面驱动，不具备持续性（置信度：中）。</p>
+<p><strong>产业链位置</strong></p>
+<ul>
+<li><strong>上游</strong>：电子元器件、嵌入式硬件、工业微机化设备（库内经营范围中「销售：微机、电子仪器、电子元器件」印证）。上游是标准化电子件，公司议价能力<strong>较强</strong>。</li>
+<li><strong>本环节</strong>：列控系统整体解决方案（软硬件一体），高毛利率 63.88% 印证软件属性占比高。</li>
+<li><strong>下游</strong>：国铁集团及所属路局、机车车辆制造单位。下游高度集中、且是政策与预算驱动的采购方，公司议价能力<strong>弱</strong>。</li>
+<li><strong>议价能力结论</strong>：两端不对称——上游强、下游弱。这决定了公司<strong>能守住高毛利但守不住定价权</strong>，毛利率的长期方向大概率是缓慢下移（置信度：中）。</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<p><strong>新闻（库内新闻，近 60 天）</strong></p>
+<p>近 60 天库内<strong>仅收录 1 条</strong>，这本身就是重要信息——该股几乎没有媒体关注度（置信度：高）。</p>
+<ol>
+<li><strong>2026-09-01 18:30 · 互动易董秘问答（来源库内投资者关系问答）</strong>：《【董秘问答】思维列控:公司管理层对公司股价极其不作为，对股价下跌极其冷漠，而且公司又不缺钱，真心建议公…》，情感值 -0.2667，相关度 100，事件分类为 other / 噪音其他。</li>
+</ol>
+<p><strong>一句话读法</strong>：这是投资者在互动平台上抱怨股价表现和公司市值管理态度，<strong>对基本面没有实质影响</strong>，但它反映了两件可核验的事实：一是股价近期表现让持有者不满，二是提问者认可「公司不缺钱」——后者与库内资产负债率 5.57% 相互印证。（置信度：中）</p>
+<p><strong>信息缺口</strong>：60 天仅 1 条新闻、且是噪音类，意味着本报告的消息面维度<strong>基本是空的</strong>。影响：任何基于「近期有无利好催化」的判断都缺乏依据；公司的中报披露（2026-08-08）、西南证券研报（2026-09-03）等事件均未被库内新闻表收录。补法：需扩大新闻源覆盖或直接查阅上交所公告。</p>
+<p><strong>涨停史（库内涨停记录，近 180 天）</strong></p>
+<ul>
+<li><strong>2026-04-29</strong>：涨幅 +10.01%，1 连板，首次封板 09:37:04，最后封板 14:01:55，<strong>当日开板 5 次</strong>，封单金额仅 0.09 亿元，行业标记「计算机设&quot;);涨停统计 1/1。</li>
+<li><strong>读法</strong>：近 180 天只有 1 次涨停，且当日开板 5 次、封单仅 0.09 亿元，属于<strong>封板质量很弱</strong>的涨停——不是资金强攻，更像消息驱动的一日冲高。日期 2026-04-29 恰是 2026 年一季报披露日（库内财务显示 2026Q1 公告日 = 20260429），单季净利同比 +26.66% 是当天的合理催化。（置信度：中高）</li>
+<li><strong>结论</strong>：该股情绪面几乎没有游资参与痕迹，是典型的低关注度、低波动个股（置信度：高）。</li>
+</ul>
+<p><strong>资金流（库内资金筹码，窗口 2026-08-10 至 2026-09-04，共 20 个交易日）</strong></p>
+<ul>
+<li>主力资金净流入合计 <strong>-0.94 亿元</strong>（即净流出 0.94 亿元）；特大单净流入合计 -0.26 亿元；<strong>净流入天数 5 天、净流出天数 15 天</strong>。</li>
+<li><strong>读法</strong>：近一个月资金持续以流出为主，净流出天数是净流入天数的 3 倍。放在 81.4 亿市值上看，0.94 亿元的净流出约占市值 1.2%（推算），量不算大，但方向一致性强。（置信度：中）</li>
+</ul>
+<p><strong>筹码（库内资金筹码）</strong></p>
+<ul>
+<li><strong>筹码数据：库内仅覆盖关注票，该票暂无。</strong> 这是数据覆盖范围的限制，不代表事实缺失。因此本报告<strong>无法给出获利盘比例（获利盘比例）</strong>，也就无法判断上方套牢盘密度与短线获利抛压——这是 H 节的一个明确缺口。</li>
+</ul>
+<p><strong>股东户数（库内资金筹码，季度/期间披露，天然滞后）</strong></p>
+<ul>
+<li>截止 <strong>2026-08-10</strong>：35592 户；上期截止 2026-06-30：34044 户；<strong>环比 +4.5%</strong>。</li>
+<li><strong>读法</strong>：股东户数增加意味着筹码趋于分散（同样的股本被更多人持有，户均持股下降），通常对应散户接盘、机构或大户减持。截止日为 2026-08-10，<strong>已滞后近一个月</strong>，不能反映最新状态。（置信度：中）</li>
+</ul>
+<div class="callout">⚠️ <strong>本节纪律声明</strong>：资金流、股东户数属于盘面与筹码现象，<strong>不是基本面证据</strong>。它们在本报告中只作情绪面佐证，不进入 J 节逻辑链充当决定性一环，也不单独用于推导操作倾向。</div>
+<h2>I. 未来 13 周事件日历</h2>
+<p>库内事件日历（近 120 日）返回 2 条（均为概念匹配，非公司自身事件），其余由公开时间规则与政策窗口补充。周起始日为周一。</p>
+<ul>
+<li><strong>W1（2026-09-07 起）</strong>：本周无已知事件</li>
+<li><strong>W2（2026-09-14 起）</strong>：本周无已知事件</li>
+<li><strong>W3（2026-09-21 起）</strong>：
+<ul>
+<li>2026-09-22～24 · <strong>2026 世界新能源汽车大会（WNEVC，海口）</strong> · 会议 · 重要性中（库内 importance 7）· 匹配原因：概念 885736.TI「无人驾驶」· 影响：<strong>与公司主营铁路列控无直接关系</strong>，属 G 节 C 类沾边标签的事件，只可能带来短暂的标签联动（置信度：低）</li>
+<li>2026-09-22～24 · <strong>2026 中国国际信息通信展览会（PT 展，北京）</strong> · 会议 · 重要性中（库内 importance 7）· 匹配原因：概念 885556.TI「5G」· 影响：<strong>同样与主营无直接关系</strong>，仅标签联动（置信度：低）</li>
+</ul></li>
+<li><strong>W4（2026-09-28 起）</strong>：本周无已知事件（含国庆节前最后交易日）</li>
+<li><strong>W5（2026-10-05 起）</strong>：国庆假期，A 股休市 · 制度性 · 重要性低 · 影响：无交易日，持仓过节的时间风险窗口</li>
+<li><strong>W6（2026-10-12 起）</strong>：本周无已知事件</li>
+<li><strong>W7（2026-10-19 起）</strong>：三季报密集披露期开启 · 财报 · 重要性高 · 影响：若公司在本周预约披露三季报，即为验证 A 节「信号一」的时点</li>
+<li><strong>W8（2026-10-26 起）</strong>：<strong>2026 年三季报法定披露截止（2026-10-31）</strong> · 财报 · 重要性 <strong>高</strong> · 影响：<strong>本季度最关键的一周</strong>。核验三件事——① 三季度单季营收同比是否由负转正（对照 H1 推算的 -5.4%）；② 毛利率能否止住下降（对照 2026H1 的 63.88%、2026Q1 的 62.67%）；③ 前三季度累计增速与 2025 年同期 +5.25% 营收/+20.98% 净利的对比</li>
+<li><strong>W9（2026-11-02 起）</strong>：三季报后的机构点评窗口 · 研报 · 重要性中 · 影响：观察库内研报的研报数量是否从当前的 1 篇（近 90 天）增加，是关注度回升的先行指标</li>
+<li><strong>W10（2026-11-09 起）</strong>：本周无已知事件</li>
+<li><strong>W11（2026-11-16 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-11-23 起）</strong>：本周无已知事件</li>
+<li><strong>W13（2026-11-30 起）</strong>：本周无已知事件</li>
+</ul>
+<p><strong>日历外的浮动事件（时点未定，但重要性最高）</strong></p>
+<ul>
+<li><strong>2026 年中期利润分配方案的公告</strong>：公司 2025 年年度股东会已授权董事会制定 2026 年中期分红方案（来源：<a href="https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?stockid=603508&amp;id=12081571" target="_blank" rel="noopener">新浪财经 · 公司公告《关于公司 2025 年度利润分配预案及 2026 年中期利润分配授权的公告》，2026-04-11</a>）。作为参照，<strong>2025 年的中期分红方案由第五届董事会第九次会议于 2025-08-05 审议通过，拟派发现金红利合计约 8.0068 亿元、对应每股约 2.1 元</strong>（来源：<a href="https://stockmc.xueqiu.com/202508/603508_20250806_P9F4.pdf" target="_blank" rel="noopener">雪球托管的公司公告 2025-024 号，2025-08-06</a>；单一渠道，置信度：低）。<strong>截至本报告数据基准日，未检索到 2026 年中期分红方案已公告的证据</strong>，且有检索结果显示 2026 年半年度报告中「本报告期利润分配预案不涉及」。这一条的落地与否，是 A 节「信号二」，也是本报告最大的不确定项。</li>
+</ul>
+<p><strong>日历的用法</strong>：三个月后回头对着这份日历核——W8 的三季报数字兑现了没有、中期分红方案出了没有、W3 的两场展会有没有真的带来标签联动。对不上的地方，就是本报告判断出错的地方。</p>
+<h2>J. 逻辑链</h2>
+<p>把 B–I 的事实串成一条可证伪的链：</p>
+<p><strong>第 1 环（置信度：高）</strong> 因为库内估值显示 PE(TTM) 14.27 倍、行业中位 53.29 倍、81 只中排第 2 便宜，PB 1.98 倍，股息率 15.40%；且库内财务显示资产负债率仅 5.57%、净利率 45.21% —— <strong>所以这是一只静态估值很低、账面很干净、分红慷慨的公司</strong>。</p>
+<p><strong>第 2 环（置信度：高）</strong> 因为库内财务显示 2025 全年营收同比仅 +0.29%、净利同比 +1.42%；2026Q1 反弹至 +18.66% / +26.66%，但 2026H1 收敛至 +5.73% / +4.65%（据两期相减推算，二季度单季营收同比转负约 -5.4%、净利同比下滑约 11.2%）；且毛利率从 2025 前三季的 67.22% 降至 2026H1 的 63.88% —— <strong>所以市场给的低估值不是无缘无故的，它对应的是「增长停滞＋盈利能力小幅下移」这一现实</strong>。</p>
+<p><strong>第 3 环（置信度：中）</strong> 因为联网多源确认 2026H1 全国铁路固定资产投资同比仅 +2.1%（中新网/光明网/新浪，2026-07-17），而老旧内燃机车淘汰政策的执行期要到 2027 年底（中国政府网 2024-09 等三源）—— <strong>所以行业需求存在但增速平缓，政策提供的是「需求不会塌」的底，而不是「需求会爆发」的弹性</strong>。反证同样成立：政策 2024 年就发布了，公司 2025 年全年营收同比只有 +0.29%，说明政策红利到目前为止<strong>没有体现为收入加速</strong>（这一反证的置信度：高）。</p>
+<p><strong>第 4 环（置信度：中）</strong> 因为库内概念标签的 10 个标签里只有「高铁」对得上主营、6 个是沾边标签；库内新闻近 60 天仅 1 条噪音类新闻；库内涨停记录近 180 天仅 1 次弱封涨停（开板 5 次、封单 0.09 亿元）；库内研报近 90 天仅 1 篇研报 —— <strong>所以该股缺乏题材催化与市场关注度，估值修复缺少触发媒介</strong>。</p>
+<p><strong>综合推论</strong>：低估值＋高股息构成下方支撑，增长停滞＋无催化压制上方空间，<strong>方向大概率是震荡</strong>（置信度：中）。</p>
+<p><strong>如果这个推论成立，应该能观察到什么</strong>（可证伪的预期）：</p>
+<ol>
+<li>股价在没有基本面变化时波动率低、成交清淡——<strong>已观察到</strong>：2026-09-04 换手率 0.85%、成交额 0.70 亿元、当日振幅仅 1.47 个百分点（1.75% − 0.28%，推算）。</li>
+<li>涨停或大幅上涨只发生在财报日等硬事件上——<strong>已观察到</strong>：唯一的涨停 2026-04-29 恰是一季报披露日。</li>
+<li>未来三季报若数字继续走弱，估值不会因为「已经很便宜」而止跌，而会继续压缩。<strong>这一条尚未验证，是 W8 的核验点</strong>。</li>
+</ol>
+<p><strong>这条链最弱的一环是第 1 环里的股息率（置信度：低）</strong>。库内股息率 15.40% 与公开可查的两笔分红（2025 年中期每股约 2.1 元、2025 年度末期每股 0.5245 元，合计 2.6245 元，对应 9-04 收盘价约 12.3%，推算）<strong>对不平</strong>，差约 3 个百分点，口径原因不明。更关键的是：<strong>这个股息率能否在 2026 年延续，取决于中期分红方案是否公告，而这件事目前没有证据</strong>。如果 2026 年中期不再派息，「高股息支撑」这半条逻辑就断了，届时只剩「低估值」单腿，而低估值在增长停滞面前是可以继续更低的。<strong>这是整条链的命门。</strong></p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜<strong>触发</strong>：2026 年三季报（W8，法定截止 2026-10-31）显示单季营收同比由负转正，且毛利率环比 2026H1 的 63.88% 回升；同时公司公告 2026 年中期分红方案，每股派息不低于 2025 年中期的每股约 2.1 元｜<strong>路径</strong>：增长停滞的定价被证伪，估值从行业最低档向行业中位靠拢，关注度回升表现为研报数量与日均成交额同步放大，股价重心随之上移</li>
+</ul>
+<ul>
+<li><strong>中性（50%）</strong>｜<strong>触发</strong>：三季报单季营收同比在零附近（正负 5 个百分点以内），毛利率在 2026Q1 的 62.67% 与 2026H1 的 63.88% 之间波动；中期分红方案维持或小幅低于上年同期｜<strong>路径</strong>：估值与分红继续互相锁定，股价在缺乏催化的低换手状态下窄幅震荡，跟随铁路设备与高股息板块的 beta 波动，全季度不形成趋势</li>
+</ul>
+<ul>
+<li><strong>悲观（25%）</strong>｜<strong>触发</strong>：三季报单季营收同比继续为负且降幅扩大，或毛利率跌破 2026Q1 的 62.67%；或 2026 年中期分红方案缺席、派息额显著低于上年同期｜<strong>路径</strong>：高股息的支撑逻辑被削弱，市场按「低增长且分红不可持续」重新定价，估值继续压缩，成交进一步萎缩，股东户数延续 2026-08-10 以来的上升趋势（筹码继续分散）</li>
+</ul>
+<p>三个概率合计 100%。三条触发条件全部可用三季报数字与公司分红公告核对。</p>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong></p>
+<ol>
+<li><strong>如果</strong> 2026 年三季报（W8，法定截止 2026-10-31）显示单季营收同比由负转正、<strong>且</strong>毛利率环比 2026H1 的 63.88% 回升，<strong>那么</strong>可以试仓。</li>
+</ol>
+<p>（核验方式：三季报披露后重跑库内财务，用 Q3 累计数减 H1 数得单季值）</p>
+<ol>
+<li><strong>如果</strong>公司公告 2026 年中期分红方案、每股派息不低于 2025 年中期的每股约 2.1 元，<strong>且</strong>股价站上 9-04 收盘，<strong>那么</strong>可以加仓。</li>
+</ol>
+<p>（核验方式：上交所分红公告 + 库内行情现价）</p>
+<ol>
+<li><strong>如果</strong>三季报单季营收同比继续为负、<strong>或</strong>毛利率跌破 2026Q1 的 62.67%，<strong>那么</strong>观望，不参与估值修复的博弈。</li>
+</ol>
+<ol>
+<li><strong>如果</strong>跌破 9-04 收盘、<strong>且</strong>近 20 日主力资金净流出天数继续多于当前的 15/20 天，<strong>那么</strong>回避。</li>
+</ol>
+<p>（核验方式：库内资金筹码的字段）</p>
+<ol>
+<li><strong>如果</strong> 2026 年中期分红方案明确缺席、或派息额低于 2025 年中期每股约 2.1 元的一半，<strong>那么</strong>减仓——该情形直接击穿 J 节第 1 环的高股息支撑。</li>
+</ol>
+<p><strong>风控要点：这笔判断在什么情况下应当被推翻</strong></p>
+<ul>
+<li><strong>推翻条件 A（看多方向被证伪）</strong>：三季报单季营收同比连续第二个季度为负。届时「增长停滞」升级为「收入下降」，低估值不再是安全边际，本报告的「震荡」判断应改为偏跌。</li>
+<li><strong>推翻条件 B（看空方向被证伪）</strong>：公司公告分红方案且派息力度超过 2025 年中期水平，同时三季报单季增速转正。届时「无催化」的前提不成立，本报告的「震荡」判断应改为偏涨。</li>
+<li><strong>推翻条件 C（数据前提被证伪）</strong>：若查实库内股息率 15.40% 存在计算口径问题、实际可持续股息率显著低于 10%，则 A 节核心驱动第 2 条作废，整份报告需要重写估值支撑部分。</li>
+</ul>
+<p><strong>仓位思路</strong></p>
+<ul>
+<li>相对概念：<strong>轻仓或不参与</strong>为宜（置信度：中）。理由有三：① 三个情景里概率最高的是中性震荡（50%），震荡格局本身不适合重仓；② 当日成交额仅 0.70 亿元、换手率 0.85%，流动性弱，进出的冲击成本高；③ 最关键的分红变量在三季报前后才能证实，<strong>在核验点到来之前重仓等于赌一个未知事件</strong>。</li>
+<li><strong>不给具体金额、不给股数、不给目标价、不给评级。</strong></li>
+</ul>
+<h2>M. 逻辑自查</h2>
+<p><strong>1）这份判断最依赖的假设是哪一条？错了会怎样？</strong></p>
+<p>最依赖的假设是：<strong>库内股息率 15.40% 所代表的高分红是真实且可延续的</strong>。它同时支撑了 A 节核心驱动第 2 条、J 节第 1 环、K 节乐观与悲观两个情景的触发条件。</p>
+<p>如果错了（例如该股息率来自 2025 年一次性的大额中期分红、2026 年不再重复），则：低估值失去「高现金回报」这个变现渠道，PE 14.27 倍会被市场当作「增长停滞的合理定价」而非「便宜」，本报告的「震荡」判断应下修为「偏跌」。</p>
+<p><strong>2）有没有为了让逻辑好看而忽略的反面证据？</strong></p>
+<p>有三条，在此明确列出：</p>
+<ul>
+<li><strong>反面证据一（对看多不利）</strong>：老旧机车淘汰政策 2024 年 9 月就已发布，但公司 2025 年全年营收同比仅 +0.29%。政策利好与公司收入之间的传导，在已有的一年多时间里<strong>没有得到验证</strong>。本报告在 F 节把这条政策列为核心驱动之一，但在 J 节第 3 环已把这条反证写明——读者应当把政策看作「需求下限的保障」而非「增长的引擎」。</li>
+<li><strong>反面证据二（对看多不利）</strong>：库内同业对比给的三只对照票 ROE 分别为 9.42% / 65.67% / 35.18%，均高于思维列控的 7.82%（半年口径）。低估值伴随的是同行里偏低的资本回报效率，不能只讲「便宜」而不讲「为什么便宜」。</li>
+<li><strong>反面证据三（对看空不利）</strong>：唯一的涨停发生在一季报披露日（2026-04-29，+10.01%），说明<strong>该股对财报数字是有反应的</strong>。如果三季报数字超预期，缺乏关注度反而意味着定价没有被充分挖掘，弹性可能比本报告估计的更大。本报告在 K 节把乐观情景给了 25%，可能偏保守。</li>
+</ul>
+<p><strong>3）信息缺口清单</strong></p>
+<ul>
+<li><strong>缺口 1 · 分产品营收拆分</strong>：库内财务只给七项汇总指标，无分业务营收。影响：无法判断毛利率从 67.22% 降到 63.88% 是哪块业务造成的，也无法验证 E 节「下游议价能力弱导致毛利率下移」的推理。补法：人工查阅 2026 年半年度报告原文（本报告受铁律约束，不采信联网检索到的财务数字）。</li>
+<li><strong>缺口 2 · 2026 年中期分红方案</strong>：库内无分红明细表，联网检索到 2025 年中期方案（每股约 2.1 元、合计约 8.0068 亿元，董事会 2025-08-05 通过）但<strong>未能确认 2026 年是否已公告</strong>，且检索结果之间存在冲突（一处显示 2026 年半年报称「本报告期利润分配预案不涉及」）。影响：直接决定 A 节核心驱动第 2 条是否成立。补法：查上交所披露的公司公告，或在下次调研时重跑库内估值观察股息率变化。</li>
+<li><strong>缺口 3 · 股息率口径对不平</strong>：库内股息率 15.40% 与按公开分红记录推算的约 12.3% 差约 3 个百分点。<strong>联网结果与库内数字冲突时以库内为准，但差异原因未明</strong>，此处如实记录。补法：核对 Tushare 股息率的计算窗口与分红实施日口径。</li>
+<li><strong>缺口 4 · 筹码数据缺失</strong>：库内资金筹码为 None——库内筹码数据仅覆盖关注票，该票暂无。影响：无法给出获利盘比例（获利盘比例），因而无法判断上方套牢盘密度（低获利盘意味着深套盘密集、反弹有阻力）与短线获利抛压（高获利盘意味着套牢盘少但抛压大）两个方向中哪个成立。补法：将该票纳入关注池后可获得筹码序列。</li>
+<li><strong>缺口 5 · 同赛道对照票缺失</strong>：库内同业对比按「IT设备」宽口径返回海康威视、大普微、协创数据，三家与铁路列控无业务重叠。影响：D 节无法评估公司在细分赛道的份额与相对竞争力。补法：人工指定铁路信号/轨交信息化方向的对照标的重跑。</li>
+<li><strong>缺口 6 · 新闻覆盖极稀</strong>：库内新闻近 60 天仅 1 条且为噪音类互动易问答，中报披露、研报发布等事件均未收录。影响：H 节消息面维度基本为空。补法：扩大新闻源或直连交易所公告。</li>
+<li><strong>缺口 7 · 事件日历稀疏</strong>：库内事件日历仅返回 2 条，且均由「无人驾驶」「5G」两个 G 节 C 类沾边标签匹配而来，与主营无关。影响：I 节 13 周日历中 9 周为「本周无已知事件」，事件驱动的判断依据不足。补法：接入财报预约披露时间表与股东大会日程。</li>
+<li><strong>缺口 8 · 券商覆盖极少</strong>：库内研报显示近 90 天仅 1 家机构 1 篇研报为空、盈利预测为空（无库内盈利预测数据）。影响：J 节无法参照卖方一致预期判断市场预期水位。补法：见下方卖方预期段的联网补充，以及 I 节 W9 的观察点。</li>
+<li><strong>缺口 9 · 非两地上市</strong>：库内 A/H 对照返回 None，该股无 H 股，无跨市场估值参照。这是事实而非缺陷，此处记录以说明 B 节为何未写 A/H 溢价。</li>
+</ul>
+<p><strong>4）卖方预期（全部单列，非事实）</strong></p>
+<p>〔卖方预期〕来源：西南证券研报（库内研报收录，文件名《西南证券_2026年中报点评：业绩稳中有升，业务结构持续优化_20260903.pdf》）· 日期：2026-09-03 · 观点：报告标题口径为「业绩稳中有升、业务结构持续优化」；<strong>库内盈利预测字段为空为空，未收录其具体盈利预测数值与评级</strong> · 置信度：低（卖方观点非事实；且本报告只能引用标题，未读到正文论据）</p>
+<p>〔卖方预期〕来源：西南证券（联网检索到的历史评级摘要，<a href="https://www.sohu.com/a/911472757_121976703" target="_blank" rel="noopener">搜狐财经转载</a>）· 日期：<strong>具体报告日期未能核实，早于 2026-09-03</strong> · 观点：给予正面评级（本报告按规约不转述具体评级词），预测 2025–2027 年归母净利润分别为 6.7 亿 / 7.5 亿 / 8.0 亿元，三年复合增速约 14% · 置信度：低（单源未交叉验证、日期不详；<strong>且库内财务显示 2025 年实际归母净利为 5.56 亿元，低于该预测的 6.7 亿元约 17%（推算）——该预测已被事实证伪</strong>）</p>
+<p>〔卖方预期〕来源：华安证券行业专题《铁路信息化：车载系统受益高铁招标与更新替换》（<a href="https://finance.sina.com.cn/roll/2024-09-19/doc-incprwmy8292156.shtml" target="_blank" rel="noopener">新浪财经转载</a>）· 日期：2024-09-19 · 观点：测算 2024–2026 年 LKJ 新增＋更换量分别为 6463 / 6951 / 7480 台，对应市场规模同比 +32% / +20% / +19% · 置信度：低（卖方测算非事实；发布距今已近两年；且与公司 2025 年营收同比 +0.29% 的实际表现不一致）</p>
+<p><strong>信息来源汇总（联网部分）</strong></p>
+<p>Sources:</p>
+<ul>
+<li><a href="https://www.gov.cn/zhengce/zhengceku/202409/content_6977731.htm" target="_blank" rel="noopener">中国政府网 · 国家铁路局《老旧型铁路内燃机车淘汰更新监督管理办法》（2024-09）</a></li>
+<li><a href="https://www.thepaper.cn/newsDetail_forward_28936062" target="_blank" rel="noopener">澎湃新闻 · 2027 年底重点区域老旧铁路内燃机车将全部退出（2024-10）</a></li>
+<li><a href="https://zjic.zj.gov.cn/ywdh/nyhj/202506/t20250616_23512328.shtml" target="_blank" rel="noopener">浙江省发展改革委转载 · 政策鼓励老旧机车改造（2025-06）</a></li>
+<li><a href="https://www.chinanews.com.cn/cj/2026/07-17/10661112.shtml" target="_blank" rel="noopener">中新网 · 上半年中国铁路固定资产投资同比增长 2.1%（2026-07-17）</a></li>
+<li><a href="https://m.gmw.cn/2026-07/17/content_1304533837.htm" target="_blank" rel="noopener">光明网 · 上半年全国铁路完成固定资产投资 3632 亿元（2026-07-17）</a></li>
+<li><a href="https://finance.sina.com.cn/tech/roll/2026-07-17/doc-iniiccvc8167513.shtml" target="_blank" rel="noopener">新浪财经 · 上半年全国铁路完成固定资产投资 3632 亿元同比增长 2.1%（2026-07-17）</a></li>
+<li><a href="https://news.qq.com/rain/a/20260515A079CD00" target="_blank" rel="noopener">腾讯新闻 · 国铁 40 亿元采购复兴号动集动车组（2026-05-15）</a></li>
+<li><a href="https://finance.sina.com.cn/wm/2026-05-15/doc-inhxytzh6425684.shtml" target="_blank" rel="noopener">新浪财经 · 41.5 亿动车组采购招标开启（2026-05-15）</a></li>
+<li><a href="https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?stockid=603508&amp;id=12081571" target="_blank" rel="noopener">新浪财经 · 公司公告《关于公司 2025 年度利润分配预案及 2026 年中期利润分配授权的公告》（2026-04-11）</a></li>
+<li><a href="https://finance.sina.com.cn/stock/bxjj/2026-05-14/doc-inhxwvkc3776109.shtml" target="_blank" rel="noopener">新浪财经 · 思维列控 2025 年年度权益分派：每股派利 0.5245 元（2026-05-14）</a></li>
+<li><a href="https://stockmc.xueqiu.com/202508/603508_20250806_P9F4.pdf" target="_blank" rel="noopener">公司公告 2025-024 号《关于 2025 年半年度利润分配方案的公告》（2025-08-06，雪球托管 PDF）</a></li>
+<li><a href="https://finance.sina.com.cn/jjxw/2024-10-21/doc-incthspx2376137.shtml" target="_blank" rel="noopener">新浪财经 · 铁路机车装备「以旧换新」有望拉动市场万亿投资（2024-10-21）</a></li>
+<li><a href="https://finance.sina.com.cn/roll/2024-09-19/doc-incprwmy8292156.shtml" target="_blank" rel="noopener">新浪财经转载 · 华安证券行业专题《铁路信息化：车载系统受益高铁招标与更新替换》（2024-09-19）</a></li>
+<li><a href="https://www.sohu.com/a/911472757_121976703" target="_blank" rel="noopener">搜狐财经转载 · 西南证券对思维列控的评级与盈利预测摘要（日期不详）</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-04），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>二季度单季营收同比转负约5.4%</li>
+      <li>毛利率四期从67.22%降至63.88%</li>
+      <li>近20日主力净流出0.94亿15天流出</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>一致预期</dt><dd>多家券商盈利预测的平均值。是别人的观点，不是事实。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.gov.cn/zhengce/zhengceku/202409/content_6977731.htm" target="_blank" rel="noopener">中国政府网 · 国家铁路局通知（2024-09）</a> <em>2024-09</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.thepaper.cn/newsDetail_forward_28936062" target="_blank" rel="noopener">澎湃新闻（2024-10）</a> <em>2024-10</em></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://zjic.zj.gov.cn/ywdh/nyhj/202506/t20250616_23512328.shtml" target="_blank" rel="noopener">浙江省发改委转载（2025-06）</a> <em>2025-06</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.chinanews.com.cn/cj/2026/07-17/10661112.shtml" target="_blank" rel="noopener">中新网（2026-07-17）</a> <em>2026-07-17</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.gmw.cn/2026-07/17/content_1304533837.htm" target="_blank" rel="noopener">光明网（2026-07-17）</a> <em>2026-07-17</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/tech/roll/2026-07-17/doc-iniiccvc8167513.shtml" target="_blank" rel="noopener">新浪财经（2026-07-17）</a> <em>2026-07-17</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260515A079CD00" target="_blank" rel="noopener">腾讯新闻（2026-05-15）</a> <em>2026-05-15</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/wm/2026-05-15/doc-inhxytzh6425684.shtml" target="_blank" rel="noopener">新浪财经（2026-05-15）</a> <em>2026-05-15</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/jjxw/2024-10-21/doc-incthspx2376137.shtml" target="_blank" rel="noopener">新浪财经（2024-10-21）</a> <em>2024-10-21</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?stockid=603508&amp;id=12081571" target="_blank" rel="noopener">新浪财经 · 公司公告《关于公司 2025 年度利润分配预案及 2026 年中期利润分配授权的公告》，2026-04-11</a> <em>2026-04-11</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://stockmc.xueqiu.com/202508/603508_20250806_P9F4.pdf" target="_blank" rel="noopener">雪球托管的公司公告 2025-024 号，2025-08-06</a> <em>2025-02</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.sohu.com/a/911472757_121976703" target="_blank" rel="noopener">搜狐财经转载</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/roll/2024-09-19/doc-incprwmy8292156.shtml" target="_blank" rel="noopener">新浪财经转载</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/bxjj/2026-05-14/doc-inhxwvkc3776109.shtml" target="_blank" rel="noopener">新浪财经 · 思维列控 2025 年年度权益分派：每股派利 0.5245 元（2026-05-14）</a> <em>2026-05-14</em></li>
+      <li><span class="src-tag src-media">媒体</span> 中新网/光明网/新浪，2026-07-17 <em>2026-07-17</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-04 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
