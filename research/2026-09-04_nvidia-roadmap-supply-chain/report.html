@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>英伟达产品路线图与关联产业链 · 调研报告</title>
+<style>
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation;
+  }
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap}
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  small.src-note{font-size:.82em; color:var(--muted)}
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 板块</div>
+    <h1>英伟达产品路线图与关联产业链</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-04（北京时间）</span>
+      <span><b>类型</b> 板块</span>
+      <span><b>来源</b> 120 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    英伟达现在卖的已经不只是显卡这一件东西。可以把它想象成一个盖"AI工厂"的总承包商：每年推出新一代芯片（像升级建筑用的钢材），同时管着网络布线（数据怎么在芯片间跑）、供电和散热（电从哪儿来、热怎么散掉），还开始给机器人配"大脑芯片"和"教科书"（训练软件）。这篇报告要看的是：它公布的这些新方向，会让上游哪些"建材供应商"跟着一起忙起来——从造芯片的代工厂，到卖光纤的公司，再到造机器人关节零件的厂子。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    英伟达已从单一GPU厂商扩张为覆盖算力芯片、网络互联、光通信、机器人大脑与自动驾驶平台的"AI工厂全栈"供应商，其一年一代的产品节奏正在同步拉动四条产业链——AI算力硬件（先进封装/HBM/载板/液冷/电源，确定性最高）、光模块与共封装光学（CPO对传统可插拔模块的替代路线仍有争议，处于分歧期）、机器人具身智能（英伟达定位芯片+软件的"卖水人"，机械本体完全交给第三方，生态绑定多为早期意向）、以及节奏相对独立、受车企自研分流的汽车智能驾驶。四条链里，越靠近芯片本身（先进封装、HBM）确定性越高，越靠近"未来叙事"（CPO颠覆传统光模块、机器人零部件订单兑现）证据越薄。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>英伟达数据中心芯片已进入"一年一代"节奏：Blackwell（2024）→Blackwell Ultra（2025下半年）→Rubin（2026下半年量产，首次改用HBM4）→Rubin Ultra（2027下半年）→Feynman（2028，首次用TSMC A16工艺+3D芯片堆叠），路线图已公开排到2028年。</li>
+      <li>先进封装CoWoS是2026年公认的最大瓶颈：据产业链测算，台积电CoWoS产能预计年底达到12.5万–13万片/月，总量较2024年底约3.5万片/月扩大到3.5–3.7倍左右；台积电官方在同期财报电话会上确认，2026年全年资本开支上调至600–640亿美元（用于支持先进制程与先进封装整体扩产，非专为CoWoS一项）。</li>
+      <li>光模块产业链正处于"CPO会不会替代可插拔模块"的路线分歧期：独立研究机构SemiAnalysis于2026年6月测算光引擎系统级良率仅约19.4%（该算法本身也受同行质疑），判断大规模商用可能推迟到2028–2029年；两个多月后的2026年8月，英伟达CPO交换机宣布全面量产——尚未有第三方数据裁决孰是孰非。</li>
+      <li>机器人产业链上，英伟达明确"不造整机、不做精密零部件"，只做芯片、仿真软件、基础模型三层；这意味着减速器/丝杠/传感器等硬件供应商与英伟达是互补而非竞争关系，但目前能查到的、有公司自述或官方一手信源确认的"A股公司+Jetson Thor"绑定案例只有奥比中光、豪恩汽电两家，多数其余"关联"停留在概念炒作层面。</li>
+      <li>光模块产业链叠加了地缘政治变量：中际旭创已被美国防部列入"1260H"涉军名单，美国FCC正在起草针对中国光模块的进口禁令（截至今日仍处拟议阶段、尚未生效）。汽车智驾产业链面临的则更多是商业风险：DRIVE Thor在中国车企端2024年3月密集官宣采用计划后，2024年末起多次出现延期报道，部分车企（小鹏、蔚来）转向自研智驾芯片以降低对外部供应商的依赖，这属于商业自主决策而非地缘政治因素。</li>
+    </ul>
+  </div>
+
+  <main>
+
+    <h2>一、英伟达在造什么：一张比"新显卡"大得多的产品地图</h2>
+    <p>过去谈英伟达，谈的是"今年这张显卡比去年快多少"。但从2024年黄仁勋在Computex上宣布数据中心芯片改为"一年一更"节奏起<small class="src-note">（<a href="https://www.nextplatform.com/compute/2026/03/19/driving-down-the-ai-system-roadmap-with-nvidia/5210195">The Next Platform，2026-03-19</a>）</small>，英伟达实际在做的事情已经变成：每年同时更新一整套"AI工厂"的建造标准——芯片本身、芯片之间怎么说话（网络互联）、机柜怎么供电散热、以及往下一层延伸到机器人和汽车要用的"边缘大脑"。理解这张地图，是判断"哪些产业链会被带动"的前提。</p>
+
+    <h3>1. 算力芯片：一年一代，像军备竞赛</h3>
+    <p>2024年发布的Blackwell（B100/B200）用台积电4NP工艺，把两颗芯片粘成一颗"双芯粒"GPU；2025年3月的Blackwell Ultra（B300/GB300）把单卡HBM3e内存堆到288GB、12层堆叠，AI性能较上一代再提升约1.5倍<small class="src-note">（<a href="https://www.cnbc.com/2025/03/18/nvidia-announces-blackwell-ultra-and-vera-rubin-ai-chips-.html">CNBC，2025-03-18</a>）</small>。2026年最重要的变化是下一代Rubin平台：2026年1月官方公布六芯片平台细节，2026年内已进入全面量产，首次把内存从HBM3e切换到HBM4，单GPU带宽较Blackwell提升约2.8倍<small class="src-note">（<a href="https://developer.nvidia.com/blog/inside-the-nvidia-rubin-platform-six-new-chips-one-ai-supercomputer/">NVIDIA Developer Blog，2026-01-05</a>）</small>。路线图继续往后延伸：Rubin Ultra定于2027下半年交付（HBM4E、单GPU内存达1TB）；英伟达早在2025年3月GTC 2025上便已公开Rubin之后再下一代的代号"Feynman"及2028年目标时间点<small class="src-note">（<a href="https://www.tomshardware.com/tech-industry/semiconductors/nvidia-enterprise-roadmap-rubin-rubin-ultra-feynman-and-silicon-photonics">Tom's Hardware综述，2026-03</a>）</small>，2026年3月GTC 2026则进一步补充了三大技术方向的细节：首次用3D芯片堆叠、定制HBM、台积电A16这一1.6nm级工艺<small class="src-note">（<a href="https://www.hpcwire.com/aiwire/2026/03/18/huang-shares-nvidia-roadmap-showing-more-chips-nvl1152-scale-up-cpo/">HPCwire，2026-03-18</a>）</small>。英伟达管理层在2026年3月GTC上表示，展望2025至2027年，Blackwell与Vera Rubin两代产品的"可见收入机会"合计有望达到1万亿美元规模——这是一项前瞻性展望，而非已经兑现的既成订单总额<small class="src-note">（<a href="https://www.cnbc.com/2026/03/16/nvidia-gtc-2026-ceo-jensen-huang-keynote-blackwell-vera-rubin.html">CNBC，2026-03-16</a>）</small>。</p>
+
+    <div class="case">
+      <p>2025年9月，英伟达发布了专为"长上下文推理"设计的Rubin CPX芯片，定位是把AI推理拆成两段——"理解问题"交给CPX、"生成答案"交给标准Rubin<small class="src-note">（<a href="https://www.theregister.com/2025/09/10/nvidia_rubin_cpx/">The Register，2025-09-10</a>）</small>。但仅半年后的2026年3月GTC 2026上，CPX就从官方路线图上被整体移除，取而代之的是英伟达以约200亿美元收购Groq获得的"Groq 3 LPU"推理机架<small class="src-note">（<a href="https://www.tomshardware.com/pc-components/gpus/nvidia-removes-rubin-cpx-accelerators-from-its-roadmap-groq-3-lpus-take-center-stage-as-cpx-is-removed">Tom's Hardware，2026-03</a>；<a href="https://www.cnbc.com/2025/12/24/nvidia-buying-ai-chip-startup-groq-for-about-20-billion-biggest-deal.html">CNBC，2025-12-24</a>）</small>。这个案例提醒我们：英伟达的产品路线图迭代速度极快，围绕单一芯片型号押注的供应链叙事，半年内就可能被官方自己推翻。</p>
+    </div>
+
+    <h3>2. 网络与光互联：从"用铜线说话"到"用光说话"</h3>
+    <p>Blackwell一代机柜内72颗GPU互联，靠的是NVLink无源铜缆——好比机柜内部密密麻麻织了一张"铜网"，省电、便宜、可靠，但传输距离和密度终究有物理极限。2025年5月，英伟达推出"NVLink Fusion"，第一次把这条内部高速通道的协议开放给第三方定制芯片接入（联发科、迈威尔、Marvell等已加入）<small class="src-note">（<a href="https://nvidianews.nvidia.com/news/nvidia-nvlink-fusion-semi-custom-ai-infrastructure-partner-ecosystem">NVIDIA Newsroom，2025-05-19</a>）</small>——代价是节点里至少要保留一颗英伟达芯片，本质是"欢迎搭车，但车头还是我的"。同时，2025年3月英伟达正式发布了两条用"光"取代传统可插拔光模块的交换机产品线——Quantum-X Photonics（InfiniBand方向）与Spectrum-X Photonics（以太网方向），这是本报告第三节要重点展开的"共封装光学（CPO）"技术<small class="src-note">（<a href="https://nvidianews.nvidia.com/news/nvidia-spectrum-x-co-packaged-optics-networking-switches-ai-factories">NVIDIA Newsroom，2025-03-18</a>）</small>。而在机柜之间、更长距离的连接上，2026年4月一度有报道称"铜已到极限、英伟达转向光互联"<small class="src-note">（<a href="https://www.theregister.com/2026/04/05/nvidia_optical_scale_up/">The Register，2026-04-05</a>）</small>，但2026年6月黄仁勋公开表态"能用铜就用铜，必须用光才用光"，打破了"光会很快取代铜"的预期<small class="src-note">（据东方财富转述，<a href="https://caifuhao.eastmoney.com/news/20260604085738996589850">2026-06-04</a>，未与GTC官方实录逐字核对，仅作方向性参考）</small>。</p>
+
+    <h3>3. 机器人与物理AI：给机器人配"大脑芯片+教科书"</h3>
+    <p>英伟达把自己在机器人领域的角色概括为三层：芯片（Jetson Thor，2025年8月正式上市，最高2070 TFLOPS FP4算力、130瓦功耗，较上一代Orin算力提升7.5倍，英伟达官方将其定位为可在机器人本体上实时运行VLA——视觉-语言-动作模型，一种能同时看懂画面、理解语言指令并输出具体动作的AI模型——这类生成式AI能力）<small class="src-note">（<a href="https://nvidianews.nvidia.com/news/nvidia-blackwell-powered-jetson-thor-now-available-accelerating-the-age-of-general-robotics">NVIDIA Newsroom，2025-08-25</a>）</small>；仿真训练软件（Isaac Sim/Isaac Lab，用虚拟环境批量"陪练"机器人，2026年3月GTC上Isaac Lab 3.0进入早期访问）<small class="src-note">（<a href="https://nvidianews.nvidia.com/news/nvidia-and-global-robotics-leaders-take-physical-ai-to-the-real-world">NVIDIA Newsroom，2026-03-16</a>）</small>；以及基础模型（GR00T系列，2025年3月发布的GR00T N1号称"全球首个开源人形机器人基础模型"，2026年3月已迭代至N1.7并预告年底前发布采用全新"世界行动模型"架构的GR00T N2）<small class="src-note">（<a href="https://nvidianews.nvidia.com/news/nvidia-isaac-gr00t-n1-open-humanoid-robot-foundation-model-simulation-frameworks">NVIDIA Newsroom，2025-03-18</a>）</small>。配合用于生成合成训练数据的Cosmos世界模型（2025年1月发布，2026年3月升级到Cosmos 3）<small class="src-note">（<a href="https://nvidianews.nvidia.com/news/nvidia-launches-cosmos-world-foundation-model-platform-to-accelerate-physical-ai-development">NVIDIA Newsroom，2025-01-06</a>）</small>，这四件东西构成了一条"仿真生成数据→训练策略→装进芯片"的技术链条。这部分内容将在第四节展开。</p>
+
+    <h3>4. 汽车、量子计算、6G通信：三条更早期的布局</h3>
+    <p>汽车自动驾驶方向的核心是DRIVE Thor芯片与DRIVE Hyperion传感器参考架构（详见第五节）。此外英伟达还有两条更早期、体量尚小的布局：一是2025年10月发布的NVQLink，一套把GPU与量子计算机耦合起来的开放互联标准，已获17家量子计算公司和美国能源部8家国家实验室支持<small class="src-note">（<a href="https://nvidianews.nvidia.com/news/nvidia-nvqlink-quantum-gpu-computing">NVIDIA Newsroom，2025-10-28</a>）</small>；二是与诺基亚、T-Mobile等电信巨头合作推进的AI-RAN（AI原生无线网络），目标是把英伟达的AI芯片能力嵌入5G-Advanced直至6G网络。这两条目前更多是生态卡位，尚未形成可观测的产业链拉动规模，本报告不展开硬性产业链分析，仅在第六节简述。</p>
+
+    <h2>二、产业链一：AI算力硬件——受影响最直接、金额最大的一条链</h2>
+    <p>这条链的逻辑很直白：英伟达每年把芯片做得更大、更热、更密，上游负责"造出来、封起来、供上电、散掉热"的每一个环节，用量和技术难度都跟着水涨船高。好比一栋楼盖得越来越高、住的人越来越密，电梯、水管、消防系统都得跟着升级，而不只是多摆几块砖。</p>
+
+    <h3>先进制程代工与CoWoS先进封装——目前公认的最大瓶颈</h3>
+    <p>英伟达GPU由台积电代工，而真正卡脖子的不是"造芯片"本身，是把GPU计算芯片和多颗HBM内存"拼装"在一起的先进封装工艺——CoWoS。据TrendForce等产业链测算，台积电CoWoS产能已从2024年底约3.5万片/月，扩张到2025年底约7.5万片/月，目标2026年底达到12.5万–13万片/月，总量较2024年底扩大到约3.5–3.7倍<small class="src-note">（产业链测算，非台积电官方分产品披露）</small>；台积电官方在2026年第二季度财报电话会（约2026-07-16）上确认，2026年全年资本开支上调至600–640亿美元，用于支持先进制程与先进封装的整体扩产（并非专为CoWoS一项）<small class="src-note">（<a href="https://finance.yahoo.com/quote/TSM/earnings/TSM-Q2-2026-earnings_call-649922.html">TSMC 2026 Q2财报电话会，2026-07-16</a>；<a href="https://www.techtimes.com/articles/320142/20260711/tsmc-q2-earnings-july-16-three-cowos-signals-that-test-ais-spending-ceiling.htm">Tech Times，2026-07-11</a>）</small>。多家中文财经媒体援引摩根士丹利测算称，英伟达2026年CoWoS晶圆需求占台积电全球产能过半<small class="src-note">（据太平洋科技资讯，<a href="https://news.pconline.com.cn/2034/20341572.html">链接</a>，具体份额数字为券商测算、非台积电官方分产品披露，仅作方向参考）</small>，2026年8月新浪财经报道称"CoWoS封装产能告急，台积电被迫扩大外包"<small class="src-note">（<a href="https://finance.sina.com.cn/tech/roll/2026-08-04/doc-inimcxxc4102558.shtml">新浪财经，2026-08-04</a>）</small>。</p>
+
+    <h3>HBM高带宽内存——三国演义，中国大陆仍在攻坚期</h3>
+    <p>HBM是堆叠在GPU旁边的"高速仓库"，Rubin平台首次改用更快的HBM4。2026年6月5日，黄仁勋在公开场合确认三星、SK海力士、美光三家均已通过Vera Rubin平台HBM4供货认证<small class="src-note">（<a href="https://finance.yahoo.com/sectors/technology/articles/nvidia-certifies-samsung-sk-hynix-133001560.html">Yahoo Finance，2026-06-05</a>）</small>，此前2026年1月26日，市场已传出三星临近获得英伟达最终认证、计划自2月起量产出货的消息<small class="src-note">（<a href="https://www.bloomberg.com/news/articles/2026-01-26/samsung-nears-nvidia-s-approval-for-key-hbm4-ai-memory-chips">Bloomberg，2026-01-26</a>，原文用词为"nearing approval"，当天尚未确认已开始量产出货）</small>。据市场测算，SK海力士在HBM市场份额约50%–62%区间波动、美光份额近年有所提升<small class="src-note">（<a href="https://www.astutegroup.com/news/general/sk-hynix-holds-62-of-hbm-micron-overtakes-samsung-2026-battle-pivots-to-hbm4/">Astute Group行业分析，2026年</a>）</small>。如实陈述一个"查空≠不存在"之外的反面案例：中国大陆在HBM晶圆制造环节确实处于空白——长鑫存储、长江存储目标是2026年内实现HBM3e量产<small class="src-note">（<a href="https://ai.zol.com.cn/1041/10410508.html">中关村在线，2026年</a>）</small>，但截至检索日尚无对英伟达形成实际供货的量产能力；中国大陆企业目前参与的主要是HBM先进封装代工环节（如长电科技为SK海力士的封装合作方），而非存储晶圆制造本身，二者不可混为一谈。财新报道称，出口管制收紧前中国已囤积约1300万颗HBM堆栈作为战略库存<small class="src-note">（<a href="https://m.caixin.com/m/2026-01-14/102403552.html">财新，2026-01-14</a>）</small>。</p>
+
+    <h3>ABF载板 / 高端PCB / 覆铜板——芯片越大，"垫脚石"越贵</h3>
+    <p>GB200/GB300这类超级芯片尺寸大、层数多，对下面承载它的ABF载板（IC substrate，好比芯片和主板之间的一层精密"过渡垫"）和高多层PCB提出了更高要求。日本Ibiden是英伟达关键载板供应商之一，2026年2月宣布约32亿美元资本开支扩产，是其史上最大单笔载板扩产计划，目标2028年产能达到当前2.5倍<small class="src-note">（<a href="https://asia.nikkei.com/business/technology/artificial-intelligence/nvidia-supplier-ibiden-to-expand-ic-substrate-output-amid-ai-boom">Nikkei Asia，2026-02</a>）</small>。中国A股方面，沪电股份被财经媒体报道为英伟达高多层板供应商之一<small class="src-note">（<a href="https://caifuhao.eastmoney.com/news/20250618190823112192830">东方财富财富号，2025-06-18</a>，具体供货份额与订单排期均未见公司公告直接确认，需以公司定期报告为准）</small>，胜宏科技在其2026年3月的投资者关系活动记录表（交易所公告原文）中披露公司订单情况良好、产能持续爬坡<small class="src-note">（<a href="http://static.cninfo.com.cn/finalpage/2026-03-18/1225017058.PDF">巨潮资讯网，2026-03-18</a>，"独家供应""五阶HDI"等具体表述来自媒体转述而非公告原文用语，建议读者以公告为准）</small>。整体而言，AI服务器对高端覆铜板的需求量显著高于普通服务器，2026年内多家覆铜板大厂订单饱满、交期拉长<small class="src-note">（自媒体聚合报道，<a href="https://www.sina.cn/news/detail/5314415498888943.html">链接</a>，未独立核实具体交期数字）</small>。</p>
+
+    <h3>供电：800V高压直流成为新方向</h3>
+    <p>机柜功耗从几十千瓦涨到上百千瓦后，传统低压配电方式需要占用大量机柜空间来摆电源转换设备。2025年10月，英伟达在开放计算项目（OCP）峰会上正式公开推动800V高压直流（HVDC）架构，官方口径称同样的铜线材下能多传输150%以上电力<small class="src-note">（<a href="https://developer.nvidia.com/blog/nvidia-800-v-hvdc-architecture-will-power-the-next-generation-of-ai-factories/">NVIDIA Developer Blog，2025-10</a>）</small>。中国氮化镓芯片企业英诺赛科被财联社报道为英伟达该架构合作伙伴名单中唯一入选的中国大陆芯片企业<small class="src-note">（<a href="https://www.cls.cn/detail/2103309">财联社</a>）</small>；台达电子（Delta）在2026年3月GTC上展示了配套800VDC的机架级电源与冷却一体化方案<small class="src-note">（<a href="https://www.prnewswire.com/news-releases/deltas-power-cooling-and-microgrid-solutions-showcased-at-nvidia-gtc-to-bolster-the-800-vdc-architecture-of-next-gen-ai-factories-302714372.html">PR Newswire，2026-03-16</a>）</small>。多家A股电源企业被自媒体列为"800V概念股"，但除英诺赛科外，其余具体供货关系均未见英伟达官方或上市公司公告一手确认，本报告不逐一列为事实。</p>
+
+    <h3>液冷：从"外围辅助"变成"芯片级标配"</h3>
+    <p>GB200 NVL72机柜功耗超过120千瓦，风冷已不可行，英伟达明确要求直接液冷（冷板贴在芯片上，靠管道里的液体把热带走）。全球市场目前由Vertiv、CoolIT Systems等厂商主导；中国的英维克被腾讯新闻报道为国内唯一通过英伟达NPN Tier1认证的液冷厂商，覆盖冷板、CDU（冷却分配单元）、快接头全链条<small class="src-note">（<a href="https://news.qq.com/rain/a/20260527A0989900">腾讯新闻，2026-05-27</a>，"唯一"表述来自媒体报道，未见英伟达官方认证名单逐一确认）</small>。液冷渗透率预计从2024年约14%提升到2026年约40%<small class="src-note">（同上来源转述的行业数据，未独立核实具体百分比出处）</small>。</p>
+
+    <h3>服务器整机代工与NVLink铜连接</h3>
+    <p>GB200/GB300以"整机柜"形态交付，组装复杂度远高于单卡服务器，英伟达官方博客确认富士康、广达、纬创、纬颖等台湾产业链伙伴是其AI基础设施建设的核心伙伴<small class="src-note">（<a href="https://blogs.nvidia.com/blog/taiwan-ecosystem-ai-infrastructure/">NVIDIA官方博客</a>）</small>；中国A股的工业富联被市场认为是相关整机代工链条上的重要参与方，但具体份额均为券商/自媒体测算，未见英伟达或工业富联官方一一对应确认<small class="src-note">（<a href="https://caifuhao.eastmoney.com/news/20260522082515849450600">东方财富财富号测算，未独立核实</a>）</small>。机柜内部72颗GPU的互联目前仍主要靠无源铜缆——安费诺（Amphenol）、泰科电子（TE Connectivity）是全球主要供应商；财联社报道称英伟达GB200铜连接已进入批产加单阶段<small class="src-note">（<a href="https://www.cls.cn/detail/1828472">财联社</a>）</small>。</p>
+
+    <div class="callout">这条产业链的共同特点是：越靠近芯片本体（CoWoS、HBM）的环节，权威一手信源（台积电财报会、彭博社、英伟达官方）越充分、事实确定性越高；越往外围（PCB具体配套厂商、800V概念股、整机代工份额），信息来源越多依赖财经自媒体测算，需要读者自行加一层"未经公司公告确认"的折扣。</div>
+
+    <h2>三、产业链二：光模块与光通信——一场"要不要换赛道"的路线之争</h2>
+    <p>如果说算力芯片产业链的逻辑是"量在涨"，光模块产业链正面对的问题是"玩法可能要变"。传统方案里，交换机芯片先把电信号转成光信号，靠的是插在面板上的独立光模块（内含激光器和一块专门"矫正失真信号"的DSP芯片）；英伟达在推的CPO（共封装光学）方案，则是把负责"发光"的光引擎直接焊在交换机芯片旁边——好比把路由器和光猫焊成一体，省掉了一段电信号传输的损耗，因此也能省掉DSP这块纠错芯片。</p>
+
+    <h3>英伟达的CPO交换机：从发布到"全面量产"</h3>
+    <p>2025年3月18日GTC上，英伟达正式发布Quantum-X Photonics（InfiniBand方向）与Spectrum-X Photonics（以太网方向）两条CPO交换机产品线<small class="src-note">（<a href="https://nvidianews.nvidia.com/news/nvidia-spectrum-x-co-packaged-optics-networking-switches-ai-factories">NVIDIA Newsroom，2025-03-18</a>）</small>。2026年8月15日，官方宣布Spectrum-X Ethernet Photonics已进入全面量产，能效相比传统可插拔方案提升5倍、平均无故障时间延长10倍<small class="src-note">（<a href="https://www.storagereview.com/news/nvidia-spectrum-x-ethernet-photonics-enters-full-production-with-4x-fewer-lasers-and-a-five-vendor-cpo-supply-chain">StorageReview，2026-08-15</a>）</small>。量产阶段官方确认的供应链分工是：台积电负责硅光子晶圆制造（用其COUPE先进封装工艺，把电子IC直接堆叠在光子芯片上）<small class="src-note">（<a href="https://tspasemiconductor.substack.com/p/tsmc-coupe-metalens-building-the">TSPA Semiconductor，2026年</a>）</small>、Lumentum负责激光芯片制造、天孚通信负责激光器模块子组件组装（光纤阵列单元）、日月光子公司矽品（SPIL）负责芯片级封装测试、富士康负责最终交换机系统集成<small class="src-note">（<a href="https://m.21jingji.com/article/20260815/herald/0adfecbc32a985467f6b6471e7429820.html">21经济网，2026-08-15</a>；<a href="https://finance.sina.com.cn/roll/2026-08-14/doc-ininhtfh4120620.shtml">新浪财经，2026-08-14</a>）</small>。值得注意的是，英伟达自2026年3月起对光子学供应链密集下注：向Coherent、Lumentum各投资20亿美元<small class="src-note">（<a href="https://www.cnbc.com/2026/03/02/nvidia-investment-coherent-lumentum.html">CNBC，2026-03-02</a>）</small>，向Marvell投资20亿美元并纳入NVLink Fusion生态<small class="src-note">（<a href="https://nvidianews.nvidia.com/news/nvidia-ai-ecosystem-expands-as-marvell-joins-forces-through-nvlink-fusion">NVIDIA Newsroom，2026-03-31</a>）</small>，向康宁投资最高32亿美元用于扩建光纤/光连接产能，其中约5亿美元为实际股权认股权证出资、其余为多年采购承诺（非全部为现金投资）<small class="src-note">（<a href="https://www.cnbc.com/2026/05/06/nvidia-corning-optical-factories-nc-texas-ai.html">CNBC，2026-05-06</a>）</small>。若只计入四笔交易里的实际股权/现金出资部分，合计约65亿美元（20+20+20+5）<small class="src-note">（<a href="https://photoncap.net/p/coherent-lumentum-marvell-and-now">photoncap.net综合梳理</a>）</small>；若按各笔交易对外公布的头条总金额（含康宁那笔里的采购承诺部分）合计，则约92亿美元——两个数字口径不同，均不代表英伟达的"总现金支出"这一单一数字，读者不宜只取其一当作精确总额。</p>
+
+    <h3>正反两方：CPO到底会不会大规模替代可插拔光模块</h3>
+    <p>这是本节最需要如实并列呈现分歧的地方。看多一方认为渗透会持续扩大：LightCounting预测LPO与CPO在AI集群光模块市场的份额将从2025年的30%提升到2030年的60%<small class="src-note">（<a href="https://www.lightcounting.com/newsletter/en/december-2025-aocs-dacs-linear-drive-pluggable-and-co-packaged-optics-320">LightCounting，2025年12月刊</a>）</small>，SK海力士甚至把CPO路线图延伸到内存接口，认为光互联会从交换机前面板逐步走向处理器乃至内存池<small class="src-note">（<a href="https://www.trendforce.com/news/2026/08/20/news-sk-hynix-unveils-cpo-roadmap-looks-beyond-hbm-to-ai-infrastructure/">TrendForce，2026-08-20</a>）</small>。但看空/审慎一方的证据同样扎实：IDTechEx明确指出CPO是"增量"而非对可插拔光模块的整体替代，可插拔在企业级/电信/中低带宽场景仍将保持主导<small class="src-note">（<a href="https://www.idtechex.com/en/research-report/co-packaged-optics-cpo/1138">IDTechEx研究报告</a>）</small>；Broadcom CEO Hock Tan公开表态对硅光/CPO成熟度持谨慎态度<small class="src-note">（<a href="https://www.sdxcentral.com/news/broadcom-ceo-hock-tan-cautious-on-silicon-photonics-cpo-need/">SDxCentral</a>）</small>；2026年6月，独立研究机构SemiAnalysis发布报告，测算英伟达Spectrum-6 CPO交换机需集成32个光引擎、乐观情形单引擎良率约95%，但系统整体良率因此被拉低到约19.4%，判断CPO大规模商用可能从此前预期的2026–2027年推迟到2028–2029年，报告（题为《Powered Down, Lights Off》，2026年6月9日发布）当日引发Lumentum、Coherent、Applied Optoelectronics、康宁、Marvell等光模块/光子学概念股集体下跌<small class="src-note">（<a href="https://www.moomoo.com/community/feed/semianalysis-the-cpo-has-been-postponed-to-2028-2029-is-116777283092886">moomoo社区转述SemiAnalysis报告，2026-06</a>）</small>。但这个"19.4%"的推算方式随后也受到同行质疑：批评者指出，该算法把良率冻结在一个悲观快照上、再直接乘方到32次，等于假设32个光引擎永远保持同一个良率、且完全不存在筛选、分箱（binning）、冗余设计这些工程上常见的补救手段<small class="src-note">（<a href="https://globalsemiresearch.substack.com/p/co-packaged-optics-is-not-delayed">Global Semi Research，2026年</a>）</small>。这两组判断分别发生在2026年6月9日（SemiAnalysis质疑良率）与2026年8月15日（英伟达宣布全面量产）——后者在时间上晚于前者两个多月，理论上不排除是英伟达用"全面量产"公告回应了质疑，但截至检索日没有第三方数据能裁决双方谁的证据更站得住。本报告不替读者下结论，只如实呈现——"英伟达已宣布量产"与"独立机构测算良率仍很低、但测算方法本身也有争议"，这两件事可以同时为真，指向的是"量产"与"大规模、高良率、低成本的商用"之间还有距离，距离到底有多大，目前没有共识。</p>
+
+    <h3>受益的两类公司：CPO新增环节 vs 传统可插拔链</h3>
+    <p>把这条产业链拆成两条腿看更清楚。<strong>CPO新增环节</strong>里，天孚通信被2025年GTC官方列为核心合作伙伴之一，2026年8月量产阶段被确认负责光纤阵列单元组装<small class="src-note">（<a href="https://m.21jingji.com/article/20260815/herald/0adfecbc32a985467f6b6471e7429820.html">21经济网，2026-08-15</a>）</small>；中际旭创被报道已实现中国首个1.6T CPO小批量量产，硅光方案良率维持92%以上<small class="src-note">（<a href="https://stock.10jqka.com.cn/20260618/c677563208.shtml">同花顺，2026-06-18</a>，"92%良率"为公司/媒体自述口径，与前述SemiAnalysis独立测算的系统级19.4%良率并非同一统计口径——前者可能指单一光引擎或子组件良率，后者是32引擎集成后的系统良率，两者不矛盾，但读者不应把二者简单对比）</small>；太辰光被行业报道称为全球最大光密集连接产品制造商之一，据报道康宁超60%的MPO高密度光纤连接器来自太辰光<small class="src-note">（<a href="https://app.myzaker.com/news/article.php?pk=6a620200b15ec079da6e5e0c">Zaker转述</a>，"全球最大""超60%"均为媒体转述，未见公司公告或康宁官方一一确认）</small>。<strong>传统可插拔链</strong>则受益于英伟达GPU集群本身的扩张——即便CPO尚未大规模替代，800G/1.6T光模块需求仍在增长：中际旭创、光迅科技被媒体报道合计获取<strong>英伟达自身</strong>800G光模块新增订单约60%份额<small class="src-note">（新浪新闻综合报道，<a href="https://k.sina.com.cn/article_7879922977_1d5ae152106801el7m.html">链接</a>，口径为"英伟达专属新增订单"而非全球市场整体，具体份额为媒体测算，未见公司公告一一对应确认）</small>。</p>
+
+    <h3>地缘政治风险：中国光模块龙头面临双重不确定性</h3>
+    <p>这是本节必须单独强调的风险点。2026年6月，美国国防部将中际旭创列入"1260H"涉中国军方关联企业清单，若不被移除，美国公司将不得在军方相关产品中使用其组件<small class="src-note">（<a href="https://www.wilmerhale.com/en/insights/client-alerts/20260611-pentagon-adds-65-new-entities-to-the-1260h-list-of-chinese-military-companies">WilmerHale法律解读，2026-06-11</a>）</small>。2026年8月，路透社报道美国FCC正起草针对中国数据中心光收发模块的进口禁令，中际旭创与新易盛（Eoptolink）合计控制<strong>全球</strong>800G以上高带宽细分市场超60%份额（此为全球市场整体口径，与前文"英伟达自身新增订单约60%"是两个不同统计口径下恰好接近的数字，不宜混为一谈），若禁令落地，西方替代供应商据Counterpoint Research测算需要12–24个月产能爬坡期，且替代方案依赖的磷化铟衬底本身也受中国出口管制、2025年价格已上涨约250%<small class="src-note">（<a href="https://www.bloomberg.com/news/articles/2026-08-04/us-drafting-ban-on-china-data-center-components-reuters-says">Bloomberg，2026-08-04</a>；<a href="https://www.techtimes.com/articles/323104/20260805/fcc-transceiver-ban-would-cut-60-ai-data-center-supply-western-replacements-need-chinese-indium.htm">Tech Times，2026-08-05</a>）</small>。<strong>截至今日（2026-09-04），该禁令仍处于拟议/起草阶段，尚未正式生效</strong>，这是判断该风险现状的关键时效标注——不应把"正在起草"读成"已经落地"。</p>
+
+    <h2>四、产业链三：机器人具身智能——英伟达做"卖水人"</h2>
+    <p>19世纪美国淘金热里，真正稳赚不赔的往往不是挖金子的人，而是卖水、卖牛仔裤给矿工的商家。英伟达在人形机器人这条赛道上明确选择了后一种角色：多篇报道把它的策略概括为"不造整机、不做精密零部件，只搭一套机器人界的'安卓系统'"<small class="src-note">（<a href="https://www.tmtpost.com/8048879.html">钛媒体</a>；<a href="https://news.qq.com/rain/a/20250706A027K500">腾讯新闻，2025-07-06</a>）</small>。这个角色边界，直接决定了这条产业链里"谁在跟英伟达互补、谁在跟它竞争"。</p>
+
+    <h3>英伟达做什么、不做什么</h3>
+    <p>英伟达只做三层：芯片（Jetson Thor）、仿真训练软件（Isaac Sim/Isaac Lab）、基础模型（GR00T + Cosmos）。而机器人真正的"身体"——减速器、丝杠、执行器、传感器、灵巧手这些精密机械零部件，以及机器人整机的设计组装——完全交给第三方。这意味着理论上，只要人形机器人这个终端品类整体放量，为"身体"供货的零部件厂商订单就会被拉动，但这条传导链条并不专属于英伟达——目前人形机器人产业里出货量最大、零部件配套关系最公开的项目是特斯拉Optimus，而Optimus用的是特斯拉自研芯片、不搭载英伟达技术栈。下面这条零部件产业链服务的是"人形机器人"这个更大的品类，读者不应把"零部件公司订单增长"直接等同于"英伟达生态渗透率提升的证据"，除非该零部件公司明确点名了使用英伟达技术栈的下游客户。</p>
+
+    <h3>零部件产业链：谁在造机器人的"关节"（不限于英伟达生态）</h3>
+    <p>人形机器人的核心传动部件是谐波减速器和RV减速器（把电机的高速旋转降速增扭，变成关节能用的慢速大力矩）与行星滚柱丝杠（把旋转运动变成直线推拉，用于手臂伸缩类执行器）。国产谐波减速器龙头绿的谐波市占率靠前，据报道是特斯拉Optimus肩肘关节供应商<small class="src-note">（未见特斯拉官方一一确认，为财经媒体综合报道）</small>；RV减速器方面，双环传动旗下环动科技被报道同时为特斯拉、宇树科技、优必选供货，其中为宇树科技配套的产线规划年产能20万套<small class="src-note">（<a href="https://caifuhao.eastmoney.com/news/20251205210030475653990">东方财富财富号，2025-12-05</a>）</small>。丝杠环节，北特科技公告投入18.5亿元在昆山建设行星滚柱丝杠生产基地<small class="src-note">（<a href="https://www.21jingji.com/article/20250304/herald/2d13d7b0cb2371ca8d2b6b65d92eca41.html">21经济网，2025-03-04</a>）</small>；执行器与伺服电机环节，拓普集团被称为特斯拉Optimus线性执行器总成独家供应商，汇川技术是国产伺服系统市占率连续十年第一的厂商<small class="src-note">（<a href="https://www.21jingji.com/article/20250826/herald/b7b6855f1cf0e6ccaf708ea18c33d8a7.html">21经济网，2025-08-26</a>）</small>；力传感环节，柯力传感的六维力传感器已向多家客户送样、部分实现批量供货<small class="src-note">（<a href="https://caifuhao.eastmoney.com/news/20250123105618270220690">东方财富财富号，2025-01-23</a>）</small>。灵巧手被视为2025年"量产元年"，价值量据报道占人形机器人整机成本超30%，但目前头部灵巧手厂商（因时机器人、帕西尼感知科技）多为未上市初创公司<small class="src-note">（<a href="https://www.infoobs.com/article/20250530/69391.html">信息化观察网，2025-05-30</a>）</small>。</p>
+
+    <div class="case">
+      <p>豪恩汽电是目前查到的、A股公司中与英伟达机器人技术栈绑定表述最明确的案例：公司在投资者关系活动记录表（交易所公告原文）中披露，已与英伟达达成芯片战略合作，基于Jetson Thor、Orin AGX、Orin NX、Orin Nano全系列芯片打造机器人域控系统<small class="src-note">（<a href="https://file.finance.qq.com/finance/hs/pdf/2025/08/27/1224586619.PDF">投资者关系记录表，2025-08-27</a>，该公告原文未披露具体算力数字——"2070 TFLOPS FP4"是Jetson Thor芯片本身的官方规格，豪恩汽电域控产品是否达到芯片满血算力，公告未提及，不应把芯片规格直接当作该公司产品的确认参数）</small>。同一份公告也如实说明，截至披露时该产品仍处于开发阶段、尚未形成收入——这提醒我们区分"技术合作已公开确认"与"已经放量兑现业绩"是两件事。奥比中光是另一个官方一手信源可确认的案例：其3D深度相机Gemini 330系列已完成与Jetson Thor系统级模块的兼容验证<small class="src-note">（<a href="https://finance.sina.com.cn/roll/2026-01-08/doc-inhfreqf5145132.shtml">新浪财经，2026-01-08</a>）</small>，同系列产品此前也被报道完成与NVIDIA Isaac Sim集成、与Isaac Perceptor协同<small class="src-note">（<a href="http://stock.10jqka.com.cn/20250828/c670724930.shtml">同花顺，2025-08-28</a>）</small>；双目相机Gemini 335Lg则完成了与NVIDIA Holoscan Sensor Bridge（HSB）的适配<small class="src-note">（新浪财经，2026-01-08）</small>。除这两家外，本次检索未发现其他A股零部件公司有同等清晰度的官方自述或权威一手信源，多数"关联"表述停留在财经自媒体的产业链梳理层面，读者应对"独家供应""某某龙头绑定英伟达"这类未见公司公告的说法保持警惕。</p>
+    </div>
+
+    <h3>整机厂商的采用情况：中外都在"上车"</h3>
+    <p>2026年6月1日，黄仁勋在GTC台北宣布与宇树科技合作，基于宇树H2打造"Isaac GR00T人形机器人参考平台"（H2 Plus），集成Jetson Thor与新版GR00T开发平台，计划2026下半年上市<small class="src-note">（<a href="https://www.guancha.cn/internation/2026_06_02_819114.shtml">观察者网，2026-06-02</a>）</small>，消息公布当日带动A股机器人板块涨停潮<small class="src-note">（<a href="https://m.10jqka.com.cn/20260601/c677117822.shtml">同花顺，2026-06-01</a>）</small>。智元机器人G2搭载Jetson AGX Thor<small class="src-note">（<a href="https://m.jiemian.com/article/13473179.html">界面新闻</a>）</small>；海外方面，Boston Dynamics于2025年3月官宣Atlas采用Jetson Thor平台<small class="src-note">（<a href="https://bostondynamics.com/news/boston-dynamics-expands-collaboration-with-nvidia/">Boston Dynamics官网，2025-03-18</a>）</small>，1X Technologies的NEO机器人核心算力"1X NEO Cortex"基于Jetson Thor<small class="src-note">（<a href="https://www.1x.tech/discover/nvidia-gtc-2026">1X官网</a>）</small>，Caterpillar于2026年1月宣布将Jetson Thor用于工程机械的实时AI推理<small class="src-note">（<a href="https://investors.caterpillar.com/news/news-details/2026/Caterpillar-Teams-With-NVIDIA-to-Revolutionize-Heavy-Industry-with-Physical-AI-and-Robotics/default.aspx">Caterpillar投资者关系，2026-01-07</a>）</small>。这些案例共同点是：绝大多数仍是"平台/参考设计已宣布采用"，距离终端消费级放量出货、进而反向拉动上游零部件订单形成可观测业绩，还有时间差。</p>
+
+    <h2>五、产业链四：汽车智能驾驶——相对独立、节奏更曲折的一条</h2>
+    <p>DRIVE Thor是英伟达面向自动驾驶的中央计算芯片，最早于2022年9月GTC上以概念形态首次亮相；2024年3月GTC上，比亚迪、小鹏、极氪、理想等中国车企密集官宣了采用计划<small class="src-note">（<a href="https://cnevpost.com/2024/03/19/byd-xpeng-adopt-nvidia-thor/">CnEVPost，2024-03-19</a>）</small>；2025年1月CES上，英伟达发布了改用Blackwell架构重新设计的量产版本，算力较上一代Orin大幅提升。仅在2024年3月密集官宣意向9个月后的2024年12月，多家媒体已报道称Thor量产延期、小鹏一度考虑搁置采用计划<small class="src-note">（<a href="https://www.digitimes.com/news/a20241217PD219/nvidia-xpeng-adoption-flagship-production.html">Digitimes，2024-12-17</a>）</small>。2025年1月CES上，极氪发布基于DRIVE AGX Thor的智驾域控制器，宣称是首家量产集成该芯片的车企<small class="src-note">（<a href="https://cnevpost.com/2025/01/07/zeekr-nvidia-thor-smart-driving-kit-ces-2025/">CnEVPost，2025-01-07</a>）</small>。与此同时，奔驰、捷豹路虎等海外车企目前在售/近期车型用的仍是上一代DRIVE Orin而非Thor<small class="src-note">（<a href="https://nvidianews.nvidia.com/news/jaguar-land-rover-announces-partnership-with-nvidia">NVIDIA Newsroom</a>）</small>，Thor更多是其未来规划。这条产业链相对算力与机器人两条链，确定性更低：一方面部分中国车企（如小鹏、蔚来）被报道正推进自研智驾芯片以降低对外部供应商的依赖（这更多是商业自主决策，本身不属于地缘政治风险），另一方面Thor在海外车企的量产上车节奏也慢于中国车企的官宣速度。2025年10月28日，英伟达与Uber、Stellantis、富士康联合宣布目标2027年起部署10万辆L4级Robotaxi<small class="src-note">（<a href="https://nvidianews.nvidia.com/news/nvidia-uber-robotaxi">NVIDIA Newsroom，2025-10-28</a>）</small>；2026年1月，禾赛科技被另行宣布为该DRIVE Hyperion 10平台的激光雷达合作伙伴，两者是先后独立发布的两条消息<small class="src-note">（<a href="https://www.barchart.com/story/news/36905857/hesai-selected-by-nvidia-as-lidar-partner-for-nvidia-drive-hyperion-10-to-enable-level-4-fleet-deployment">Barchart，2026年</a>）</small>，这条Robotaxi联盟目前是DRIVE生态里节奏相对清晰的部分。</p>
+
+    <h2>六、更早期的两条布局：量子计算互联与6G通信（简述）</h2>
+    <p>NVQLink（2025年10月发布）和AI-RAN/6G合作（与诺基亚、T-Mobile等）目前仍处于生态卡位阶段，尚未形成可观测的产业链订单规模，本报告不做展开分析，仅作为"英伟达业务边界还在扩张"的佐证列出，供后续跟踪。</p>
+
+    <h2>下次看什么（监控信号）</h2>
+    <ul>
+      <li><strong>Rubin平台实际出货与CoWoS-L产能利用率</strong>——2026年下半年英伟达季度财报电话会及台积电CoWoS-L产能利用率数据，判断"12.5万–13万片/月"的产能目标能否如期兑现。</li>
+      <li><strong>CPO交换机的实际出货台数与客户名单</strong>——下一次GTC或英伟达季度电话会是否披露Quantum-X/Spectrum-X Photonics具体出货数字，用以验证"全面量产"是否等于"大规模商用"。</li>
+      <li><strong>SemiAnalysis"19.4%良率"测算能否被证实或证伪</strong>——2026年第四季度财报电话会是否有更具体的CPO良率或返修率数据披露。</li>
+      <li><strong>美国FCC对中国光模块进口禁令的立法进展</strong>——该草案截至2026-09-04仍处拟议阶段，需持续跟踪是否正式生效及具体条款范围。</li>
+      <li><strong>GR00T N2与Jetson Thor T3000/T2000低成本型号的落地节奏</strong>——GR00T N2计划2026年底前发布，T3000/T2000计划2027年一季度上市，两者共同决定机器人生态渗透速度能否从"意向"走向"放量"。</li>
+      <li><strong>长鑫存储/长江存储HBM3e量产进度</strong>——2026年内能否实现量产出货，是判断中国大陆能否切入HBM供应链的关键节点。</li>
+    </ul>
+
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>CoWoS/HBM先进封装与内存产能若未如期释放，会直接限制英伟达自身出货节奏，进而放缓所有下游产业链的实际业绩兑现速度。</li>
+      <li>CPO路线的量产良率与经济性尚未被独立第三方证实——SemiAnalysis测算的系统级良率与英伟达"全面量产"表述之间存在明显张力，押注"CPO短期颠覆传统光模块"的判断证据仍薄弱；但反过来，SemiAnalysis良率测算本身的计算方法（假设良率长期冻结不变、不考虑筛选与冗余设计）也受到同行质疑，双方证据目前都不是决定性的。</li>
+      <li>中国光模块龙头面临美国"1260H"涉军清单与FCC拟议进口禁令的双重地缘政治风险，禁令截至今日尚未生效，但一旦落地将直接冲击对英伟达客户的供货能力。</li>
+      <li>机器人产业链里，A股公司与英伟达技术栈的"绑定关系"多数停留在财经自媒体/研报测算层面，有公司公告或官方一手信源确认的案例（奥比中光、豪恩汽电）仍是少数，且豪恩汽电相关产品截至最近披露仍未形成收入，投资叙事领先于业绩兑现。</li>
+      <li>DRIVE Thor在中国车企端的采用存在延期与部分车企转向自研芯片的报道，汽车智驾产业链对英伟达的依赖度不如算力、机器人两条链稳固。</li>
+      <li>英伟达对光子学供应链（Coherent、Lumentum、Marvell、Corning、Ayar Labs）的大手笔直接股权投资，客观上也在重塑这些公司的独立性与传统光模块厂商的议价环境，长期利益分配格局仍不明朗。</li>
+    </ul>
+  </section>
+
+  <section class="glossary">
+    <h2>名词小抄</h2>
+    <dl>
+      <dt>CoWoS</dt><dd>台积电的一种先进封装技术，把计算芯片和多颗内存像"拼积木"一样封装在一起，让它们离得更近、传数据更快，目前是英伟达GPU出货的核心产能瓶颈。</dd>
+      <dt>HBM（高带宽内存）</dt><dd>专门为AI芯片配套、直接堆叠在芯片旁边的高速内存，好比给GPU配了一个"贴身高速仓库"。</dd>
+      <dt>ABF载板</dt><dd>芯片和主板之间的一层精密"过渡垫"，芯片先焊在载板上，载板再插到主板；芯片越大，载板越难做、越贵。</dd>
+      <dt>CPO（共封装光学）</dt><dd>把光通信芯片直接焊在交换机芯片旁边，而不是插一个独立的光模块，好比把路由器和光猫焊成一体，省了一段电信号传输的损耗和一块矫正信号的芯片。</dd>
+      <dt>DSP（数字信号处理芯片）</dt><dd>传统光模块里负责"矫正失真信号"的小芯片，信号跑远了会失真，DSP负责把它纠回来；CPO架构因传输距离缩短，理论上可以省掉这块芯片。</dd>
+      <dt>NVLink / NVLink Fusion</dt><dd>英伟达GPU之间"手拉手"通信的专用高速通道；Fusion是2025年起开放给第三方定制芯片接入这条通道的方案，但节点里仍需保留至少一颗英伟达芯片。</dd>
+      <dt>800V高压直流（HVDC）</dt><dd>数据中心供电的一种新架构，用更高电压的直流电传输，能减少铜的用量、提升转换效率，是英伟达为下一代高功耗机柜推动的供电标准。</dd>
+      <dt>谐波减速器 / RV减速器</dt><dd>装在机器人关节里的"降速增力"齿轮组，把电机的高速旋转变成机器人手臂能用的慢速大力矩，是人形机器人关节的核心传动部件。</dd>
+      <dt>行星滚柱丝杠</dt><dd>把电机的"转"变成"直线推拉"的精密机械部件，常用于机器人的直线执行器，比如让手臂或腿部伸缩。</dd>
+      <dt>域控制器</dt><dd>机器人或汽车里集中处理感知/决策计算的一块"中枢电脑板"，多个传感器的数据汇总到这里统一计算后再下发指令。</dd>
+      <dt>VLA模型（视觉-语言-动作模型）</dt><dd>一种能同时"看懂画面、理解语言指令、并输出具体动作"的AI模型，是让机器人执行任务的"大脑"核心技术。</dd>
+    </dl>
+  </section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.wilmerhale.com/en/insights/client-alerts/20260611-pentagon-adds-65-new-entities-to-the-1260h-list-of-chinese-military-companies">Pentagon Adds 65 New Entities to the 1260H List</a> <em>2026-06-11</em> — 美国国防部将中际旭创列入涉军名单的法律解读。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://nvidianews.nvidia.com/news/nvidia-spectrum-x-co-packaged-optics-networking-switches-ai-factories">NVIDIA Spectrum-X Co-Packaged Optics 官方发布</a> <em>2025-03-18</em> — CPO交换机产品线发布。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://developer.nvidia.com/blog/inside-the-nvidia-rubin-platform-six-new-chips-one-ai-supercomputer/">Inside the NVIDIA Rubin Platform</a> <em>2026-01-05</em> — Rubin/Vera六芯片平台官方技术细节。</li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://nvidianews.nvidia.com/news/nvidia-nvlink-fusion-semi-custom-ai-infrastructure-partner-ecosystem">NVLink Fusion 官方发布</a> <em>2025-05-19</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://developer.nvidia.com/blog/nvidia-800-v-hvdc-architecture-will-power-the-next-generation-of-ai-factories/">NVIDIA 800V HVDC 官方博客</a> <em>2025-10</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://nvidianews.nvidia.com/news/nvidia-ai-ecosystem-expands-as-marvell-joins-forces-through-nvlink-fusion">NVIDIA投资Marvell官方公告</a> <em>2026-03-31</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://nvidianews.nvidia.com/news/nvidia-nvqlink-quantum-gpu-computing">NVIDIA NVQLink 官方发布</a> <em>2025-10-28</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://nvidianews.nvidia.com/news/nvidia-uber-robotaxi">NVIDIA、Uber Robotaxi合作官方公告</a> <em>2025-10-28</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://nvidianews.nvidia.com/news/nvidia-blackwell-powered-jetson-thor-now-available-accelerating-the-age-of-general-robotics">Jetson Thor正式上市官方公告</a> <em>2025-08-25</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://nvidianews.nvidia.com/news/nvidia-isaac-gr00t-n1-open-humanoid-robot-foundation-model-simulation-frameworks">GR00T N1官方发布</a> <em>2025-03-18</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://nvidianews.nvidia.com/news/nvidia-and-global-robotics-leaders-take-physical-ai-to-the-real-world">GTC 2026机器人生态伙伴官方名单</a> <em>2026-03-16</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://nvidianews.nvidia.com/news/nvidia-launches-cosmos-world-foundation-model-platform-to-accelerate-physical-ai-development">Cosmos平台官方发布</a> <em>2025-01-06</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://news.samsung.com/global/samsung-unveils-hbm4e-showcasing-comprehensive-ai-solutions-nvidia-partnership-and-vision-at-nvidia-gtc-2026">三星HBM4E与英伟达合作官方介绍</a> <em>2026-03</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://finance.yahoo.com/quote/TSM/earnings/TSM-Q2-2026-earnings_call-649922.html">TSMC 2026年Q2财报电话会实录</a> <em>2026-07-16</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://bostondynamics.com/news/boston-dynamics-expands-collaboration-with-nvidia/">Boston Dynamics官方合作公告</a> <em>2025-03-18</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.agilityrobotics.com/content/agility-robotics-powering-the-future-of-robotics-with-nvidia-jetson-thor">Agility Robotics官方合作说明</a> <em>2025</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://investors.caterpillar.com/news/news-details/2026/Caterpillar-Teams-With-NVIDIA-to-Revolutionize-Heavy-Industry-with-Physical-AI-and-Robotics/default.aspx">Caterpillar投资者关系官方公告</a> <em>2026-01-07</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.1x.tech/discover/nvidia-gtc-2026">1X官网GTC 2026说明</a> <em>2026-03</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://investors.aeva.com/news-releases/news-release-details/aeva-and-nvidia-integrate-4d-lidar-reference-sensor-within">Aeva官方公告</a> <em>2026-01-05</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.barchart.com/story/news/36905857/hesai-selected-by-nvidia-as-lidar-partner-for-nvidia-drive-hyperion-10-to-enable-level-4-fleet-deployment">禾赛科技获选DRIVE Hyperion 10激光雷达合作伙伴报道</a> <em>2026年</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://static.cninfo.com.cn/finalpage/2026-03-18/1225017058.PDF">胜宏科技投资者关系活动记录表</a> <em>2026-03-18</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://file.finance.qq.com/finance/hs/pdf/2025/08/27/1224586619.PDF">豪恩汽电投资者关系活动记录表</a> <em>2025-08-27</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cnbc.com/2025/03/18/nvidia-announces-blackwell-ultra-and-vera-rubin-ai-chips-.html">Nvidia Announces Blackwell Ultra and Vera Rubin AI Chips</a> <em>2025-03-18</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cnbc.com/2026/03/16/nvidia-gtc-2026-ceo-jensen-huang-keynote-blackwell-vera-rubin.html">GTC 2026 Keynote报道</a> <em>2026-03-16</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.hpcwire.com/aiwire/2026/03/18/huang-shares-nvidia-roadmap-showing-more-chips-nvl1152-scale-up-cpo/">Feynman路线图报道</a> <em>2026-03-18</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.theregister.com/2025/09/10/nvidia_rubin_cpx/">Rubin CPX发布报道</a> <em>2025-09-10</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.tomshardware.com/pc-components/gpus/nvidia-removes-rubin-cpx-accelerators-from-its-roadmap-groq-3-lpus-take-center-stage-as-cpx-is-removed">CPX从路线图移除报道</a> <em>2026-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cnbc.com/2025/12/24/nvidia-buying-ai-chip-startup-groq-for-about-20-billion-biggest-deal.html">收购Groq报道</a> <em>2025-12-24</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.tomshardware.com/tech-industry/semiconductors/nvidia-enterprise-roadmap-rubin-rubin-ultra-feynman-and-silicon-photonics">Rubin/Rubin Ultra/Feynman路线图综述</a> <em>2026-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://newsletter.semianalysis.com/p/nvidia-gtc-2025-built-for-reasoning-vera-rubin-kyber-cpo-dynamo-inference-jensen-math-feynman">SemiAnalysis GTC 2025解读</a> <em>2025-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.hpcwire.com/2025/10/28/nvidia-cranks-its-bluefield-4-dpu-to-800-gbps/">BlueField-4 DPU报道</a> <em>2025-10-28</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.tomshardware.com/tech-industry/nvidia-launches-bluefield-4-stx-storage-architecture-for-agentic-ai">BlueField-4 STX报道</a> <em>2026-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://blogs.nvidia.com/blog/bluefield-4-ai-factory/">BlueField-4官方博客</a> <em>2025-10</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.storagereview.com/news/nvidia-spectrum-x-ethernet-photonics-enters-full-production-with-4x-fewer-lasers-and-a-five-vendor-cpo-supply-chain">Spectrum-X Photonics全面量产报道</a> <em>2026-08-15</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.trendforce.com/presscenter/news/20260727-13151.html">CPO放量与供应链瓶颈报道</a> <em>2026-07-27</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://siliconangle.com/2025/10/13/nvidia-unveils-vision-gigawatt-ai-factories-based-vera-rubin-architecture/">吉瓦级AI工厂愿景报道</a> <em>2025-10-13</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.electronicsweekly.com/news/business/nvidia-and-partners-gear-up-for-800vdc-datacentres-and-vera-rubin-for-2025-10/">800VDC数据中心报道</a> <em>2025-10</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.theregister.com/2025/03/19/nvidia_charts_course_for_600kw">600kW机架报道</a> <em>2025-03-19</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.bloomberg.com/news/articles/2026-06-05/nvidia-green-lit-big-three-memory-firms-to-supply-hbm4-ceo-says">HBM4三家认证报道</a> <em>2026-06-05</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.techtimes.com/articles/320142/20260711/tsmc-q2-earnings-july-16-three-cowos-signals-that-test-ais-spending-ceiling.htm">TSMC Q2财报CoWoS信号解读</a> <em>2026-07-11</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.pconline.com.cn/2034/20341572.html">英伟达CoWoS需求测算</a> <em>2026年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.thepaper.cn/newsDetail_forward_32103909">2026年CoWoS产能分配报道</a> <em>2026年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/tech/roll/2026-08-04/doc-inimcxxc4102558.shtml">CoWoS封装产能告急报道</a> <em>2026-08-04</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.astutegroup.com/news/general/sk-hynix-holds-62-of-hbm-micron-overtakes-samsung-2026-battle-pivots-to-hbm4/">HBM市场份额分析</a> <em>2026年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.trendforce.com/news/2026/01/05/news-sk-hynix-2026-outlook-hbm3e-remains-mainstream-hbm4-dual-strategy-amid-triple-market-headwinds/">SK海力士2026展望</a> <em>2026-01-05</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.bloomberg.com/news/articles/2026-01-26/samsung-nears-nvidia-s-approval-for-key-hbm4-ai-memory-chips">三星HBM4量产报道</a> <em>2026-01-26</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.yahoo.com/sectors/technology/articles/nvidia-certifies-samsung-sk-hynix-133001560.html">英伟达确认三家HBM4认证</a> <em>2026-06-05</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://ai.zol.com.cn/1041/10410508.html">长鑫/长江存储HBM攻坚报道</a> <em>2026年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.caixin.com/m/2026-01-14/102403552.html">中国HBM战略库存报道</a> <em>2026-01-14</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.guancha.cn/internation/2026_01_14_803737.shtml">HBM出口管制报道</a> <em>2026-01-14</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://asia.nikkei.com/business/technology/artificial-intelligence/nvidia-supplier-ibiden-to-expand-ic-substrate-output-amid-ai-boom">Ibiden载板扩产报道</a> <em>2026-02</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://caifuhao.eastmoney.com/news/20250618190823112192830">沪电股份供应报道</a> <em>2025-06-18</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.21jingji.com/article/20260228/herald/802a8401652db72044e77afda0723d01.html">胜宏科技订单排产报道</a> <em>2026-02-28</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/tech/roll/2026-07-14/doc-inihusxy5186005.shtml">胜宏科技扩产辟谣报道</a> <em>2026-07-14</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2103309">英诺赛科入选英伟达800V名单</a> <em>2026年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2103441">800V架构产业链报道</a> <em>2026年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.prnewswire.com/news-releases/deltas-power-cooling-and-microgrid-solutions-showcased-at-nvidia-gtc-to-bolster-the-800-vdc-architecture-of-next-gen-ai-factories-302714372.html">台达电子GTC展示报道</a> <em>2026-03-16</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://seekingalpha.com/pr/20112757-nvidia-selects-navitas-to-collaborate-on-next-generation-800-v-hvdc-architecture">Navitas合作官方稿转载</a> <em>2025年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260527A0989900">英维克液冷认证报道</a> <em>2026-05-27</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://blogs.nvidia.com/blog/taiwan-ecosystem-ai-infrastructure/">台湾产业链伙伴官方博客</a> <em>2025年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/1828472">GB200铜连接批产报道</a> <em>2025年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.theregister.com/2026/04/05/nvidia_optical_scale_up/">铜互联到极限报道</a> <em>2026-04-05</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://caifuhao.eastmoney.com/news/20260604085738996589850">黄仁勋"能用铜就用铜"表态转述</a> <em>2026-06-04</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cnbc.com/2026/03/02/nvidia-investment-coherent-lumentum.html">投资Coherent、Lumentum报道</a> <em>2026-03-02</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://siliconangle.com/2026/03/02/nvidia-invests-4b-co-packaged-optics-suppliers-lumentum-coherent/">40亿美元光子学投资报道</a> <em>2026-03-02</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://optics.org/news/nvidia-invests-2-b-in-marvell-technology-in-new-partnership">投资Marvell报道</a> <em>2026-03-31</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.theregister.com/2026/03/03/ayar_labs_500m/">Ayar Labs融资报道</a> <em>2026-03-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cnbc.com/2026/05/06/nvidia-corning-optical-factories-nc-texas-ai.html">投资康宁报道</a> <em>2026-05-06</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.trendforce.com/news/2026/08/20/news-sk-hynix-unveils-cpo-roadmap-looks-beyond-hbm-to-ai-infrastructure/">SK海力士CPO路线图报道</a> <em>2026-08-20</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.digitimes.com/news/a20260821VL202/sk-hynix-cpo-roadmap-chips-optics.html">SK海力士CPO路线图（Digitimes）</a> <em>2026-08-21</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.sdxcentral.com/news/broadcom-ceo-hock-tan-cautious-on-silicon-photonics-cpo-need/">Broadcom CEO审慎表态报道</a> <em>2026年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://semiengineering.com/photonics-speeds-up-data-center-ai/">光子学加速数据中心AI报道</a> <em>2026年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.kucoin.com/news/flash/semianalysis-report-sparks-debate-on-cpo-timeline-optical-stocks-drop">SemiAnalysis报告市场反应报道</a> <em>2026-06</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://in.marketscreener.com/news/broadcom-showcases-industry-leading-quality-and-reliability-of-co-packaged-optics-ce7d5bd9dc8bf02c">Broadcom CPO质量展示报道</a> <em>2026年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://investors.broadcom.com/news-releases/news-release-details/broadcom-delivers-industrys-first-512-tbps-co-packaged-optics">Broadcom 51.2T CPO官方稿</a> <em>2025年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.21jingji.com/article/20260815/herald/0adfecbc32a985467f6b6471e7429820.html">天孚通信CPO供应链角色报道</a> <em>2026-08-15</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/roll/2026-08-14/doc-ininhtfh4120620.shtml">CPO量产供应链五厂商分工报道</a> <em>2026-08-14</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://stock.10jqka.com.cn/20260618/c677563208.shtml">中际旭创1.6T CPO量产报道</a> <em>2026-06-18</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="http://www.iccsz.com/4g/news.Asp?ID=02dde0825dae4735aa58b387f55b7f51">光迅科技CPO布局报道</a> <em>2025年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.c-fol.net/news/3_202501/20250114051437.html">新易盛LPO/硅光表态报道</a> <em>2025-01-14</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/roll/2025-10-27/doc-infvisyr0568826.shtml">剑桥科技CPO预研报道</a> <em>2025-10-27</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.thepaper.cn/newsDetail_forward_33348218">光通信DSP国产化率报道</a> <em>2026年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.sohu.com/a/1038384254_121157270">中际旭创供应英伟达报道</a> <em>2026年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.21jingji.com/article/20260202/herald/bcf1aeafe2b4fa23b15758444bbdd44a_zaker.html">中际旭创客户结构报道</a> <em>2026-02-02</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://view.inews.qq.com/a/20251115A05AN700">新易盛与Broadcom关系报道</a> <em>2025-11-15</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://photoncap.net/p/chinese-optical-modules-own-7-of">中国光模块厂商市场份额分析</a> <em>2026年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://ip-fiber.com/blogs/news/nvidia-orders-surge-innolight-and-eoptolink-dominate-60-of-800g-sfp-optical-modules-supply">英伟达订单激增报道</a> <em>2026年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://hellochinatech.com/p/zhongji-innolight-optical-transceiver">中际旭创面临审查报道</a> <em>2026年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.thewirechina.com/2026/06/28/company-in-the-news-zhongji-innolight/">中际旭创企业动态报道</a> <em>2026-06-28</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.tomshardware.com/tech-industry/fcc-proposes-import-ban-on-chinese-optical-transceivers-blockade-targets-key-ai-interconnects-as-china-holds-56-percent-global-market-share">FCC拟议进口禁令报道</a> <em>2026-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.bloomberg.com/news/articles/2026-08-04/us-drafting-ban-on-china-data-center-components-reuters-says">FCC起草禁令彭博报道</a> <em>2026-08-04</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.techtimes.com/articles/323104/20260805/fcc-transceiver-ban-would-cut-60-ai-data-center-supply-western-replacements-need-chinese-indium.htm">FCC禁令影响测算报道</a> <em>2026-08-05</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://caifuhao.eastmoney.com/news/20251205210030475653990">双环传动RV减速器供货报道</a> <em>2025-12-05</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.leaderobot.com/news/4888">环动科技分拆上市报道</a> <em>2024-11-27</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.21jingji.com/article/20250304/herald/2d13d7b0cb2371ca8d2b6b65d92eca41.html">北特科技丝杠基地公告报道</a> <em>2025-03-04</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.21jingji.com/article/20250826/herald/b7b6855f1cf0e6ccaf708ea18c33d8a7.html">汇川技术机器人客户报道</a> <em>2025-08-26</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.infoobs.com/article/20250530/69391.html">灵巧手量产元年报道</a> <em>2025-05-30</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://caifuhao.eastmoney.com/news/20250123105618270220690">柯力传感六维力传感器报道</a> <em>2025-01-23</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://caifuhao.eastmoney.com/news/20250922165020175732110">豪恩汽电Jetson Thor合作报道</a> <em>2025-09-22</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/roll/2026-01-08/doc-inhfreqf5145132.shtml">奥比中光适配Jetson Thor报道</a> <em>2026-01-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="http://stock.10jqka.com.cn/20250828/c670724930.shtml">奥比中光集成Isaac Sim/Perceptor报道</a> <em>2025-08-28</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.jiemian.com/article/13473179.html">智元G2搭载Jetson AGX Thor报道</a> <em>2026年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.guancha.cn/internation/2026_06_02_819114.shtml">英伟达与宇树合作报道</a> <em>2026-06-02</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.10jqka.com.cn/20260601/c677117822.shtml">板块涨停潮报道</a> <em>2026-06-01</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.tmtpost.com/8048879.html">英伟达机器人"安卓系统"策略解读</a> <em>2025年</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20250706A027K500">英伟达"卖水人"策略解读</a> <em>2025-07-06</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://cnevpost.com/2024/03/19/byd-xpeng-adopt-nvidia-thor/">中国车企采用DRIVE Thor报道</a> <em>2024-03-19</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.digitimes.com/news/a20241217PD219/nvidia-xpeng-adoption-flagship-production.html">DRIVE Thor量产延期报道</a> <em>2024-12-17</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://cnevpost.com/2025/01/07/zeekr-nvidia-thor-smart-driving-kit-ces-2025/">极氪DRIVE Thor量产报道</a> <em>2025-01-07</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://nvidianews.nvidia.com/news/jaguar-land-rover-announces-partnership-with-nvidia">捷豹路虎合作官方公告</a> <em>2025年</em></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.idtechex.com/en/research-report/co-packaged-optics-cpo/1138">IDTechEx CPO市场报告</a> <em>2025-12</em></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.lightcounting.com/newsletter/en/december-2025-aocs-dacs-linear-drive-pluggable-and-co-packaged-optics-320">LightCounting Newsletter</a> <em>2025-12</em></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.moomoo.com/community/feed/semianalysis-the-cpo-has-been-postponed-to-2028-2029-is-116777283092886">SemiAnalysis CPO延期分析（社区转述）</a> <em>2026-06</em></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://globalsemiresearch.substack.com/p/co-packaged-optics-is-not-delayed">Co-Packaged Optics Is Not Delayed：对SemiAnalysis良率算法的质疑</a> <em>2026年</em></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://tspasemiconductor.substack.com/p/tsmc-coupe-metalens-building-the">TSMC COUPE技术解析</a> <em>2026年</em></li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://caifuhao.eastmoney.com/news/20260522082515849450600">工业富联代工份额测算</a> <em>2026-05-22</em></li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://k.sina.com.cn/article_7879922977_1d5ae152106801el7m.html">光模块新增订单份额综合报道</a> <em>2026年</em></li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://app.myzaker.com/news/article.php?pk=6a620200b15ec079da6e5e0c">太辰光与康宁合作关联测算</a> <em>2026年</em></li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://photoncap.net/p/coherent-lumentum-marvell-and-now">英伟达光子学投资综合梳理</a> <em>2026年</em></li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://www.sina.cn/news/detail/5314415498888943.html">覆铜板涨价交期拉长报道</a> <em>2026年</em></li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-04 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
