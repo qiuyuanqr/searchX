@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>药明康德（603259.SH） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>药明康德（603259.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-05（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 医疗服务</span>
+      <span style="flex-basis:100%"><b>概念标签</b> CRO概念 · 创新药</span>
+      <span><b>来源</b> 33 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    药明康德（603259）主要做的是小分子化学药的发现、研发及生产的全方位、一体化平台服务，以全产业链平台的形式面向全球制药企业提供各类新药的研发、生产及配套服务；此外还在境外提供医疗器械检测及境外精准医疗研发生产服务。公司介绍中明确写了服务范围「贯穿从小分子药物发现到推向市场的全过程，以及细胞治疗和基因治疗从产品开发到商业化生产服务、医疗器械测试服务」。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——上半年营收同比增长 38.94%、净利润 110.80 亿元同比增长 29.43%，估值低于行业中位数，但美国 1260H 列名的法律结果要到年底才明朗。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：上半年营收同比增长 38.94%、净利润 110.80 亿元同比增长 29.43%，估值低于行业中位数，但美国 1260H 列名的法律结果要到年底才明朗。支撑在于上半年营收同比增38.94%；毛利率连续四期抬升至53.91%；市盈率21.33低于行业中位36.74。主要风险是美国1260H列名与年底名单二元风险；46篇研报零负面预期过度一致；利润含出售资产一次性收益。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>上半年营收同比增38.94%</li>
+      <li>毛利率连续四期抬升至53.91%</li>
+      <li>市盈率21.33低于行业中位36.74</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据时点：行情与估值截至 <strong>2026-09-04 收盘</strong>；财务截至 <strong>2026 年半年报（2026-08-04 披露）</strong>。 报告生成日：2026-09-05。所有库内数字来自库内取数，联网信息均标来源与日期。</div>
+<h2>A. 结论先看这一段</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：上半年营收同比增长 38.94%、净利润 110.80 亿元同比增长 29.43%，估值低于行业中位数，但美国 1260H 列名的法律结果要到年底才明朗。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>业绩增速在加快，且毛利率连续四期抬升</strong>：2026 上半年营收 288.97 亿元、同比增长 38.94%，高于 2026 一季度的 28.81% 和 2025 全年的 15.84%；累计毛利率从 2025 前三季的 46.62% 逐期升到 2026 上半年的 53.91%。（置信度：高——库内财务库内数据）</li>
+<li><strong>估值在同行里偏低</strong>：市盈率 TTM 21.33 倍，化学制药行业 148 只票的中位数是 36.74 倍，该票排在第 30 便宜。同时 A 股相对 H 股折价 5.95%（2026-09-04），跨市场看 A 股这边定价并不贵。（置信度：高——库内估值 + 库内 A/H 对照）</li>
+<li><strong>公司自己把全年指引大幅上调了</strong>：2026-08-03 公告将 2026 年整体收入指引从 513 亿至 530 亿元上调到 585 亿至 605 亿元。这是公司指引、不是已实现的财务数字。（置信度：中——<a href="https://m.21jingji.com/article/20260804/herald/1709f9a74b76df81369e2ab47ddeb70e.html" target="_blank" rel="noopener">21财经 2026-08-04</a>、<a href="https://finance.sina.com.cn/roll/2026-08-03/doc-inikzzhc6131942.shtml" target="_blank" rel="noopener">新浪财经 2026-08-03</a> 两家独立报道）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>美国 1260H 列名与 BIOSECURE 法案的年底时点</strong>：2026-06-08 美国国防部把公司列入 1260H「中国军工企业」清单，2026-08-07 美国联邦法院下达初步禁令暂停执行，但诉讼未终结；且美国管理和预算办公室须在 2026-12-18 前公布首批「受关注生物技术公司」名单。这是一个二元结果的风险，不是渐变的。（置信度：中——多家美国律所公开解读，见 F 节）</li>
+<li><strong>一致预期已经很拥挤</strong>：库内近 90 天有 46 篇研报、37 家机构覆盖，其中 29 篇给最高档正面评级；2026-09-02 与 09-04 两条新闻均显示该票是 9 月券商推荐名单里出现次数最多的票。预期高度一致时，低于预期的边际冲击会被放大。（置信度：中——库内研报 + 库内新闻）</li>
+<li><strong>利润里含非经常性收益，市盈率有可能被摊薄看低</strong>：2026-08-27 公司公告出售药明合联股票资产，预计影响 2026 年税前利润约 31.43 亿元；2025 年净利润同比增长 102.65%，也明显快于同期营收增长的 15.84%。用当前市盈率判断便宜与否，要先扣掉这类一次性因素。（置信度：中——库内新闻 2026-08-27 + 库内财务）</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ol>
+<li><strong>三季报的累计营收同比增速</strong>（预计 2026 年 10 月下旬披露，参照 2025 年三季报披露日 2025-10-27）——能不能守住公司上调后指引隐含的 35% 至 39% 增速下沿。</li>
+<li><strong>2026-12-18 之前美国管理和预算办公室公布的首批「受关注生物技术公司」名单里有没有这家公司</strong>——这是本报告风险判断的胜负手。</li>
+</ol>
+<p><strong>这份判断最可能错在哪</strong>：我把政策风险和基本面放在了同等重量上。如果 1260H 诉讼在四季度以公司胜诉、且年底名单未收录的方式落地，政策折价会一次性消失，那么「震荡」这个方向就偏保守了；反过来如果名单收录，基本面再好也压不住估值下修。<strong>这是一个二元事件，用震荡去描述它本身就是一种妥协。</strong></p>
+<h2>B. 公司快照</h2>
+<p><strong>基本信息</strong>（来源：库内公司档案、库内基础资料）</p>
+<ul>
+<li>名称：药明康德 · 代码：603259（库内基础资料只返回这一条，代码无歧义）</li>
+<li>行业：化学制药 · 板块：主板 · 上市日期：2018-05-08 · 上市状态：L（正常上市，非退市）</li>
+<li>员工人数：33,834 人 · 注册资本：298,375.7155 万元</li>
+</ul>
+<p><strong>主营业务</strong>（原文摘自库内公司档案的主营描述）：小分子化学药的发现、研发及生产的全方位、一体化平台服务，以全产业链平台的形式面向全球制药企业提供各类新药的研发、生产及配套服务；此外还在境外提供医疗器械检测及境外精准医疗研发生产服务。公司介绍中明确写了服务范围「贯穿从小分子药物发现到推向市场的全过程，以及细胞治疗和基因治疗从产品开发到商业化生产服务、医疗器械测试服务」。</p>
+<p>一句话说明：这是一家<strong>替别人做药的公司</strong>——自己不卖药，靠给全球药企提供研发和生产的外包服务收钱，行业里叫 CRO（研发外包）和 CDMO（生产外包），公司自己把两者合起来叫 CRDMO 模式。</p>
+<p><strong>当前行情</strong>（来源：库内行情，唯一行情事实源）</p>
+<ul>
+<li>股价 153.83 元 · 当日涨跌幅 -1.47% · 成交额 39.80 亿元 · 数据时点：<strong>2026-09-04 收盘</strong></li>
+</ul>
+<p><strong>估值</strong>（来源：库内估值，交易日 2026-09-04）</p>
+<ul>
+<li>总市值 4,621.91 亿元 · 市盈率 TTM 21.33 倍 · 市净率 5.55 倍 · 股息率 1.10% · 换手率 1.04%</li>
+<li>同行业（化学制药，共 148 只）市盈率中位数 36.74 倍，该票市盈率排名第 30 便宜——<strong>在行业里属于估值偏低的三成之内</strong>（置信度：高）</li>
+</ul>
+<p><strong>A 股与 H 股对照</strong>（来源：库内 A/H 对照，2026-09-04）</p>
+<ul>
+<li>H 股代码 02359.HK，H 股收盘 191.10 港元、当日 -0.57%</li>
+<li><strong>A 股对 H 股溢价 -5.95%</strong>，即 A 股比 H 股便宜约 6%。A+H 两地上市的票绝大多数是 A 股贵于 H 股，这里出现折价，说明港股投资者给的定价反而更高。（置信度：高；两地股价币种不同，此处只引用现成的溢价百分数，不做价格相减）</li>
+</ul>
+<h2>C. 财务健康</h2>
+<p>数据来源：库内财务（近 4 期）。<strong>注意：以下均为累计数</strong>（半年报是 1-6 月合计，年报是全年合计），不是单季度数。</p>
+<p><strong>四期原始数据（新到旧）</strong></p>
+<ul>
+<li><strong>2026 上半年</strong>（截止 2026-06-30，2026-08-04 披露）：营收 288.97 亿元、同比 +38.94%；归母净利润 110.80 亿元、同比 +29.43%；净资产收益率 13.59%；毛利率 53.91%；净利率 38.50%；每股收益 3.80 元；资产负债率 27.85%</li>
+<li><strong>2026 一季度</strong>（截止 2026-03-31，2026-04-28 披露）：营收 124.36 亿元、同比 +28.81%；归母净利润 46.52 亿元、同比 +26.68%；净资产收益率 5.67%；毛利率 50.40%；净利率 37.56%；每股收益 1.59 元；资产负债率 21.08%</li>
+<li><strong>2025 全年</strong>（截止 2025-12-31，2026-03-24 披露）：营收 454.56 亿元、同比 +15.84%；归母净利润 191.51 亿元、同比 +102.65%；净资产收益率 27.69%；毛利率 47.64%；净利率 42.53%；每股收益 6.70 元；资产负债率 22.18%</li>
+<li><strong>2025 前三季度</strong>（截止 2025-09-30，2025-10-27 披露）：营收 328.57 亿元、同比 +18.61%；归母净利润 120.76 亿元、同比 +84.84%；净资产收益率 18.64%；毛利率 46.62%；净利率 37.15%；每股收益 4.25 元；资产负债率 24.45%</li>
+</ul>
+<p><strong>趋势怎么看</strong></p>
+<ol>
+<li><strong>营收增速在连续加快</strong>：2025 前三季 +18.61% → 2025 全年 +15.84% → 2026 一季度 +28.81% → 2026 上半年 +38.94%。<strong>2026 年是明显的加速年</strong>。（置信度：高）</li>
+<li><strong>毛利率逐期抬升，这是最扎实的一条</strong>：46.62% → 47.64% → 50.40% → 53.91%，四期一路走高，2026 上半年比 2025 全年高 6.27 个百分点。毛利率上行说明不是单纯靠多接单撑收入，单位业务的赚钱能力在改善。（置信度：高。<strong>提醒</strong>：这四个数字期间长短不同，是趋势对照，不是严格同比）</li>
+<li><strong>利润增速低于收入增速</strong>：2026 上半年营收 +38.94%、净利润 +29.43%，两者差约 9.5 个百分点。同期净利率 38.50%，低于 2025 全年的 42.53%。合理的解释是 2025 年的利润里含有较大额度的非经常性收益（2025 年净利润同比 +102.65%，远超同期营收 +15.84% 就是佐证），使得比较基数偏高。<strong>这是推测，库内没有分拆扣非数据可以直接证明</strong>。（置信度：低）</li>
+<li><strong>单季度拆算</strong>（据库内财务累计数相减推算）：2026 二季度单季营收约 164.61 亿元、单季归母净利润约 64.28 亿元，单季净利率约 39.05%；作为对照，2025 四季度单季营收约 125.99 亿元、单季净利润约 70.75 亿元。<strong>二季度单季营收创了这四期里的新高</strong>。（置信度：中——推算值，非库内直接字段）</li>
+<li><strong>负债水平低但在上升</strong>：资产负债率 21.08% → 27.85%，四期里 2026 上半年最高，但绝对水平在制造类企业里仍算低，短期偿债压力小。（置信度：高）</li>
+</ol>
+<p><strong>仅从估值角度的判断</strong>：市盈率 TTM 21.33 倍对应上半年 38.94% 的营收增速，属于「增长与估值不匹配、估值偏低」的组合。<strong>但这只是估值角度的陈述，不等于「这票好」的结论</strong>——利润含一次性收益、政策风险未消，两者都会影响这个组合的可持续性。（置信度：中）</p>
+<p><strong>信息缺口</strong>：库内财务没有扣除非经常性损益后的净利润、没有分业务板块收入拆分、没有经营性现金流。影响：C 节无法把「主业赚的钱」和「卖资产赚的钱」分开，第 3 条判断只能标低置信度。补法：待 2026 年三季报披露后重跑本调研，或人工查阅半年报全文的分部数据。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>数据来源：库内同业对比（取 3 家），同为「化学制药」行业，财务数据截止期均为 2026-06-30。</p>
+<ul>
+<li><strong>药明康德（603259）</strong>：总市值 4,621.91 亿元 · 市盈率 TTM 21.33 · 市净率 5.55 · 上半年营收 288.97 亿元 · 上半年净利润 110.80 亿元 · 净资产收益率 13.59%</li>
+<li><strong>恒瑞医药（600276）</strong>：总市值 3,054.44 亿元 · 市盈率 TTM 39.53 · 市净率 4.74 · 上半年营收 154.56 亿元 · 上半年净利润 44.65 亿元 · 净资产收益率 7.10%</li>
+<li><strong>百利天恒（688506）</strong>：总市值 1,079.66 亿元 · 市盈率 TTM 无（亏损，无法计算）· 市净率 23.42 · 上半年营收 1.87 亿元 · 上半年净利润 -16.37 亿元 · 净资产收益率 -29.15%</li>
+<li><strong>新和成（002001）</strong>：总市值 825.52 亿元 · 市盈率 TTM 11.51 · 市净率 2.37 · 上半年营收 131.29 亿元 · 上半年净利润 40.11 亿元 · 净资产收益率 11.85%</li>
+</ul>
+<p><strong>横向位置怎么读</strong>（置信度：高，数据层面；置信度：中，解读层面）</p>
+<ol>
+<li><strong>规模上是这组里最大的</strong>：市值是第二名恒瑞医药的约 1.5 倍，上半年营收和净利润都接近恒瑞医药的两倍。</li>
+<li><strong>盈利效率最高</strong>：净资产收益率 13.59%，明显高于恒瑞医药的 7.10% 和新和成的 11.85%，百利天恒为负。</li>
+<li><strong>估值介于中间</strong>：市盈率 21.33 倍，比恒瑞医药的 39.53 倍低约一半，但高于新和成的 11.51 倍。市净率 5.55 倍则是这组里除百利天恒外最高的——<strong>说明市场愿意给它的净资产更高的溢价，这与它净资产收益率最高是一致的</strong>。</li>
+<li><strong>同行不完全可比这一点要说清</strong>：这四家的业务模式差别很大——药明康德做研发生产外包服务，恒瑞医药和百利天恒是自己做创新药的药企，新和成主业是维生素和营养品原料。它们被归到同一个「化学制药」行业分类里，但驱动因素并不相同。<strong>所以这组对比只能说明「在同一行业标签下的相对位置」，不能当成同业竞争格局来读</strong>。（置信度：高）</li>
+</ol>
+<p><strong>真正的同业</strong>（CRO/CDMO 同行如康龙化成、凯莱英、泰格医药）不在库内同业对比返回的三家里，因为行业分类不同。这是一个方法层面的缺口，见 M 节。</p>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>：按库内公司档案的主营描述，公司靠向全球药企<strong>收服务费</strong>赚钱，覆盖从药物发现、临床前研究、临床试验，到最后商业化生产的整条链路。客户研发一个新药需要好几年，中途换供应商成本很高，所以收入具有跨年度延续性。</p>
+<p><strong>护城河分级（诚实分档）</strong></p>
+<ol>
+<li><strong>结构性护城河：一体化平台的规模与切换成本</strong>（置信度：中）</li>
+</ol>
+<p>依据一是库内公司档案明确写了「全方位、一体化平台」「贯穿从小分子药物发现到推向市场的全过程」；依据二是 33,834 名员工的人力规模——这类业务的产能就是人和产线，规模本身构成门槛。药企一旦把某个分子交给它从早期做到后期，中途更换服务商要重新做技术转移和监管衔接，切换成本真实存在。 <strong>但要留一句保留</strong>：这条护城河的强度库内数据证明不了，只能从业务描述推。</p>
+<ol>
+<li><strong>阶段性优势：新分子业务的先发位置</strong>（置信度：低）</li>
+</ol>
+<p>多肽和寡核苷酸这类「新分子」业务（公司称为 TIDES）上半年收入 72.6 亿元、同比增长 44.3%，公司预计全年增长约 45%（来源：<a href="https://m.21jingji.com/article/20260804/herald/1709f9a74b76df81369e2ab47ddeb70e.html" target="_blank" rel="noopener">21财经 2026-08-04</a>、<a href="https://news.qq.com/rain/a/20260804A0CSUG00" target="_blank" rel="noopener">腾讯新闻 2026-08-04</a>）。这块产能建设有周期，先建成的先接单，属于阶段性而非永久优势——<strong>竞争对手扩产完成后优势会被稀释</strong>。注意：<strong>这两个数字是联网来源，不是库内财务数据</strong>。</p>
+<ol>
+<li><strong>明确不具备的</strong>：定价权。外包服务的定价受下游药企研发预算和同业产能供给两头挤压，公司无法像持有专利药的企业那样单方面提价。（置信度：中）</li>
+</ol>
+<p><strong>一条结构性弱点</strong>：这家公司的护城河建立在「全球客户愿意把研发外包给中国供应商」这个前提上。<strong>这个前提不是商业问题，是政治问题</strong>——见 F 节。护城河再深，也挡不住客户被法律禁止使用它的服务。（置信度：高，这是逻辑判断不需要数据）</p>
+<h2>F. 政策与监管</h2>
+<p>库内没有政策数据，本节全部来自联网检索，每条带来源与日期。</p>
+<p><strong>1. BIOSECURE 法案已经生效</strong>（置信度：中——多家美国律所独立解读，来源同质但机构独立）</p>
+<p>美国 2026 财年国防授权法案于 <strong>2025-12-18</strong> 签署成为法律，其中包含 BIOSECURE 法案条款，建立了一套限制美国联邦采购和联邦资助资金流向「受关注生物技术公司」的框架。美国政府机构不得采购这类公司的生物技术设备或服务，也不得与使用这类设备/服务履行政府合同的实体签约。 来源：<a href="https://www.ropesgray.com/en/insights/alerts/2026/01/biosecure-act-enacted" target="_blank" rel="noopener">Ropes &amp; Gray「BIOSECURE Act Enacted」2026-01</a>、<a href="https://www.lw.com/en/insights/biosecure-act-becomes-law-limiting-grants-with-biotechnology-companies-of-concern" target="_blank" rel="noopener">Latham &amp; Watkins「BIOSECURE Act Becomes Law」</a>、<a href="https://www.klgates.com/BIOSECURE-Act-What-You-Need-to-Know-1-20-2026" target="_blank" rel="noopener">K&amp;L Gates 2026-01-20</a></p>
+<p><strong>传导链条</strong>：法案生效 → 美国管理和预算办公室（OMB）公布「受关注生物技术公司」名单 → 上榜公司失去美国政府相关的采购与资助业务，且与其合作的药企在承接联邦合同时受限 → 客户出于合规考虑提前分散供应商 → 订单和收入受影响。<strong>注意这条链的每一环都需要时间，不是名单一出收入就归零</strong>。</p>
+<p><strong>2. 2026-06-08 被美国国防部列入 1260H 清单</strong>（置信度：中——三家律所与专业媒体独立报道）</p>
+<p>美国国防部于 2026-06-08 更新 1260H「在美经营的中国军工企业」清单，将药明康德列入，同批还有华大基因集团、华大智造等。列名本身不直接禁止商业交易，但它为后续被认定为 BIOSECURE 法案下的「受关注生物技术公司」铺路。 来源：<a href="https://www.ropesgray.com/en/insights/alerts/2026/06/department-of-defense-releases-updated-1260h-list-that-includes-wuxi-apptec" target="_blank" rel="noopener">Ropes &amp; Gray 2026-06</a>、<a href="https://www.hklaw.com/en/insights/publications/2026/06/wuxi-apptec-added-to-dows-1260h-list" target="_blank" rel="noopener">Holland &amp; Knight 2026-06</a>、<a href="https://www.thefdalawblog.com/2026/06/wuxi-apptecs-1260h-listing-brings-the-biosecure-act-back-to-center-stage/" target="_blank" rel="noopener">FDA Law Blog 2026-06</a></p>
+<p><strong>3. 2026-08-07 美国联邦法院下达初步禁令，暂停该列名</strong>（置信度：中——四个独立来源交叉验证，含公司自身公告）</p>
+<p>美国哥伦比亚特区联邦地区法院首席法官 James E. Boasberg 于 <strong>2026-08-07</strong> 签发初步禁令，禁止美方主管部门执行对药明康德的 1260H 列名，理由是法院认定公司在「该认定属于《行政程序法》下的武断专横行为」这一主张上有胜诉可能性。<strong>这是临时性救济，诉讼本身仍在进行，不是终局判决</strong>。 来源：<a href="https://www.ropesgray.com/en/insights/alerts/2026/08/federal-court-enjoins-dod-designation-of-wuxi-apptec-as-a-chinese-military-company-under-section" target="_blank" rel="noopener">Ropes &amp; Gray 2026-08</a>、<a href="https://natlawreview.com/article/biosecure-act-update-court-enjoins-wuxi-apptecs-1260h-designation-strategic-and" target="_blank" rel="noopener">National Law Review</a>、<a href="https://www.bloomberg.com/news/articles/2026-08-08/wuxi-apptec-gets-temporary-reprieve-of-chinese-military-label" target="_blank" rel="noopener">Bloomberg 2026-08-08</a>、<a href="https://www.scmp.com/news/us/article/3363369/us-judge-blocks-pentagons-chinese-military-label-wuxi-apptec" target="_blank" rel="noopener">南华早报</a>、<a href="https://officialsite-static.wuxiapptec.com/upload/ANNOUNCEMENT_FOR_PRELIMINARY_INJUNCTION_2e0a0bc090.pdf" target="_blank" rel="noopener">公司港交所公告原文</a></p>
+<p><strong>4. 关键时点：2026-12-18</strong>（置信度：中——两个独立来源提及）</p>
+<p>BIOSECURE 法案要求美国管理和预算办公室在法案生效后一年内、即 <strong>2026-12-18 之前</strong>，公布首批「受关注生物技术公司」名单。<strong>这是未来 13 周之后紧接着的一个硬时点，是本报告风险判断里最关键的日期。</strong> 来源：<a href="https://www.ropesgray.com/en/insights/alerts/2026/01/biosecure-act-enacted" target="_blank" rel="noopener">Ropes &amp; Gray 2026-01</a>、<a href="https://www.lw.com/en/insights/biosecure-act-becomes-law-limiting-grants-with-biotechnology-companies-of-concern" target="_blank" rel="noopener">Latham &amp; Watkins</a></p>
+<p><strong>政策方向判断</strong>：整体偏负面但已被部分定价，且 8 月的禁令是阶段性的正面变化。<strong>这类风险的特点是「平时不动、动就是一大步」</strong>——不适合用日常波动去跟踪，只适合在几个已知时点上核对结果。（置信度：中）</p>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签返回 12 个同花顺概念标签。<strong>逐个分级说明「是真有业务」还是「只是挂了个标签」</strong>：</p>
+<p><strong>真有业务（有主营描述或财务数据佐证）</strong></p>
+<ul>
+<li><strong>CRO概念</strong>（885927.TI）：<strong>真有业务</strong>。库内公司档案主营写明提供「新药的研发、生产及配套服务」，2026 上半年营收 288.97 亿元全部来自这类服务收入。这是公司的主业标签。</li>
+<li><strong>创新药</strong>（886015.TI）：<strong>部分成立，需要说清</strong>。公司不做自己的创新药、不持有药品批文，是<strong>服务于</strong>创新药企业的供应商。收入随创新药研发投入景气度波动，但不享有药品上市后的销售分成。把它当创新药企理解会误判。</li>
+<li><strong>2025年报预增</strong>（886107.TI）：<strong>真有业务佐证</strong>。库内财务显示 2025 全年归母净利润 191.51 亿元、同比 +102.65%，与「预增」标签一致。<strong>但这是已经发生的历史，对未来无指示意义</strong>。</li>
+<li><strong>人民币贬值受益</strong>（885840.TI）：<strong>逻辑成立，缺库内佐证</strong>。公司主营描述明确包含「境外提供医疗器械检测及境外精准医疗研发生产服务」，海外收入占比高的企业在人民币贬值时换回的人民币收入增加。<strong>但库内没有海外收入占比数据，无法量化这个受益幅度</strong>，标为「逻辑成立但未见数据佐证」。</li>
+<li><strong>回购增持再贷款概念</strong>（886089.TI）：<strong>真有对应行为</strong>。公司 2026-06-09 董事会通过 10 亿元 A 股回购方案（来源：<a href="https://paper.cnstock.com/html/2026-06/12/content_2230482.htm" target="_blank" rel="noopener">上海证券报 2026-06-12</a>）。<strong>但「再贷款」指的是央行的专项工具，公司公告写的是使用自有资金，两者不是一回事</strong>，标签有夸大成分。</li>
+</ul>
+<p><strong>仅是市场分类标签，与业务无关</strong></p>
+<ul>
+<li><strong>上证180成份股</strong>（883302.TI）、<strong>上证50样本股</strong>（883301.TI）、<strong>沪深300样本股</strong>（883300.TI）：指数成份股身份，反映的是市值和流动性，不代表任何业务。意义在于：会被跟踪这些指数的基金被动持有，带来一部分刚性的资金需求。</li>
+<li><strong>沪股通</strong>（885520.TI）：可被香港投资者通过互联互通渠道买卖，是交易资格标签。</li>
+<li><strong>融资融券</strong>（885338.TI）：可做两融交易的标的，是交易资格标签，会放大波动。</li>
+<li><strong>同花顺出海50</strong>（886075.TI）、<strong>同花顺漂亮100</strong>（885916.TI）：资讯商自编的主题名单，<strong>属于第三方分类，不是业务事实</strong>。</li>
+</ul>
+<p><strong>产业链位置</strong>（置信度：中，基于主营描述与公开产业信息）</p>
+<ul>
+<li><strong>上游</strong>：化学试剂、原料药中间体、实验仪器与耗材、以及最重要的<strong>人力</strong>（33,834 名员工）。上游高度分散，公司对上游有一定议价能力。</li>
+<li><strong>公司位置</strong>：中间的服务与生产环节。不承担新药研发失败的风险（不管药成不成，服务费照收），但也不分享新药成功后的销售利润。<strong>这是「卖铲子」的位置</strong>。</li>
+<li><strong>下游</strong>：全球制药企业与生物科技公司。下游集中度高，大客户对价格有影响力；且下游的研发投入直接取决于生物医药一级市场融资的冷热。</li>
+<li><strong>议价能力在哪端</strong>：<strong>偏下游</strong>。公司的订单量由客户的研发预算决定，属于被动接单方。缓解因素是切换供应商成本高，以及在手订单提供了缓冲（截至 2026-06 末持续经营业务在手订单 664.3 亿元、同比 +25.2%，来源：<a href="https://m.21jingji.com/article/20260804/herald/1709f9a74b76df81369e2ab47ddeb70e.html" target="_blank" rel="noopener">21财经 2026-08-04</a>——<strong>联网数据，非库内</strong>）。</li>
+</ul>
+<p><strong>产业链景气度</strong>（置信度：低——聚合类来源，未做多源交叉验证）</p>
+<p>2026 年 1-8 月全球药品一级和二级市场融资合计 538 亿美元、同比增长约 72%；2026 上半年国内 CXO 板块营收和归母净利润同比分别增长 24.5% 和 52.7%。同业订单方面，凯莱英在手订单同比 +54%、康龙化成新签订单同比 +30%。 来源：<a href="https://consult.pharnexcloud.com/report/detail/114765.html" target="_blank" rel="noopener">摩熵咨询医药生物行业深度报告</a>、<a href="https://m.jrj.com.cn/madapter/24h/2026/09/01080958304274.shtml" target="_blank" rel="noopener">招商证券观点转载 2026-09-01</a> <strong>这些是行业聚合数字、单一来源渠道，标为置信度低。它们的作用是提供背景，不作为判断依据。</strong></p>
+<h2>H. 消息面与市场情绪</h2>
+<h3>近 60 天新闻（库内新闻，共 20 条）</h3>
+<ol>
+<li><strong>2026-08-27 · 公司公告出售部分股票资产，预计影响 2026 年税前利润约 31.43 亿元</strong>（来源：财联社，库内 event_id 44706）。<strong>有实质影响</strong>：这是一次性的投资收益，会推高 2026 年报表利润，但不代表主业赚钱能力提升。<strong>看 2026 年市盈率时必须把这块单独考虑</strong>。</li>
+<li><strong>2026-08-28 · 第五次减持药明合联，套现约 39 亿港元</strong>（来源：东方财富，库内 event_id 45052，新闻情感值 -0.4）。<strong>有实质影响</strong>：与上一条是同一件事的两个角度。持续减持参股公司换现金投入主业，说明公司在主动做资产结构调整；但反复减持同一标的也意味着这块收益是一次性的、会用完。</li>
+<li><strong>2026-08-27 · 2026 年半年度 A 股权益分派实施公告</strong>（来源：巨潮公告，库内 event_id 45643）。中期分红方案为每 10 股派发现金红利 5.10 元（含税）、合计约 15.06 亿元（来源：<a href="https://finance.sina.com.cn/stock/aigc/hkgg/2026-08-03/doc-inikzuyf6209456.shtml" target="_blank" rel="noopener">新浪财经 2026-08-03</a>）。<strong>除权除息日库内和联网都没查到，列为信息缺口</strong>（见 I 节 W1）。</li>
+<li><strong>2026-08-25 · 富达（FMR LLC）在 H 股的持股比例从 9.87% 升至 10.06%</strong>（来源：财联社/东方财富，库内 event_id 43177/43180）。<strong>对基本面无直接影响，是资金面信号</strong>：大型外资机构在 H 股增持，与 A 股相对 H 股折价 5.95% 这一现象方向一致。</li>
+<li><strong>2026-09-02 与 2026-09-04 · 券商 9 月推荐名单中该票出现次数最多</strong>（来源：东方财富，库内 event_id 47634/49138）。<strong>对基本面无影响，是情绪信号</strong>。截至 09-04 已有 41 家券商公布名单，该票人气最高。<strong>这是双刃的</strong>：短期有资金关注度，但也意味着预期已高度一致。</li>
+<li><strong>2026-08-26 · 报道称订单充沛</strong>（来源：东方财富，库内 event_id 43481，情感值 0.65）。<strong>间接佐证</strong>：与联网查到的在手订单 664.3 亿元、同比 +25.2% 方向一致。</li>
+</ol>
+<p>另有 5 条为「H股公告」的例行披露，标题无具体内容、无法判断实质，不展开。</p>
+<h3>涨停记录（库内涨停记录，近 180 日共 2 次）</h3>
+<ul>
+<li><strong>2026-08-04</strong>：涨停，当日涨幅 10.0%，1 连板。首次封板 09:34:15，最后封板 09:51:42，<strong>开板 6 次</strong>，封单金额 3.32 亿元。行业归类：医疗服务。</li>
+</ul>
+<p>解读：这一天正是半年报披露日（库内财务的公告日=20260804），属于业绩驱动的涨停。<strong>但开板 6 次、封单仅 3.32 亿元，说明当天买卖分歧很大、封板并不牢固</strong>。（置信度：高）</p>
+<ul>
+<li><strong>2026-04-28</strong>：涨停，当日涨幅 10.0%，1 连板。首次与最后封板均为 09:35:41，<strong>开板 0 次</strong>，封单金额 8.45 亿元。</li>
+</ul>
+<p>解读：这一天是一季报披露日（公告日=20260428），同样业绩驱动。<strong>一字未开、封单 8.45 亿元，封板质量明显强于 8 月那次</strong>。（置信度：高）</p>
+<p><strong>两次涨停对比给出的信息</strong>：同样是业绩超预期，4 月市场的接受度比 8 月更一致。8 月那次的高分歧，可能与股价位置已经不低有关。（置信度：中——这是解读，库内没有区间涨跌幅数据可以验证股价位置）</p>
+<h3>资金与筹码（库内资金筹码）</h3>
+<ul>
+<li><strong>资金流向</strong>（统计窗口：2026-08-10 至 2026-09-04，共 20 个交易日）：
+<ul>
+<li>全口径净流入合计 <strong>+19.14 亿元</strong>，其中<strong>特大单（主力）净流入为 -1.68 亿元，即净流出 1.68 亿元</strong></li>
+<li>净流入为正的天数 12 天 / 共 20 天</li>
+<li><strong>两个方向要一起看</strong>：整体资金是净流入的，但主力资金是净流出的——<strong>说明这 20 天的买盘更多来自中小单，大资金在减少持仓</strong>。（置信度：中）</li>
+</ul></li>
+<li><strong>筹码分布</strong>：筹码分布返回 None。<strong>这是库内数据覆盖范围的限制</strong>——筹码数据只囤重点关注的票，该票暂无。不是「没有筹码」，是「库里没存」。因此本报告<strong>无法给出获利盘比例</strong>，也就无法判断上方套牢盘密集程度或短线获利抛压大小。</li>
+<li><strong>股东户数</strong>：股东户数返回 None，库内无该票股东户数数据，无法判断筹码是趋于集中还是趋于分散。</li>
+</ul>
+<div class="callout"><strong>纪律声明</strong>：以上资金流、涨停记录都是盘面现象，不是基本面证据。它们只作为 H 节的情绪面佐证，<strong>不进入 J 节的逻辑链，也不单独作为任何操作结论的依据</strong>。</div>
+<h2>I. 未来 13 周事件日历</h2>
+<p>库内事件日历（近 120 日）返回<strong>空列表</strong>——库内事件日历没有该票未来 120 天的任何条目。<strong>这是一个需要点名的信息缺口</strong>：本节的事件全部来自联网检索和按历史披露节奏的推算，可靠性低于库内数据。</p>
+<ul>
+<li><strong>W1（2026-09-07 起）</strong>：2026 年半年度权益分派实施 · 公司事件 · 重要性中 · 影响：每 10 股派 5.10 元含税，除权除息当日股价会按分红金额相应下调，这是机械调整不是下跌。<strong>具体股权登记日与除权除息日未查到（实施公告发布于 2026-08-27，通常在公告后一周至两周内执行），属信息缺口，需自行核对交易所公告</strong>（置信度：低）</li>
+<li><strong>W2（2026-09-14 起）</strong>：本周无已知事件</li>
+<li><strong>W3（2026-09-21 起）</strong>：本周无已知事件</li>
+<li><strong>W4（2026-09-28 起）</strong>：<strong>2026 年第一次临时股东会（2026-09-29 召开）</strong> · 公司治理 · 重要性中 · 影响：审议事项内容未查到，需关注会议通知与决议公告；来源：<a href="https://finance.sina.cn/stock/relnews/hk/2026-08-10/detail-inimvxci4795165.d.html" target="_blank" rel="noopener">新浪财经 2026-08-10</a>、<a href="https://finance.eastmoney.com/a/202608103836836349.html" target="_blank" rel="noopener">东方财富 2026-08-10</a>（置信度：中——两家媒体转载同一份公告，未直接核对公告原文）</li>
+<li><strong>W5（2026-10-05 起）</strong>：国庆假期休市（10-01 至 10-08 期间，具体休市安排以交易所公告为准）· 市场 · 重要性低 · 影响：假期期间海外市场与政策消息无法即时反映，节后可能有跳空</li>
+<li><strong>W6（2026-10-12 起）</strong>：本周无已知事件</li>
+<li><strong>W7（2026-10-19 起）</strong>：本周无已知事件（三季报窗口临近，需留意预约披露日公告）</li>
+<li><strong>W8（2026-10-26 起）</strong>：<strong>2026 年三季报披露（预计）</strong> · 财报 · 重要性 <strong>高</strong> · 影响：<strong>这是 13 周内最重要的可核验节点</strong>。核对两件事——① 前三季度累计营收同比增速是否守住公司上调后指引隐含的 35% 至 39% 下沿；② 累计毛利率能否维持在 2026 上半年 53.91% 的水平之上。<strong>日期依据是 2025 年三季报披露日 2025-10-27（库内财务的公告日），2026 年的预约披露日未查到，属信息缺口</strong>（置信度：低——日期为推算）</li>
+<li><strong>W9（2026-11-02 起）</strong>：三季报后的研报密集更新期 · 行业 · 重要性中 · 影响：验证 J 节「一致预期是否拥挤」这一环——若三季报后正面评级数量继续增加而基本面未超预期，拥挤度风险上升</li>
+<li><strong>W10（2026-11-09 起）</strong>：本周无已知事件</li>
+<li><strong>W11（2026-11-16 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-11-23 起）</strong>：本周无已知事件（1260H 诉讼后续庭审时点未公布，需持续跟踪）</li>
+<li><strong>W13（2026-11-30 起）</strong>：<strong>美国「受关注生物技术公司」首批名单公布窗口开启</strong> · 政策 · 重要性 <strong>最高</strong> · 影响：法定截止日为 <strong>2026-12-18</strong>（略超 13 周窗口，但公布可能提前）。<strong>名单中是否出现公司名称，是 K 节三情景的分水岭</strong>。来源见 F 节第 4 条（置信度：中）</li>
+</ul>
+<p><strong>窗口外但必须提前记下的</strong>：2026-12-18（法定名单公布截止日）、1260H 诉讼实体审理结果（时点未定）。这两件事都在 13 周之外，但市场会提前定价，<strong>不要等到那一天才开始关注</strong>。</p>
+<h2>J. 逻辑链</h2>
+<p>把 B–I 的事实串成一条可以被证伪的链。<strong>每一环标置信度，最弱的一环在最后单独点出。</strong></p>
+<p><strong>第 1 环（置信度：高）</strong> 因为 2026 上半年营收 288.97 亿元、同比增长 38.94%，且增速相比 2026 一季度的 28.81%、2025 全年的 15.84% 是连续加快的； 且累计毛利率从 2025 前三季的 46.62% 逐期升到 2026 上半年的 53.91%； → <strong>所以业务量和单位盈利能力是同向改善的，不是靠降价换量。</strong> → 如果这条成立，应该能观察到：<strong>2026 年三季报的累计营收同比增速不低于 35%，且累计毛利率不低于 53.91%。</strong>（可在 W8 核验）</p>
+<p><strong>第 2 环（置信度：中）</strong> 因为公司在 2026-08-03 主动把全年收入指引从 513 亿至 530 亿元上调到 585 亿至 605 亿元（来源见 A 节）； 且截至 2026-06 末在手订单 664.3 亿元、同比增长 25.2%（联网来源，见 G 节）； → <strong>所以下半年的收入有订单支撑，指引上调不是空口承诺。</strong> → 如果这条成立，应该能观察到：<strong>三季报中在手订单余额同比继续保持正增长。</strong>（可在 W8 核验；<strong>注意在手订单不是库内数据，核验时需查财报原文</strong>）</p>
+<p><strong>第 3 环（置信度：高）</strong> 因为市盈率 TTM 21.33 倍，低于化学制药行业 148 只票的中位数 36.74 倍，排名第 30 便宜； 且 A 股相对 H 股折价 5.95%（2026-09-04）； → <strong>所以仅从估值角度看，当前定价没有把第 1、2 环的增长充分体现。</strong> → 如果这条成立，应该能观察到：<strong>在基本面不变的前提下，市盈率向行业中位数方向收敛。</strong></p>
+<p><strong>第 4 环 —— 反向的一环（置信度：中）</strong> 因为 2026-06-08 被列入美国 1260H 清单，虽在 2026-08-07 获法院初步禁令暂停执行，但诉讼未终结； 且 BIOSECURE 法案已于 2025-12-18 生效、首批「受关注生物技术公司」名单须在 2026-12-18 前公布； → <strong>所以第 3 环里那个「没有充分体现」的估值折价，很可能就是市场对这个政策风险的定价，而不是市场的错误。</strong> → 如果这条成立，应该能观察到：<strong>估值折价在名单结果明确之前不会自行收敛；一旦名单结果明确，估值会向某一个方向一次性重估。</strong></p>
+<p><strong>⚠️ 整条链最弱的一环：第 4 环。</strong></p>
+<p><strong>为什么它是命门</strong>：第 1、2、3 环都有硬数据支撑，是可以核对的。但第 4 环要回答的是「21.33 倍的市盈率里，政策折价占了多少」——<strong>这个问题没有数据能回答</strong>。如果政策折价只占很小一部分，那第 3 环的「估值偏低」是真的机会；如果政策折价占了大部分，那 21.33 倍就是个合理价格、不存在低估。<strong>本报告无法分辨这两种情况，这是整份判断最大的不确定性来源。</strong></p>
+<p><strong>卖方观点（单列，不与上述事实混在一起）</strong></p>
+<p>来源优先级按库内研报数据。库内近 90 天共 46 篇研报、来自 37 家机构，评级分布为：最高档正面评级 29 篇、增持 4 篇、推荐 2 篇、强推 2 篇、优于大市 1 篇、强烈推荐 1 篇、跑赢行业 1 篇、Outperform 1 篇、Overweight 1 篇、其余英文最高档评级 2 篇、未标注评级 2 篇。<strong>没有一篇是负面评级。</strong></p>
+<ul>
+<li>〔卖方预期〕来源：天风证券研报（库内）· 日期：2026-08-31 · 观点：预测 2026 年每股收益 7.14 元、对应市盈率 22.04 倍、归母净利润 214.06 亿元；2027 年每股收益 8.83 元、市盈率 17.83 倍、净利润 264.62 亿元；2028 年每股收益 10.80 元、市盈率 14.58 倍、净利润 323.59 亿元 · 评级：最高档正面 · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：国泰海通研报（库内）· 日期：2026-08-11 · 观点：预测 2026 年每股收益 7.88 元、对应市盈率 19.64 倍、归母净利润 235.16 亿元 · 评级：增持 · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：华源证券研报（库内）· 日期：2026-08-11 · 观点：预测 2026 年每股收益 7.88 元、对应市盈率 19.64 倍、归母净利润 235.16 亿元 · 评级：最高档正面 · 置信度：低（卖方预期非事实，未经交叉验证；<strong>与国泰海通的预测数字完全相同，两者不构成独立的交叉验证</strong>）</li>
+<li>〔卖方预期〕来源：BERNSTEIN RESEARCH 研报（库内）· 日期：2026-08-12 · 观点：对 2026、2027、2028 三个年度给予 Outperform 评级，<strong>库内未记录具体盈利预测数字</strong> · 置信度：低（卖方预期非事实）</li>
+<li>〔卖方预期〕来源：国信证券研报（库内）· 日期：2026-08-06 · 观点：标题为「2026 年半年报点评：CRDMO 模式驱动成长，全年业绩指引全面上调」· 置信度：低（<strong>库内只有研报标题，没有正文与具体预测，观点内容不完整</strong>）</li>
+</ul>
+<p><strong>对卖方观点的一句提醒</strong>：46 篇研报零负面评级、37 家机构方向完全一致，这本身是需要警惕的信号——<strong>没有反方意见的一致预期，意味着任何一个不及预期的数据都缺少缓冲</strong>。（置信度：中）</p>
+<h2>K. 三情景推演</h2>
+<p>三个情景概率合计 100%。触发条件全部可用公开数据核对。</p>
+<ul>
+<li><strong>乐观（30%）</strong>｜<strong>触发</strong>：2026 年三季报（W8）累计营收同比增速 ≥39%（达到公司上调后指引区间的上沿），且累计毛利率不低于 2026 上半年的 53.91%；同时 1260H 诉讼中初步禁令继续有效、年底名单未收录公司｜<strong>路径</strong>：政策折价消除与业绩兑现同时发生，估值向化学制药行业中位数方向修复，并跟随创新药产业链整体走强</li>
+<li><strong>中性（45%）</strong>｜<strong>触发</strong>：2026 年三季报累计营收同比增速落在 35% 至 39% 区间（守住指引下沿但未超上沿），且年底前政策结果仍未明朗｜<strong>路径</strong>：业绩支撑与政策不确定性互相抵消，在 MA20 与 8-04 涨停日高点之间宽幅震荡，跟随行业整体波动，缺少独立方向</li>
+<li><strong>悲观（25%）</strong>｜<strong>触发</strong>：2026-12-18 前公布的首批「受关注生物技术公司」名单中出现公司名称，<strong>或</strong>三季报累计营收同比增速跌破 35%（低于上调后指引下沿）｜<strong>路径</strong>：一致预期被打破，估值向下重估，46 篇零负面评级的研报会集中下调，缺乏承接</li>
+</ul>
+<p><strong>为什么中性概率给到 45%</strong>：13 周窗口（截至 2026-11-29）<strong>并不包含 12-18 这个政策结果的法定截止日</strong>，也就是说本报告覆盖的时间段里，最大的那个不确定性大概率还没有答案。<strong>没有答案的时候，市场通常给不出方向。</strong>（置信度：中）</p>
+<h2>L. 决策与风控</h2>
+<h3>条件式操作倾向</h3>
+<ol>
+<li><strong>如果</strong> 2026 年三季报（预计 10 月下旬，见 W8）披露的前三季度累计营收同比增速 ≥35%，<strong>且</strong>累计毛利率不低于 2026 上半年的 53.91%，<strong>那么</strong> 可考虑轻仓试仓。</li>
+</ol>
+<p>*依据*：这两个条件同时成立，意味着 J 节第 1、2 环得到验证，基本面这条腿是实的。</p>
+<ol>
+<li><strong>如果</strong> 2026-12-18 之前公布的首批「受关注生物技术公司」名单中出现公司名称，<strong>那么</strong> 回避或减仓。</li>
+</ol>
+<p>*依据*：F 节第 4 条。这是二元事件，一旦发生，E 节所述的护城河前提被直接推翻，基本面再好也不改变结论。</p>
+<ol>
+<li><strong>如果</strong> 股价站上 <strong>回购上限</strong>（2026-06-09 董事会决议设定的 A 股回购价格上限，来源：<a href="https://paper.cnstock.com/html/2026-06/12/content_2230482.htm" target="_blank" rel="noopener">上海证券报 2026-06-12</a>）并持续在其上方运行，<strong>那么</strong> 转为观望。</li>
+</ol>
+<p>*依据*：股价高于回购价格上限时，那 10 亿元回购额度将无法继续执行，这个托底因素会消失。当前股价为 <strong>9-04 收盘 153.83 元</strong>，距该上限已经很近。</p>
+<ol>
+<li><strong>如果</strong> 股价跌破 <strong>MA20</strong>，<strong>且</strong> 20 日主力资金从当前的净流出 1.68 亿元进一步扩大、同时全口径资金从当前的净流入 19.14 亿元转为净流出，<strong>那么</strong> 减仓或观望。</li>
+</ol>
+<p>*依据*：H 节资金数据（统计窗口 2026-08-10 至 2026-09-04）。<strong>注意这是盘面信号不是基本面信号，只作为已持有情况下的风控触发，不用它建立新判断。</strong></p>
+<ol>
+<li><strong>如果</strong> 2026 年三季报中前三季度累计营收同比增速跌破 35%，<strong>那么</strong> 回避。</li>
+</ol>
+<p>*依据*：这意味着公司自己在 2026-08-03 上调的指引无法兑现，J 节第 2 环被证伪，而估值偏低这条逻辑的前提也随之消失。</p>
+<h3>什么情况下这份判断应当被整体推翻</h3>
+<ul>
+<li><strong>推翻条件一</strong>：如果查到扣除非经常性损益后的净利润显示主业增速远低于表观的 29.43%，则 J 节第 1 环的「盈利能力改善」不成立，全篇的估值逻辑作废。</li>
+<li><strong>推翻条件二</strong>：如果 1260H 诉讼在初步禁令后出现不利于公司的实体判决，则 F 节的「阶段性正面变化」反转，K 节的概率分配需重新计算。</li>
+<li><strong>推翻条件三</strong>：如果三季报显示在手订单余额同比转为负增长，则 J 节第 2 环的「订单支撑」不成立，指引上调将失去依据。</li>
+</ul>
+<p><strong>这份判断在什么情况下依然可能是错的（即使上述条件都没触发）</strong>：如果政策折价在 21.33 倍市盈率里占的比重远小于我的假设，那么「震荡」这个方向就低估了向上的空间。见 J 节最弱一环。</p>
+<h3>仓位思路</h3>
+<p><strong>不参与到轻仓之间</strong>（只讲相对概念，不给金额、不给股数）。理由：基本面是这份报告里少见的、四期数据一致向好的组合，值得关注；但 13 周窗口内最大的不确定性拿不到答案，且一致预期高度拥挤、缺少反方缓冲。<strong>在二元事件出结果之前，把仓位当成期权费而不是投资，是与「不知道答案」这个事实相匹配的做法。</strong>（置信度：中）</p>
+<p>⚠️ 本节不含目标价、不含评级、不含任何交易指令。所有触发条件均可用公开数据核对。</p>
+<h2>M. 逻辑自查</h2>
+<h3>这份判断最依赖的假设是哪一条</h3>
+<p><strong>最依赖的假设</strong>：「当前 21.33 倍的市盈率里，包含了对美国政策风险的显著折价」。</p>
+<p><strong>它错了会怎样</strong>：如果这个假设是错的——也就是说市场并没有因为政策风险而给折价，21.33 倍只是因为盈利里含一次性收益而被摊薄看低的假象——那么 J 节第 3 环的「估值偏低」不成立，K 节的乐观情景就没有基础，30% 的概率给高了。<strong>反过来，如果折价比我以为的更大，那中性 45% 就给高了，方向应该更偏向上。</strong></p>
+<p><strong>这个假设为什么无法验证</strong>：库内没有历史估值分位数据，也没有可比的政策事件前后估值对照。这是本报告的方法边界。</p>
+<h3>有没有为了让逻辑好看而忽略的反面证据</h3>
+<p>有三条，我把它们明确列出来：</p>
+<ol>
+<li><strong>2026-08-04 那次涨停开板 6 次、封单只有 3.32 亿元</strong>。同样是业绩超预期，4 月那次是一字未开、封单 8.45 亿元。<strong>8 月的分歧明显更大</strong>。我在 H 节写了这条，但在 A 节的结论里没有给它权重——因为它是盘面现象、按纪律不进逻辑链。<strong>但读者应该知道它存在。</strong></li>
+<li><strong>主力资金近 20 个交易日是净流出 1.68 亿元的</strong>，与全口径净流入 19.14 亿元方向相反。我把它放在 H 节而没让它影响结论，同样是纪律使然。<strong>它至少说明大资金没有在这个位置加仓。</strong></li>
+<li><strong>公司在连续第五次减持药明合联</strong>（2026-08-28 新闻）。我把它归为「一次性收益」处理，但<strong>另一种读法是：如果主业现金流足够强，为什么需要反复出售参股公司资产来补充资金？</strong> 库内没有经营性现金流数据，我无法回答这个问题，所以选择了较温和的那种解释。<strong>这是一个我承认的偏向。</strong></li>
+</ol>
+<h3>信息缺口清单</h3>
+<ol>
+<li><strong>库内事件日历返回空列表</strong>——库内事件日历没有该票未来 120 天的任何条目。</li>
+</ol>
+<p>*影响*：I 节的 13 周日历全部依赖联网检索与历史节奏推算，可靠性明显低于其他章节。三季报披露日、除权除息日都是推测。 *补法*：查上交所定期报告预约披露时间表；或等库内 events 数据补全后重跑。</p>
+<ol>
+<li><strong>库内资金筹码的筹码分布为 None</strong>——筹码数据库内只覆盖重点关注的票，该票暂无。</li>
+</ol>
+<p>*影响*：H 节无法给出获利盘比例，因此无法判断上方套牢盘密度与短线获利抛压大小。 *补法*：把该票纳入库内筹码数据的覆盖范围后重跑。</p>
+<ol>
+<li><strong>库内资金筹码的股东户数为 None</strong>——库内无股东户数数据。</li>
+</ol>
+<p>*影响*：无法判断筹码是趋于集中还是趋于分散。 *补法*：同上。</p>
+<ol>
+<li><strong>库内财务没有扣非净利润、没有经营性现金流、没有分业务收入拆分</strong>。</li>
+</ol>
+<p>*影响*：C 节第 3 条（利润增速低于收入增速的原因）只能标低置信度；上文「反面证据」第 3 条无法回答。这是本报告最实质的数据缺口。 *补法*：人工查阅 2026 年半年报全文，或扩展库内财务的返回字段。</p>
+<ol>
+<li><strong>库内行情只提供当日行情，没有区间涨跌幅、没有均线数值</strong>。</li>
+</ol>
+<p>*影响*：本报告无法给出「近三个月涨了多少」这类位置判断；L 节的 MA20 触发条件只能写锚名、不能给数值。H 节对「8 月涨停分歧大是否因为股价位置已高」的解读因此只能标为推测。 *补法*：需要位置判断时另行调取日线数据。</p>
+<ol>
+<li><strong>同行对比里没有真正的同业</strong>。库内同业对比按「化学制药」行业分类返回的是恒瑞医药、百利天恒、新和成，三家的业务模式与本票均不相同；真正的研发生产外包同行（康龙化成、凯莱英、泰格医药等）因行业分类不同未被返回。</li>
+</ol>
+<p>*影响*：D 节的横向对比只能说明「同一行业标签下的相对位置」，不能当作竞争格局分析。 *补法*：按概念标签「CRO概念」而非行业分类取同业，需要扩展库内取数。</p>
+<ol>
+<li><strong>联网查到的扣非净利润数据未采用</strong>。检索结果中出现了 2026 上半年扣非净利润的同比数字，但按本调研的铁律，财务数字只认库内财务，故不引用。</li>
+</ol>
+<p>*影响*：C 节第 3 条本可以被这个数字直接验证，现在只能存疑。 *说明*：这是有意为之的取舍——保证全篇财务数字来源单一可追溯，优先于补全单个数据点。</p>
+<ol>
+<li><strong>半年度权益分派的股权登记日与除权除息日未查到</strong>。库内新闻只有实施公告的标题（2026-08-27），公告 PDF 因编码问题无法解析，联网检索也未返回具体日期。</li>
+</ol>
+<p>*影响*：I 节 W1 的事件只能写成区间推测。除权除息会使股价按分红金额机械下调（每 10 股 5.10 元），如果不知道具体日期，可能把这个机械调整误读成下跌。 *补法*：查上交所或公司公告原文。</p>
+<ol>
+<li><strong>1260H 诉讼的后续庭审时点未公布</strong>。</li>
+</ol>
+<p>*影响*：I 节 W12 无法给出具体日期，K 节悲观情景的触发时点只能锚定在名单公布的法定截止日 2026-12-18。 *补法*：持续跟踪美国哥伦比亚特区联邦地区法院的案件进展。</p>
+<ol>
+<li><strong>G 节的产业链景气数据全部来自聚合类单一渠道</strong>（融资额、CXO 板块增速、同业订单增速），未做多来源交叉验证，已在文中标为置信度低。</li>
+</ol>
+<p>*影响*：这些数字只作背景，未参与任何判断。若要用它们支撑结论，需先补交叉验证。</p>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-05），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>美国1260H列名与年底名单二元风险</li>
+      <li>46篇研报零负面预期过度一致</li>
+      <li>利润含出售资产一次性收益</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>扣非净利</dt><dd>扣除非经常性损益后的净利润。剔除卖资产、政府补助、公允价值变动等一次性项目，更接近主业真实盈利。</dd><dt>非经常性损益</dt><dd>与主营业务无关、偶发的收益或损失，如处置资产、政府补助、金融资产公允价值变动。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>一致预期</dt><dd>多家券商盈利预测的平均值。是别人的观点，不是事实。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.21jingji.com/article/20260804/herald/1709f9a74b76df81369e2ab47ddeb70e.html" target="_blank" rel="noopener">21财经 2026-08-04</a> <em>2026-08-04</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/roll/2026-08-03/doc-inikzzhc6131942.shtml" target="_blank" rel="noopener">新浪财经 2026-08-03</a> <em>2026-08-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260804A0CSUG00" target="_blank" rel="noopener">腾讯新闻 2026-08-04</a> <em>2026-08-04</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.ropesgray.com/en/insights/alerts/2026/01/biosecure-act-enacted" target="_blank" rel="noopener">Ropes &amp; Gray「BIOSECURE Act Enacted」2026-01</a> <em>2026-01</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.lw.com/en/insights/biosecure-act-becomes-law-limiting-grants-with-biotechnology-companies-of-concern" target="_blank" rel="noopener">Latham &amp; Watkins「BIOSECURE Act Becomes Law」</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.klgates.com/BIOSECURE-Act-What-You-Need-to-Know-1-20-2026" target="_blank" rel="noopener">K&amp;L Gates 2026-01-20</a> <em>2026-01-20</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.ropesgray.com/en/insights/alerts/2026/06/department-of-defense-releases-updated-1260h-list-that-includes-wuxi-apptec" target="_blank" rel="noopener">Ropes &amp; Gray 2026-06</a> <em>2026-06</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.hklaw.com/en/insights/publications/2026/06/wuxi-apptec-added-to-dows-1260h-list" target="_blank" rel="noopener">Holland &amp; Knight 2026-06</a> <em>2026-06</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.thefdalawblog.com/2026/06/wuxi-apptecs-1260h-listing-brings-the-biosecure-act-back-to-center-stage/" target="_blank" rel="noopener">FDA Law Blog 2026-06</a> <em>2026-06</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.ropesgray.com/en/insights/alerts/2026/08/federal-court-enjoins-dod-designation-of-wuxi-apptec-as-a-chinese-military-company-under-section" target="_blank" rel="noopener">Ropes &amp; Gray 2026-08</a> <em>2026-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://natlawreview.com/article/biosecure-act-update-court-enjoins-wuxi-apptecs-1260h-designation-strategic-and" target="_blank" rel="noopener">National Law Review</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.bloomberg.com/news/articles/2026-08-08/wuxi-apptec-gets-temporary-reprieve-of-chinese-military-label" target="_blank" rel="noopener">Bloomberg 2026-08-08</a> <em>2026-08-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.scmp.com/news/us/article/3363369/us-judge-blocks-pentagons-chinese-military-label-wuxi-apptec" target="_blank" rel="noopener">南华早报</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://officialsite-static.wuxiapptec.com/upload/ANNOUNCEMENT_FOR_PRELIMINARY_INJUNCTION_2e0a0bc090.pdf" target="_blank" rel="noopener">公司港交所公告原文</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://paper.cnstock.com/html/2026-06/12/content_2230482.htm" target="_blank" rel="noopener">上海证券报 2026-06-12</a> <em>2026-06-12</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://consult.pharnexcloud.com/report/detail/114765.html" target="_blank" rel="noopener">摩熵咨询医药生物行业深度报告</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.jrj.com.cn/madapter/24h/2026/09/01080958304274.shtml" target="_blank" rel="noopener">招商证券观点转载 2026-09-01</a> <em>2026-09-01</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/aigc/hkgg/2026-08-03/doc-inikzuyf6209456.shtml" target="_blank" rel="noopener">新浪财经 2026-08-03</a> <em>2026-08-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.cn/stock/relnews/hk/2026-08-10/detail-inimvxci4795165.d.html" target="_blank" rel="noopener">新浪财经 2026-08-10</a> <em>2026-08-10</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.eastmoney.com/a/202608103836836349.html" target="_blank" rel="noopener">东方财富 2026-08-10</a> <em>2026-08-10</em></li>
+      <li><span class="src-tag src-media">媒体</span> 库内公司档案、库内基础资料 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内行情，唯一行情事实源 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内估值，交易日 2026-09-04 <em>2026-09-04</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内 A/H 对照，2026-09-04 <em>2026-09-04</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [上海证券报 2026-06-12](https://paper.cnstock.com/html/2026-06/12/content_2230482.htm <em>2026-06-12</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社，库内 event_id 44706 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富，库内 event_id 45052，新闻情感值 -0.4 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 巨潮公告，库内 event_id 45643 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社/东方财富，库内 event_id 43177/43180 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富，库内 event_id 47634/49138 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富，库内 event_id 43481，情感值 0.65 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 预计 2026 年 10 月下旬披露，参照 2025 年三季报披露日 2025-10-27 <em>2025-10-27</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 实施公告发布于 2026-08-27，通常在公告后一周至两周内执行 <em>2026-08-27</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-05 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
