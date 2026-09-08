@@ -195,7 +195,7 @@ const NAV_SCRIPT = `
     var tip = document.createElement("span");
     tip.className = "sx-rail-tip";
     aside.appendChild(tip);
-    var BASE = 18, EXTRA = 33, RANGE = 90;   // 基础长 / 最大增量 / 影响半径(px)
+    var BASE = 22, EXTRA = 39, RANGE = 90;   // 基础长 / 最大增量 / 影响半径(px)
     var best = null;
     function setW(a, w){ var i = a.querySelector("i"); if (i) i.style.width = w + "px"; }
     function onPoint(clientY){
@@ -436,30 +436,30 @@ table thead th:first-child{z-index:2; background:var(--paper-2)}
 .sx-toc nav{pointer-events:auto; max-height:78vh; overflow:hidden; padding:8px 14px 8px 2px}
 .sx-toc .h{display:none}
 .sx-toc a{display:block; padding:4px 8px 4px 0; text-decoration:none; cursor:pointer; -webkit-tap-highlight-color:transparent}
-.sx-toc a i{display:block; width:18px; height:2px; border-radius:2px; background:var(--muted); opacity:.45; transition:width .15s ease, opacity .15s, background .15s}
+.sx-toc a i{display:block; width:22px; height:2px; border-radius:2px; background:var(--muted); opacity:.45; transition:width .07s linear, opacity .12s, background .12s}
 .sx-toc a.near i{opacity:.95}
 .sx-toc a.on i{background:var(--seal); opacity:1}
 /* 最近那条的标题气泡（脚本定位到该条的纵向中点） */
-.sx-rail-tip{position:absolute; left:71px; transform:translateY(-50%); background:var(--card);
+.sx-rail-tip{position:absolute; left:81px; transform:translateY(-50%); background:var(--card);
   border:1px solid var(--rule); border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,.14);
   padding:.28rem .7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.78rem;
   color:var(--ink); white-space:nowrap; max-width:16em; overflow:hidden; text-overflow:ellipsis;
-  opacity:0; transition:opacity .12s ease, top .1s ease}
+  opacity:0; transition:opacity .1s ease, top .05s linear}
 .sx-rail-tip.show{opacity:1}
 /* 宽屏（留白够放下目录条 + 标题气泡）把目录条从屏幕最左缘挪到紧挨正文列的左侧：
    视线不用横跨大片空白。同时气泡翻到条的左侧弹出——条已经贴着正文，再往右弹会盖住正在读的字。
    1200px 以下留白不够，维持原来的「贴左缘 + 气泡向右」。 */
 @media (min-width:1200px) and (hover:hover){
-  .sx-toc{left:calc((100vw - var(--measure)) / 2 - 4.6rem)}
+  .sx-toc{left:calc((100vw - var(--measure)) / 2 - 5.25rem)}
   .sx-rail-tip{left:auto; right:100%; margin-right:.5rem;
-    max-width:min(16em, calc((100vw - var(--measure)) / 2 - 6.1rem))}
+    max-width:min(16em, calc((100vw - var(--measure)) / 2 - 6.75rem))}
 }
 @media (max-width:899px), (hover:none){
   .sx-toc{left:auto; right:6px}
   .sx-toc nav{padding:8px 2px 8px 14px; touch-action:none}
   .sx-toc a{display:flex; justify-content:flex-end; padding:3.5px 0 3.5px 8px}
-  .sx-toc a i{width:15px}
-  .sx-rail-tip{left:auto; right:63px}
+  .sx-toc a i{width:18px}
+  .sx-rail-tip{left:auto; right:73px}
 }
 @media (prefers-reduced-motion: reduce){ .sx-nav-btn{transition:none !important} .sx-progress>i{transition:none}
   .sx-toc a i, .sx-rail-tip{transition:none !important} }
