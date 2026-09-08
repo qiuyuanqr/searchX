@@ -188,7 +188,7 @@ const NAV_SCRIPT = `
   }
 
   // 鱼眼放大：常态每条等长；指点（鼠标移动或手指按住滑动）时离光标越近的条越长、
-  // 线性衰减成阶梯；只有最近那条弹出标题气泡。手指松开跳到最近那节；键盘聚焦等效指着它。
+  // 按抛物线衰减成弧形包络；只有最近那条弹出标题气泡。手指松开跳到最近那节；键盘聚焦等效指着它。
   function bindRail(){
     var links = [].slice.call(deskNav.querySelectorAll("a"));
     if (!links.length) return;
@@ -203,7 +203,8 @@ const NAV_SCRIPT = `
       links.forEach(function(a){
         var r = a.getBoundingClientRect(), c = r.top + r.height / 2;
         var d = Math.abs(clientY - c);
-        setW(a, BASE + EXTRA * Math.max(0, 1 - d / RANGE));
+        var t = Math.max(0, 1 - d / RANGE);
+        setW(a, BASE + EXTRA * t * (2 - t));   // 抛物线包络 1-(d/RANGE)^2：中心附近平缓、远端收得快
         if (d < bd){ bd = d; best = a; }
       });
       links.forEach(function(a){ a.classList.toggle("near", a === best); });
@@ -436,7 +437,7 @@ table thead th:first-child{z-index:2; background:var(--paper-2)}
 .sx-toc nav{pointer-events:auto; max-height:78vh; overflow:hidden; padding:8px 14px 8px 2px}
 .sx-toc .h{display:none}
 .sx-toc a{display:block; padding:4px 8px 4px 0; text-decoration:none; cursor:pointer; -webkit-tap-highlight-color:transparent}
-.sx-toc a i{display:block; width:22px; height:2px; border-radius:2px; background:var(--muted); opacity:.45; transition:width .07s linear, opacity .12s, background .12s}
+.sx-toc a i{display:block; width:22px; height:2px; border-radius:2px; background:var(--muted); opacity:.45; transition:opacity .12s, background .12s}
 .sx-toc a.near i{opacity:.95}
 .sx-toc a.on i{background:var(--seal); opacity:1}
 /* 最近那条的标题气泡（脚本定位到该条的纵向中点） */
@@ -444,7 +445,7 @@ table thead th:first-child{z-index:2; background:var(--paper-2)}
   border:1px solid var(--rule); border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,.14);
   padding:.28rem .7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.78rem;
   color:var(--ink); white-space:nowrap; max-width:16em; overflow:hidden; text-overflow:ellipsis;
-  opacity:0; transition:opacity .1s ease, top .05s linear}
+  opacity:0; transition:opacity .1s ease}
 .sx-rail-tip.show{opacity:1}
 /* 宽屏（留白够放下目录条 + 标题气泡）把目录条从屏幕最左缘挪到紧挨正文列的左侧：
    视线不用横跨大片空白。同时气泡翻到条的左侧弹出——条已经贴着正文，再往右弹会盖住正在读的字。
