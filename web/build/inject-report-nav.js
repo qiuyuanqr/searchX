@@ -188,7 +188,7 @@ const NAV_SCRIPT = `
   }
 
   // 鱼眼放大：常态每条等长；指点（鼠标移动或手指按住滑动）时离光标越近的条越长、
-  // 按抛物线衰减成弧形包络；只有最近那条弹出标题气泡。手指松开跳到最近那节；键盘聚焦等效指着它。
+  // 按抛物线衰减成内凹的弧形包络；只有最近那条弹出标题气泡。手指松开跳到最近那节；键盘聚焦等效指着它。
   function bindRail(){
     var links = [].slice.call(deskNav.querySelectorAll("a"));
     if (!links.length) return;
@@ -204,7 +204,7 @@ const NAV_SCRIPT = `
         var r = a.getBoundingClientRect(), c = r.top + r.height / 2;
         var d = Math.abs(clientY - c);
         var t = Math.max(0, 1 - d / RANGE);
-        setW(a, BASE + EXTRA * t * (2 - t));   // 抛物线包络 1-(d/RANGE)^2：中心附近平缓、远端收得快
+        setW(a, BASE + EXTRA * t * t);   // 抛物线包络 (1-d/RANGE)^2（开口朝上）：轮廓向内凹、只在指针处收成尖峰
         if (d < bd){ bd = d; best = a; }
       });
       links.forEach(function(a){ a.classList.toggle("near", a === best); });
