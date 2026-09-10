@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>海光信息（688041.SH） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>海光信息（688041.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-10（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>关联板块</b> 算力</span>
+      <span><b>申万行业</b> 半导体</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 量子科技 · 抖音概念(字节概念) · 百度概念 · 水利 · 腾讯概念 · 信创 · 阿里巴巴概念 · 东数西算(算力)</span>
+      <span><b>来源</b> 8 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    海光信息（688041）主要做的是研发、设计和销售应用于服务器、工作站等计算、存储设备中的高端处理器。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——营收增速仍在加快，但毛利率已连续四期下降、估值接近行业中位数的两倍。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：营收增速仍在加快，但毛利率已连续四期下降、估值接近行业中位数的两倍。支撑在于H1营收90.99亿同比增66.52%，增速加快；9月起算力硬件国产化采购不低于75%；未来两周10项算力与AI会议密集落地。主要风险是毛利率连续四期降至55.21%，累计降4.89个百分点；PE 171.9倍为行业中位数92.31倍的1.86倍；近20日资金净流出34.39亿元，14天为净流出。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>H1营收90.99亿同比增66.52%，增速加快</li>
+      <li>9月起算力硬件国产化采购不低于75%</li>
+      <li>未来两周10项算力与AI会议密集落地</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据基准：2026-09-10 · 行情时点 15:34（收盘）· 库内取数 12 项全部调用 本报告不含任何持仓、自选、账户信息；不给目标价、不给评级。</div>
+<h2>A. 一屏结论（BLUF）</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：营收增速仍在加快，但毛利率已连续四期下降、估值接近行业中位数的两倍。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>收入端加速</strong>：2026 上半年营收 90.99 亿元、同比增长 66.52%，比 2025 全年的 56.92% 还快；归母净利润 17.98 亿元、同比增长 49.69%，增速也快于 2025 全年的 31.79%。（置信度：高，来自库内财务库内财报数据）</li>
+<li><strong>政策端出现硬约束</strong>：《2026-2028 年全国算力基础设施建设行动方案》自 2026 年 9 月起实施，要求央企、地方国资新建智算/超算中心的 AI 芯片、AI 服务器等核心硬件国产化采购比例不低于 75%，未达标不予拨付专项配套资金、暂缓能耗指标审批。（置信度：中，两个独立来源，见 F 节）</li>
+<li><strong>催化窗口密集</strong>：库内事件日历显示未来两周有中国算力大会（09-11）、中美首次 AI 安全高层对话（09-15）、华为全联接大会（09-17）、云栖大会（09-22）等 10 项事件集中落地。（置信度：高，来自库内事件日历）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>毛利率连续四期下降</strong>：60.10%（2025 前三季）→ 57.83%（2025 全年）→ 55.60%（2026Q1）→ 55.21%（2026H1），四期累计下降 4.89 个百分点。利润增速始终慢于营收增速，属于典型的增收不增利倾向。（置信度：高，库内数据）</li>
+<li><strong>估值处在高位</strong>：PE(TTM) 171.90 倍，半导体行业 PE 中位数为 92.31 倍，本股约为中位数的 1.86 倍；PB 21.29 倍。（置信度：高，来自库内估值）</li>
+<li><strong>近 20 个交易日资金持续净流出</strong>：2026-08-14 至 2026-09-10 合计净流出 34.39 亿元，其中特大单净流出 6.43 亿元，20 个交易日里只有 6 天为净流入。（置信度：高，来自库内资金筹码；属盘面现象，不作基本面论据）</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ol>
+<li><strong>2026 年三季报的毛利率</strong>——如果三季报毛利率不再低于 2026H1 的 55.21%，说明毛利率下降告一段落；如果继续低于，说明成本压力还在延续。核验时点：10 月中下旬（上年三季报披露日为 2025-10-16，据库内公告日推算）。</li>
+<li><strong>经营活动现金流净额是否回正</strong>——2026 上半年为 -4.28 亿元（上年同期 +21.77 亿元，公开半年报口径，见 C 节）。核验时点：同上，三季报。</li>
+</ol>
+<p><strong>这份判断最可能错在哪</strong>：本报告把「毛利率下降 + 现金流转负」当成需要警惕的信号，但公司给出的解释是主动加大备货以保障下半年交付。如果三季报同时出现「营收进一步加速 + 存货转化为收入 + 现金流回正」，那么当前的备货就是先付出后收获，本报告的谨慎立场会被证伪。（置信度：中）</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>公司</strong>：海光信息技术股份有限公司（库内公司档案）</li>
+<li><strong>代码 / 板块</strong>：688041 · 科创板 · 上市状态 L（正常上市）</li>
+<li><strong>上市日期</strong>：2022-08-12（至 2026-09-10 上市约 4 年 1 个月）</li>
+<li><strong>所属行业</strong>：半导体</li>
+<li><strong>主营业务</strong>：研发、设计和销售应用于服务器、工作站等计算、存储设备中的高端处理器</li>
+<li><strong>员工人数</strong>：3,333 人</li>
+<li><strong>注册资本</strong>：232,433.8091 万元</li>
+</ul>
+<div class="callout">⚠️ 库内公司简介文本里写「注册资本为 202433.8091（万元）」，与结构化字段的 232,433.8091 万元不一致。本报告采用结构化字段——它与 2026H1 每股收益 0.78 元 × 股本反推出的净利润（约 18.13 亿元）能对上库内实际净利润 17.98 亿元。（置信度：中）</div>
+<p><strong>当前行情</strong>（唯一行情事实源库内行情，数据时点 2026-09-10 15:34，即当日收盘）</p>
+<ul>
+<li>收盘价 232.37 元 · 当日涨跌幅 -1.45% · 当日最高相对昨收 -0.34% · 当日最低相对昨收 -2.18% · 成交额 30.40 亿元</li>
+</ul>
+<p><strong>估值</strong>（库内估值，交易日 2026-09-10）</p>
+<ul>
+<li>总市值 5,401.06 亿元</li>
+<li>PE(TTM) 171.90 倍 · PB 21.29 倍 · 股息率 0.073% · 换手率 0.5627%</li>
+<li>半导体行业库内在市 197 只，行业 PE 中位数 92.31 倍；本股 PE 在同行业「由小到大」排第 112 名（只统计 PE 为正的同行，即偏贵的那一半）</li>
+<li>仅估值口径判断：本股 PE 约为行业中位数的 1.86 倍，PB 也明显高于中芯国际的 5.95 倍，估值不便宜。<strong>这只是估值贵贱，不等于公司好坏。</strong>（置信度：高）</li>
+</ul>
+<p><strong>A/H 溢价</strong>：库内 A/H 对照返回空——该股非 A+H 两地上市，无此参照系。</p>
+<h2>C. 财务健康</h2>
+<p>库内近 4 期数据（库内财务，金额单位亿元，新→旧）：</p>
+<ul>
+<li><strong>2026H1（截至 20260630，公告日 20260814）</strong>：营收 90.99 · 同比 +66.52% ｜归母净利 17.98 · 同比 +49.69% ｜ ROE 7.51% ｜毛利率 55.21% ｜净利率 22.69% ｜ EPS 0.78 元｜资产负债率 19.20%</li>
+<li><strong>2026Q1（截至 20260331，公告日 20260408）</strong>：营收 40.34 · 同比 +68.06% ｜归母净利 6.87 · 同比 +35.82% ｜ ROE 2.99% ｜毛利率 55.60% ｜净利率 21.75% ｜ EPS 0.30 元｜资产负债率 22.80%</li>
+<li><strong>2025 全年（截至 20251231，公告日 20260408）</strong>：营收 143.77 · 同比 +56.92% ｜归母净利 25.45 · 同比 +31.79% ｜ ROE 11.91% ｜毛利率 57.83% ｜净利率 25.17% ｜ EPS 1.10 元｜资产负债率 27.13%</li>
+<li><strong>2025 前三季（截至 20250930，公告日 20251016）</strong>：营收 94.90 · 同比 +54.65% ｜归母净利 19.61 · 同比 +28.56% ｜ ROE 9.31% ｜毛利率 60.10% ｜净利率 29.93% ｜ EPS 0.85 元｜资产负债率 24.12%</li>
+</ul>
+<p><strong>趋势怎么看</strong></p>
+<ol>
+<li><strong>收入和利润都在加速增长，这是变好的一项。</strong> 营收同比从 54.65%（2025 前三季）一路升到 66.52%（2026H1）；归母净利同比从 28.56% 升到 49.69%。四期里两条增速曲线都在往上走。（置信度：高）</li>
+<li><strong>毛利率是明确的拐点，方向向下。</strong> 60.10% → 57.83% → 55.60% → 55.21%，连续四期下降，累计下降 4.89 个百分点，且 2026H1 比 2025 全年低 2.62 个百分点。净利率同步从 29.93% 降到 22.69%。也就是说，<strong>收入涨得更快，但每一块钱收入留下的利润更少了</strong>。（置信度：高）</li>
+<li><strong>利润增速持续慢于营收增速</strong>，四期都是如此（H1 是 49.69% 对 66.52%，差 16.83 个百分点）。这是增收不增利的温和形态——利润仍在增长，只是没跟上收入。（置信度：高）</li>
+<li><strong>资产负债率在下降</strong>：27.13%（2025 全年）→ 22.80%（Q1）→ 19.20%（H1），负债水平低且还在降，财务安全度这一项是好的。（置信度：高）</li>
+<li><strong>单季推算</strong>：2026Q2 单季营收约 50.65 亿元、归母净利约 11.11 亿元（据库内 H1 与 Q1 累计数相减推算），单季净利率约 21.9%，低于 2025 全年的 25.17%。（置信度：中，为推算值非库内直接字段）</li>
+</ol>
+<p><strong>库外补充：现金流与存货</strong>（库内财务不含现金流与存货科目，以下来自公开半年报报道）</p>
+<ul>
+<li>2026 上半年经营活动现金流净额为 <strong>-4.28 亿元</strong>，上年同期为 <strong>+21.77 亿元</strong>，由净流入转为净流出。公司解释为「为匹配市场销售规划、保障供货能力，加大备货储备规模，原材料及经营性采购支出同比明显增多」。</li>
+<li>截至 2026 上半年末，<strong>存货 75.18 亿元</strong>，<strong>预付款项 47.71 亿元</strong>（一季度末为 34.40 亿元）。</li>
+<li>来源：新浪财经 2026-08-14《海光信息半年度营收直逼 2024 全年！存货 75 亿预付款高企，直面成本与毛利压力》；公司 2026 年半年度报告全文（巨潮，2026-08-14）。库内新闻 2026-09-04《国产AI芯片上半年营收暴涨为何多数厂商经营性现金流恶化》从行业层面印证了同一现象。（置信度：中——有公司年报原文与行业报道两个方向的印证，但未逐项对回报表原文）</li>
+</ul>
+<p><strong>这三项数字合起来说明什么</strong>：存货和预付款同时抬升、现金流由净流入转为净流出，是<strong>主动备货</strong>的典型账面形态。它有两种可能的结局——货备对了，下半年转成收入和现金；货备多了或价格下行，就变成减值压力。<strong>三季报是判定的第一个节点。</strong>（置信度：中）</p>
+<p><strong>信息缺口</strong>：库内财务不含现金流量表、存货、研发费用、分产品营收拆分。影响：无法从库内独立验证 CPU 与 DCU 各自的收入占比与毛利结构，而毛利率下降到底来自哪块产品，是本报告最想知道却拿不到的数据。补法：查阅 2026 年半年度报告「主营业务分行业、分产品情况」表，或等三季报后重跑本调研。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比给出的同行业（半导体）对比，均为 2026H1（20260630）口径：</p>
+<ul>
+<li><strong>海光信息 688041</strong> · 总市值 5,401.06 亿元 · PE(TTM) 171.90 · PB 21.29 · 营收 90.99 亿 · 归母净利 17.98 亿 · ROE 7.51%</li>
+<li><strong>长鑫科技 688825</strong> · 总市值 38,829.70 亿元 · PE(TTM) 47.46 · PB 28.82 · 营收 1,503.10 亿 · 归母净利 776.05 亿 · ROE 81.06%</li>
+<li><strong>中芯国际 688981</strong> · 总市值 10,204.51 亿元 · PE(TTM) 141.59 · PB 5.95 · 营收 386.35 亿 · 归母净利 44.67 亿 · ROE 2.77%</li>
+<li><strong>寒武纪 688256</strong> · 总市值 6,564.23 亿元 · PE(TTM) 197.00 · PB 48.43 · 营收 59.96 亿 · 归母净利 23.11 亿 · ROE 18.20%</li>
+</ul>
+<p><strong>这家在同行里处于什么位置</strong></p>
+<ol>
+<li><strong>规模上不是最大的</strong>：四家里市值排第四，营收排第三（仅高于寒武纪），净利润排第四。长鑫科技的营收是它的 16.5 倍、净利是它的 43.2 倍（据上表数字推算）。（置信度：高）</li>
+<li><strong>估值上处于中上位置</strong>：PE 171.90 高于中芯国际的 141.59、长鑫科技的 47.46，低于寒武纪的 197.00；PB 21.29 低于寒武纪的 48.43 和长鑫科技的 28.82，高于中芯国际的 5.95。<strong>在这几家里，它既不是最贵的也不是最便宜的。</strong>（置信度：高）</li>
+<li><strong>盈利效率被寒武纪反超</strong>：2026H1 海光净利率 22.69%（净利 17.98 / 营收 90.99），寒武纪同期为 38.5%（净利 23.11 / 营收 59.96，据上表推算）——寒武纪营收只有海光的 66%，净利润却比海光高。ROE 上海光 7.51% 也低于寒武纪 18.20%。（置信度：中，ROE 与净利率口径可能因半年度年化方式不同而不完全可比）</li>
+<li><strong>它们不是同一个赛道的对手</strong>：长鑫科技是存储、中芯国际是晶圆代工、寒武纪是 AI 加速芯片。海光是四家中唯一以「服务器 CPU + DCU 加速卡」双线并行的公司——CPU 那条线在这四家里没有直接可比对象。<strong>这意味着行业中位数 PE 对它的参考价值是有限的。</strong>（置信度：中）</li>
+</ol>
+<p><strong>信息缺口</strong>：库内同业对比只返回 3 只同行，且按行业分类而非按业务可比性挑选，没有覆盖国产服务器 CPU 的直接竞品。影响：D 节的相对位置判断偏「同板块」而非「同赛道」。补法：手工指定可比公司名单后重跑对比。</p>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>：设计并销售高端处理器（服务器/工作站用 CPU 与 DCU 加速卡），自身不建晶圆厂，属于芯片设计公司。收入来自芯片销售，下游是服务器整机厂、云厂商、政企与运营商数据中心。</p>
+<p><strong>护城河分级（诚实分级）</strong></p>
+<ul>
+<li><strong>阶段性优势（置信度：中）</strong>
+<ol>
+<li><strong>x86 指令集授权带来的软件生态兼容</strong>：主营描述明确是「应用于服务器、工作站的高端处理器」，其 CPU 产品线走的是 x86 兼容路线——对已有大量 x86 软件资产的政企客户而言，迁移成本低于换指令集，这构成实实在在的切换阻力。但这是<strong>授权得来的</strong>，不是自己创造的，属阶段性而非结构性。</li>
+<li><strong>进入国家安全可靠测评目录</strong>：中国信息安全测评中心与国家保密科技测评中心 2026 年 5 月发布《安全可靠测评结果公告（2026 年第 2 号）》，首次将人工智能训练推理芯片纳入测评体系，7 家国内企业 9 款芯片获评安全等级 I 级；该目录被视为政企采购的事实准入门槛。（来源：界面新闻《2026 年国产AI芯片深度观察》；知乎产业梳理文章。<strong>单一方向来源、未查到官方公告原文，置信度：低</strong>；且<strong>未核实海光的具体产品是否在这 9 款之列</strong>）</li>
+<li><strong>软硬件协同的生态积累</strong>：2026-08-31 公司与腾讯云开源项目 Cube Sandbox 完成深度联合适配调优；2026-08-27 发布「Agent to Token 开放计算架构」（均来自库内新闻）。生态适配是 CPU/加速卡生意的核心壁垒之一，但这两条只是单点事件，不足以证明生态规模。（置信度：中）</li>
+</ol></li>
+</ul>
+<ul>
+<li><strong>无法确认为结构性护城河（置信度：中）</strong>
+<ol>
+<li><strong>毛利率四期连降 4.89 个百分点，本身就是护城河强度的反证。</strong> 一家有强定价权的公司，在营收同比增长 66.52% 的同时毛利率不应连续下降。这说明要么产品结构在向低毛利品类倾斜，要么上游成本在上升而无法完全传导，要么竞争在加剧。（置信度：中——现象确凿，归因是推测）</li>
+<li><strong>不掌握制造环节</strong>：作为芯片设计公司，产能受制于代工方，在供应紧张期议价能力在上游那一端。</li>
+</ol></li>
+</ul>
+<ul>
+<li><strong>明确不成立的说法</strong>：库内信息看不出网络效应、看不出规模成本优势（营收规模在同行里排第三）。</li>
+</ul>
+<p><strong>结论</strong>：从库内信息看，海光有<strong>阶段性优势（生态兼容 + 政策准入 + 客户绑定）</strong>，但<strong>看不出结构性护城河</strong>（置信度：中）。</p>
+<h2>F. 政策与监管</h2>
+<p>库内无政策数据，本节全部来自联网检索，逐条带来源与日期。</p>
+<p><strong>1. 算力硬件国产化 75% 采购比例（本节最重要的一条）</strong></p>
+<ul>
+<li><strong>内容</strong>：工信部、发改委、国资委等七部门联合印发《2026-2028 年全国算力基础设施建设行动方案》，<strong>自 2026 年 9 月起实施</strong>，为期三年。方案要求央企、地方国资投资新建智算、超算中心，AI 芯片、AI 服务器、高速光模块等核心硬件的<strong>国产化采购比例不得低于 75%</strong>。未达标项目不予拨付算力专项配套资金、暂缓能耗指标审批。配套还有采购合规国产算力设备最高 30% 购置补贴（资金由超长期特别国债统筹）。</li>
+<li><strong>来源</strong>：新浪新闻《算力基建国产化要求 75%》；搜狐/企数智《七部委算力建设方案 9 月落地，核心硬件国产化率不低于 75%》（两个独立来源交叉验证）</li>
+<li><strong>传导方向</strong>：利好（置信度：中）</li>
+<li><strong>传导链条</strong>：政策强制国产化比例 → 央企与地方国资的智算中心招标向国产 AI 芯片、服务器 CPU 倾斜 → 海光的 CPU 与 DCU 是可选供应商之一 → 对应到未来的订单与营收。</li>
+<li><strong>⚠️ 传导的不确定处</strong>：政策指向的是「国产化比例」而非某一家公司。华为昇腾、寒武纪、以及其他国产 GPU 厂商同样受益，<strong>这是一块被多家分的蛋糕，不是海光独享</strong>。本报告不假设海光能拿到多大份额。（置信度：高，这是逻辑常识层面的限定）</li>
+</ul>
+<p><strong>2. 英伟达 H200 获准对华出口（对国产替代逻辑是减分项）</strong></p>
+<ul>
+<li><strong>内容</strong>：美国政府于 2026 年 1 月 13 日正式批准英伟达对华出口 H200 AI 芯片，英伟达需向美国政府支付 25% 销售分成；出口设置多项限制（出口规模不得超过其美国本土市场销量的 50%、需通过第三方实验室性能合规验证、接收方需展示充分安保程序）。行业消息称获批总量配额预计不足 20 万颗，远低于国内企业年初申报的采购总量。</li>
+<li><strong>来源</strong>：观察者网 2026-01-14《美国正式放行英伟达对华出口 H200，但有条件》；36 氪《英伟达 H200 获准对华出口的三个关键问题》；国际电子商情《美国正式放行英伟达 H200 对华出口》（三个独立来源）</li>
+<li><strong>传导方向</strong>：利空（置信度：中）</li>
+<li><strong>传导链条</strong>：高端外购芯片重新可得 → 头部 AI 企业的训练算力有了配额内的替代选项 → 国产 AI 加速卡在高端训练场景的紧迫性下降 → 对海光 DCU 的高端需求形成分流。但配额不足 20 万颗、且有 25% 分成推高成本，<strong>分流是有限的、不是全面的</strong>。</li>
+</ul>
+<p><strong>3. 英伟达 B30A 特供芯片的状态存在冲突信息（必须写明）</strong></p>
+<ul>
+<li>库内事件日历（库内事件日历）记录 2026-09-15「英伟达中国特供 AI 芯片 B30A 本月向国内客户送样测试」，备注称美方是否最终放行仍有变数。</li>
+<li>而联网检索到的报道称，2025 年 11 月白宫已通知联邦机构不允许英伟达向中国销售 B30A（来源：大纪元转载报道，<strong>单源未交叉验证</strong>）。</li>
+<li><strong>两者冲突，本报告不下结论</strong>。按纪律，<strong>库内数据优先</strong>——即把 09-15 记作一个待观察的事件时点，而非既成事实。（置信度：低）</li>
+</ul>
+<p><strong>4. 地方与部委层面的产业信号（辅助性，非直接政策）</strong></p>
+<ul>
+<li>2026-09-07 工信部提出加强超高速大容量光传输、光接入、海缆光通信技术研发（库内热点新闻）</li>
+<li>2026-09-10 湖北提出围绕光通信、高端芯片等开展集中攻关；2026-09-09 北京提出加速量子科技、脑机接口、第六代移动通信等领域新产品创制（库内热点新闻）</li>
+<li>2026-09-10 工信部电子信息司召开电子元器件产业发展座谈会（库内热点新闻）</li>
+<li><strong>传导方向</strong>：中性偏利好，属情绪层面而非订单层面（置信度：低）</li>
+</ul>
+<p><strong>信息缺口</strong>：库内无任何政策条目，F 节 100% 依赖联网检索，且未能查到 75% 采购比例政策的<strong>官方原文</strong>（检索到的均为二手报道）。影响：政策力度与执行细则（是否有过渡期、如何认定「国产」）无法核实，而这直接决定了利好的量级。补法：查阅工信部官网《2026-2028 年全国算力基础设施建设行动方案》原文。</p>
+<h2>G. 题材与产业链关联</h2>
+<h3>G.1 所在板块正在活动的热点（交易日 2026-09-10）</h3>
+<p>系统记录到 7 个与本股相关的活动中热点，按热度排序：</p>
+<ul>
+<li><strong>量子科技（同花顺概念 885730.TI）</strong> ｜状态：<strong>主升</strong> ｜进入日期：2026-08-27 ｜依据：连续 3 天跑赢大盘，10 天比大盘 +4.6%</li>
+</ul>
+<p>近期新闻：2026-09-10 湖北围绕光通信、高端芯片开展集中攻关并推进量子科技等前沿方向；2026-09-09 北京加速量子科技、脑机接口、第六代移动通信领域新产品创制；2026-09-08《展望量子科技三大赛道产业化：2030 年会是重要拐点吗？》 ⚠️ <strong>本股只是挂了「量子科技」这个概念标签，未见任何量子业务的营收佐证</strong>（见 G.2）。这个热点处在主升阶段，但它带给本股的是标签层面的关联，不是业务层面的。（置信度：高）</p>
+<ul>
+<li><strong>华为韬定律论文再更新（系统发现的新题材）</strong> ｜状态：<strong>资金确认</strong> ｜进入日期：2026-09-07 ｜依据：涨停 31 家（前日 4 家，20 日均 13.9 家）｜关联方式：间接</li>
+</ul>
+<p>发生了什么：9 月初华为半导体负责人何庭波更新发布「韬定律」论文，围绕 3D 堆叠散热等难题展开论述，分析师认为半导体设备等环节有望受益。</p>
+<ul>
+<li><strong>三星存储产能锁长约（系统发现的新题材）</strong> ｜状态：<strong>资金确认</strong> ｜进入日期：2026-09-07 ｜依据：涨停 15 家（前日 0 家，20 日均 5.5 家）｜关联方式：间接</li>
+</ul>
+<p>发生了什么：9 月 3 日报道称三星存储器业务部门将在 2031 年前把约 70% 的产能分配给长约订单。近期新闻含「DRAM 均价单月涨 8.3%、三季度 DDR 价格预计再涨 22%」「三星电子、SK 海力士内存库存已不足 10 天」。 ⚠️ <strong>这条对本股是双向的</strong>：存储涨价利好半导体板块情绪，但服务器 CPU/加速卡是存储的<strong>下游买方</strong>，内存与 HBM 涨价直接抬高本股的物料成本。<strong>这与 C 节观察到的毛利率连续四期下降方向一致。</strong>（置信度：中，为逻辑推断，未见公司口径确认）</p>
+<ul>
+<li><strong>电子（申万一级行业 801080.SI）</strong> ｜状态：<strong>资金确认</strong> ｜进入日期：2026-09-07 ｜依据：涨停 14 家（前日 0 家，20 日均 4.2 家）</li>
+</ul>
+<p>近期新闻：2026-09-10 工信部电子信息司召开电子元器件产业发展座谈会。</p>
+<ul>
+<li><strong>12 英寸晶圆产线扩产（系统发现的新题材）</strong> ｜状态：<strong>升温</strong> ｜进入日期：2026-09-08 ｜依据：这 5 天有 6 条新闻，平时几乎没有｜关联方式：<strong>直接</strong></li>
+</ul>
+<p>发生了什么：华虹拟增资建设月产能约 5.5 万片的 12 英寸晶圆代工产线；阿斯麦和台积电均计划在 2031 年前建成 12 英寸掩模中试线。 这是 7 个热点中<strong>唯一被系统标为「直接」关联</strong>的一个。产能扩张对无晶圆厂的芯片设计公司是供给端利好。（置信度：中）</p>
+<ul>
+<li><strong>光传输政策与量子突破（系统发现的新题材）</strong> ｜状态：<strong>升温</strong> ｜进入日期：2026-09-08 ｜依据：这 5 天有 8 条新闻，平时几乎没有｜关联方式：间接</li>
+</ul>
+<p>发生了什么：我国团队在自主超导量子计算机上实现传输效率 98% 的新突破；工信部提出加强超高速大容量光传输等技术研发。</p>
+<ul>
+<li><strong>信创（同花顺概念 886013.TI）</strong> ｜热点状态自 2026-08-18 起转为热度回落｜依据：10 天比大盘 -4.0%，近 5 天没有大资金进入｜近期无相关新闻</li>
+</ul>
+<p>⚠️ <strong>这一条值得单独看</strong>：信创是本股<strong>真有业务</strong>的概念之一（国产服务器 CPU 是信创的核心环节），偏偏它是 7 个热点里唯一热度在回落的；而热度最高的量子科技，本股只是沾标签。<strong>真业务的题材在降温、沾边的题材在升温</strong>，这是当前题材结构的核心特征。（置信度：中）</p>
+<h3>G.2 概念标签逐个分级（库内概念标签共 18 个标签）</h3>
+<p><strong>A 类·真有业务（有主营描述或财报佐证支撑）</strong></p>
+<ul>
+<li><strong>芯片概念（885756.TI）</strong>——主营即「研发、设计和销售高端处理器」，直接对应。（置信度：高）</li>
+<li><strong>信创（886013.TI）</strong>——国产服务器 CPU 是信创的核心环节，与主营直接对应。（置信度：高）</li>
+<li><strong>人工智能（885728.TI）</strong>——公司 DCU 系列产品应用于 AI 训练推理，2026 半年报明确 DCU 是业绩增长主要驱动力（见 C 节联网补充）。（置信度：中）</li>
+<li><strong>东数西算/算力（885957.TI）</strong>——服务器与数据中心处理器是算力基础设施的直接组成部分。（置信度：中）</li>
+</ul>
+<p><strong>B 类·仅概念标签，未见营收佐证</strong></p>
+<ul>
+<li><strong>量子科技（885730.TI）</strong>——<strong>仅概念标签，未见营收佐证。</strong> 库内主营描述、经营范围、财报数据中均无量子相关业务。这一点尤其要提醒：它是当前热度最高（主升）的关联热点。（置信度：高）</li>
+<li><strong>DeepSeek 概念（886100.TI）</strong>——仅概念标签。库内有 2026-08-27 新闻「GLM5.3Flash 训练线索浮现，知情人士称或依托海光 DCU 等国产算力」，但这是「知情人士称」的传闻，且指向的是 GLM 不是 DeepSeek，<strong>不构成营收佐证</strong>。（置信度：高）</li>
+<li><strong>腾讯概念（885779.TI）</strong>——仅概念标签。有 2026-08-31「联合腾讯云开源项目 Cube Sandbox 完成深度联合适配调优」的技术适配新闻，属生态合作，<strong>未见营收拆分佐证</strong>。（置信度：高）</li>
+<li><strong>百度概念（885797.TI）/ 阿里巴巴概念（885611.TI）/ 抖音概念·字节概念（885890.TI）</strong>——均为仅概念标签，库内无任何营收或合同层面的佐证。（置信度：高）</li>
+<li><strong>中国 AI 50（886102.TI）</strong>——指数成分标签。</li>
+<li><strong>水利（885572.TI）</strong>——<strong>仅概念标签，且与主营明显不相关</strong>，属同花顺概念库的宽泛归类。（置信度：高）</li>
+</ul>
+<p><strong>C 类·指数成分与交易机制标签（不含业务含义）</strong></p>
+<ul>
+<li>上证 50 样本股（883301.TI）· 上证 180 成份股（883302.TI）· 沪深 300 样本股（883300.TI）· 同花顺中特估 100（886045.TI）· 沪股通（885520.TI）· 融资融券（885338.TI）</li>
+<li>说明：进入上证 50 与沪深 300 意味着有被动指数资金配置，是资金结构上的事实；但它们<strong>不说明公司做什么业务</strong>。融资融券标的意味着可融资买入、可融券卖出，波动可能被放大。（置信度：高）</li>
+</ul>
+<h3>G.3 产业链位置</h3>
+<ul>
+<li><strong>上游</strong>：晶圆代工厂（12 英寸产线）、封装测试、存储（DRAM/HBM）、IP 授权方。</li>
+<li><strong>本环节</strong>：芯片设计（无晶圆厂模式），负责 CPU 与 DCU 的架构设计、软件生态适配。</li>
+<li><strong>下游</strong>：服务器整机厂、云计算厂商、政企与运营商的智算/超算中心。</li>
+<li><strong>议价能力在哪端</strong>：<strong>当前明显偏向上游。</strong> 判据有二——① 存储涨价（DRAM 均价单月涨 8.3%、三季度 DDR 预计再涨 22%，见 G.1）；② 公司毛利率连续四期下降 4.89 个百分点（C 节库内数据）。下游侧的议价能力则受政策托举（75% 国产化采购比例），但同时要与华为昇腾、寒武纪等国产同行分享这块需求。（置信度：中）</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<h3>H.1 库内新闻（库内新闻，近 60 天共 20 条）</h3>
+<p>⚠️ <strong>先说一个数据质量问题</strong>：这 20 条里有 <strong>5 条实际讲的是港股「海光芯正」</strong>（一家光通信公司），因公司名前两字相同被检索匹配进来，<strong>与海光信息（688041）无关</strong>。这类标题包括「港股海光芯正尾盘一度涨近 40%」「港股光通信股延续强势海光芯正涨近 18%」等。本报告<strong>不采纳</strong>这些条目，也提醒读者不要把它们当成本股消息。（置信度：高）</p>
+<p><strong>真正与本股相关的条目（按重要性排序）</strong></p>
+<ol>
+<li><strong>2026-09-04 · 东方财富</strong>《国产 AI 芯片上半年营收暴涨为何多数厂商经营性现金流恶化》（分类：earnings，情感 -0.30）</li>
+</ol>
+<p>→ <strong>对基本面有实质影响</strong>：这是行业层面的问题，与 C 节里海光上半年经营现金流由 +21.77 亿元转为 -4.28 亿元的事实同向。说明这不是海光一家的个案，而是整个国产 AI 芯片行业在扩产备货期的共性特征。（置信度：中）</p>
+<ol>
+<li><strong>2026-08-27 · 东方财富</strong>《海光信息发布&quot;Agent to Token 开放计算架构&quot;》（分类：product）</li>
+</ol>
+<p>→ <strong>对基本面有潜在影响，但尚不可量化</strong>：产品架构发布属于生态建设动作，能否转化为收入需要后续订单验证。（置信度：低）</p>
+<ol>
+<li><strong>2026-08-31 · 东方财富</strong>《海光信息联合腾讯云开源项目 Cube Sandbox 完成深度联合适配调优》</li>
+</ol>
+<p>→ <strong>实质影响有限</strong>：技术适配是生态积累的一步，未见合同或金额披露。（置信度：中）</p>
+<ol>
+<li><strong>2026-08-27 · 东方财富</strong>《GLM5.3Flash 训练线索浮现，知情人士称或依托海光 DCU 等国产算力》（相关度 70）</li>
+</ol>
+<p>→ <strong>属传闻，不构成事实</strong>：「知情人士称」「或依托」双重不确定。若属实，说明 DCU 已进入头部大模型训练场景，那是重要的验证；但目前<strong>不能作为论据</strong>。（置信度：低）</p>
+<ol>
+<li><strong>2026-08-27 · 东方财富</strong>《英伟达财报验证强劲需求！佰维存储、海光信息纷纷大涨》（分类：earnings）</li>
+</ol>
+<p>→ 这是<strong>发稿时点（2026-08-27 上午）的盘中行情快照</strong>，说明本股当时曾跟随英伟达财报消息上涨。<strong>它不代表当前状态</strong>——当前价格以 B 节库内行情的 2026-09-10 收盘价 232.37 元、当日 -1.45% 为准。（置信度：高）</p>
+<ol>
+<li><strong>2026-08-27 · 东方财富</strong>《英伟达表示 AI 算力供给短缺至少持续至 2028 财年末》</li>
+</ol>
+<p>→ <strong>行业层面利好</strong>：若算力供给短缺延续，国产替代的窗口期更长。属间接影响。（置信度：中）</p>
+<ol>
+<li><strong>2026-08-28 · 财联社</strong>《超节点概念再度活跃星网锐捷 6 天 3 板》、<strong>2026-08-27</strong>《半导体板块反弹，科创 50ETF 东财上涨超 2.6%》</li>
+</ol>
+<p>→ 板块情绪记录，与本股基本面无关。</p>
+<p><strong>新闻面的总体判断</strong>：近 60 天<strong>没有一条关于海光信息自身的重大事件</strong>（无重大合同、无重大投资、无股权变动、无业绩预警）——库内 20 条的严重度分类全部为「噪音其他」。<strong>消息面是安静的，驱动主要来自行业与政策层面。</strong>（置信度：高）</p>
+<h3>H.2 涨停记录（库内涨停记录，近 180 日）</h3>
+<p><strong>近 180 日无涨停记录。</strong> 这本身是信息：说明这只票在过去半年里<strong>没有出现过游资主导的情绪脉冲</strong>，它的定价更接近机构定价而非情绪定价。对应地，也不适合用打板逻辑去理解它。（置信度：高）</p>
+<h3>H.3 资金与筹码（库内资金筹码）</h3>
+<div class="callout">⚠️ <strong>纪律声明</strong>：以下三块都是盘面与筹码现象，<strong>不是基本面证据</strong>。它们只作情绪面佐证，不进 J 节逻辑链，也不单独用来下操作结论。</div>
+<p><strong>主力资金流向</strong>（近 20 个交易日，2026-08-14 至 2026-09-10）</p>
+<ul>
+<li>全口径净流入合计 <strong>-34.39 亿元</strong>（即净流出 34.39 亿元）</li>
+<li>特大单净额合计 <strong>-6.43 亿元</strong>（净流出）</li>
+<li>净流入为正的天数 <strong>6 天 / 20 天</strong>，净流出 14 天</li>
+<li><strong>读法</strong>：连续四周资金以流出为主，且流出日数是流入日数的两倍多。（置信度：高）</li>
+</ul>
+<p><strong>筹码分布</strong>（数据日期 <strong>2026-08-07</strong>，⚠️ 距今约一个月，已明显滞后）</p>
+<ul>
+<li>获利盘比例 <strong>24.69%</strong> · 加权平均成本 <strong>326.94 元</strong> · 15% 分位成本 <strong>283.50 元</strong> · 50% 分位成本 <strong>329.00 元</strong> · 85% 分位成本 <strong>374.50 元</strong></li>
+<li><strong>获利盘 24.69% 的两面读法</strong>：
+<ul>
+<li>一面——获利比例低，意味着<strong>短线获利抛压小</strong>，愿意兑现走人的筹码不多；</li>
+<li>另一面——<strong>深度套牢的筹码密集</strong>（约 75% 的持仓成本高于当时股价），未来每一次反弹到套牢区都会遇到解套卖压。</li>
+</ul></li>
+<li><strong>与当前价的对照</strong>：当前收盘价 232.37 元（2026-09-10）比 2026-08-07 的加权平均成本 326.94 元低约 <strong>28.9%</strong>，也低于当时的 15% 分位成本 283.50 元（据两个数字推算）。这意味着<strong>过去一个月股价有过明显下跌，8-07 时点的绝大部分持仓目前处于浮亏状态</strong>。（置信度：中——推算基于两个不同时点的数字，且筹码数据本身已滞后一个月，期间的筹码换手未被反映）</li>
+<li>⚠️ <strong>滞后提醒</strong>：筹码数据停在 2026-08-07，之后一个月的换手完全没有记录在内。<strong>上面这些成本刻度只能作为历史参照，不能当成当前的筹码结构。</strong></li>
+</ul>
+<p><strong>股东户数</strong>（季度披露，天然滞后）</p>
+<ul>
+<li>截至 <strong>2026-06-30</strong>：133,170 户；上期（2026-03-31）：108,573 户；环比 <strong>+22.70%</strong></li>
+<li><strong>读法</strong>：一个季度内股东人数增加超过两成，筹码在变分散——人均持股量下降，通常对应散户参与度上升、机构或大户在减持或者说没有跟上增量。<strong>截止日为 6 月 30 日，距今已两个多月，不反映三季度情况。</strong>（置信度：中）</li>
+</ul>
+<h3>H.4 情绪面小结</h3>
+<p>资金连续净流出、筹码在变分散、股价已从一个月前的成本中枢明显下移、同时没有涨停这类情绪脉冲——<strong>当前的市场情绪是偏冷的，与库内基本面数据显示的高增长形成反差。</strong> 这个反差本身就是 J 节要处理的核心矛盾。（置信度：中）</p>
+<h2>I. 未来 13 周事件日历</h2>
+<p>来源：库内事件日历（未来 120 天，已滤掉猜测项）+ 少量按惯例推算的时点（推算项已标注）。</p>
+<ul>
+<li><strong>W1（2026-09-10 起）</strong>
+<ul>
+<li>09-10 · 台积电公布 8 月月度营收 · 数据发布 · 重要性高（库内 6/10）· 影响：AI 芯片与 CoWoS 先进封装景气度的最先行指标，A 股半导体链常据此提前反应</li>
+<li>09-11 · 2026 中国算力大会在河北廊坊开幕（9/11-13，工信部主办）· 会议 · 重要性高（库内 7/10）· 影响：可能释放算力政策信号，直接对应 F 节的 75% 国产化采购政策</li>
+<li>09-11 · 2026 浦江创新论坛（第十九届，上海，9/11-14，含 9/13「AI 赋能科学研究」专题）· 会议 · 重要性中（库内 6/10）· 影响：AI 概念情绪层面</li>
+<li>09-13 · 模拟芯片龙头亚德诺（ADI）上调全线产品价格 · 公司事件 · 重要性中（库内 6/10）· 影响：延续 5 月以来的半导体涨价，间接印证 G.3 的上游议价能力判断</li>
+<li>09-15 · <strong>中美首次 AI 安全高层对话（华盛顿）</strong> · 会议 · 重要性 <strong>最高（库内 8/10）</strong> · 影响：释放缓和信号则利好算力半导体，谈崩则 AI 硬件链承压。<strong>这是本周最该盯的一件事</strong></li>
+<li>09-15 · 英伟达中国特供 AI 芯片 B30A 本月向国内客户送样测试 · 公司事件 · 重要性高（库内 7/10）· 影响：放行则算力供应改善、削弱国产替代紧迫性；不放行则强化国产替代逻辑。⚠️ <strong>与联网信息冲突，见 F 节第 3 条</strong></li>
+</ul></li>
+<li><strong>W2（2026-09-17 起）</strong>
+<ul>
+<li>09-17 · <strong>2026 华为全联接大会（HUAWEI CONNECT，上海，9/17-19）</strong> · 会议 · 重要性 <strong>最高（库内 8/10）</strong> · 影响：重点发布昇腾算力新品。⚠️ <strong>对本股是双向的</strong>——利好整个国产算力板块情绪，但昇腾是 DCU 的直接竞品，新品越强对海光的竞争压力越大</li>
+<li>09-17 · 特朗普政府 TikTok「不卖就禁」剥离截止日 · 政策 · 重要性高（库内 7/10）· 影响：牵动中美科技博弈情绪，对本股仅情绪层面</li>
+<li>09-22 · 2026 云栖大会（杭州，9/22-24，阿里云主办）· 会议 · 重要性高（库内 7/10）· 影响：通常发布通义大模型与算力新品，利好 AI 算力板块</li>
+<li>09-22 · 2026 中国国际信息通信展览会 PT 展（北京，9/22-24）· 会议 · 重要性高（库内 7/10）· 影响：通信与算力方向大展，消息催化</li>
+</ul></li>
+<li><strong>W3（2026-09-24 起）</strong>：本周无已知事件。（三季度末最后一周，可留意季末机构调仓）</li>
+<li><strong>W4（2026-10-01 起）</strong>：本周无已知事件。国庆假期期间 A 股休市，<strong>具体休市安排以交易所公告为准</strong>（置信度：低，未查证 2026 年具体安排）</li>
+<li><strong>W5（2026-10-08 起）</strong>：台积电公布 9 月月度营收（每月 10 号前后，据库内 W1 同类事件的惯例推算 · 置信度：中）· 数据发布 · 影响：延续验证 AI 芯片景气度</li>
+<li><strong>W6（2026-10-15 起）</strong>：<strong>海光信息 2026 年三季报披露窗口</strong>（上年三季报公告日为 2025-10-16，据库内财务的公告日推算 · 置信度：中）· 财报 · 重要性 <strong>最高</strong> · 影响：<strong>验证 C 节的三个关键问题——毛利率是否止跌、经营现金流是否回正、75.18 亿元存货是否转化为收入</strong></li>
+<li><strong>W7（2026-10-22 起）</strong>：本周无已知事件（三季报密集披露期，同行数据可作横向对照）</li>
+<li><strong>W8（2026-10-29 起）</strong>：A 股三季报法定披露截止日 10-31（法规常识，置信度：高）· 财报 · 影响：D 节四家可比公司届时数据齐全，可重做同业对比</li>
+<li><strong>W9（2026-11-05 起）</strong>：台积电公布 10 月月度营收（按惯例推算 · 置信度：中）· 数据发布</li>
+<li><strong>W10（2026-11-12 起）</strong>：本周无已知事件</li>
+<li><strong>W11（2026-11-19 起）</strong>：英伟达 FY2027Q3 财报窗口（英伟达通常在 11 月下旬发布该季度财报，按惯例推算 · <strong>置信度：低，未查证具体日期</strong>）· 影响：全球 AI 算力需求的风向标，库内 2026-08-27 新闻显示本股曾跟随英伟达财报消息上涨</li>
+<li><strong>W12（2026-11-26 起）</strong>：本周无已知事件</li>
+<li><strong>W13（2026-12-03 起）</strong>：台积电公布 11 月月度营收（按惯例推算 · 置信度：中）；中央经济工作会议通常在 12 月中旬召开，届时可能对「十五五」算力基建定调（置信度：低，时点未查证）</li>
+</ul>
+<p><strong>日历读法</strong>：<strong>未来 13 周的事件密度极不均匀</strong>——W1、W2 两周内挤了 10 件事，W3 到 W5 几乎是空窗，真正的基本面验证点落在 <strong>W6（三季报）</strong>。这意味着接下来两周的波动更可能由会议与消息驱动，而不是由基本面数据驱动；而<strong>一旦进入 W3-W5 的空窗期，缺乏新消息支撑</strong>。（置信度：中）</p>
+<h2>J. 逻辑链（可证伪）</h2>
+<p><strong>主链</strong></p>
+<div class="callout"><strong>因为</strong>〔事实 1〕2026 上半年营收 90.99 亿元、同比增长 66.52%，增速比 2025 全年的 56.92% 还快（库内数据，置信度：高）； <strong>且</strong>〔事实 2〕《2026-2028 年全国算力基础设施建设行动方案》自 2026 年 9 月起要求央企与地方国资新建智算中心的核心硬件国产化采购比例不低于 75%（两个独立来源，置信度：中）； <strong>所以</strong>〔推论 A〕公司未来 2-4 个季度的收入端仍有政策托举下的增长空间（置信度：中）； <strong>如果推论 A 成立，应该能观察到</strong>：2026 年三季报营收同比增速不低于 2026H1 的 66.52%，且 75.18 亿元存货较半年末下降（说明备货已转化为交付）。<strong>核验时点：W6（约 2026-10-15 周）。</strong></div>
+<p><strong>反链（同等重要）</strong></p>
+<div class="callout"><strong>因为</strong>〔事实 3〕毛利率连续四期下降：60.10% → 57.83% → 55.60% → 55.21%，累计 4.89 个百分点（库内数据，置信度：高）； <strong>且</strong>〔事实 4〕上游存储正在涨价——DRAM 均价单月涨 8.3%、三季度 DDR 价格预计再涨 22%（库内热点新闻，置信度：中）； <strong>且</strong>〔事实 5〕2026 上半年经营活动现金流净额由上年同期的 +21.77 亿元转为 -4.28 亿元，同时存货升至 75.18 亿元、预付款项升至 47.71 亿元（公开半年报口径，置信度：中）； <strong>所以</strong>〔推论 B〕利润端的增长质量弱于收入端，且成本压力短期难以缓解（置信度：中）； <strong>如果推论 B 成立，应该能观察到</strong>：2026 年三季报毛利率继续低于 55.21%，或经营活动现金流净额仍为负值。<strong>核验时点：同为 W6。</strong></div>
+<p><strong>估值链</strong></p>
+<div class="callout"><strong>因为</strong>〔事实 6〕PE(TTM) 171.90 倍，为半导体行业中位数 92.31 倍的 1.86 倍（库内数据，置信度：高）； <strong>且</strong>〔推论 B〕利润增长质量存疑； <strong>所以</strong>〔推论 C〕当前估值已经把「高增长持续」这个假设定价进去了，容错空间小——<strong>一旦三季报的增速或毛利率不及预期，估值本身就是下行来源</strong>（置信度：中）。</div>
+<p><strong>这条链最弱的一环（命门）</strong></p>
+<p><strong>是〔事实 2〕到〔推论 A〕的这一跳。</strong> 政策规定的是「国产化比例不低于 75%」，指向的是<strong>一类供应商</strong>而不是海光一家。华为昇腾、寒武纪以及其他国产 GPU 厂商都在这个 75% 里面，而 W2 的华为全联接大会（09-17）恰恰是昇腾新品的发布场合。<strong>本报告完全无法从库内数据估算海光能拿到这块需求的多大份额</strong>——库内财务不含分产品营收、不含客户集中度，库内概念标签只给标签不给份额。</p>
+<p><strong>如果这一环错了</strong>，整条主链就只剩「行业增长」而没有「公司份额」，那么 66.52% 的营收增速能否延续就完全建立在外推之上。<strong>这是本报告最需要读者自己去补的一块。</strong>（置信度：高——对「这是命门」这个判断本身的置信度高）</p>
+<p><strong>次弱的一环</strong>：〔事实 5〕来自联网检索的半年报报道，未逐项对回报表原文；虽然与库内 2026-09-04 行业新闻同向印证，但仍属二手信息。</p>
+<h2>K. 三情景推演（概率合计 100%）</h2>
+<ul>
+<li><strong>乐观（25%）</strong> ｜ <strong>触发</strong>：2026 年三季报（W6）同时满足三条——营收同比增速不低于 2026H1 的 66.52%、毛利率不再低于 2026H1 的 55.21%、经营活动现金流净额由负转正｜ <strong>路径</strong>：备货转化为交付的逻辑被验证，市场重新按「高增长且增长质量改善」定价，股价有机会向上修复至 8-07 筹码密集区一带并在那里遇到解套卖压的考验；同期资金流向从近 20 日的净流出转为净流入</li>
+<li><strong>中性（50%）</strong> ｜ <strong>触发</strong>：三季报营收同比增速维持在 50%-66.52% 区间，但毛利率仍低于 2026H1 的 55.21%，现金流仍在负值区间｜ <strong>路径</strong>：增长与增长质量两条线继续背离，估值缺乏进一步扩张的理由也缺乏立即收缩的理由，股价在 8-07 筹码 15% 分位成本与当前价位所构成的区间内反复，方向跟随半导体板块整体</li>
+<li><strong>悲观（25%）</strong> ｜ <strong>触发</strong>：三季报营收同比增速降至 50% 以下，或毛利率较 2026H1 的 55.21% 再下降 2 个百分点以上，或存货较半年末的 75.18 亿元进一步上升并伴随计提减值｜ <strong>路径</strong>：高估值失去支撑，PE 向半导体行业中位数方向回归；股价跌破当前价位后向下寻找新的支撑，资金净流出的态势延续</li>
+</ul>
+<p><strong>三个触发条件都能用三季报的公开数字直接核对</strong>，不需要主观判断。</p>
+<h2>L. 决策与风控</h2>
+<h3>条件式操作倾向</h3>
+<ol>
+<li><strong>如果</strong> 2026 年三季报（预计 W6，约 10 月 15 日当周）披露的毛利率不再低于 2026H1 的 55.21%，<strong>且</strong>经营活动现金流净额由负转正，<strong>那么</strong>可以把它从观望名单移入小仓位试仓的考察范围。</li>
+</ol>
+<p>*为什么是这两个条件*：它们直接对应 J 节反链里的〔事实 3〕和〔事实 5〕，是本报告最主要的两个减分项；这两项转向，反链就被证伪。</p>
+<ol>
+<li><strong>如果</strong> 股价在三季报披露前跌破 2026-08-07 筹码 15% 分位成本后继续下行，且近 20 日主力资金净流出规模较当前的 34.39 亿元进一步扩大，<strong>那么</strong>观望，不做左侧承接。</li>
+</ol>
+<p>*为什么*：筹码数据显示 8-07 时点约 75% 的持仓成本在 329.00 元以上，深套筹码密集；在资金持续净流出的情况下，每一次反弹进入套牢区都会遇到解套卖压。</p>
+<ol>
+<li><strong>如果</strong> 2026-09-15 中美 AI 安全高层对话释放明确的芯片管制放松信号，<strong>或</strong>英伟达 H200 之外的更高端产品获准对华出口，<strong>那么</strong>降低对国产替代逻辑的权重，对本股转为回避。</li>
+</ol>
+<p>*为什么*：F 节第 2 条已经显示 H200 在 2026 年 1 月获批对华出口（配额不足 20 万颗）；管制进一步放松会直接分流 DCU 的高端需求。</p>
+<ol>
+<li><strong>如果</strong> 三季报显示存货较半年末的 75.18 亿元继续上升、同时营收同比增速降至 50% 以下，<strong>那么</strong>减仓。</li>
+</ol>
+<p>*为什么*：这个组合意味着备货没有转化为交付，K 节的悲观情景触发。</p>
+<h3>风控要点（这笔判断在什么情况下应当被推翻）</h3>
+<ul>
+<li><strong>推翻「震荡」判断转为更乐观的条件</strong>：三季报三项指标（营收增速、毛利率、现金流）同时改善，<strong>并且</strong>能查到海光在具体智算中心项目中的中标或供货披露——后者能补上 J 节命门里缺失的「份额」证据。</li>
+<li><strong>推翻「震荡」判断转为更谨慎的条件</strong>：三季报出现存货减值计提，或毛利率单期下降超过 2 个百分点，或披露了新的大额定增/可转债摊薄计划。</li>
+<li><strong>本报告本身失效的条件</strong>：出现库内数据未覆盖的重大事项（重大资产重组、主要客户流失、产品被列入出口管制清单）。⚠️ 注意公司此前的重组已有先例——2025 年 12 月 9 日，海光信息与中科曙光双双公告终止筹划换股吸收合并事项（原方案为 0.5525:1 换股比例、成交金额 1,159.67 亿元），终止原因为「市场环境发生较大变化」。（来源：21 财经 2025-12-11、财联社，两个独立来源，置信度：中）<strong>这说明公司层面的重大事项存在反复的可能，不宜假定任何未完成的资本运作会落地。</strong></li>
+</ul>
+<h3>仓位思路（只讲相对概念）</h3>
+<ul>
+<li>当前<strong>不参与或极轻</strong>为宜。理由是三条同时成立：① 最重要的验证点（三季报）还在 5 周之后；② 估值处在行业中位数的 1.86 倍，容错空间小；③ 近 20 个交易日资金以净流出为主，缺乏承接。</li>
+<li><strong>若三季报验证条件 1 成立</strong>，可考虑从极轻升到轻仓分批。</li>
+<li><strong>不给具体金额、不给股数、不给目标价、不给评级。</strong></li>
+</ul>
+<h2>M. 逻辑自查</h2>
+<h3>这份判断最依赖的假设是哪一条？错了会怎样？</h3>
+<p><strong>最依赖的假设</strong>：「毛利率连续四期下降，反映的是持续性的成本与竞争压力，而不是一次性的产品结构或收入确认节奏波动。」</p>
+<p><strong>如果错了</strong>：如果毛利率下降主要来自本期确认了某批低毛利的规模化订单（比如为满足政策窗口而接的政企大单），那么随着产品结构回摆，毛利率可能自然回升。这种情况下本报告的谨慎立场偏保守，会漏掉一段修复。<strong>判定方法</strong>：三季报的分产品营收拆分——若低毛利品类占比回落而毛利率同步回升，说明是结构性波动而非趋势。</p>
+<h3>有没有为了让逻辑好看而忽略的反面证据？</h3>
+<p><strong>有三条，在此明确列出。</strong></p>
+<ol>
+<li><strong>卖方观点几乎一边倒看好，而本报告的立场比他们谨慎得多。</strong> 库内近 90 天有 20 篇研报来自 16 家机构，评级分布为：买入 15 篇、强推 1 篇、增持 2 篇、Overweight 1 篇、未给评级 1 篇——<strong>没有一篇给出中性或谨慎评级</strong>。本报告选择不跟随，理由是 C 节的毛利率与现金流数据是账面事实，而研报预测是观点。但读者应当知道这个分歧的存在。</li>
+<li><strong>营收增速在加快，不是在放缓。</strong> 66.52% 这个数字本身是很强的。本报告把重心放在毛利率上，某种程度上是在「用二阶指标压一阶指标」。</li>
+<li><strong>资产负债率降到 19.20%，财务结构是健康的。</strong> 存货和预付款的抬升是用自有资金做的，不是靠加杠杆，这降低了备货失败的杀伤力。</li>
+</ol>
+<h3>卖方预期（全部单列，不与库内事实混陈）</h3>
+<p>〔卖方预期〕来源：中信建投证券研报（库内）· 日期：2026-08-31 · 观点：预测 2026 年 EPS 1.90 元、归母净利 44.24 亿元；2027 年 EPS 2.77 元、归母净利 64.45 亿元；2028 年 EPS 3.77 元、归母净利 87.53 亿元；评级「买入」· 置信度：低（卖方预期非事实，未经交叉验证）</p>
+<p>〔卖方预期〕来源：申万宏源研究研报（库内）· 日期：2026-08-23 · 观点：预测 2026 年 EPS 1.83 元、归母净利 42.60 亿元；2027 年 EPS 2.67 元、归母净利 61.97 亿元；2028 年 EPS 3.30 元、归母净利 76.65 亿元；评级「买入」· 置信度：低（卖方预期非事实，未经交叉验证）</p>
+<p>〔卖方预期〕来源：西部证券研报（库内）· 日期：2026-08-18 · 观点：预测 2026 年 EPS 1.90 元、归母净利 44.17 亿元；2027 年 EPS 2.69 元、归母净利 62.62 亿元；评级「买入」· 置信度：低（卖方预期非事实，未经交叉验证）</p>
+<p>〔卖方预期〕来源：山西证券研报（库内）· 日期：2026-08-17 · 观点：研报标题为《H1 收入及利润保持高增，积极备货助力 H2 交付加速》，观点方向为看好下半年交付加速 · 置信度：低（仅有标题，未见正文；卖方预期非事实）</p>
+<p><strong>对卖方预期的三点提醒</strong>（置信度：中）</p>
+<ul>
+<li>三家机构对 2026 年 EPS 的预测集中在 1.83-1.90 元，2027 年集中在 2.67-2.77 元，<strong>离散度很小</strong>——这既可能说明共识清晰，也可能说明彼此参考、缺乏独立性。</li>
+<li>研报中列出的 PE（如中信建投的 128.98 倍、西部证券的 152.00 倍）是<strong>按各自研报发布日的股价</strong>算出来的，不是当前值。按当前收盘价 232.37 元与 2026 年 EPS 预测 1.90 元推算，对应 2026 年预测 PE 约 122 倍（据两个数推算）。</li>
+<li><strong>最靠近今天的一份研报也是 10 天前的（2026-08-31）</strong>，其后发生的事（如 9 月起实施的 75% 国产化采购政策、近 20 日资金净流出 34.39 亿元）都未被这些预测纳入。</li>
+</ul>
+<h3>信息缺口清单</h3>
+<ol>
+<li><strong>库内无分产品营收拆分</strong>（库内财务只到合并报表层）。<strong>影响：大。</strong> 无法判断毛利率下降来自 CPU 还是 DCU，也无法量化 DCU 在收入中的占比——而这正是 J 节命门（「海光能拿到多大份额」）最需要的证据。<strong>补法</strong>：查阅 2026 年半年度报告「主营业务分行业、分产品、分地区情况」表。</li>
+<li><strong>库内无现金流量表与存货科目</strong>。<strong>影响：中。</strong> C 节的现金流与存货数字全部来自联网的二手报道，虽与库内 2026-09-04 行业新闻同向印证，但未对回报表原文。<strong>补法</strong>：同上，或等库内财务扩展字段。</li>
+<li><strong>筹码数据停在 2026-08-07，滞后约一个月</strong>（库内资金筹码的筹码分布块只覆盖关注票，本股的最新采集日为该日）。<strong>影响：中。</strong> H.3 里所有成本刻度都只是历史参照，L 节条件 2 引用的 283.50 元也是 8-07 时点的刻度而非当前筹码结构。<strong>补法</strong>：待筹码数据更新后重跑本调研。</li>
+<li><strong>库内事件日历未收录公司自身的事件</strong>（三季报预约披露日、股东大会、限售解禁），10 条全部是概念层面的行业事件。<strong>影响：中。</strong> I 节 W6 的三季报时点是据上年公告日推算的，不是确定日期；解禁安排完全空白（联网也未查到）。<strong>补法</strong>：查阅上交所信息披露平台的定期报告预约披露时间表与公司限售股上市流通公告。</li>
+<li><strong>F 节 75% 国产化采购政策未查到官方原文</strong>，两个来源均为二手报道。<strong>影响：中。</strong> 政策的执行细则（过渡期、「国产」认定口径）直接决定了利好的量级，而这些都不清楚。<strong>补法</strong>：查阅工信部官网原文。</li>
+<li><strong>英伟达 B30A 状态存在库内与联网信息的冲突</strong>（见 F 节第 3 条），本报告按纪律以库内为准并标为待观察。<strong>影响：小。</strong> 无论哪个版本成立，都只是影响国产替代紧迫性的程度而非方向。<strong>补法</strong>：留意 09-15 前后的实际进展。</li>
+<li><strong>库内新闻有 5/20 条是名称相近的另一家公司（港股海光芯正）</strong>。<strong>影响：小</strong>（已识别并剔除），但<strong>说明这只票的新闻检索存在名称混淆</strong>，后续引用需逐条核对。<strong>补法</strong>：给该股的新闻匹配加上公司全称或代码约束。</li>
+<li><strong>库内 A/H 对照返回空、库内涨停记录返回空</strong>——这两项不是数据缺失而是事实为空（非两地上市、近 180 日确无涨停），已在 B 节与 H.2 写明，不构成缺口。</li>
+<li><strong>库内概念标签的 18 个标签中有「水利」这类明显不相关项</strong>，说明同花顺概念库对本股的归类较宽泛。<strong>影响：小</strong>，但提醒读者不要把概念标签数量当成题材广度。</li>
+</ol>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-10），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>毛利率连续四期降至55.21%，累计降4.89个百分点</li>
+      <li>PE 171.9倍为行业中位数92.31倍的1.86倍</li>
+      <li>近20日资金净流出34.39亿元，14天为净流出</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>经营现金流</dt><dd>经营活动产生的现金流量净额。利润是账面数，这个是真金白银进出。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>限售解禁</dt><dd>首发或定增取得的股份锁定期届满、可以上市流通。解禁本身不等于减持，但增加了潜在供给。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>BLUF</dt><dd>Bottom Line Up Front，结论先行——把最重要的判断放在最前面。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> 界面新闻《2026 年国产AI芯片深度观察》 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 知乎产业梳理文章。单一方向来源、未查到官方公告原文，置信度：低 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 且未核实海光的具体产品是否在这 9 款之列 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 大纪元转载报道，单源未交叉验证 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 21 财经 2025-12-11、财联社，两个独立来源，置信度：中 <em>2025-12-11</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 上年三季报披露日为 2025-10-16，据库内公告日推算 <em>2025-10-16</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 巨潮，2026-08-14 <em>2026-08-14</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 上年三季报公告日为 2025-10-16，据库内财务的公告日推算 · 置信度：中 <em>2025-10-16</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-10 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
