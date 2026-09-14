@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>英维克（002837.SZ） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>英维克（002837.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-14（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 专用设备</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 英伟达概念 · 冷链物流 · 高铁 · 家用电器 · 抖音概念(字节概念) · 液冷服务器 · 腾讯概念 · 阿里巴巴概念</span>
+      <span><b>来源</b> 31 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    英维克（002837）是一家 A 股上市公司。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——液冷行业订单高景气、二季度净利润环比大幅回升，但上半年净利润同比仍下降 14.32%，而 PE(TTM) 156.29 倍已排在同行业 295 只票的第 179 位。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：液冷行业订单高景气、二季度净利润环比大幅回升，但上半年净利润同比仍下降 14.32%，而 PE(TTM) 156.29 倍已排在同行业 295 只票的第 179 位。支撑在于二季度单季净利润环比大幅回升；液冷行业热点直接相关且升温中；10-01英伟达新平台交付催化。主要风险是PE(TTM)156倍排同行业179/295；营收增速连续四期放缓至17.24%；20日全口径资金净流出19.9亿。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>二季度单季净利润环比大幅回升</li>
+      <li>液冷行业热点直接相关且升温中</li>
+      <li>10-01英伟达新平台交付催化</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据时点：库内取数 2026-09-14；行情库内行情数据时点 15:35（当日收盘）。本报告只用库内函数返回值与带来源的联网信息，不含任何个人持仓信息。</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：液冷行业订单高景气、二季度净利润环比大幅回升，但上半年净利润同比仍下降 14.32%，而 PE(TTM) 156.29 倍已排在同行业 295 只票的第 179 位。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>二季度单季净利润环比大幅回升</strong>：上半年净利润 1.85 亿元、一季度仅 0.09 亿元，据此推算二季度单季约 1.76 亿元，是一季度的约 20 倍（置信度：高，库内财务两期相减推算）。</li>
+<li><strong>所在板块热点正在活动</strong>：热点记录中「液冷订单排至年底价格回升」与本票关系为直接相关、状态「升温」（入池 2026-09-03）；另有「华为密集发新品」「8 月车企销量分化」两条直接相关热点处在「资金确认」状态（置信度：高，库内原样引用）。</li>
+<li><strong>事件窗口密集</strong>：10-01 英伟达 Vera Rubin 平台预计开始交付（库内事件日历，重要性 8）、9-22 中国国际信息通信展、9-10 刚发布 2026 年股票期权激励计划草案（置信度：高，库内事件日历 + 库内新闻）。</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>估值处在同行业很贵的一端</strong>：PE(TTM) 156.29 倍，行业中位数 56.86 倍，PE 由便宜到贵排第 179 位／共 295 只；PB 21.41 倍（置信度：高，库内估值 2026-09-14）。</li>
+<li><strong>营收增速连续四期放缓、盈利能力同比下降</strong>：营收同比从 2025 年前三季的 +40.19% 降到 2025 全年 +32.23%、2026 一季度 +26.03%、2026 上半年 +17.24%；上半年毛利率 24.93%，低于 2025 全年的 27.86%（置信度：高，库内财务）。</li>
+<li><strong>资金面与筹码面偏弱</strong>：近 20 个交易日（2026-08-18 至 2026-09-14）全口径资金净流出 19.90 亿元、净流入天数仅 7/20；股东户数 8 月末 28.33 万户、较 7 月末 24.95 万户增加 13.5%，筹码趋于分散（置信度：高，库内资金筹码）。</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ol>
+<li><strong>三季报的单季营收同比与毛利率</strong>——核验时点：预计 10 月中下旬（2025 年三季报库内公告日为 2025-10-14）。看营收同比能否止住连续四期的放缓、毛利率能否回到 2025 全年 27.86% 上方。</li>
+<li><strong>近 20 日主力（特大单）净流入方向</strong>——核验时点：每周。当前特大单净流入 +6.21 亿元与全口径净流出 -19.90 亿元方向相反，这个背离哪一侧先修复，是资金面的先行观察点。</li>
+</ol>
+<p><strong>这份判断最可能错在哪</strong>：我把「估值贵」当成了压制项，但液冷行业如果在三季报里把订单真正转成利润，市场大概率会切换到用 2027 年盈利给估值——那时 156 倍 PE(TTM) 这个数就不再是主要矛盾，本报告的「震荡」判断会偏保守。</p>
+<h2>B. 公司快照</h2>
+<p><strong>干什么的</strong>：深圳市英维克科技股份有限公司，主营精密温控节能设备的研发、生产、销售。公司简介（库内公司档案）明确写有三大产品线：<strong>数据中心温控节能、户外机柜温控节能、新能源车用空调</strong>；应用行业覆盖通信、互联网、智能电网、轨道交通、金融、医疗、新能源车；点名客户包括中国移动、中国电信、中国联通、腾讯、阿里巴巴、华为、中兴、国家电网、南方电网、工行、建行、农行、中石化、中石油、中海油、比亚迪，以及 Sprint、Vodafone、SoftBank、Ooredoo、SingTel 等境外运营商。</p>
+<p><strong>基本面板</strong>（均来自库内函数）：</p>
+<ul>
+<li>行业：专用机械 · 板块：主板 · 上市日期：2016-12-29（上市约 9 年 9 个月）· 上市状态：L（正常上市）</li>
+<li>员工 5,697 人 · 注册资本 127,434.97 万元</li>
+<li>经营范围里另有：军用空调、特种空调、冷冻冷藏设备、电池、电源系统、不间断电源、合同能源管理等（这些是 G 节判断概念标签真假的依据）</li>
+</ul>
+<p><strong>当前行情</strong>（库内行情，数据时点 15:35 即当日收盘）：</p>
+<ul>
+<li>股价 60.01 元 · 当日 -0.89% · 成交额 17.00 亿元 · 当日最高 +1.04%、最低 -3.09%</li>
+</ul>
+<p><strong>估值</strong>（库内估值，交易日 2026-09-14）：</p>
+<ul>
+<li>PE(TTM) 156.29 倍 · PB 21.41 倍 · 股息率 0.19% · 总市值 767.43 亿元 · 换手率 2.51%</li>
+<li>同行业（专用机械，295 只）PE 中位数 56.86 倍；本票 PE 由便宜到贵排第 <strong>179 位 / 共 295 只</strong></li>
+</ul>
+<p><strong>仅估值口径的判断</strong>：PE(TTM) 是行业中位数的约 2.75 倍（据 156.29÷56.86 推算），PB 21.41 倍在绝对水平上也不低。这只说明<strong>市场已经给了很高的预期</strong>，不等于公司好坏结论（置信度：高）。</p>
+<p><strong>A/H 溢价</strong>：库内 A/H 对照返回空——非两地上市票，本节不涉及。</p>
+<h2>C. 财务健康</h2>
+<p>库内财务（近 4 期）的四期数据（单位：亿元，新→旧）：</p>
+<ul>
+<li><strong>2026 上半年</strong>（截止 2026-06-30，披露日 2026-08-25）：营收 30.17 · 净利润 1.85 · 营收同比 <strong>+17.24%</strong> · 净利润同比 <strong>-14.32%</strong> · 毛利率 24.93% · 净利率 6.52% · ROE 5.26% · 每股收益 0.15 元 · 资产负债率 58.21%</li>
+<li><strong>2026 一季度</strong>（截止 2026-03-31，披露日 2026-04-21）：营收 11.75 · 净利润 0.09 · 营收同比 <strong>+26.03%</strong> · 净利润同比 <strong>-81.97%</strong> · 毛利率 24.29% · 净利率 1.20% · ROE 0.25% · 每股收益 0.01 元 · 资产负债率 55.11%</li>
+<li><strong>2025 年度</strong>（截止 2025-12-31，披露日 2026-04-21）：营收 60.68 · 净利润 5.22 · 营收同比 <strong>+32.23%</strong> · 净利润同比 <strong>+15.30%</strong> · 毛利率 27.86% · 净利率 8.94% · ROE 16.41% · 每股收益 0.54 元 · 资产负债率 55.30%</li>
+<li><strong>2025 前三季度</strong>（截止 2025-09-30，披露日 2025-10-14）：营收 40.26 · 净利润 3.99 · 营收同比 <strong>+40.19%</strong> · 净利润同比 <strong>+13.13%</strong> · 毛利率 27.32% · 净利率 10.27% · ROE 12.81% · 每股收益 0.41 元 · 资产负债率 53.90%</li>
+</ul>
+<p><strong>趋势怎么读</strong>（不是罗列数字，是找拐点）：</p>
+<p><strong>第一，营收还在增长，但增速连续四期放缓。</strong> +40.19% → +32.23% → +26.03% → +17.24%，四期一路下行，没有一期回升（置信度：高）。这是本报告最硬的一条负面事实。</p>
+<p><strong>第二，盈利能力在 2026 年一季度触底，二季度出现明显回升。</strong> 用上半年减一季度推算：二季度单季营收约 <strong>18.42 亿元</strong>、单季净利润约 <strong>1.76 亿元</strong>（据 30.17−11.75、1.85−0.09 推算）。一季度净利率只有 1.20%、ROE 只有 0.25%，到上半年分别回到 6.52% 和 5.26%——<strong>一季度是这一轮的盈利低点，二季度环比大幅改善</strong>（置信度：高，推算口径已写明）。</p>
+<p><strong>第三，增收不增利仍然成立，毛利率是主要拖累。</strong> 上半年毛利率 24.93%，比 2025 全年的 27.86% 低 2.93 个百分点、比 2025 前三季的 27.32% 低 2.39 个百分点；上半年营收同比 +17.24% 而净利润同比 -14.32%，是标准的<strong>增收不增利</strong>（置信度：高）。</p>
+<p><strong>第四，杠杆在上升。</strong> 资产负债率 53.90% → 55.30% → 55.11% → 58.21%，上半年这一期跳升了 3.10 个百分点（置信度：高）。</p>
+<p><strong>第五，2026 全年业绩要靠下半年。</strong> 上半年净利润 1.85 亿元，占 2025 全年 5.22 亿元的 35.4%（据两数推算）。若全年要持平 2025 年，下半年需要做到约 3.37 亿元、约为上半年的 1.8 倍（置信度：高，纯算术推算，不含对下半年的预测）。</p>
+<p><strong>联网补充的原因说明</strong>（库内无现金流与减值明细，以下三条来自公开报道，与库内数字不冲突，但<strong>属库外信息、置信度低于库内</strong>）：</p>
+<ul>
+<li>一季度净利润同比下降 81.97% 的公司口径解释为三点：人民币升值带来的汇兑损失叠加融资规模扩大导致财务费用增加；国内 IDC 建设节奏变慢使结算与回款周期拉长、坏账准备计提增加；产品结构调整导致毛利率下降（来源：新浪财经 2026-04-22、东方财富财富号 2026-04-21，两个独立来源口径一致；置信度：中）。</li>
+<li>2026 年一季度末应收账款 30.61 亿元、经营活动现金流净额 -3.86 亿元、信用减值损失 3,015.72 万元（来源：新浪财经 2026-04-20 / 2026-04-22；<strong>单一媒体口径，未与库内交叉验证，置信度：低</strong>）。</li>
+<li>2026 上半年期间费用 5.11 亿元、期间费用率 16.93%，其中财务费用同比增加约 20 倍（来源：搜索结果转述半年报，<strong>单源未交叉验证，置信度：低</strong>）。</li>
+</ul>
+<p><strong>信息缺口</strong>：库内财务只有营收/净利/毛利率/净利率/ROE/负债率六类，<strong>没有现金流、应收账款、分产品营收、海外收入占比</strong>。影响：C 节无法用库内数据判断「利润质量」和「液冷业务到底占多少营收」，只能引用联网信息并标低置信度。补法：三季报披露后（预计 10 月中下旬，见 I 节 W5）重跑本调研，并人工调取现金流量表。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比按同行业市值取到的三只对照票（财务口径均为 2026-06-30）：</p>
+<ul>
+<li><strong>英维克（002837）</strong>·市值 767.43 亿·PE(TTM) 156.29·PB 21.41·上半年营收 30.17 亿·净利润 1.85 亿·ROE 5.26%</li>
+<li><strong>宇树科技（688836）</strong>·市值 1,900.98 亿·PE(TTM) 325.38·PB 66.01·上半年营收 11.52 亿·净利润 2.74 亿·ROE 9.99%</li>
+<li><strong>大族数控（301200）</strong>·市值 1,252.25 亿·PE(TTM) 82.50·PB 10.39·上半年营收 49.85 亿·净利润 9.57 亿·ROE 10.56%</li>
+<li><strong>罗博特科（300757）</strong>·市值 1,026.26 亿·PE(TTM) 库内为空·PB 61.65·上半年营收 6.08 亿·净利润 0.07 亿·ROE 0.39%</li>
+</ul>
+<p><strong>这组对照要先说局限</strong>：「专用机械」在库内是个很大的行业筐（295 只）。宇树科技做机器人、大族数控做 PCB 设备、罗博特科做光伏与半导体设备，<strong>三家和英维克的下游需求完全不同</strong>，横向 PE 比较只能当估值坐标，不能当竞争格局证据（置信度：高，依据是各家的行业归属与营收规模）。</p>
+<p><strong>能从这组数看出的三点</strong>：</p>
+<ol>
+<li><strong>英维克是四家里营收规模第二、市值最小的一家</strong>：营收 30.17 亿排第二（低于大族数控 49.85 亿），市值 767.43 亿却是四家最低（置信度：高）。</li>
+<li><strong>盈利效率排末位</strong>：ROE 5.26%，低于大族数控 10.56% 和宇树科技 9.99%，只高于基本没有盈利的罗博特科 0.39%（置信度：高）。注意这里有口径影响——英维克一季度净利润几乎为零，把上半年 ROE 拉低了，不能直接外推全年。</li>
+<li><strong>估值位置在中间</strong>：PE 156.29 倍低于宇树科技 325.38 倍、高于大族数控 82.50 倍；PB 21.41 倍低于宇树 66.01 和罗博特科 61.65、高于大族数控 10.39（置信度：高）。</li>
+</ol>
+<p><strong>信息缺口</strong>：库内同业对比是按行业分类＋市值取的，<strong>取不到真正的液冷/温控同业</strong>（如同行业分类之外的其他温控厂商）。影响：D 节给不出「液冷这条赛道里英维克排第几」的答案。补法：需要按概念标签「液冷服务器（886044.TI）」成分股另做一次横向比较，本次未做。</p>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>（库内公司档案主营与经营范围可证）：面向数据中心、通信基站户外机柜、新能源车三类场景卖精密温控设备与系统，同时承接温控系统与节能系统的设计、集成、安装、技术咨询，并开展合同能源管理——<strong>是「设备＋工程集成＋服务」的混合模式，不是纯卖标准品</strong>（置信度：高）。这个模式直接解释了 C 节看到的两个现象：项目制意味着结算与回款周期长、应收账款规模大；产品结构一变，毛利率就跟着变。</p>
+<p><strong>护城河分级</strong>（诚实分级，不拔高）：</p>
+<ul>
+<li><strong>阶段性优势——客户绑定（置信度：中）</strong>。库内公司简介直接点名了中国移动/电信/联通、腾讯、阿里巴巴、华为、国家电网、南方电网、四大行、三桶油、比亚迪以及 Vodafone、SoftBank、SingTel 等境外运营商。这类客户的供应商认证周期长、切换成本高，构成阶段性壁垒。但这是<strong>公司自己的简介口径</strong>，库内没有客户集中度数据可以佐证黏性强度。</li>
+<li><strong>阶段性优势——先发与产品线完整度（置信度：中）</strong>。公司同时具备数据中心、户外机柜、新能源车三条温控产品线，且经营范围覆盖从冷板、CDU 到微模块系统的整链条。联网信息补充：英维克在液冷领域已与超过 80 家企业建立联系、超过 130 个项目在推进、部分已量产（来源：财联社 2026-09-02 机构龙虎榜解读，<strong>这条在库内新闻里有原文，相关度 95，属库内证据，置信度：中高</strong>）。</li>
+<li><strong>未见结构性护城河（置信度：中）</strong>。库内信息里没有看到牌照、独占专利、网络效应或明显的规模成本优势。反面证据是 C 节的毛利率：真有结构性护城河的公司，在行业订单最景气的时候毛利率不应该连续下降。</li>
+<li><strong>联网提示的竞争压力（置信度：低，单源为主）</strong>：传统空调厂商（美的、格力）和互联网厂商（字节、阿里）正在进入液冷领域自研或自供部分部件，若价格竞争持续，头部企业毛利率可能再下降 2–5 个百分点（来源：新浪财经 2026-04-16 行业研究、中信建投行业观点转述 2025-12-13；两个来源方向一致但均为研究观点而非事实，置信度：低）。</li>
+</ul>
+<p><strong>一句话</strong>：这是一家<strong>靠客户认证和产品线完整度取得阶段性领先、但还没证明自己有定价权</strong>的公司——毛利率下降就是最直接的反证（置信度：中）。</p>
+<h2>F. 政策与监管</h2>
+<p>库内没有政策数据，本节全部来自联网，每条带来源与日期。</p>
+<p><strong>政策一：数据中心能效（PUE）约束持续收紧——方向利好（置信度：中，双源）</strong></p>
+<ul>
+<li>北京市自 2026 年起对 PUE 超过 1.35 的数据中心征收差别电价，目标 2027 年全市平均 PUE 降到 1.35 以下（来源：北京市人民政府门户网站政策解读，2024-11-18）。</li>
+<li>多地对新建数据中心设 PUE 上限：北京核心区 ≤1.2、上海 ≤1.3、珠三角核心区 ≤1.25，不达标最高加收 0.5 元/千瓦时差别电价（来源：智研咨询行业研判 2026 年度报告 / vendor.energy 2026 年行业文章，两个来源口径一致）。</li>
+</ul>
+<p><strong>传导链条</strong>：PUE 硬约束 → 风冷方案在高功率密度机柜上达不到能效要求 → 液冷从「可选」变成「必选」 → 直接扩大英维克数据中心温控产品线的可寻址市场。这是本票最清晰的一条政策利好链（置信度：中——政策与传导方向是事实，但<strong>政策落到英维克订单上的量，库内无数据可证</strong>）。</p>
+<p><strong>政策二：国家层面绿色算力专项行动——方向利好（置信度：中，双源）</strong></p>
+<ul>
+<li>2023 年《算力基础设施高质量发展行动计划》、2024 年《数据中心绿色低碳发展专项行动计划》均鼓励部署液冷等高效制冷技术（来源：智研咨询 2026 年行业政策综述）。</li>
+<li>2024 年 2 月国家发改委等部门发布《重点用能产品设备能效先进水平和节能水平（2024 年版）》，将数据中心纳入 23 类新增监管设施（来源：同上；<strong>单一综述来源转述，未找到第二个独立来源，置信度：低</strong>）。</li>
+</ul>
+<p><strong>没有找到的政策</strong>：本次联网<strong>未检索到任何针对精密温控设备或液冷设备的直接监管限制、出口管制或价格干预</strong>。这一点本身是信息——说明当前政策环境对这条赛道是单边偏正面的（置信度：中）。</p>
+<h2>G. 题材与产业链关联</h2>
+<h3>G1. 所在板块正在活动的热点（库内 2026-09-14）</h3>
+<p>系统记录的 8 条活动中热点，按与本票的关系分列，状态与依据照抄库内口径不改写：</p>
+<ul>
+<li><strong>「液冷订单排至年底价格回升」</strong>·直接相关·状态 <strong>升温</strong>·入池 2026-09-03·依据：这 5 天有 10 条新闻，平时几乎没有
+<ul>
+<li>发生了什么（库内原文）：液冷行业订单明显增长，多家液冷企业订单排至年底；润泽科技表示高品质液冷机柜价格已回升至行业高峰时期水平，金帝股份拟投资 4.26 亿元建设液冷关键部件智能制造项目，凯旺科技拟定增募资不超 1.3 亿元用于液冷项目。</li>
+<li>最近一条相关新闻：2026-09-10「鼎通科技：拟 1 亿元设全资子公司布局液冷散热及热管理业务」</li>
+<li><strong>这是与本票关联最紧的一条热点</strong>（置信度：高）。注意读法：它说明<strong>行业需求在变好</strong>，同时也说明<strong>新进入者在变多</strong>——同一条事实两面都在。</li>
+</ul></li>
+<li><strong>「华为密集发新品」</strong>·直接相关·状态 <strong>资金确认</strong>·入池 2026-09-07·依据：涨停 32 家（前日 4，20 日均 13.5）
+<ul>
+<li>发生了什么（库内原文）：华为近日密集公布新品与动向，新款 MatePad Air、非凡探索手表、全陶瓷手表、WATCH 6 系列等。</li>
+<li><strong>读法提示</strong>：这条热点的内容是消费电子新品，与英维克的温控主业没有业务传导，本票被归入是因为挂了「华为概念」标签（公司简介确实列华为为客户）。<strong>这是标签关联，不是业务关联</strong>（置信度：高）。</li>
+</ul></li>
+<li><strong>「8 月车企销量分化」</strong>·直接相关·状态 <strong>资金确认</strong>·入池 2026-09-07·依据：涨停 28 家（前日 3，20 日均 11.4）
+<ul>
+<li>发生了什么（库内原文）：多家车企公布 8 月销量，长城汽车 11.34 万辆同比下降 1.87%，北汽新能源 17,573 辆同比增长 29.88%，江铃汽车 32,266 辆同比增长 7.54%；乘联分会称 8 月新能源乘用车国内零售 100.5 万辆、同比下降 10.1%。</li>
+<li><strong>读法提示</strong>：本票有新能源车用空调产品线（公司简介可证），这条热点对该产品线是<strong>需求侧偏负面</strong>的信息——国内新能源乘用车 8 月零售同比下降 10.1%（置信度：中，热点内容为真，但库内无分产品营收可判断这条产品线占比）。</li>
+</ul></li>
+<li><strong>「华为韬定律论文再更新」</strong>·间接相关·状态 <strong>资金确认</strong>·入池 2026-09-07·依据：涨停 31 家（前日 4，20 日均 13.9）
+<ul>
+<li>库内原文提到该论文围绕 <strong>3D 堆叠散热</strong>等难题展开，分析师认为半导体设备等环节有望受益。散热是与本票主业有逻辑接口的方向，但受益环节被指向半导体设备而非温控设备（置信度：中）。</li>
+</ul></li>
+<li><strong>「戴尔 AI 服务器订单积压」</strong>·间接相关·状态 <strong>升温</strong>·入池 2026-09-07：戴尔 AI 基建部门营收大增近 90%，上调全年及 2027 财年营收预期，AI 服务器积压订单达 950 亿美元（库内原文）。这是全球 AI 服务器需求的旁证（置信度：中）。</li>
+<li><strong>「Nscale 融资与 AI 订单」</strong>·间接相关·状态 <strong>升温</strong>·入池 2026-09-04：Nscale 完成近 30 亿美元融资，凭 Anthropic 订单获得超 1,000 亿美元合同收入，与 Figure 签署超 60 亿美元合作，涉及部署多达 10 万颗英伟达 Vera Rubin（库内原文）。</li>
+<li><strong>「GPT-6 Astra 发布」</strong>·间接相关·状态 <strong>升温</strong>·入池 2026-09-09：OpenAI 发布 GPT-6 Astra，用 10 万块 NVLink 72 芯片完成训练（库内原文）。</li>
+<li><strong>「高铁」</strong>（同花顺概念 885562.TI）·状态 <strong>资金确认</strong>·入池 2026-07-23·依据：涨停 15 家（前日 1，20 日均 2.1）。公司简介列轨道交通为应用行业，属业务沾边（置信度：中）。</li>
+</ul>
+<p><strong>这一段怎么用</strong>：本票同时挂在<strong>四条状态为「资金确认」的热点</strong>和<strong>四条状态为「升温」的热点</strong>上，其中真正与业务基本面挂钩的只有「液冷订单排至年底价格回升」和「戴尔 AI 服务器订单积压」两条（置信度：中高）。其余几条是标签层面的关联，热度高但传导不到营收。</p>
+<h3>G2. 概念标签逐个分级（库内概念标签，22 个同花顺标签）</h3>
+<p><strong>真有业务（有公司简介或经营范围佐证）：</strong></p>
+<ul>
+<li><strong>数据中心(AIDC)</strong>·<strong>东数西算(算力)</strong>——公司简介明确「数据中心温控节能」为三大产品线之一（置信度：高）</li>
+<li><strong>液冷服务器</strong>——公司简介未出现「液冷」二字，但经营范围含冷水机组、数据中心微模块系统；库内新闻 2026-09-02 财联社报道（相关度 95）明确写「液冷领域已与超过 80 家企业建立联系，超过 130 个项目正在推进，部分项目已实现量产，L 平台液冷泵终端订单近万台」，库内研报两篇开源证券研报标题均称其为「液冷龙头」（置信度：中高）。<strong>但库内无分产品营收，液冷占总营收多少无法证实。</strong></li>
+<li><strong>新能源汽车</strong>·<strong>比亚迪概念</strong>——公司简介写「新能源车用空调」为三大产品线之一、客户列明比亚迪（置信度：高）</li>
+<li><strong>华为概念</strong>·<strong>腾讯概念</strong>·<strong>阿里巴巴概念</strong>——公司简介客户名单里明确出现华为、腾讯、阿里巴巴（置信度：高）。<strong>是客户关系，不是营收占比佐证。</strong></li>
+<li><strong>高铁</strong>——公司简介列轨道交通为应用行业（置信度：中）</li>
+<li><strong>军工</strong>——经营范围含「军用空调、特种空调」（置信度：中）。<strong>仅经营范围佐证，未见营收佐证。</strong></li>
+<li><strong>冷链物流</strong>——经营范围含「冷冻冷藏设备及其零部件」（置信度：中）。<strong>仅经营范围佐证，未见营收佐证。</strong></li>
+</ul>
+<p><strong>仅概念标签，未见营收佐证：</strong></p>
+<ul>
+<li><strong>储能</strong>——经营范围含「电池」「电源系统」，储能温控在行业里是常见延伸方向，但库内主营描述与财报数字均无佐证（置信度：低）</li>
+<li><strong>充电桩</strong>——经营范围含「不间断电源、电源系统、供配电系统」，无直接佐证（置信度：低）</li>
+<li><strong>英伟达概念</strong>——库内<strong>无任何佐证</strong>。联网信息称公司为英伟达 MGX 生态合作伙伴、供应冷板与 CDU（来源：艾邦笔电论坛供应商梳理、21 经济网 2025-08-22），<strong>属媒体与产业论坛口径、非公司公告，置信度：低</strong></li>
+<li><strong>抖音概念(字节概念)</strong>——库内无佐证（置信度：低）</li>
+<li><strong>家用电器</strong>——公司做的是工业与商用精密温控，与家电消费品不是一回事（置信度：中，判断依据是主营描述）</li>
+<li><strong>粤港澳大湾区</strong>——注册地深圳，属地标签，与业务无关（置信度：高）</li>
+</ul>
+<p><strong>交易属性标签，不是业务：</strong> 中证 500 成份股、沪深 300 样本股、深股通、融资融券。（说明：同花顺同时挂了中证 500 与沪深 300 两个成份标签，一只票通常不会同时属于这两个指数，判断为标签维护滞后所致，不影响业务判断。）</p>
+<h3>G3. 产业链位置</h3>
+<ul>
+<li><strong>上游</strong>：压缩机、换热器、水泵、CDU 部件、快速接头、控制器、钣金结构件、制冷剂——多为通用工业件，供应商分散，公司议价能力<strong>中等偏强</strong>（置信度：中，依据是经营范围里「零部件的组装和生产」以及热点信息中多家零部件厂商正在扩产）。</li>
+<li><strong>本环节</strong>：精密温控设备与液冷系统的设计、制造、集成、安装。</li>
+<li><strong>下游</strong>：互联网与云厂商（腾讯、阿里、字节等）、电信运营商、IDC 运营商、电网、新能源车厂、轨道交通。<strong>议价能力明显在下游</strong>——客户体量远大于公司，且项目制交付意味着账期由下游决定（置信度：中高，依据是客户名单量级 + C 节观察到的资产负债率上升与联网佐证的应收账款规模）。</li>
+</ul>
+<p><strong>这条产业链的核心结论</strong>：公司夹在「上游通用件、下游超大客户」中间，<strong>议价能力天然偏弱</strong>，所以行业越景气、订单越多，反而越容易出现「营收涨、毛利率降、应收账款涨」的组合——这正是 C 节看到的现象（置信度：中高）。</p>
+<h2>H. 消息面与市场情绪</h2>
+<h3>H1. 近 60 天新闻（库内新闻，共 20 条）</h3>
+<p>按重要性挑选，每条说清是什么事、对基本面有没有实质影响：</p>
+<ol>
+<li><strong>2026-09-10 20:16 起 · 公司公告群（巨潮，9 条）·《2026 年股票期权激励计划（草案）》及配套文件</strong>——包括草案摘要、实施考核管理办法、法律意见书、国信证券独立财务顾问报告、董事会决议、临时股东会通知。<strong>有实质影响</strong>：股权激励通常绑定未来业绩考核目标，是管理层对未来几年经营的公开承诺（置信度：高，库内公告标题可证）。<strong>但库内只有标题、没有考核目标数值</strong>，见 M 节信息缺口。</li>
+<li><strong>2026-09-10 19:22 · 财联社 ·「英维克：拟推 2500 万份股票期权激励计划」</strong>——给出了期权数量 2,500 万份（库内新闻标题，置信度：中高）。按 12.74 亿股总股本推算约占 1.96%（据注册资本推算）。</li>
+<li><strong>2026-09-02 19:15 · 财联社 ·「【机构龙虎榜解读】液冷订单＋数据中心，液冷领域已与超过 80 家企业建立联系，超过 130 个项目正在推进，部分项目已实现量产，L 平台液冷泵终端订单近万台，机构大额净买入这家公司」</strong>（相关度 95，分类 product，情感 0.70）——<strong>这是近 60 天里唯一一条带具体业务进展数字的新闻，有实质影响</strong>（置信度：中高）。</li>
+<li><strong>2026-09-02 10:01 / 2026-08-26 09:39 / 2026-08-25 13:31 · 财联社 · 液冷服务器概念三次活跃</strong>（分别为「飞龙股份、雪人集团双双涨停」「康盛股份、豪尔赛 2 连板」「豪尔赛等多股涨停」）——板块层面的情绪记录，<strong>对本票基本面无实质影响</strong>，但说明近三周液冷题材反复有资金关注（置信度：高）。</li>
+<li><strong>2026-09-04 16:38 · 财联社 ·「人气板块及个股点评」</strong>（情感 -0.50）——库内只有标题、无正文，无法判断指向。列在此处仅作提示（置信度：低）。</li>
+<li><strong>2026-08-25 15:52 · 财联社 ·「8 月 25 日连板股分析：连板股晋级率 40%」</strong>（相关度 95）——当日涨停后第二天继续涨停的比例为 40%，是当日市场情绪的背景数据（置信度：高）。</li>
+<li><strong>两条主力资金监控类新闻</strong>（2026-08-25 14:19「有色金属板块净流出超 52 亿」、2026-08-25 10:54「中际旭创净卖出超 6 亿」）——全市场资金播报，与本票无直接关系（置信度：高）。</li>
+</ol>
+<p><strong>一句话总结消息面</strong>：近 60 天最重要的两件事是<strong>股权激励草案发布（9-10）</strong>和<strong>液冷业务进展被机构点名（9-02）</strong>，两者都偏正面；其余多数条目被系统归为「噪音其他」，属板块与大盘播报（置信度：高）。</p>
+<h3>H2. 涨停史（库内涨停记录，近 180 日）</h3>
+<p>近 180 个交易日共 <strong>2 次涨停</strong>：</p>
+<ul>
+<li><strong>2026-08-25</strong>·+10.01%·首板（连板数 1）·首次封板 10:05:48·最后封板 11:12:36·<strong>开板 1 次</strong>·封单 3.26 亿元·所属涨停板块「专用设备」</li>
+<li><strong>2026-06-09</strong>·+10.00%·首板（连板数 1）·首次封板 13:13:21·最后封板 13:31:15·<strong>开板 14 次</strong>·封单 1.73 亿元·所属涨停板块「专用设备」</li>
+</ul>
+<p><strong>怎么读</strong>：两次都是<strong>一字未连的首板</strong>，没有出现过连续涨停，说明这只票<strong>有情绪面关注但不是短线资金的主战场</strong>（置信度：高）。两次质量差别很大：8-25 那次上午 10 点封板、只打开 1 次、封单 3.26 亿元，封板质量明显好于 6-09 那次（下午 1 点多才封、打开 14 次、封单 1.73 亿元）（置信度：高）。</p>
+<p><strong>一个必须说清的时序问题</strong>：8-25 既是涨停日，也是 2026 年半年报的库内披露日（库内财务里 2026-06-30 期的公告日 = 2026-08-25）。但涨停发生在<strong>盘中 10:05</strong>，而同日 13:31 库内另有「液冷服务器概念持续走高豪尔赛等多股涨停」的板块新闻。<strong>因此不能把这次涨停归因于半年报</strong>，更像是液冷板块的整体行情（置信度：中高，依据是时间顺序）。</p>
+<h3>H3. 资金与筹码（库内资金筹码）</h3>
+<div class="callout">纪律提示：以下是盘面与筹码现象，不是基本面证据。只作情绪面佐证，不进 J 节逻辑链，也不单独用来下操作结论。</div>
+<p><strong>资金流（近 20 个交易日，2026-08-18 至 2026-09-14）</strong>：</p>
+<ul>
+<li>全口径净流出 <strong>19.90 亿元</strong>，净流入天数 <strong>7 天 / 共 20 天</strong>（净流出 13 天）</li>
+<li>特大单（主力）净流入 <strong>+6.21 亿元</strong></li>
+</ul>
+<p><strong>这是一个方向相反的背离</strong>：大资金在净买入，而全口径在净卖出——通常对应「机构在收，中小单在出」的形态（置信度：中，方向是库内事实，形态解释是推断）。</p>
+<p><strong>筹码（数据时点 2026-08-07，比当前落后约 5 周，读的时候要打折）</strong>：</p>
+<ul>
+<li>获利盘比例 <strong>54.19%</strong>·加权平均成本 <strong>58.03 元</strong>·15% 分位成本 <strong>48.00 元</strong>·50% 分位成本 <strong>54.00 元</strong>·85% 分位成本 <strong>70.80 元</strong></li>
+<li><strong>两面都要说</strong>：获利盘 54.19% 处在中间水平——一方面说明上方没有大面积深套盘构成反弹阻力，另一方面也意味着接近一半的筹码有浮盈、短线获利了结的抛压是实在的（置信度：中）。</li>
+<li>当前股价 60.01 元（9-14 收盘）位于 <strong>8-07 加权均本 58.03 元之上、8-07 筹码 85% 分位成本 70.80 元之下</strong>，处在筹码分布的中上段（置信度：中，受筹码数据滞后影响）。</li>
+</ul>
+<p><strong>股东户数（季度/月度披露，天然滞后）</strong>：</p>
+<ul>
+<li>截至 <strong>2026-08-31</strong> 为 <strong>283,300 户</strong>，上一期 2026-07-31 为 <strong>249,500 户</strong>，<strong>环比增加 13.5%</strong></li>
+<li><strong>筹码在趋于分散</strong>：一个月内户数增加 3.38 万户（据两数相减推算），人均持股相应下降（置信度：高）。这与「特大单净流入」方向相反，是本节第二个背离点。</li>
+</ul>
+<h2>I. 未来 13 周事件日历</h2>
+<p>库内事件日历（近 120 日）返回 6 条（覆盖到 2026-10-01），W4 及以后为联网与节奏推算补充，逐条标注来源。</p>
+<ul>
+<li><strong>W1（2026-09-14 起）</strong>：
+<ul>
+<li>2026-09-14 · 甲骨文（Oracle）公布季度财报 · 公司事件 · 重要性高（库内 8）· 影响：库内说明「甲骨文的云业务订单被看作全球 AI 数据中心投资的晴雨表」，直接影响 G 节液冷需求逻辑的验证 · 来源：库内事件日历</li>
+<li>2026-09-15 至 09-17 · 第十三届北京香山论坛 · 会议 · 重要性中（库内 6）· 影响：对应「军工」概念标签，属情绪催化，不影响温控主业 · 来源：库内事件日历</li>
+<li>2026-09-15 至 09-16 · 2026 第四届 AI 算力产业大会暨展览会（北京国家会议中心）· 会议 · 重要性中（库内 6）· 影响：将首发《中国推理算力产业白皮书》，可能给出算力需求量级指引 · 来源：库内事件日历</li>
+</ul></li>
+<li><strong>W2（2026-09-21 起）</strong>：
+<ul>
+<li>2026-09-22 至 09-24 · 2026 中国国际信息通信展览会（PT 展，北京）· 会议 · 重要性高（库内 7）· 影响：通信与算力方向大展，是液冷与数据中心温控的行业展示窗口 · 来源：库内事件日历</li>
+<li>2026-09-22 至 09-24 · 2026 世界新能源汽车大会（海口）· 会议 · 重要性高（库内 7）· 影响：对应新能源车用空调产品线，属需求侧情绪催化 · 来源：库内事件日历</li>
+</ul></li>
+<li><strong>W3（2026-09-28 起）</strong>：
+<ul>
+<li>2026-10-01 · 英伟达 Vera Rubin AI 计算平台预计开始交付 · 公司事件 · 重要性高（库内 8）· 影响：库内说明「意味着光模块、CPO、液冷、铜连接这些配套环节的订单要开始放量，是算力链最直接的催化」· 来源：库内事件日历；联网佐证该平台单机柜功率大幅提升、液冷为必选配置（来源：NVIDIA 官方博客、21 经济网 2026-01-06，双源）</li>
+<li>2026 年第一次临时股东会（审议 2026 年股票期权激励计划）· 公司事件 · 重要性高 · 影响：激励计划能否生效的决定节点 · 来源：库内新闻 2026-09-10 公告《关于召开 2026 年第一次临时股东会的通知》，<strong>具体开会日期库内未记录，按 A 股惯例在通知披露后 15–20 日内，落在 W3 前后，实际日期以公司公告为准（置信度：低）</strong></li>
+<li>2026-10-01 起 · 国庆假期休市（具体安排以交易所公告为准）</li>
+</ul></li>
+<li><strong>W4（2026-10-05 起）</strong>：国庆假期后恢复交易（具体日期以交易所公告为准），本周无其他已知事件</li>
+<li><strong>W5（2026-10-12 起）</strong>：
+<ul>
+<li><strong>2026 年三季报披露 · 财报 · 重要性最高</strong> · 影响：验证 C 节「一季度是盈利低点、二季度环比改善」这条判断能否延续，是本报告最关键的一个核验点 · 来源：<strong>按库内 2025 年三季报公告日 = 2025-10-14 的历史节奏推算，实际预约披露日以深交所公告为准（置信度：中）</strong></li>
+</ul></li>
+<li><strong>W6（2026-10-19 起）</strong>：本周无已知事件</li>
+<li><strong>W7（2026-10-26 起）</strong>：
+<ul>
+<li>2026-10-31 · 主板三季报法定披露截止日 · 监管时点 · 重要性中 · 影响：若 W5 未披露，本周为最后窗口 · 来源：深交所主板定期报告披露规则（常识性监管要求，置信度：中）</li>
+</ul></li>
+<li><strong>W8（2026-11-02 起）</strong>：本周无已知事件</li>
+<li><strong>W9（2026-11-09 起）</strong>：本周无已知事件</li>
+<li><strong>W10（2026-11-16 起）</strong>：
+<ul>
+<li>英伟达 2027 财年第三季度财报 · 海外公司事件 · 重要性高 · 影响：全球 AI 服务器资本开支的核心风向标，直接影响 G 节液冷需求逻辑 · 来源：<strong>按英伟达历年 11 月中下旬发布季报的节奏推算，具体日期以公司公告为准（置信度：低）</strong></li>
+<li>腾讯、阿里巴巴季度财报（含资本开支指引）· 海外/港股公司事件 · 重要性中 · 影响：两家均为公司简介列明的客户，其资本开支指引与国内 IDC 建设节奏直接相关 · 来源：<strong>按历年 11 月中下旬节奏推算（置信度：低）</strong></li>
+</ul></li>
+<li><strong>W11（2026-11-23 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-11-30 起）</strong>：本周无已知事件</li>
+<li><strong>W13（2026-12-07 起）</strong>：
+<ul>
+<li>中央经济工作会议 · 政策 · 重要性中 · 影响：次年算力与新基建投资基调的定调窗口 · 来源：<strong>按历年 12 月中旬召开的节奏推算，具体时间以官方公告为准（置信度：低）</strong></li>
+</ul></li>
+</ul>
+<p><strong>日历的读法</strong>：<strong>未来 13 周的重心高度集中在 W1–W5 这五周</strong>——三场行业展会、一次海外平台交付、一次股东会、一次三季报，全部落在 10 月中旬之前；W6 之后进入近两个月的事件真空期（置信度：高，依据是库内事件日历只覆盖到 10-01，其后全为推算）。</p>
+<h2>J. 逻辑链</h2>
+<p>把 B–I 的事实串成一条可以被证伪的链。每一环标置信度。</p>
+<p><strong>第 1 环（置信度：高）</strong>：<strong>液冷行业当前处在高景气</strong>。依据：库内热点记录「液冷订单排至年底价格回升」为直接相关、状态「升温」，内容包含「多家液冷企业订单排至年底」「高品质液冷机柜价格已回升至行业高峰时期水平」；库内另有「戴尔 AI 服务器订单积压 950 亿美元」热点；库内事件日历排入 10-01 英伟达 Vera Rubin 平台交付。</p>
+<p><strong>第 2 环（置信度：高）</strong>：<strong>英维克是这条赛道上有业务、有订单进展的公司</strong>。依据：公司简介「数据中心温控节能」为三大产品线之一；库内新闻 2026-09-02 财联社报道给出具体进展（80 家企业联系、130 个项目推进、部分已量产、L 平台液冷泵终端订单近万台）；库内研报中两篇开源证券研报标题称其为「液冷龙头」。</p>
+<p><strong>第 3 环（置信度：高）</strong>：<strong>行业景气到目前为止没有转成利润增长</strong>。依据：2026 上半年营收同比 +17.24% 而净利润同比 <strong>-14.32%</strong>；毛利率 24.93%，低于 2025 全年 27.86%；营收同比增速连续四期放缓（+40.19% → +32.23% → +26.03% → +17.24%）。</p>
+<p><strong>第 4 环（置信度：中）</strong>：<strong>第 3 环的原因是「行业越景气、公司议价能力越吃紧」的结构问题，不是一次性偶发</strong>。依据：G3 节的产业链位置（上游通用件、下游超大客户，议价权在下游）＋项目制交付模式（E 节，经营范围含设计集成安装）＋资产负债率从 53.90% 升到 58.21%。联网佐证的应收账款与经营现金流数据方向一致，但那部分是单源、置信度低。</p>
+<p><strong>第 5 环（置信度：高）</strong>：<strong>二季度出现了明确的环比改善，但幅度尚不足以扭转全年趋势</strong>。依据：二季度单季净利润约 1.76 亿元 vs 一季度 0.09 亿元（推算）；但上半年净利润 1.85 亿元只占 2025 全年 5.22 亿元的 35.4%，下半年需做到约上半年的 1.8 倍才能持平去年（推算）。</p>
+<p><strong>第 6 环（置信度：高）</strong>：<strong>市场已经按「问题会解决」定价</strong>。依据：PE(TTM) 156.29 倍、行业中位数 56.86 倍、由便宜到贵排 179/295；PB 21.41 倍。</p>
+<p><strong>推论</strong>：因为「行业高景气」（第 1 环）与「利润尚未兑现」（第 3、5 环）同时为真，且<strong>估值已按乐观情形定价</strong>（第 6 环），所以这只票<strong>短期的涨跌主要不取决于行业消息，而取决于三季报能否给出利润兑现的证据</strong>（置信度：中高）。</p>
+<p><strong>如果推论成立，应该能观察到什么</strong>：</p>
+<ol>
+<li>三季报披露前后（W5，预计 10 月中下旬）出现明显的波动放大——因为那是信息密度最高的一点；</li>
+<li>在三季报之前，行业级利好（展会、Vera Rubin 交付）能带来情绪性上涨但难以带来估值中枢上移；</li>
+<li>三季报若单季营收同比止住放缓且毛利率回到 2025 全年 27.86% 上方，估值压力会被盈利消化；反之估值压力会显性化。</li>
+</ol>
+<p><strong>最弱的一环是第 4 环（置信度：中）</strong>。这是整条链的命门：我把毛利率下降解释成<strong>结构性的议价能力问题</strong>，但库内<strong>没有分产品营收、没有客户集中度、没有现金流数据</strong>能证实这一点；公司自己的口径（经联网转述）把原因归为汇兑损失、融资利息、国内 IDC 回款变慢和产品结构调整——如果这几项真的都是阶段性的，那么第 4 环不成立，整条链的悲观色彩要大幅下调。<strong>这一环能不能证伪，三季报的毛利率和现金流数据会直接给出答案。</strong></p>
+<h2>J-附. 卖方观点（单列，不与库内事实混述）</h2>
+<p>库内研报近 90 天收录 <strong>7 篇研报、来自 7 家机构</strong>；评级分布为：最高档推荐评级 4 家、跑赢行业 1 家、未标评级 1 家。</p>
+<p>〔卖方预期〕来源：开源证券研报（库内）· 日期：2026-09-11 · 观点：标题为《发布股权激励计划，彰显液冷龙头成长信心》· 置信度：低（卖方预期非事实，库内仅收录标题、未收录正文结论）</p>
+<p>〔卖方预期〕来源：开源证券研报（库内）· 日期：2026-08-25 · 观点：标题为《Q2 业绩环比大幅增长，前瞻指标强劲，液冷业绩兑现在即》· 置信度：低（同上；其「Q2 环比大幅增长」的方向与本报告 C 节的推算一致，但「兑现在即」是预期而非事实）</p>
+<p>〔卖方预期〕来源：国金证券（库内）· 日期：2026-09-02 · 观点：预测每股收益 2026 年 0.89 元（对应市盈率 74.18 倍）、2027 年 1.64 元（40.24 倍）、2028 年 2.52 元（26.19 倍）· 置信度：低</p>
+<p>〔卖方预期〕来源：长江证券（库内）· 日期：2026-08-27 · 观点：预测归母净利润 2026 年 12.09 亿元、每股收益 0.95 元（对应 63.65 倍）；2027 年 20.90 亿元、每股收益 1.64 元（36.81 倍）· 置信度：低</p>
+<p>〔卖方预期〕来源：光大证券（库内）· 日期：2026-08-27 · 观点：预测归母净利润 2026 年 10.17 亿元、每股收益 0.80 元（对应 78.00 倍）；2027 年 17.03 亿元、每股收益 1.33 元（47.00 倍）· 置信度：低</p>
+<p>〔卖方预期〕来源：中信建投证券（库内）· 日期：2026-08-27 · 观点：预测归母净利润 2026 年 12.08 亿元、每股收益 0.95 元（对应 65.65 倍）· 置信度：低</p>
+<p>〔卖方预期〕来源：多家机构报道综合（联网）· 日期：2025-11-24 至 2026-03-19 · 观点：公司已通过谷歌审厂进入其 TPU 液冷供应链，预计获得 TPU 机柜 CDU 约 25% 供应份额、对应订单规模约 20–30 亿元 · 置信度：低（<strong>产业媒体与机构预测口径，非公司公告；库内新闻与库内公司档案均无任何佐证</strong>）</p>
+<p><strong>读这一段要注意的两件事</strong>（置信度：高）：</p>
+<ol>
+<li><strong>卖方对 2026 年归母净利润的预测集中在 10.17 亿至 12.09 亿元区间</strong>，而库内事实是上半年实际归母净利润 <strong>1.85 亿元</strong>。要达到预测下限，下半年需做到约 8.32 亿元、约为上半年的 4.5 倍（据两数推算）。<strong>这个差距的大小，本身就是最重要的预期差信息。</strong></li>
+<li>卖方给出的市盈率（63.65–78.00 倍）是<strong>用他们预测的未来盈利</strong>算出来的，与库内估值的 PE(TTM) 156.29 倍<strong>不是同一个口径</strong>，不能直接比较。</li>
+</ol>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（30%）</strong>｜触发：三季报（预计 W5，10 月中下旬）单季营收同比回到 20% 以上，且单季毛利率回到 2025 全年 27.86% 上方，同时前三季度累计归母净利润超过 2025 年同期的 3.99 亿元｜路径：利润兑现的证据出现，市场从 PE(TTM) 口径切换到 2027 年盈利口径定价，估值压力被消化，股价向 8-07 筹码 85% 分位成本一线修复并有望站上，液冷板块热点状态由「升温」进一步走强</li>
+<li><strong>中性（45%）</strong>｜触发：三季报单季营收同比落在 10%–20%，毛利率在 24%–27% 之间，前三季度累计净利润与 2025 年同期相比变化不大｜路径：行业景气与利润兑现之间的矛盾继续悬而未决，股价在 8-07 筹码加权均本与 8-07 筹码 85% 分位成本之间宽幅震荡，跟随液冷板块 beta 波动，W6 之后进入事件真空期成交逐步收敛</li>
+<li><strong>悲观（25%）</strong>｜触发：三季报单季营收同比低于 10%，或毛利率继续低于上半年的 24.93%，或出现新增大额信用减值｜路径：第 4 环的「结构性议价能力问题」被证实，卖方 2026 年 10.17 亿–12.09 亿元的盈利预测面临下调，估值向行业中位数方向回归，股价下探至 8-07 筹码 50% 分位成本一线寻找支撑</li>
+</ul>
+<p>（三个概率合计 100%。三条触发条件全部来自三季报的公开数字，任何人都可以在 10 月中下旬拿报表核对。）</p>
+<h2>L. 决策与风控</h2>
+<h3>条件式操作倾向</h3>
+<ol>
+<li><strong>如果</strong>三季报（预计 10 月中下旬，见 I 节 W5）显示单季营收同比回到 20% 以上、<strong>且</strong>单季毛利率回到 2025 全年毛利率 27.86% 上方，<strong>那么</strong>可考虑小仓位试仓——这两个条件同时成立，意味着 J 节第 3 环（行业景气未转成利润）被推翻。</li>
+<li><strong>如果</strong>股价站上 8-07 筹码 85% 分位成本并站稳，<strong>且</strong>库内热点记录中「液冷订单排至年底价格回升」的状态由「升温」升级为「主升」，<strong>那么</strong>在已有仓位上可考虑加仓——这是价格与题材热度同步确认。</li>
+<li><strong>如果</strong>股价跌破 8-07 筹码加权平均成本，<strong>且</strong>近 20 日主力（特大单）净流入由当前的 +6.21 亿元转为净流出，<strong>那么</strong>观望，不新增仓位——价格与大资金方向同时转弱。</li>
+<li><strong>如果</strong>三季报单季营收同比低于 10%，<strong>或</strong>毛利率继续低于上半年的 24.93%，<strong>或</strong>公告新增大额信用减值，<strong>那么</strong>减仓或回避——这三条任一成立，对应 K 节悲观情景。</li>
+<li><strong>如果</strong>股价跌破 8-07 筹码 50% 分位成本，<strong>那么</strong>回避——跌破这个刻度意味着 8-07 时点的多数持仓成本被击穿。</li>
+</ol>
+<h3>这笔判断在什么情况下应当被推翻</h3>
+<ul>
+<li><strong>推翻「震荡」的向上条件</strong>：三季报证实利润拐点（对应第 1 条触发），同时库内研报出现机构上调 2026 年盈利预测。</li>
+<li><strong>推翻「震荡」的向下条件</strong>：三季报毛利率继续下降且经营现金流仍为负，或公司公告下调此次股权激励的业绩考核目标。</li>
+<li><strong>推翻本报告估值前提的条件</strong>：若三季报后 PE(TTM) 回落到行业中位数 56.86 倍附近（无论是盈利上升还是股价下降造成），B 节「估值处在很贵的一端」这条核心风险就不再成立，整份报告需要重写。</li>
+</ul>
+<h3>仓位思路（只讲相对概念）</h3>
+<p>在三季报披露之前，本票处在「行业景气已被充分讲述、利润兑现尚未验证、估值已按乐观定价」的组合里——这种组合适合<strong>轻仓或不参与</strong>，把判断权交给 W5 的那份报表（置信度：中）。若第 1 条触发条件成立，可从轻仓向中等仓位过渡；若第 4 条任一成立，应回到不参与。</p>
+<h2>M. 逻辑自查</h2>
+<h3>这份判断最依赖的假设是哪一条？</h3>
+<p><strong>最依赖的假设是：三季报会成为分歧的解决点。</strong> 我把 K 节三个情景、L 节五条操作倾向，全部挂在了 10 月中下旬那一份报表上。</p>
+<p><strong>如果这条假设错了会怎样</strong>：有两种错法。第一种，<strong>三季报给出的仍是「营收增速中等、毛利率中等」的模糊数字</strong>——那么分歧不会被解决，只会被推迟到年报，L 节的第 1、4 条触发条件都不会被激活，本报告的可操作性会大幅下降。第二种，<strong>股价在三季报之前就被行业级事件（如 10-01 Vera Rubin 交付）推到极端位置</strong>——那么等到报表出来时，价格已经把结论提前反映了，按触发条件行动会明显滞后（置信度：中）。</p>
+<h3>有没有为了让逻辑好看而忽略的反面证据？</h3>
+<p>有，而且有三条，必须写出来：</p>
+<ol>
+<li><strong>我把「特大单净流入 +6.21 亿元」轻轻放过了。</strong> 近 20 日全口径净流出 19.90 亿元，我在 A 节把它列为核心风险，但同期主力净流入 6.21 亿元——<strong>如果大资金在净买入，那么「资金面偏弱」这个说法至少是不完整的</strong>。我把它放在 H 节作为背离点提了一句，但在 A 节的风险表述里做了简化处理。诚实的说法是：资金面是分歧的，不是单边偏弱（置信度：中）。</li>
+<li><strong>我用了一个滞后 5 周的筹码数据当价位锚。</strong> 库内资金筹码的筹码时点是 2026-08-07，而当前是 09-14。这中间股价经历了 8-25 的涨停。<strong>用 8-07 的成本分布判断 9-14 的位置，误差是实实在在的</strong>，L 节所有带价位的触发条件都受这个误差影响（置信度：中）。</li>
+<li><strong>我对股权激励草案的分析是不完整的。</strong> 9-10 发布的草案，库内只有公告标题和「2500 万份」这个数量，<strong>没有业绩考核目标</strong>。而业绩考核目标恰恰是管理层对未来几年经营最硬的公开承诺——它可能直接推翻或强化 J 节第 4 环。我没有把它拿到，却依然给出了完整的情景推演，这是本报告最大的软肋（置信度：高，这是对自己的判断）。</li>
+</ol>
+<h3>信息缺口清单</h3>
+<p><strong>缺口一：2026 年股票期权激励计划的业绩考核目标。</strong> 影响：<strong>大</strong>。这是管理层对 2026–2028 年营收或利润的公开承诺，直接决定 J 节第 4 环成立与否，也直接影响 K 节三情景的概率分配。库内新闻只有 9 条公告标题，没有正文数值；联网检索到的「归母净利润 5.23 亿元左右」是<strong>2024 年期权激励计划</strong>对 2026 年的考核目标（来源：搜索结果，2024 年计划的行权条件），<strong>不是这次 9-10 新草案的目标</strong>，两者不可混用。 补法：直接查阅巨潮资讯网 2026-09-11 披露的《2026 年股票期权激励计划（草案）》全文（库内新闻已给出 PDF 链接），取出考核年度与考核指标后重跑本调研。</p>
+<p><strong>缺口二：分产品营收拆分与海外收入占比。</strong> 影响：<strong>大</strong>。库内财务只有合并口径六项指标。因此 G2 节无法证实「液冷服务器」这个概念标签对应多少营收，E 节无法判断产品结构调整对毛利率的影响有多大，「谷歌 TPU 供应份额 20–30 亿元」这类联网说法也无从用财报交叉验证。 补法：查阅 2026 年半年度报告（库内公告日 2026-08-25）的分行业/分产品营业收入明细表。</p>
+<p><strong>缺口三：现金流量表与应收账款。</strong> 影响：<strong>中</strong>。J 节第 4 环（结构性议价能力问题）最需要的证据就是经营现金流与应收账款周转天数，但库内完全没有。C 节只能引用单一媒体来源并标低置信度。 补法：同缺口二，查半年报的现金流量表与资产负债表。</p>
+<p><strong>缺口四：筹码数据滞后 5 周。</strong> 影响：<strong>中</strong>。库内筹码分布时点为 2026-08-07，当前为 09-14，中间经历过一次涨停。L 节所有价位锚都建立在这份滞后数据上。 补法：等待筹码数据更新后重新校准 L 节的触发价位。</p>
+<p><strong>缺口五：真正的液冷同业对照缺失。</strong> 影响：<strong>中</strong>。库内同业对比按「专用机械」行业分类取到的三家（宇树科技、大族数控、罗博特科）下游需求与本票完全不同，D 节给不出「液冷赛道里排第几」的答案。 补法：按同花顺概念「液冷服务器（886044.TI）」的成分股单独做一轮横向对比。</p>
+<p><strong>缺口六：事件日历 W6 之后全为推算。</strong> 影响：<strong>小</strong>。库内事件日历只覆盖到 2026-10-01，I 节 W5 及以后的条目（三季报日期、英伟达财报、中央经济工作会议）均按历年节奏推算，已逐条标注置信度低。 补法：深交所定期报告预约披露时间表公布后更新 I 节。</p>
+<p><strong>联网信息来源清单</strong>（本报告引用的库外信息，供读者自行核对）：</p>
+<ul>
+<li><a href="https://www.beijing.gov.cn/zhengce/zcjd/202411/t20241118_3942744.html" target="_blank" rel="noopener">北京市引导存量数据中心绿色低碳改造·政策解读（2024-11-18）</a></li>
+<li><a href="https://www.chyxx.com/industry/1259594.html" target="_blank" rel="noopener">2026 年全球及中国液冷数据中心行业政策、产业链研判·智研咨询</a></li>
+<li><a href="https://vendor.energy/zh-hans/articles/ai-shujuzhongxin-pue-hegui-yixian-chengshi/" target="_blank" rel="noopener">AI 数据中心瓶颈：PUE 合规与电网接入时序（2026）</a></li>
+<li><a href="https://www.chinanews.com.cn/cj/2026/08-31/10686998.shtml" target="_blank" rel="noopener">订单排到年底！这一千亿级&quot;冷&quot;市场热起来了·中新网（2026-08-31）</a></li>
+<li><a href="https://www.cls.cn/detail/2469258" target="_blank" rel="noopener">订单排到年底·财联社（2026-08-31）</a></li>
+<li><a href="https://blogs.nvidia.cn/blog/vera-rubin-full-production-agentic-ai-factory/" target="_blank" rel="noopener">NVIDIA Vera Rubin 全面投产·NVIDIA 官方博客</a></li>
+<li><a href="https://www.21jingji.com/article/20260106/herald/32a7a947886bebb3db88c6e56f48fce2.html" target="_blank" rel="noopener">英伟达宣布 Rubin 芯片平台全面投产·21 经济网（2026-01-06）</a></li>
+<li><a href="https://finance.sina.cn/stock/ssgs/2026-04-22/detail-inhvkqha6077446.d.html" target="_blank" rel="noopener">英维克一季报解读·新浪财经（2026-04-22）</a></li>
+<li><a href="https://caifuhao.eastmoney.com/news/20260421105937023979600" target="_blank" rel="noopener">英维克 2026 年一季度利润下滑原因·东方财富财富号（2026-04-21）</a></li>
+<li><a href="https://static.cninfo.com.cn/finalpage/2026-08-25/1225495981.PDF" target="_blank" rel="noopener">英维克 2026 年半年度报告全文·巨潮资讯（2026-08-25）</a></li>
+<li><a href="https://finance.sina.com.cn/wm/2026-04-16/doc-inhuszse1547095.shtml" target="_blank" rel="noopener">2026-2032 年 AI 服务器液冷行业调研·新浪财经（2026-04-16）</a></li>
+<li><a href="https://www.21jingji.com/article/20260319/herald/2b6f8ce6c7899adaa5a7c4d892a9d6a6.html" target="_blank" rel="noopener">谷歌来华&quot;扫货&quot;，A 股液冷产业链·21 经济网（2026-03-19）</a></li>
+<li><a href="https://www.21jingji.com/article/20250822/herald/a13e3c01716b729f5233134f027164af.html" target="_blank" rel="noopener">英维克背靠英伟达·21 经济网（2025-08-22）</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-14），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>PE(TTM)156倍排同行业179/295</li>
+      <li>营收增速连续四期放缓至17.24%</li>
+      <li>20日全口径资金净流出19.9亿</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>经营现金流</dt><dd>经营活动产生的现金流量净额。利润是账面数，这个是真金白银进出。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.beijing.gov.cn/zhengce/zcjd/202411/t20241118_3942744.html" target="_blank" rel="noopener">北京市引导存量数据中心绿色低碳改造·政策解读（2024-11-18）</a> <em>2024-11-18</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.chyxx.com/industry/1259594.html" target="_blank" rel="noopener">2026 年全球及中国液冷数据中心行业政策、产业链研判·智研咨询</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://vendor.energy/zh-hans/articles/ai-shujuzhongxin-pue-hegui-yixian-chengshi/" target="_blank" rel="noopener">AI 数据中心瓶颈：PUE 合规与电网接入时序（2026）</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.chinanews.com.cn/cj/2026/08-31/10686998.shtml" target="_blank" rel="noopener">订单排到年底！这一千亿级&quot;冷&quot;市场热起来了·中新网（2026-08-31）</a> <em>2026-08-31</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2469258" target="_blank" rel="noopener">订单排到年底·财联社（2026-08-31）</a> <em>2026-08-31</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://blogs.nvidia.cn/blog/vera-rubin-full-production-agentic-ai-factory/" target="_blank" rel="noopener">NVIDIA Vera Rubin 全面投产·NVIDIA 官方博客</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.21jingji.com/article/20260106/herald/32a7a947886bebb3db88c6e56f48fce2.html" target="_blank" rel="noopener">英伟达宣布 Rubin 芯片平台全面投产·21 经济网（2026-01-06）</a> <em>2026-01-06</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.cn/stock/ssgs/2026-04-22/detail-inhvkqha6077446.d.html" target="_blank" rel="noopener">英维克一季报解读·新浪财经（2026-04-22）</a> <em>2026-04-22</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://caifuhao.eastmoney.com/news/20260421105937023979600" target="_blank" rel="noopener">英维克 2026 年一季度利润下滑原因·东方财富财富号（2026-04-21）</a> <em>2026-04-21</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://static.cninfo.com.cn/finalpage/2026-08-25/1225495981.PDF" target="_blank" rel="noopener">英维克 2026 年半年度报告全文·巨潮资讯（2026-08-25）</a> <em>2026-08-25</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/wm/2026-04-16/doc-inhuszse1547095.shtml" target="_blank" rel="noopener">2026-2032 年 AI 服务器液冷行业调研·新浪财经（2026-04-16）</a> <em>2026-20</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.21jingji.com/article/20260319/herald/2b6f8ce6c7899adaa5a7c4d892a9d6a6.html" target="_blank" rel="noopener">谷歌来华&quot;扫货&quot;，A 股液冷产业链·21 经济网（2026-03-19）</a> <em>2026-03-19</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.21jingji.com/article/20250822/herald/a13e3c01716b729f5233134f027164af.html" target="_blank" rel="noopener">英维克背靠英伟达·21 经济网（2025-08-22）</a> <em>2025-08-22</em></li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-04-22、东方财富财富号 2026-04-21，两个独立来源口径一致 <em>2026-04-22</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 置信度：中 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-04-20 / 2026-04-22 <em>2026-04-20</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 单一媒体口径，未与库内交叉验证，置信度：低 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 搜索结果转述半年报，单源未交叉验证，置信度：低 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社 2026-09-02 机构龙虎榜解读，这条在库内新闻里有原文，相关度 95，属库内证据，置信度：中高 <em>2026-09-02</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-04-16 行业研究、中信建投行业观点转述 2025-12-13 <em>2026-04-16</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 两个来源方向一致但均为研究观点而非事实，置信度：低 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 北京市人民政府门户网站政策解读，2024-11-18 <em>2024-11-18</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 智研咨询行业研判 2026 年度报告 / vendor.energy 2026 年行业文章，两个来源口径一致 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 智研咨询 2026 年行业政策综述 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 单一综述来源转述，未找到第二个独立来源，置信度：低 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 艾邦笔电论坛供应商梳理、21 经济网 2025-08-22 <em>2025-08-22</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> NVIDIA 官方博客、21 经济网 2026-01-06，双源 <em>2026-01-06</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 搜索结果，2024 年计划的行权条件 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2025 年三季报库内公告日为 2025-10-14 <em>2025-10-14</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 库内财务里 2026-06-30 期的公告日 = 2026-08-25 <em>2026-06-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 库内公告日 2026-08-25 <em>2026-08-25</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-14 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
