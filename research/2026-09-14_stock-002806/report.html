@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>华锋股份（002806.SZ） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>华锋股份（002806.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-14（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 汽车零部件</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 超级电容 · 高压快充 · 汽车热管理 · 新疆振兴 · 燃料电池 · 百度概念 · 固态电池 · 车联网(车路协同)</span>
+      <span><b>来源</b> 26 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    华锋股份（002806）主要做的是铝电解电容器之关键原材料电极箔的研发、生产及销售。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——控制权已易主、剩余 11% 股份转让窗口 11 月开启，但公司 2026 年上半年已由盈转亏、毛利率降到 10.46%，事件预期与报表现实反向。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：控制权已易主、剩余 11% 股份转让窗口 11 月开启，但公司 2026 年上半年已由盈转亏、毛利率降到 10.46%，事件预期与报表现实反向。支撑在于剩余11%股份11月23日起转让；电极箔行业均价上行叙事；汽车板块热点已到资金确认。主要风险是上半年由盈转亏且毛利率降至10.46%；营收同比转负增长停止；5-6月涨停行情已走完无后续。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>剩余11%股份11月23日起转让</li>
+      <li>电极箔行业均价上行叙事</li>
+      <li>汽车板块热点已到资金确认</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据时点：库内行情 2026-09-14 15:35（收盘）· 财务最新期 2026 年半年报（2026-08-26 披露）· 估值 2026-09-14 · 筹码 2026-08-07 · 资金流 2026-08-18 至 2026-09-14</div>
+<h2>A. 结论先行</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：控制权已易主、剩余 11% 股份转让窗口 11 月开启，但公司 2026 年上半年已由盈转亏、毛利率降到 10.46%，事件预期与报表现实反向。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li>控制权变更已落地并有后续分期转让安排：首期 1070 万股（占总股本 5.04%）于 2026-04-10 完成过户，剩余 2330 万股（约 11%）计划在 2026-11-23 至 2027-01-31 间转让（来源：新浪财经 2025-11-29、腾讯新闻 2025-12-02、经济观察网 2026-04-30，三源一致）。这是未来 13 周内唯一有明确时间窗的公司级事件（置信度：中——时点有多源佐证，能否如期完成公司已公告存在不确定性）。</li>
+<li>上游电极箔行业需求端有 AI 服务器与新能源双线拉动的行业叙事，2026 年电极箔行业均价上行（来源：观研报告网、新浪财经 2026-05-24，两个独立来源；置信度：低——均为行业研究/媒体口径，且<strong>这家公司的报表尚未体现</strong>）。</li>
+<li>所在板块热度在线：库内热点记录显示「汽车」板块 2026-08-27 进入「资金确认」，依据是「大单连续3日净流入 +23.2 亿」；「8月车企销量分化」2026-09-07 进入「资金确认」，依据是「涨停 28 家（前日 3，20日均 11.4）」（置信度：高——库内记录）。</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li>连续亏损且仍在持续：2025 年全年净利润 -0.30 亿元（同比 -135.13%，由盈转亏），2026 年一季度 -0.16 亿元，2026 年上半年 -0.21 亿元（同比 -182.54%，去年同期为盈利）。毛利率从 2025 年全年 13.19% 降到 2026 年上半年 10.46%（置信度：高——库内财报数据）。</li>
+<li>营收同比转负：2026 年上半年营收 5.82 亿元、同比 -0.69%，此前 2025 年前三季度还是同比 +18.75%、2025 年全年 +15.22%。行业景气叙事向上而公司收入不增，说明这家公司没有分享到行业涨价（置信度：高）。</li>
+<li>情绪层面这一轮已经走完：近 180 日 7 次涨停全部集中在 2026-05-22 至 2026-06-16，最后一次（06-16）盘中打开涨停 41 次、封单仅 0.07 亿元；此后近三个月无涨停记录。近 20 个交易日资金合计净流出 0.49 亿元，13 天净流出、7 天净流入（置信度：高）。</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ul>
+<li>三季报（主板法定披露截止 2026-10-31）：单季毛利率能否回到 2025 年全年 13.19% 以上、单季净利润能否转正。这是检验「行业涨价有没有落到这家公司」的唯一硬证据。</li>
+<li>2026-11-23 起的剩余约 11% 股份转让窗口是否有推进公告。</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong>：我把「事件驱动」和「基本面」当成两条可以分开评估的线。如果新实际控制人在 13 周内推出超出预期的资产安排，市场会完全不看报表——那样我按财务趋势给出的「震荡」会偏保守。反过来，若转让窗口出现延期或终止公告，事件这条腿直接消失，震荡判断也会偏乐观。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>公司</strong>：广东华锋新能源科技股份有限公司（华锋股份，002806）</li>
+<li><strong>上市状态</strong>：正常上市（上市状态 = L），上市日 2016-07-26，深交所主板，至今满 10 年</li>
+<li><strong>行业归属</strong>：汽车配件（库内行业归属字段）；涨停记录里的行业标注为「汽车零部件」</li>
+<li><strong>主营业务</strong>（库内主营业务原文）：铝电解电容器之关键原材料电极箔的研发、生产及销售</li>
+<li><strong>经营范围要点</strong>（库内经营范围）：除电极箔外，还包含电动汽车用整车控制器、电驱动与传动系统、功率转换集成控制器、动力电池系统、燃料电池系统等关键零部件的研发与生产销售，以及高效净水剂／污水处理剂业务</li>
+<li><strong>生产基地</strong>（库内公司介绍原文）：肇庆低压腐蚀、高要中高压腐蚀、广西梧州低压化成三个腐蚀化成生产基地，以及碧江环保分公司；年产低压和中高压化成铝箔 2000 万平方米</li>
+<li><strong>员工人数</strong>：882 人｜<strong>注册资本</strong>：21247.92 万元（对应总股本约 2.12 亿股）</li>
+</ul>
+<p><strong>当前行情与估值</strong>（库内行情 / 库内估值，2026-09-14）</p>
+<ul>
+<li>现价 14.41 元（数据时点 15:35，即当日收盘），当日 +0.56%，日内最高 +1.61%、最低 -1.95%，成交额 0.60 亿元</li>
+<li>总市值 30.62 亿元｜PB 2.7572 倍｜换手率 2.3725%</li>
+<li><strong>PE_TTM 为空</strong>——因公司处于亏损状态，没有有意义的市盈率；行业内 PE 排名同样为空，即<strong>无法排进行业 PE 分位</strong></li>
+<li>行业参照：汽车配件行业库内可比公司 271 家，PE 中位数 29.17 倍</li>
+<li>股息率字段为空，库内无分红率数据</li>
+<li>每股净资产约 5.23 元（据现价 14.41 元与 PB 2.7572 推算）</li>
+<li>A/H 溢价：不适用，该票非两地上市（库内 A/H 对照返回空）</li>
+</ul>
+<p><strong>估值口径的一句话结论</strong>：因为亏损，这只票现在只能用 PB 定价，2.76 倍的 PB 在同行业头部公司之间不算高也不算低（见 D 节），但<strong>PB 不含盈利信息，估值高低在这里说明不了好坏</strong>（置信度：中）。</p>
+<h2>C. 财务健康</h2>
+<p>近四期数据（库内财务，新→旧，金额单位亿元）：</p>
+<ul>
+<li><strong>2026 年上半年</strong>（截止 2026-06-30，2026-08-26 披露）｜营收 5.82｜净利润 -0.21｜营收同比 -0.69%｜净利润同比 -182.54%｜ROE -1.86%｜毛利率 10.46%｜净利率 -3.75%｜每股收益 -0.10 元｜资产负债率 43.98%</li>
+<li><strong>2026 年一季度</strong>（截止 2026-03-31）｜营收 2.49｜净利润 -0.16｜营收同比 -12.44%｜净利润同比 -418.36%｜ROE -1.41%｜毛利率 7.69%｜净利率 -6.65%｜每股收益 -0.0748 元｜资产负债率 43.01%</li>
+<li><strong>2025 年全年</strong>（截止 2025-12-31）｜营收 11.87｜净利润 -0.30｜营收同比 +15.22%｜净利润同比 -135.13%｜ROE -2.81%｜毛利率 13.19%｜净利率 -2.72%｜每股收益 -0.15 元｜资产负债率 44.64%</li>
+<li><strong>2025 年前三季度</strong>（截止 2025-09-30）｜营收 8.62｜净利润 -0.10｜营收同比 +18.75%｜净利润同比 -288.93%｜ROE -0.92%｜毛利率 13.52%｜净利率 -1.31%｜每股收益 -0.0505 元｜资产负债率 44.25%</li>
+</ul>
+<p><strong>趋势怎么读</strong></p>
+<ol>
+<li><strong>盈利：连续亏损，且上半年同比由盈转亏。</strong> 2025 年全年净利润同比 -135.13%，意味着 2024 年全年是盈利的（据同比推算，2024 年净利润约 +0.85 亿元），2025 年转为亏损 0.30 亿元。2026 年上半年净利润同比 -182.54%，据此推算去年同期净利润约为 +0.25 亿元——也就是说 <strong>2026 年上半年是由盈转亏</strong>（置信度：高）。</li>
+<li><strong>单季看，二季度亏损比一季度收窄。</strong> 据半年报 5.82 亿元与一季报 2.49 亿元推算，二季度单季营收约 3.33 亿元；据净利润 -0.21 与 -0.16 推算，二季度单季净利润约 -0.05 亿元，亏损幅度小于一季度的 -0.16 亿元。半年报毛利率 10.46% 也高于一季报的 7.69%，即<strong>二季度单季毛利率高于一季度</strong>（置信度：中——均为两期数据相减推算，非公司直接披露）。这是目前四期数据里<strong>唯一一处在改善的指标</strong>。</li>
+<li><strong>收入：从两位数增长变成同比转负。</strong> 2025 年前三季度 +18.75%、全年 +15.22%，到 2026 年一季度 -12.44%、上半年 -0.69%。上半年降幅小于一季度，说明二季度单季收入同比是正的（据推算）。</li>
+<li><strong>毛利率：从 13% 一线降到 10.46%。</strong> 2025 年前三季度 13.52% → 2025 年全年 13.19% → 2026 年一季度 7.69% → 2026 年上半年 10.46%。低点在一季度，二季度有回升但仍低于 2025 年水平。</li>
+<li><strong>负债端稳定。</strong> 资产负债率四期在 43.01%–44.64% 之间小幅波动，看不出财务压力上升（置信度：高）。</li>
+</ol>
+<p><strong>公司自己给的亏损原因</strong>（来源：2025 年年度报告，经媒体摘录，上海证券报 2026-04-30 刊登公司披露文件）：一是新能源汽车业务销售收入虽增长约 30%，但行业竞争加剧导致产品售价下降、毛利率下滑；二是电极箔业务受电子元器件行业竞争影响，售价下降、订单减少导致产能利用率下降、单位成本上升。（置信度：中——为公司披露口径的媒体转述，2026 年上半年是否为同一原因库内无佐证）</p>
+<p><strong>信息缺口</strong>：库内财务只有营收／净利／ROE／毛利率／净利率／负债率六项，<strong>没有分业务收入拆分、没有经营活动现金流、没有商誉与减值数据</strong>。影响：无法判断上半年亏损主要来自电极箔还是新能源汽车电控，也无法评估收购形成的商誉是否存在减值风险。补法：查阅公司 2026 年半年度报告全文（2026-08-26 披露，巨潮资讯网），或等三季报后重跑本调研。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同行业可比公司（库内同业对比，财务数据截止 2026-06-30）：</p>
+<ul>
+<li><strong>潍柴动力（000338）</strong>｜总市值 2258.55 亿元 · PE_TTM 17.39 · PB 2.35 · 上半年营收 1231.63 亿元 · 净利润 77.01 亿元 · ROE 8.14%</li>
+<li><strong>福耀玻璃（600660）</strong>｜总市值 1406.13 亿元 · PE_TTM 16.59 · PB 3.68 · 上半年营收 219.71 亿元 · 净利润 39.70 亿元 · ROE 10.49%</li>
+<li><strong>拓普集团（601689）</strong>｜总市值 749.53 亿元 · PE_TTM 29.90 · PB 3.09 · 上半年营收 141.99 亿元 · 净利润 10.23 亿元 · ROE 4.23%</li>
+<li><strong>华锋股份（002806）</strong>｜总市值 30.62 亿元 · PE_TTM 无（亏损） · PB 2.76 · 上半年营收 5.82 亿元 · 净利润 -0.21 亿元 · ROE -1.86%</li>
+</ul>
+<p><strong>这家在同行里处于什么位置</strong></p>
+<ul>
+<li><strong>规模上完全不是一个量级。</strong> 华锋股份总市值 30.62 亿元，不到拓普集团的 1/24；上半年营收 5.82 亿元，约为拓普集团的 1/24、潍柴动力的 1/212（据上述数字推算）。</li>
+<li><strong>盈利能力是唯一为负的一家。</strong> 三家可比公司上半年 ROE 分别为 8.14%、10.49%、4.23%，华锋股份为 -1.86%。</li>
+<li><strong>PB 2.76 倍夹在三家中间，但含义不同。</strong> 另外三家的 PB 对应的是正 ROE，华锋股份的 PB 对应的是负 ROE——<strong>同样的 PB，一家在赚钱、一家在亏钱，不能直接说谁便宜</strong>（置信度：高）。</li>
+</ul>
+<p>⚠️ <strong>这组对比的局限要说清</strong>：库内按市值取的是汽车配件行业头部三家，与华锋股份不在同一规模区间，也不在同一细分赛道（电极箔）。更贴近的电极箔同业按联网信息是东阳光、新疆众和、海星股份（来源：铝工业展行业分析、观研报告网），但<strong>库内同业对比不按细分赛道选样，无法给出这三家的库内财务数字</strong>——这是本节的信息缺口。</p>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>：两块业务并行。按公司 2025 年年度报告披露的收入构成，新能源汽车电控及驱动系统占 61.55%、电极箔占 38.43%、其他 0.02%（来源：2025 年年度报告媒体摘录，证券之星 2026-04-29；2024 年年度报告口径为 62.02% / 37.95% / 0.03%，两年结构基本一致）。⚠️ 注意：<strong>库内主营业务字段只写了电极箔</strong>，与上述收入构成口径不一致——以公司年报披露的收入构成为准（置信度：中——库外来源，两个年度互相印证）。</p>
+<p><strong>分级判断</strong></p>
+<ul>
+<li><strong>阶段性优势（置信度：中）</strong>：电极箔环节存在技术门槛。按公司介绍（库内原文），其低压化成铝箔「处于国内领先水平和国际先进水平」；2024 年年度报告称公司是「国内少数能向国际市场出口低压化成箔产品的企业之一」，也是少数能大规模自产腐蚀箔并自行化成的企业之一（来源：2024 年年度报告媒体摘录）。联网行业资料把公司列为国内电极箔主要生产商之一，与东阳光、新疆众和、海星股份并列（来源：铝工业展行业分析）。</li>
+<li><strong>无明显结构性护城河（置信度：中）</strong>：判断依据是<strong>结果反证</strong>——2025 年公司自述电极箔「售价下降、订单减少、产能利用率下降」，2026 年上半年营收同比转负、毛利率降到 10.46%，而同期行业层面在讲需求上行、均价上行。有定价权的环节不会出现这种分化。新能源汽车电控这块公司自述 2025 年收入增长约 30% 但售价下降、毛利率下滑，同样是没有定价权的表现。</li>
+<li><strong>规模劣势</strong>：总市值 30.62 亿元、上半年营收 5.82 亿元，在一个上游是高纯铝和电力（大宗，成本刚性）、下游是电容器厂和整车厂（集中度高、议价强）的产业链位置上，两头都不占优。</li>
+</ul>
+<h2>F. 政策与监管</h2>
+<p>库内无政策数据，本节全部来自联网，每条带来源与日期。</p>
+<ol>
+<li><strong>工信部要规范动力电池行业竞争秩序</strong>（2026-09-04 前后）。2026 世界动力电池大会在宜宾举办，会上发布《动力电池产业发展指数（2026）》；工信部表示将进一步规范动力电池行业竞争秩序、加强产能动态预警、加快相关标准制定（来源：库内热点记录 disc:20260909-02 的原文，配套新闻 2026-09-04「工信部：加快动力电池标准制定」）。</li>
+</ol>
+<p><strong>传导方向</strong>：中性偏正面。规范竞争秩序、限制盲目扩产，理论上有助于遏制产业链价格下行。<strong>但传导链条长</strong>：政策 → 电池环节价格企稳 → 整车电控售价企稳 → 华锋股份新能源汽车电控业务毛利率回升。中间每一环都可能断（置信度：低）。</p>
+<ol>
+<li><strong>工信部稳妥推进高速领航等场景拓展</strong>（2026-09-11）。工信部表示将持续开展智能网联汽车生产准入和上路通行试点，稳妥推进高速领航等场景拓展（来源：库内热点记录 disc:20260911-03，新闻时点 2026-09-11）。</li>
+</ol>
+<p><strong>传导方向</strong>：对公司无直接传导——公司经营范围含整车控制器，但库内与年报均无智能驾驶相关营收佐证（置信度：低）。</p>
+<ol>
+<li><strong>新能源车型车船税减免目录持续发布</strong>（2026-09-08 前后）。工信部公布第九十批享受车船税减免的新能源车型目录（来源：库内热点记录 disc:20260914-04）。</li>
+</ol>
+<p><strong>传导方向</strong>：对新能源汽车终端需求是常规性支持政策，属行业普惠，对单一零部件供应商无差异化影响（置信度：中）。</p>
+<ol>
+<li><strong>储能／动力电池产能监管摸底</strong>（2026-09-11）。媒体报道监管对储能电芯扩产进行摸底，剑指产能过剩（来源：库内热点记录 disc:20260909-02 配套新闻「储能电芯&quot;扩产竞赛&quot;降温：监管摸底剑指产能过剩」2026-09-11、「防范盲目扩张储能电池扩产踩&quot;刹车&quot;」2026-09-11）。</li>
+</ol>
+<p><strong>传导方向</strong>：对上游材料环节是双向的——扩产降温意味着材料需求增速可能放缓，但也减少了价格恶性竞争（置信度：低）。</p>
+<p><strong>信息缺口</strong>：<strong>没有找到直接针对电极箔／铝电解电容器行业的现行专项政策</strong>。影响：F 节所有政策都是「所在下游行业」的政策，与公司 38% 收入来源的电极箔业务没有直接监管联系。补法：关注工信部电子元器件相关产业规划与环保产能政策（电极箔腐蚀化成环节属高耗电高排放，是历史上的政策敏感点）。</p>
+<h2>G. 题材与产业链关联</h2>
+<h3>G1. 所在板块正在活动的热点（库内热点记录，2026-09-14）</h3>
+<p>库内记录到 9 个与这只票所在行业／概念相关的活动中热点，按状态分两档：</p>
+<p><strong>已到「资金确认」的（2 个）</strong></p>
+<ul>
+<li><strong>「汽车」（申万一级，sw:801880.SI）</strong>｜状态：资金确认｜进入日期：2026-08-27｜依据：大单连续3日净流入 +23.2 亿｜近期新闻：「2026中国汽车供应链大会将于10月19-21日在开封举办」（2026-09-14）、「博俊科技：拟投资6亿元建设汽车轻量化零部件生产扩建项目」（2026-09-14）</li>
+<li><strong>「8月车企销量分化」（disc:20260907-06）</strong>｜状态：资金确认｜进入日期：2026-09-07｜依据：涨停 28 家（前日 3，20日均 11.4）｜内容：多家车企公布8月销量：长城汽车11.34万辆同比下降1.87%，北汽新能源17573辆同比增长29.88%，江铃汽车32266辆同比增长7.54%，福特在美国销量170,681辆同比下降10.3%；乘联分会称1-7月世界汽车销量达5611万台｜关联方式：直接相关</li>
+</ul>
+<p><strong>处在「升温」的（6 个）</strong></p>
+<ul>
+<li><strong>「固态电芯与储能满产」（disc:20260908-17）</strong>｜进入日期：2026-09-08｜依据：这 5 天有 8 条新闻，平时一周约 1 条｜内容：奇瑞称犀牛固态电芯能量密度达400Wh/kg，德尔股份固态电池PACK中试线建成，宁德时代线上商城电芯0.395元/Wh起，业内称储能电芯未来数年或迎产能出清，德赛电池储能电芯满产｜关联方式：直接相关</li>
+<li><strong>「工信部要规范动力电池」（disc:20260909-02）</strong>｜进入日期：2026-09-08｜依据：这 5 天有 9 条新闻，平时几乎没有｜关联方式：直接相关（内容见 F 节第 1 条）</li>
+<li><strong>「多品牌集中降价促销」（disc:20260910-08）</strong>｜进入日期：2026-09-11｜依据：这 5 天有 7 条新闻，平时几乎没有｜内容：近期特斯拉等多个汽车品牌集中降价促销，乘联分会崔东树表示这是各品牌集中促销，并非全面价格战的开端｜关联方式：直接相关</li>
+<li><strong>「新能源车型免车船税目录」（disc:20260914-04）</strong>｜进入日期：2026-09-14｜依据：这 5 天有 9 条新闻，平时几乎没有｜关联方式：直接相关</li>
+<li><strong>「Cybercab在美投入运营」（disc:20260904-10）</strong>｜进入日期：2026-09-09｜依据：这 5 天有 13 条新闻，平时几乎没有｜内容：特斯拉宣布 Cybercab 正式在美国奥斯汀投入运营并上线车队购买意向登记；公司表示将迎来国内首次公开亮相，但不涉及无人驾驶网约车商业运营安排｜关联方式：间接相关</li>
+<li><strong>「高速领航与智能工厂推进」（disc:20260911-03）</strong>｜进入日期：2026-09-10｜依据：这 5 天有 7 条新闻，平时几乎没有｜关联方式：间接相关</li>
+</ul>
+<p><strong>怎么读这一组热点</strong>：板块层面热度是真实存在的，且「汽车」已到资金确认。但<strong>其中 5 个「直接相关」热点里，有 4 个的内容主体是整车和电池环节</strong>（销量、降价、固态电芯、动力电池监管），与华锋股份所处的零部件／材料环节之间隔着一层。同时，热点新闻里有一条对需求端是负面的：乘联分会 2026-09-08 发布「8月新能源乘用车国内零售销量100.5万辆同比下降10.1%」。<strong>板块有热度不等于这只票有业绩传导</strong>（置信度：中）。</p>
+<h3>G2. 概念标签逐个分级（库内概念标签，同花顺口径，共 12 个）</h3>
+<p><strong>有事实支撑的（2 个）</strong></p>
+<ul>
+<li><strong>股权转让（并购重组）</strong>：<strong>真有事实</strong> ——控制权已于 2026-04 变更（详见 H 节），且有后续分期转让安排（置信度：高，多源交叉验证）</li>
+<li><strong>新能源汽车</strong>：<strong>真有业务</strong> ——经营范围含电动汽车整车控制器、电驱动与传动系统等；2025 年年度报告收入构成中新能源汽车电控及驱动系统占 61.55%（来源：2025 年年度报告媒体摘录）（置信度：中）</li>
+</ul>
+<p><strong>经营范围里有、但未见营收佐证的（2 个）</strong></p>
+<ul>
+<li><strong>燃料电池</strong>：经营范围明确列有「燃料电池系统及其附件产品研发」与生产销售，但库内与年报收入构成中<strong>未见燃料电池营收拆分</strong>（置信度：中）</li>
+<li><strong>高压快充</strong>：经营范围含「功率转换集成控制器」，与快充有技术相关性，但<strong>未见营收佐证</strong>（置信度：低）</li>
+</ul>
+<p><strong>仅概念标签、未见营收佐证的（8 个）</strong></p>
+<ul>
+<li><strong>超级电容</strong>：电极箔与超级电容电极材料同属铝箔加工环节，同花顺涨停解读把公司标注为「超级电容用材料」（来源：同花顺涨停雷达 2026-06-16）。但财联社 2026-06-03 关于超级电容进入高景气周期的产业报道点名的是江海股份、宏明电子、东阳光、思源电气（烯晶碳能）及上游电容炭环节（元力股份），<strong>未提及本公司</strong>。库内与年报均无超级电容相关营收拆分——<strong>仅概念标签</strong>（置信度：中）</li>
+<li><strong>储能</strong>：电极箔可用于储能变流器电容，属间接关联，<strong>未见营收佐证</strong></li>
+<li><strong>固态电池</strong>：<strong>未见任何业务或营收佐证</strong>，纯标签</li>
+<li><strong>新疆振兴</strong>：公司介绍中列出的生产基地为肇庆、高要、广西梧州及碧江环保分公司，<strong>未见新疆布局</strong>，纯标签（置信度：高——库内公司介绍原文可查）</li>
+<li><strong>无人驾驶</strong> / <strong>车联网（车路协同）</strong> / <strong>百度概念</strong> / <strong>汽车热管理</strong>：<strong>均未见业务或营收佐证</strong>，纯标签</li>
+</ul>
+<p><strong>这一组标签的整体判断</strong>：12 个标签里只有 2 个有事实支撑，8 个是纯标签。<strong>标签多不代表业务宽，反而说明这只票容易被多个题材反复贴上去做短线</strong>（置信度：中）。</p>
+<h3>G3. 产业链位置</h3>
+<ul>
+<li><strong>电极箔业务</strong>：上游是高纯铝（光箔）、化学制剂和电力（来源：华经产业研究院行业分析）——都是大宗，成本刚性、议价能力弱；下游是铝电解电容器厂商，行业集中度高于上游电极箔环节（联网行业资料称电极箔行业「较分散」），议价能力在下游。公司处在<strong>两头受挤的中间环节</strong>（置信度：中）。</li>
+<li><strong>新能源汽车电控业务</strong>：上游是芯片、功率器件等；下游是整车厂，议价能力明确在整车厂一侧——公司 2025 年年报自述「销售收入增长约 30% 但售价下降、毛利率下滑」正是这个结构的结果（置信度：高）。</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<h3>H1. 所在板块的热点消息（承 G1，库内热点记录 2026-09-14）</h3>
+<p>板块层面最新的消息集中在三条线：整车销量分化与集中降价促销（「8月车企销量分化」已到资金确认、「多品牌集中降价促销」升温）、电池端的固态化与产能监管（「固态电芯与储能满产」「工信部要规范动力电池」双双升温）、智能驾驶事件催化（「Cybercab在美投入运营」升温，2026-09-14 新闻称 Cybercab 将于 9 月 17 日-27 日在北京、上海亮相，仅为静态展示）。<strong>这三条线都不落在公司自己的业务上，是板块层面的情绪供给</strong>（置信度：中）。</p>
+<h3>H2. 这只票自己的消息（库内新闻，近 60 天，共 13 条）</h3>
+<p>库内近 60 天的 13 条信息<strong>全部是公告和投资者互动，没有一条媒体报道或行业新闻</strong>，且 11 条被系统归为「噪音其他」档。按重要性挑出来：</p>
+<ol>
+<li><strong>2026-08-25 · 2026 年半年度报告及摘要披露</strong>（公告）。对基本面有实质影响——这是 C 节全部数字的来源。</li>
+<li><strong>2026-08-25 · 关于拟变更会计师事务所的公告</strong>（系统情感分 -0.1）。对基本面<strong>有潜在信号意义但不构成事实判断</strong>：更换会计师事务所在连续亏损的背景下值得关注，但公告本身未说明原因，库内无进一步信息（置信度：低——不宜过度解读）。</li>
+<li><strong>2026-08-25 · 第七届董事会第三次会议决议公告</strong>。与控制权变更后的董事会安排可能相关（新实际控制人按转让协议将推动董事会改组、提名董事占三分之二席位，来源：新浪财经 2025-11-29），但<strong>库内公告标题未披露议案内容，属推测</strong>（置信度：低）。</li>
+<li><strong>2026-08-25 通知 → 2026-09-11 决议 · 2026 年第一次临时股东会</strong>（含律师事务所法律意见书）。事件已完成，<strong>库内无议案内容</strong>（置信度：高——事件发生为实，内容为缺口）。</li>
+<li><strong>2026-09-09 · 参加 2026 年广东辖区投资者集体接待日暨中报业绩说明会的公告</strong>（系统归为 earnings 类）。属常规投关活动，无基本面影响。</li>
+<li><strong>2026-08-25 · 半年度非经营性资金占用及其他关联资金往来情况汇总表</strong>（系统情感分 -0.5，是 13 条里情感分最低的一条）。这是半年报的标准附表，<strong>情感分为负是系统按标题关键词打的，不代表存在资金占用事实</strong>——库内无内容，不作判断（置信度：低）。</li>
+<li><strong>2026-07-17 · 为全资子公司融资提供担保的进展公告</strong>。常规融资安排，资产负债率 43.98% 未见异常（置信度：中）。</li>
+<li><strong>2026-07-22 · 两条董秘问答，均在问「2026 年 7 月 20 日股东人数是多少」</strong>。同一天两人问同一个问题，是散户关注筹码集中度的典型表现——属情绪面信号，不是基本面信息（置信度：低）。</li>
+</ol>
+<h3>H3. 控制权变更（联网补充，库内新闻未覆盖）</h3>
+<p>这是这只票近一年最重要的事，但库内新闻只回溯 60 天，事件发生在窗口之外，故来自联网，每条标来源：</p>
+<ul>
+<li>原控股股东、实际控制人、董事长谭帼英与陈运于 2025-11-28 签署股份转让协议，约定分期转让 3400 万股（占总股本 16%），转让价 15 元/股（来源：新浪财经 2025-11-29、腾讯新闻 2025-12-02，两源一致）</li>
+<li>首期转让 1070 万股（占总股本 5.04%）、价款 1.61 亿元，于 2026-04-10 完成过户；加上表决权委托，陈运合计控制 20.14% 表决权，成为新的控股股东与实际控制人（来源：经济观察网 2026-04-30、中国基金报、中财网 2026-04-13，三源一致，置信度：中）</li>
+<li>剩余 2330 万股（约占总股本 11%）计划在 <strong>2026-11-23 至 2027-01-31</strong> 期间完成转让（来源：新浪财经 2025-11-29、腾讯新闻 2025-12-02，两源一致，置信度：中）</li>
+<li>新实际控制人陈运为合力泰、三利谱联合创始人，现任胜宝莱光电科技有限公司创始人、董事长，直接持有该公司 60% 股权；胜宝莱主营新型汽车膜、眼镜膜、功能性光学膜、胶带、功能高分子复合材料及偏光片（来源：腾讯新闻 2025-12-02、新浪财经 2025-11-29，两源一致，置信度：中）</li>
+<li>⚠️ <strong>「胜宝莱借壳上市／资产注入」目前只是市场推测，不是公司承诺</strong>（来源：新浪财经 2025-12-01 明确表述为「或运作」；证券时报 stcn 报道标题为「接盘者引发资产整合预期」）。<strong>公司在 2026-05-31 的股票交易异常波动公告中明确表示</strong>「经营情况及内外部环境未发生重大变化」、「近期无可能影响股价的未公开重大信息」，并称「后续股份转让事项正在推进中，能否最终实施及完成时间存在不确定性」（来源：网易财经转载公告全文 2026-05-31）。<strong>这条反面证据必须和前面的预期放在一起读</strong>（置信度：高——公司公告口径）。</li>
+</ul>
+<h3>H4. 涨停记录（库内涨停记录，近 180 日，共 7 次）</h3>
+<p>按时间倒序：</p>
+<ul>
+<li><strong>2026-06-16</strong>｜+9.99%｜2 连板｜首次封板 13:01:15 · 最后封板 14:49:36｜<strong>盘中打开涨停 41 次</strong>｜封单 0.07 亿元</li>
+<li><strong>2026-06-15</strong>｜+9.99%｜首板｜首次封板 09:39:03｜打开 1 次｜封单 0.78 亿元</li>
+<li><strong>2026-06-04</strong>｜+10.00%｜首板｜首次封板 09:38:00｜<strong>打开 0 次</strong>｜封单 0.75 亿元｜板块晋级统计 5/10</li>
+<li><strong>2026-06-02</strong>｜+10.01%｜首板｜首次封板 14:48:39｜打开 1 次｜封单 0.04 亿元｜板块晋级统计 4/8</li>
+<li><strong>2026-05-29</strong>｜+9.99%｜2 连板｜首次封板 09:30:00｜打开 2 次｜封单 0.30 亿元</li>
+<li><strong>2026-05-28</strong>｜+10.01%｜首板｜首次封板 09:39:45｜<strong>打开 0 次</strong>｜封单 0.98 亿元</li>
+<li><strong>2026-05-22</strong>｜+10.03%｜首板｜首次封板 10:08:24｜打开 6 次｜封单 0.51 亿元</li>
+</ul>
+<p><strong>怎么读</strong>： ① 7 次涨停全部集中在 2026-05-22 至 2026-06-16 这 18 个交易日内，<strong>此后近三个月（2026-06-17 至今）无涨停记录</strong>。这一轮情绪已经走完（置信度：高）。 ② 封板质量单调下降：5-28 封单 0.98 亿元、0 次打开 → 6-16 封单 0.07 亿元、打开 41 次。<strong>最后一次涨停的封单只有最强那次的约 1/14，打开次数从 0 次变成 41 次</strong>，是这一轮热度的尾声特征（置信度：高）。 ③ 触发这轮行情的说法（来源：同花顺涨停雷达 2026-06-16）是「超级电容用材料+铝箔材+SiC控制器+实控人变更」，四条里三条是概念标签，只有实控人变更是事实——<strong>这轮上涨的驱动主要在题材与事件，不在业绩</strong>（置信度：中）。</p>
+<p>⚠️ 这些涨停日的涨跌幅是当时的历史记录，不是现在的状态。<strong>当前价格以库内行情为准：2026-09-14 收盘 14.41 元、+0.56%</strong>。</p>
+<h3>H5. 资金与筹码（库内资金筹码）</h3>
+<ul>
+<li><strong>资金流（2026-08-18 至 2026-09-14，20 个交易日聚合）</strong>：合计净流入 -0.49 亿元（即净流出 0.49 亿元）；其中特大单净流入 -0.04 亿元；<strong>7 天净流入、13 天净流出</strong>（置信度：高）</li>
+<li><strong>筹码（截止 2026-08-07）</strong>：获利盘比例 90.61%｜加权平均成本 12.88 元｜15% 分位成本 12.10 元｜50% 分位成本 12.70 元｜85% 分位成本 13.60 元</li>
+</ul>
+<p><strong>两面都要说</strong>：获利盘 90.61% 意味着上方几乎没有套牢盘、向上阻力小；但同时意味着<strong>短线获利抛压集中</strong>，一旦有下跌很容易引发连锁止盈（置信度：中——筹码数据时点为 2026-08-07，距今约五周，结构可能已变化）</p>
+<ul>
+<li><strong>股东户数（截止 2026-08-31）</strong>：23234 户，较 2026-08-10 的 23764 户减少 2.2%，筹码小幅集中。<strong>季度／期间披露天然滞后，这是两周前的状态</strong>（置信度：中）</li>
+</ul>
+<p>⚠️ <strong>纪律说明</strong>：以上资金流与筹码是盘面现象，不是基本面证据。本报告只把它们用作 H 节的情绪面佐证，<strong>不进 J 节逻辑链、不单独作为任何操作结论的依据</strong>。</p>
+<h2>I. 未来 13 周事件日历</h2>
+<ul>
+<li><strong>W1（2026-09-14 起）</strong>：2026-09-18 特斯拉 Cybercab 无人驾驶出租车国内首次公开亮相（北京、上海）· 公司/行业事件 · 重要性高（库内重要性 7）· 影响：G 节「无人驾驶」标签的短期情绪催化；⚠️ 库内 2026-09-14 新闻明确「9月17日-27日在北京、上海亮相仅为静态展示」，与商业运营无关。另本周无公司自身已知事件。</li>
+<li><strong>W2（2026-09-21 起）</strong>：2026-09-22 至 09-24 · 2026 世界新能源汽车大会（WNEVC）在海口开幕 · 行业会议 · 重要性高（库内重要性 7）· 影响：可能给出新能源车全年需求与技术路线指引，对 G1 板块热度有续航作用</li>
+<li><strong>W3（2026-09-28 起）</strong>：本周无已知事件。三季度最后一个交易周，机构季末调仓窗口（惯例，非确定事件）</li>
+<li><strong>W4（2026-10-05 起）</strong>：国庆假期休市周（具体休市安排以交易所公告为准）· 本周无已知公司事件</li>
+<li><strong>W5（2026-10-12 起）</strong>：乘联分会 9 月及三季度汽车产销数据发布 · 行业数据 · 重要性中 · 影响：验证 G1「8月车企销量分化」热点是否延续（时点据库内「8 月数据于 2026-09-08 发布」的节奏推算，非确定日期）</li>
+<li><strong>W6（2026-10-19 起）</strong>：2026-10-19 至 10-21 · 2026 中国汽车供应链大会在开封举办 · 行业会议 · 重要性中 · 影响：零部件与材料环节的行业景气口径（来源：库内热点新闻 2026-09-14）</li>
+<li><strong>W7（2026-10-26 起）</strong>：<strong>三季报披露 · 财报 · 重要性最高</strong> · 深交所主板三季报法定披露截止日为 2026-10-31 · 影响：<strong>本报告最关键的验证点</strong>——核验 C 节「二季度亏损收窄、毛利率回升」是不是趋势，以及 F/G 节的行业涨价叙事有没有落到这家公司的毛利率上。公司具体预约披露日库内无数据</li>
+<li><strong>W8（2026-11-02 起）</strong>：本周无已知公司事件。10 月汽车产销数据发布窗口（惯例）</li>
+<li><strong>W9（2026-11-09 起）</strong>：本周无已知事件</li>
+<li><strong>W10（2026-11-16 起）</strong>：本周无已知事件（为 W11 转让窗口的前置观察周）</li>
+<li><strong>W11（2026-11-23 起）</strong>：<strong>2026-11-23 · 剩余 2330 万股（约占总股本 11%）协议转让窗口开启</strong> · 公司事件 · 重要性最高 · 窗口期 2026-11-23 至 2027-01-31（来源：新浪财经 2025-11-29、腾讯新闻 2025-12-02，两源一致）· 影响：H3 事件线能否兑现的第一个可核验时点。⚠️ 公司已公告「能否最终实施及完成时间存在不确定性」</li>
+<li><strong>W12（2026-11-30 起）</strong>：本周无已知事件（转让窗口进行中，关注是否有进展公告）</li>
+<li><strong>W13（2026-12-07 起）</strong>：本周无已知公司事件。宏观上 12 月中旬为中央经济工作会议惯例窗口（具体时点未定，不作为确定事件）</li>
+</ul>
+<p><strong>日历的信息缺口</strong>：库内事件日历只返回 2 条（均为行业事件），<strong>没有公司自身的财报预约披露日、股东大会日程、限售解禁日程</strong>。影响：W7 的三季报只能按法定截止日占位，W1–W13 里可能有未被捕捉的解禁或减持事件。补法：查阅深交所披露预约时间表与公司限售股解禁安排。</p>
+<h2>J. 逻辑链</h2>
+<p><strong>主链（可证伪）</strong></p>
+<ol>
+<li><strong>事实 1</strong>：公司 61.55% 收入来自新能源汽车电控及驱动、38.43% 来自电极箔（2025 年年报口径，来源：媒体摘录，置信度：中）。</li>
+<li><strong>事实 2</strong>：这两块业务在 2025 年都出现「量增价减」——新能源汽车业务收入增约 30% 但售价下降毛利率下滑，电极箔售价下降、订单减少、产能利用率下降（公司 2025 年年报自述，置信度：中）。</li>
+<li><strong>事实 3</strong>（库内硬数据，置信度：高）：2026 年上半年营收 5.82 亿元同比 -0.69%（收入增长停止）、毛利率 10.46%（较 2025 年全年 13.19% 下降 2.73 个百分点）、净利润 -0.21 亿元（由盈转亏）。</li>
+<li><strong>推论 A</strong>：公司在两条赛道上<strong>都不掌握定价权</strong>，行业层面的价格上行（F/G 节的行业叙事）<strong>不会自动传导到它的毛利率上</strong>（置信度：中）。</li>
+</ol>
+<p>→ <strong>可观察的验证现象</strong>：如果推论 A 成立，三季报（W7）单季毛利率<strong>不会</strong>明显回到 2025 年全年 13.19% 之上；如果三季报单季毛利率显著超过 13.19% 且净利润转正，<strong>推论 A 被证伪</strong>。</p>
+<ol>
+<li><strong>事实 4</strong>（联网，多源，置信度：中）：控制权 2026-04-10 完成首期过户，新实际控制人为拥有另一家光学膜材料企业的资本运作经历者；剩余约 11% 股份转让窗口 2026-11-23 开启。</li>
+<li><strong>推论 B</strong>：在基本面缺乏改善证据的前提下，这只票的价格弹性主要来自<strong>事件预期</strong>而非盈利（置信度：中）。</li>
+</ol>
+<p>→ <strong>可观察的验证现象</strong>：如果推论 B 成立，5–6 月 7 次涨停的触发理由应该以事件和概念为主而非业绩——<strong>已被 H4 观察到</strong>（同花顺 2026-06-16 涨停解读的四条理由里三条是概念标签，一条是实控人变更）；反向验证是，如果未来出现业绩驱动的上涨（三季报超预期后放量上行），推论 B 被削弱。</p>
+<ol>
+<li><strong>合并推论</strong>：<strong>基本面向下、事件预期向上，两股力量方向相反</strong>，因此 13 周内价格更可能表现为区间震荡，而非单边（置信度：中）。</li>
+</ol>
+<p><strong>这条链最弱的一环是第 1 环（事实 1）</strong>。收入构成比例来自 2025 年年度报告的<strong>媒体转述</strong>，不是库内数据，也不是 2026 年半年报的最新口径。如果 2026 年上半年业务结构已发生显著变化（比如电极箔占比大幅回升），J 节对「哪块业务拖累毛利率」的归因就会错，进而影响 K 节三情景的触发条件设计。<strong>这是整条链的命门</strong>（置信度：本环为低）。</p>
+<p><strong>第二弱的一环是事实 4 的后半段</strong>：剩余 11% 股份的转让窗口来自 2025-11-28 签署的协议约定，<strong>协议约定不等于执行</strong>，公司自己在 2026-05-31 公告中已提示不确定性。</p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（20%）</strong>｜触发：三季报（W7，法定截止 2026-10-31）单季毛利率回升到 2025 年全年水平 13.19% 以上<strong>且</strong>单季净利润转正，同时 2026-11-23 起的剩余约 11% 股份转让窗口出现推进公告｜路径：估值定价基准从纯净资产口径切换回盈利口径，基本面与事件双线共振，成交额较近期明显放大，股价向 5–6 月涨停密集区上沿修复</li>
+<li><strong>中性（50%）</strong>｜触发：三季报仍为亏损但亏损较半年报收窄、毛利率在 2026 年上半年 10.46% 与 2025 年全年 13.19% 之间，且股份转让窗口无明确进展公告｜路径：在 8-07 筹码分位成本带内宽幅震荡，跟随汽车板块整体波动，成交维持在近期水平，无独立行情</li>
+<li><strong>悲观（30%）</strong>｜触发：三季报亏损较半年报扩大，或出现资产减值，或剩余股份转让出现延期／终止公告，或会计师事务所变更后出现审计意见相关的负面披露｜路径：事件预期这条腿消失后只剩亏损的报表，跌破 8-07 筹码成本带下沿，净资产定价基准继续下移</li>
+</ul>
+<p>三档合计 100%。</p>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong></p>
+<ol>
+<li><strong>如果</strong>三季报（法定披露截止 2026-10-31）单季毛利率回升到 2025 年全年水平 13.19% 以上、且单季净利润转正，<strong>那么</strong>可小仓位试仓——这是 J 节推论 A 被证伪的唯一硬证据。</li>
+<li><strong>如果</strong>三季报仍为亏损、且股价站上 8-07 筹码 85% 分位成本但 20 日资金流仍为净流出，<strong>那么</strong>观望——这种组合是纯事件预期推动，缺乏业绩确认。</li>
+<li><strong>如果</strong>股价跌破 8-07 筹码 50% 分位成本，<strong>或</strong>三季报亏损较 2026 年半年报的 -0.21 亿元进一步扩大，<strong>那么</strong>回避。</li>
+<li><strong>如果</strong>已在持仓，且 2026-11-23 起的股份转让窗口出现延期或终止公告，<strong>那么</strong>减仓——K 节悲观情景的主触发条件之一已兑现。</li>
+</ol>
+<p><strong>风控要点：这笔判断在什么情况下应当被推翻</strong></p>
+<ul>
+<li><strong>被推翻（转向更积极）</strong>：三季报证明行业涨价确实传导到了公司毛利率（推论 A 被证伪），或公司正式公告实质性资产重组安排（而非市场推测）。</li>
+<li><strong>被推翻（转向更消极）</strong>：出现商誉或资产减值计提、会计师事务所变更牵出审计分歧、剩余股份转让终止——任一发生，本报告的「震荡」判断即失效，应按悲观情景重估。</li>
+<li><strong>本报告的有效期</strong>：到三季报披露为止。W7 一过必须重跑。</li>
+</ul>
+<p><strong>仓位思路</strong>：在盈利未确认之前，这只票属于事件驱动型标的，<strong>只适合轻仓或不参与</strong>；即便触发第 1 条的试仓条件，也应维持在轻仓量级，因为 J 节最弱一环（收入构成归因）仍未被库内数据证实。<strong>不给具体金额、不给股数、不给目标价位</strong>。</p>
+<h2>M. 逻辑自查</h2>
+<p><strong>这份判断最依赖的假设是哪一条？错了会怎样？</strong></p>
+<p>最依赖的是：<strong>「行业涨价不会传导到这家公司的毛利率」</strong>（J 节推论 A）。它的全部证据是 2026 年上半年的实际结果（营收同比 -0.69%、毛利率 10.46%）加上公司 2025 年年报的自述。如果这只是一个季度滞后的问题——行业涨价从 2026 年年中开始、要到三季度或四季度才体现在报表上——那么推论 A 就是把「时滞」误判成了「无传导」，K 节的乐观情景概率会被我严重低估，L 节第 1 条的试仓门槛也就设得过高了。</p>
+<p><strong>有没有为了让逻辑好看而忽略的反面证据？</strong></p>
+<p>有三条，逐条摆出来：</p>
+<ol>
+<li><strong>二季度确实在改善。</strong> 据推算二季度单季亏损约 0.05 亿元、小于一季度的 0.16 亿元，半年报毛利率 10.46% 也高于一季报 7.69%。我在 A 节把「连续亏损」列为核心风险，但<strong>这是四期数据里唯一在改善的方向</strong>，我没有把它放到同等显眼的位置。</li>
+<li><strong>股东户数在减少。</strong> 2026-08-31 的 23234 户较三周前减少 2.2%，筹码在小幅集中——这与「情绪走完、资金离场」的叙述不完全一致。</li>
+<li><strong>板块热度是真的。</strong> 库内 9 个活动中热点里 2 个已到「资金确认」，其中「汽车」板块的依据是大单连续3日净流入 +23.2 亿。我把它归到「板块有热度不等于这只票有传导」，这个折扣打得对不对，本报告没有数据能证明。</li>
+</ol>
+<p><strong>信息缺口清单</strong></p>
+<ol>
+<li><strong>库内无券商研报数据</strong>（库内研报返回空，近 90 天无覆盖）。影响：J 节完全没有卖方视角作对照，盈利预测一片空白；联网也未搜到针对这只票的券商研报。<strong>这本身是一条信息</strong>——总市值 30.62 亿元的公司缺乏机构覆盖，意味着定价更容易被题材和事件主导。补法：等待覆盖出现，或以同业（东阳光、新疆众和、海星股份）的研报做行业景气的间接参照。</li>
+<li><strong>库内财务数据无分业务拆分、无现金流、无商誉与减值</strong>。影响：C/E/J 三节的业务归因均依赖 2025 年年报的媒体转述，是 J 节最弱一环的直接来源。补法：查阅公司 2026 年半年度报告全文（巨潮资讯网，2026-08-26 披露）。本次尝试抓取该报告 PDF 未能解析出正文，属技术性缺口。</li>
+<li><strong>2026 年第一次临时股东会（2026-09-11 决议）的议案内容未知</strong>。影响：无法判断是否与董事会改组、资产安排相关——而这恰好是 H3 事件线的关键观察点。补法：查阅该决议公告原文。</li>
+<li><strong>筹码数据时点为 2026-08-07，距今约五周</strong>。影响：L 节的价位锚（15%/50%/85% 分位成本、加权均本）是五周前的分布，期间若有明显换手，锚的位置会漂移。补法：本项目筹码数据仅覆盖关注票，该票有覆盖但更新频率有限，重跑本调研时以最新时点为准。</li>
+<li><strong>库内事件日历未覆盖公司自身事件</strong>（无财报预约日、无解禁日程）。影响：I 节 W3/W8–W13 的「本周无已知事件」可能是<strong>数据没有，而不是真的没有</strong>，这两者的区别对复盘很重要。补法：查阅深交所定期报告预约披露时间表与限售股解禁安排。</li>
+<li><strong>库内 A/H 对照返回空属正常</strong>（非两地上市公司），不构成缺口。</li>
+</ol>
+<p><strong>一句自查声明</strong>：本报告全文未给出目标价、未给出投资评级、未出现买卖指令性表述，所有倾向均为条件式；未包含任何持仓、自选或账户信息。</p>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-14），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>上半年由盈转亏且毛利率降至10.46%</li>
+      <li>营收同比转负增长停止</li>
+      <li>5-6月涨停行情已走完无后续</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>商誉</dt><dd>收购时溢价支付的部分记在账上的资产。被收购方业绩不达预期时要计提减值、直接冲减利润。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>限售解禁</dt><dd>首发或定增取得的股份锁定期届满、可以上市流通。解禁本身不等于减持，但增加了潜在供给。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2025-11-29、腾讯新闻 2025-12-02、经济观察网 2026-04-30，三源一致 <em>2025-11-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-research">研究</span> 观研报告网、新浪财经 2026-05-24，两个独立来源 <em>2026-05-24</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 置信度：低——均为行业研究/媒体口径，且这家公司的报表尚未体现 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2025 年年度报告，经媒体摘录，上海证券报 2026-04-30 刊登公司披露文件 <em>2026-04-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-research">研究</span> 铝工业展行业分析、观研报告网 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2025 年年度报告媒体摘录，证券之星 2026-04-29 <em>2026-04-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2024 年年度报告口径为 62.02% / 37.95% / 0.03%，两年结构基本一致 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2024 年年度报告媒体摘录 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 铝工业展行业分析 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内热点记录 disc:20260909-02 的原文，配套新闻 2026-09-04「工信部：加快动力电池标准制定」 <em>2026-09-04</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内热点记录 disc:20260911-03，新闻时点 2026-09-11 <em>2026-09-11</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内热点记录 disc:20260914-04 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2025 年年度报告媒体摘录 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 同花顺涨停雷达 2026-06-16 <em>2026-06-16</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 华经产业研究院行业分析 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2025-11-29、腾讯新闻 2025-12-02，两源一致 <em>2025-11-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 经济观察网 2026-04-30、中国基金报、中财网 2026-04-13，三源一致，置信度：中 <em>2026-04-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2025-11-29、腾讯新闻 2025-12-02，两源一致，置信度：中 <em>2025-11-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 腾讯新闻 2025-12-02、新浪财经 2025-11-29，两源一致，置信度：中 <em>2025-12-02</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2025-12-01 明确表述为「或运作」 <em>2025-12-01</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 证券时报 stcn 报道标题为「接盘者引发资产整合预期」 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 网易财经转载公告全文 2026-05-31 <em>2026-05-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内热点新闻 2026-09-14 <em>2026-09-14</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2026-08-26 披露，巨潮资讯网 <em>2026-08-26</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 同花顺 2026-06-16 涨停解读的四条理由里三条是概念标签，一条是实控人变更 <em>2026-06-16</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 巨潮资讯网，2026-08-26 披露 <em>2026-08-26</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-14 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
