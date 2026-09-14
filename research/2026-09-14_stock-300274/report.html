@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>阳光电源（300274.SZ） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>阳光电源（300274.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-14（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 光伏设备</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 虚拟电厂 · 宁德时代概念 · 充电桩 · 氢能源 · 风电 · 数字经济 · 光伏概念 · 数据中心(AIDC)</span>
+      <span><b>来源</b> 34 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    阳光电源（300274）是一家 A 股上市公司。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——上半年营收与净利润同比下滑约三成，但二季度毛利率和净利率环比回升、公司 9 月宣布产品提价，同时美国两道政策限制仍未落地成执行细则。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：上半年营收与净利润同比下滑约三成，但二季度毛利率和净利率环比回升、公司 9 月宣布产品提价，同时美国两道政策限制仍未落地成执行细则。支撑在于二季度净利率环比升至19.33%；9月20日起产品提价5%-15%；PE16.04远低于行业中位41.94。主要风险是美国行政令执行规则未出；上半年营收同比下滑28.99%；近20日主力净流出29.52亿。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>二季度净利率环比升至19.33%</li>
+      <li>9月20日起产品提价5%-15%</li>
+      <li>PE16.04远低于行业中位41.94</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据时点：2026-09-14 · 行情 15:35（库内行情）· 估值交易日 20260914 · 财务最新期 2026 年半年报（公告日 2026-08-29） 本报告不含任何目标价、评级与买卖指令，所有倾向均为条件式表述。</div>
+<h2>A. 结论先行</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：上半年营收与净利润同比下滑约三成，但二季度毛利率和净利率环比回升、公司 9 月宣布产品提价，同时美国两道政策限制仍未落地成执行细则。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>二季度盈利质量环比改善</strong>：上半年毛利率 35.92%，高于一季度的 33.26%；据库内累计数推算，二季度单季净利润 29.68 亿元、较一季度的 22.91 亿元环比增长 29.55%，单季净利率由 14.43% 升至 19.33%（置信度：高，数据来自库内财务）。</li>
+<li><strong>公司主动提价</strong>：9 月 11 日宣布光伏逆变器、储能变流器和储能系统上调价格 5%–15%，自 9 月 20 日起执行（置信度：高，库内新闻 2026-09-11 + 金融界 2026-09-12 + 中关村储能产业技术联盟，多源一致）。</li>
+<li><strong>估值处于行业低位且公司在回购</strong>：PE(TTM) 16.04，在「电气设备」行业 347 只票中第 16 低，行业 PE 中位数 41.94；9 月 2 日公告累计回购 3.25 亿元（置信度：高，库内估值 + 库内公告）。</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>美国两道限制叠加且细则未出</strong>：7 月 28 日美国 FCC 将境外电源逆变器列入受管制清单；8 月 26 日美国总统签署行政令，授权能源部限制外国电力设备，要求 120 天内制定执行规则（置信度：高，多源交叉验证；影响幅度置信度：低，规则未出）。</li>
+<li><strong>国内需求收缩尚未见底</strong>：上半年营收同比下滑 28.99%，一季度已下滑 18.26%，降幅逐季扩大（置信度：高，库内财务）。</li>
+<li><strong>资金持续净流出</strong>：近 20 个交易日（20260818–20260914）主力资金净流入 -29.52 亿元，其中特大单净流入 -27.87 亿元，仅 8 天为净流入（置信度：高，库内资金筹码；此为盘面现象，不作基本面证据）。</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ol>
+<li><strong>三季报单季营收与净利率</strong>（披露窗口约 10 月下旬，参照库内 2025 年三季报公告日 2025-10-29）——验证「二季度环比改善」是不是趋势而非单季波动。</li>
+<li><strong>10 月中下旬起的提价落地情况</strong>（9 月 20 日生效）——看四季度毛利率是否继续环比上行。</li>
+</ol>
+<p><strong>这份判断最可能错在哪</strong>：我把「二季度环比改善」当作拐点起点，但据库内累计数推算二季度单季营收 153.51 亿元、较一季度 155.61 亿元环比下降 1.35%，收入并没有回升；若利润的环比改善只来自汇率或费用的一次性因素，而非价格与结构，那么三季报会把这条逻辑证伪。</p>
+<h2>B. 公司快照</h2>
+<p><strong>公司</strong>：阳光电源股份有限公司（300274，创业板），上市日 2011-11-02，至今约 14 年 10 个月，上市状态正常（上市状态 'L'）。员工 19,006 人，注册资本 207,321.1424 万元。</p>
+<p><strong>干什么的</strong>：主营光伏逆变器、风能变流器及其它电力电源的研发、生产、销售和服务，为可再生能源发电行业用户提供系统解决方案。经营范围还包含储能电源、制氢设备、新能源汽车充换电设备及系统、电能质量控制装置（库内公司档案）。</p>
+<p><strong>属哪个行业</strong>：电气设备。</p>
+<p><strong>当前行情</strong>（库内行情，数据时点 2026-09-14 15:35）</p>
+<ul>
+<li>股价 84.98 元 · 当日 +0.69% · 成交额 35.70 亿元 · 日内最高 +3.38% · 日内最低 -0.06%</li>
+</ul>
+<p><strong>当前估值</strong>（库内估值，交易日 20260914）</p>
+<ul>
+<li>总市值 1,761.82 亿元 · PE(TTM) 16.04 · PB 3.51 · 股息率 2.37% · 换手率 2.63%</li>
+<li>行业「电气设备」共 347 只，行业 PE 中位数 41.94，本股 PE 在行业中排第 16 低（即比行业绝大多数票便宜）</li>
+</ul>
+<p><strong>价格位置</strong>（据库内日 K 推算）</p>
+<ul>
+<li>年内最高收盘 190.09 元（2026-05-28）· 年内最低收盘 84.40 元、最低价 83.12 元（均为 2026-09-11）</li>
+<li>2025 年末收盘 171.04 元，今年以来累计下跌 50.32%</li>
+<li>MA5 86.03 元 · MA10 87.02 元 · MA20 97.27 元 · MA60 112.44 元 —— 当前价位于 MA20 与 MA60 下方，9 月 11 日刚创年内新低后小幅反弹</li>
+</ul>
+<p><strong>A/H 溢价</strong>：库内 A/H 对照返回 None，非两地上市，本节不涉及。</p>
+<h2>C. 财务健康</h2>
+<p>以下全部为库内累计口径（库内财务单位亿元）：</p>
+<ul>
+<li><strong>2026 年上半年</strong>（截至 20260630，公告 20260829）：营收 309.12 亿元、同比下滑 28.99%；归母净利润 52.59 亿元、同比下滑 32.01%；ROE 10.87%；毛利率 35.92%；净利率 16.69%；EPS 2.56 元；资产负债率 58.15%</li>
+<li><strong>2026 年一季度</strong>：营收 155.61 亿元、同比下滑 18.26%；归母净利润 22.91 亿元、同比下滑 40.12%；ROE 4.81%；毛利率 33.26%；净利率 14.43%；EPS 1.12 元；资产负债率 57.51%</li>
+<li><strong>2025 年全年</strong>：营收 891.84 亿元、同比增长 14.55%；归母净利润 134.61 亿元、同比增长 21.97%；ROE 32.24%；毛利率 31.83%；净利率 15.17%；EPS 6.55 元；资产负债率 58.06%</li>
+<li><strong>2025 年前三季度</strong>：营收 664.02 亿元、同比增长 32.95%；归母净利润 118.81 亿元、同比增长 56.34%；ROE 29.02%；毛利率 34.88%；净利率 18.00%；EPS 5.73 元；资产负债率 60.06%</li>
+</ul>
+<p><strong>趋势怎么看（三条，各标置信度）</strong></p>
+<ol>
+<li><strong>收入端由增转降，且降幅在扩大</strong>：2025 年前三季度营收同比增长 32.95%、全年增长 14.55%，到 2026 年一季度转为同比下滑 18.26%、上半年扩大到下滑 28.99%（置信度：高）。据库内数据推算，二季度单季营收 153.51 亿元，较一季度的 155.61 亿元环比下降 1.35%，即二季度收入尚未回升（置信度：高）。</li>
+</ol>
+<ol>
+<li><strong>利润端二季度出现环比改善，是本期唯一的正向拐点</strong>：据库内累计数推算，二季度单季归母净利润 29.68 亿元、较一季度的 22.91 亿元环比增长 29.55%；单季净利率由一季度的 14.43% 提升至 19.33%（提升 4.90 个百分点）。同时上半年毛利率 35.92%，比一季度的 33.26% 提升 2.66 个百分点（置信度：高，数据为库内累计数相减所得）。</li>
+</ol>
+<ol>
+<li><strong>毛利率同比上升、净利率同比下降，说明拖累在毛利以下的费用端</strong>：库内财务表 2025 年同期数为营收 435.33 亿元、净利润 77.35 亿元、毛利率 34.36%、净利率 17.99%、ROE 19.47%、资产负债率 61.33%。据此推算，2026 年上半年毛利率同比上升 1.56 个百分点，净利率却同比下降 1.30 个百分点（置信度：高）。</li>
+</ol>
+<div class="callout">补充线索（非库内数字，仅供解释方向）：多家媒体转述半年报称，期间财务费用同比大幅上升、汇兑损失同比增加（来源：北京日报客户端 2026-08-31 前后、财闻网、同花顺财经 2026-08-31，多源一致）。本报告不把这些数字当作事实引用，费用结构以公司半年报原文为准（置信度：低）。</div>
+<p><strong>资产负债率</strong>：从 2025 年前三季度的 60.06% 降到 2026 年上半年的 58.15%，杠杆水平温和下行（置信度：高）。</p>
+<p><strong>分红</strong>：8 月 28 日公告 2026 年半年度利润分配预案，拟每 10 股派 6.4 元（来源：库内新闻 2026-08-28 财联社）。当前股息率 2.37%（库内估值）。</p>
+<p><strong>仅估值口径的判断</strong>：PE(TTM) 16.04 显著低于行业 PE 中位数 41.94，在同行业 347 只票里排第 16 低。<strong>这只说明它按当前 TTM 利润算不贵，不等于基本面判断</strong>——TTM 利润里还包含 2025 年下半年的高基数，若下半年利润继续同比下滑，PE 会被动抬高（置信度：高）。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比返回同行业三家（财务口径均为 20260630 半年报，市值与估值为当前值）：</p>
+<ul>
+<li><strong>阳光电源（300274）</strong>｜市值 1,761.82 亿元 · PE 16.04 · PB 3.51 · 营收 309.12 亿元 · 净利润 52.59 亿元 · ROE 10.87%</li>
+<li><strong>宁德时代（300750）</strong>｜市值 15,597.31 亿元 · PE 18.35 · PB 4.11 · 营收 2,769.17 亿元 · 净利润 432.84 亿元 · ROE 12.08%</li>
+<li><strong>国电南瑞（600406）</strong>｜市值 1,783.85 亿元 · PE 21.24 · PB 3.43 · 营收 277.67 亿元 · 净利润 30.73 亿元 · ROE 5.87%</li>
+<li><strong>德业股份（605117）</strong>｜市值 1,092.48 亿元 · PE 25.02 · PB 9.51 · 营收 106.41 亿元 · 净利润 27.17 亿元 · ROE 24.94%</li>
+</ul>
+<p><strong>这家在同行里处于什么位置（置信度：中，四家样本偏小且业务并不完全可比）</strong></p>
+<ul>
+<li><strong>估值最低</strong>：四家里 PE 最低（16.04），PB 3.51 排第三，仅略高于国电南瑞的 3.43。</li>
+<li><strong>盈利能力居中</strong>：上半年 ROE 10.87%，低于宁德时代的 12.08%，明显低于德业股份的 24.94%，高于国电南瑞的 5.87%。</li>
+<li><strong>规模与利润率</strong>：营收 309.12 亿元在四家里排第二（宁德时代 2,769.17 亿元远大于其余三家），净利润 52.59 亿元排第二。</li>
+<li><strong>一个值得留意的对照</strong>：德业股份同为逆变器与储能相关企业，ROE 是阳光电源的两倍多，但 PB 9.51 是阳光电源 3.51 的近三倍——市场给两家的成长预期差别很大。</li>
+</ul>
+<p><strong>旁证（非库内）</strong>：库内新闻 2026-08-18 有一条特变电工的董秘问答提到「2026 年 1-7 月公司逆变器中标量排第四，仅比阳光电源少 30%」。这是提问者的口径转述，不是公司确认的市场份额数据（置信度：低）。</p>
+<p><strong>同行业相对优劣一句话</strong>：阳光电源目前是「同行里最便宜、但盈利能力不是最强、且正被政策不确定性压着」的位置（置信度：中）。</p>
+<h2>E. 护城河与商业模式</h2>
+<p>按证据强度分级：</p>
+<p><strong>阶段性优势（置信度：中）</strong></p>
+<ol>
+<li><strong>规模与全球渠道</strong>：主营覆盖光伏逆变器、风能变流器、储能系统、新能源汽车驱动系统，并提供电站整体解决方案（库内公司档案）。多家券商研报标题把它称为「光储全球标杆」「储能出货全球领先」（东吴证券 20260718、20260831，库内研报）——这是卖方措辞，本报告只作线索。</li>
+<li><strong>产品线横跨光伏、储能、风电、氢能、充换电</strong>，单一环节需求下滑时有腾挪空间（经营范围佐证，置信度：高，但「腾挪是否有效」置信度：低）。</li>
+<li><strong>技术积累</strong>：公司简介称先后承担 20 余项国家重大科技计划项目、主持起草多项国家标准（库内公司档案，公司自述）。</li>
+</ol>
+<p><strong>可能形成结构性护城河、但尚未被数据验证（置信度：低）</strong></p>
+<ul>
+<li><strong>固态变压器（SST）与数据中心供电</strong>：2026 年 7 月 31 日公告为国内某新型算力中心交付 800V 直流 SST、预计九月底运营；9 月 9 日称已向客户交付固态变压器、预计四季度投运（库内新闻）。联网信息显示公司 7 月 9 日发布自研 EnerNeo 固态变压器，输出 800Vdc、额定功率 3MW（来源：知乎产业号、ZAKER 转载 2026 年 7 月；单一产品参数来源，置信度：低）。<strong>目前只有交付记录，库内没有这块业务的营收拆分，不能认定为护城河。</strong></li>
+</ul>
+<p><strong>明显的脆弱点（置信度：高）</strong></p>
+<ul>
+<li><strong>海外收入占比高 → 汇率与单一国家政策的敞口大</strong>。上半年毛利率同比上升而净利率同比下降（见 C 节），与「海外收入占比高、汇兑损失增加」的媒体解释方向一致；同时美国 FCC 与总统行政令两道限制直接落在它的出口产品类别上（见 F 节）。</li>
+</ul>
+<p><strong>结论</strong>：从库内信息看，公司有明确的规模与产品线优势，但<strong>看不出不可复制的结构性护城河</strong>；SST 与数据中心供电有机会成为新的壁垒，现阶段证据只到「有产品、有交付」（置信度：中）。</p>
+<h2>F. 政策与监管</h2>
+<p>库内无政策条目，本节全部为联网信息，每条带来源与日期。</p>
+<p><strong>1. 美国 FCC 将境外电源逆变器列入受管制清单（利空，置信度：高）</strong></p>
+<ul>
+<li>时间与内容：当地时间 2026 年 7 月 28 日，FCC 更新受管制清单（Covered List），将外国生产的先进机器人设备及电源逆变器纳入，公布后立即生效；官方理由是国家安全与 AI 供应链安全。</li>
+<li>适用范围：采取「新老划断」，仅针对尚未上市的新型号设备，已获批准的存量机型不受影响，但 FCC 保留后续撤销已获批机型准入资质的权限。</li>
+<li>传导链条：限制新机型认证 → 美国市场新产品无法导入 → 中长期影响美国区逆变器与储能系统收入。</li>
+<li>公司回应：2026-08-08 公司称「FCC 政策主要限制新产品认证，不影响已获认证产品的销售」（库内新闻，财联社/东方财富）。</li>
+<li>来源：<a href="https://news.qq.com/rain/a/20260729A0BAVY00" target="_blank" rel="noopener">腾讯新闻 2026-07-29</a>、<a href="https://m.thepaper.cn/newsDetail_forward_33683554" target="_blank" rel="noopener">澎湃新闻 2026-07-29</a>、<a href="https://www.yicai.com/news/103297099.html" target="_blank" rel="noopener">第一财经 2026-07-29</a>（三源一致）</li>
+</ul>
+<p><strong>2. 美国总统行政令：外国电力设备国家紧急状态（利空，影响幅度待定，置信度：高／幅度置信度：低）</strong></p>
+<ul>
+<li>时间与内容：2026 年 8 月 26 日签署行政令，宣布外国供应的关键电力设备构成国家紧急威胁，授权能源部禁止或限制可能被用于破坏、远程操控或扰乱美国大容量电力系统的外国设备；覆盖范围从大型变压器、高压断路器到光伏逆变器、储能系统、继电保护、工业控制系统，以及设备的软件、固件、远程维护和升级能力。</li>
+<li>关键时点：能源部须在 <strong>120 天内</strong>针对大型电力系统制定具体执行规则、识别高风险设备及供应商（据签署日推算，截止约在 2026-12-24）。</li>
+<li>公司回应：2026-08-27 公司回应股价大跌称「特朗普行政禁令的具体影响公司还在研究中」（库内新闻，东方财富）。</li>
+<li>来源：<a href="https://www.voachinese.com/a/president-trump-declares-a-national-emergency-over-foreign-equipment-in-the-us-electricity-grid-20260827/8191029.html" target="_blank" rel="noopener">美国之音中文网 2026-08-27</a>、<a href="https://www.guancha.cn/GongSi/2026_08_27_828854.shtml" target="_blank" rel="noopener">观察者网 2026-08-27</a>、<a href="https://www.epochtimes.com/gb/26/8/26/n14837356.htm" target="_blank" rel="noopener">大纪元 2026-08-26</a>（三源一致）</li>
+</ul>
+<p><strong>3. 国内「136 号文」重塑新能源项目收益模型（利空，已在数据中体现，置信度：中）</strong></p>
+<ul>
+<li>内容：136 号文实施后，新增新能源项目进入全面市场化竞争，项目收益测算逻辑发生根本变化；多省 2026 年新能源机制电价明显下调（例：江苏光伏电价下降 21.4% 至 320.28 元/MWh）。</li>
+<li>需求影响：2026 年一季度国内光伏新增装机约 41.39 GW、同比下滑超 30%，是 2019 年以来首次下降；中国光伏行业协会预计 2026 年国内装机将从 2025 年的 315.07 GW 降至 180–240 GW。</li>
+<li>传导链条：机制电价下调 → 项目收益率下降 → 国内装机需求收缩 → 逆变器国内出货减少 → 公司国内收入下滑（与 C 节营收同比下滑 28.99% 方向一致）。</li>
+<li>来源：<a href="https://www.21jingji.com/article/20260106/65ea596675b882ca1b062167e77afbc1.html" target="_blank" rel="noopener">21 经济网 2026-01-06</a>、<a href="https://www.stcn.com/article/detail/3572476.html" target="_blank" rel="noopener">证券时报网</a>、<a href="https://www.cls.cn/detail/2356992" target="_blank" rel="noopener">财联社</a>（三源一致）</li>
+</ul>
+<p><strong>4. 锂离子蓄电池自 2026 年 9 月 1 日起恢复征收 2% 消费税（利空成本端，置信度：中，单源为主）</strong></p>
+<ul>
+<li>传导：储能系统成本抬升 → 部分转嫁为产品提价（与公司 9 月提价方向一致）。</li>
+<li>来源：<a href="https://finance.jrj.com.cn/2026/09/12053758418764.shtml" target="_blank" rel="noopener">金融界 2026-09-12</a>（单源未充分交叉验证，置信度：低）</li>
+</ul>
+<p><strong>5. 工信部拟规范动力电池行业竞争秩序（中性偏多，置信度：中）</strong></p>
+<ul>
+<li>内容：2026 世界动力电池大会上工信部表示将进一步规范动力电池行业竞争秩序、加强产能动态预警、加快标准制定；储能电芯扩产受到监管摸底（来源：收录的库内新闻，2026-09-04 至 09-11 多条）。</li>
+<li>传导：若产能扩张降温，中长期有利于价格与毛利率修复；短期对出货量是约束（置信度：低，政策尚在表态阶段）。</li>
+</ul>
+<h2>G. 题材与产业链关联</h2>
+<h3>G-1 所在板块正在活动的热点（数据日 20260914）</h3>
+<p>系统记录了 8 个活动中的热点，按与本票的关联度分列（状态与依据照系统口径原样引用）：</p>
+<p><strong>直接关联</strong></p>
+<ul>
+<li><strong>固态电芯与储能满产</strong>｜状态：升温｜进入日期：20260908｜依据：这 5 天有 8 条新闻，平时一周约 1 条</li>
+</ul>
+<p>发生了什么：电池电芯行业动态密集——奇瑞称犀牛固态电芯能量密度达 400Wh/kg，德尔股份固态电池 PACK 中试线建成、电芯中试线在建，宁德时代线上商城电芯 0.395 元/Wh 起，小米推出龙甲电池，业内称储能电芯未来数年或迎产能出清，德赛电池储能电芯满产。</p>
+<ul>
+<li><strong>工信部要规范动力电池</strong>｜状态：升温｜进入日期：20260908｜依据：这 5 天有 9 条新闻，平时几乎没有</li>
+</ul>
+<p>发生了什么：2026 世界动力电池大会在宜宾举办，会上发布动力电池产业发展指数；工信部表示将进一步规范动力电池行业竞争秩序，加强产能动态预警，加快相关标准制定。</p>
+<ul>
+<li><strong>多品牌集中降价促销</strong>｜状态：升温｜进入日期：20260911｜依据：这 5 天有 7 条新闻，平时几乎没有</li>
+</ul>
+<p>发生了什么：近期特斯拉等多个汽车品牌集中降价促销，乘联分会崔东树表示这是各品牌集中促销、并非全面价格战的开端；明阳智能称风机招标价格企稳回升，行业告别非理性价格战。</p>
+<ul>
+<li><strong>8月车企销量分化</strong>｜状态：资金确认｜进入日期：20260907｜依据：涨停 28 家（前日 3，20 日均 11.4）</li>
+</ul>
+<p>发生了什么：多家车企公布 8 月销量——长城汽车 11.34 万辆同比下降 1.87%，北汽新能源 17,573 辆同比增长 29.88%，江铃汽车 32,266 辆同比增长 7.54%，福特在美国销量 170,681 辆同比下降 10.3%；乘联分会称 1-7 月世界汽车销量达 5,611 万台。</p>
+<p><strong>概念板块层面</strong></p>
+<ul>
+<li><strong>数字经济</strong>｜状态：资金确认｜进入日期：20260901｜依据：涨停 15 家（前日 7，20 日均 6.4）</li>
+</ul>
+<p><strong>间接关联（海外 AI 算力链，通过「数据中心(AIDC)」概念相连）</strong></p>
+<ul>
+<li><strong>博通AI芯片收入翻倍</strong>｜升温｜20260908｜依据：这 5 天有 6 条新闻，平时几乎没有</li>
+<li><strong>戴尔AI服务器订单积压</strong>｜升温｜20260907｜依据：这 5 天有 16 条新闻，平时几乎没有</li>
+<li><strong>Nscale融资与AI订单</strong>｜升温｜20260904｜依据：这 5 天有 10 条新闻，平时几乎没有</li>
+</ul>
+<p><strong>怎么读这组热点（置信度：中）</strong>：四个直接关联热点里，「固态电芯与储能满产」「工信部要规范动力电池」都指向同一件事——<strong>储能环节的产能扩张正在被监管约束、产业链开始涨价</strong>，这与公司 9 月 11 日宣布提价是同一条线索。三个间接热点都是海外 AI 算力需求，对应公司的 SST 与数据中心供电新业务。需要提醒的是，<strong>这些热点是行业层面的，不是公司层面的确认</strong>，公司能不能吃到需要看财报（置信度：高）。</p>
+<h3>G-2 概念标签逐个分级（库内概念标签，同花顺概念，共 15 个）</h3>
+<p><strong>真有业务（有主营描述或经营范围佐证）</strong></p>
+<ul>
+<li><strong>光伏概念</strong>：主营即光伏逆变器（佐证：主营业务描述）</li>
+<li><strong>储能</strong>：主营含储能系统，经营范围含储能电源（佐证：主营+经营范围）</li>
+<li><strong>风电</strong>：主营含风能变流器（佐证：主营业务描述）</li>
+<li><strong>新能源汽车</strong>：公司简介载明主要产品含新能源汽车驱动系统（佐证：公司简介）</li>
+<li><strong>充电桩</strong>：经营范围含新能源汽车充换电设施、充换电设备及系统（佐证：经营范围）</li>
+<li><strong>氢能源</strong>：经营范围含制氢系统、制氢设备；库内新闻 2026-07-30「阳光电源成立氢能科技公司」（佐证：经营范围+公告）</li>
+</ul>
+<p><strong>有产品与交付记录、但未见营收佐证</strong></p>
+<ul>
+<li><strong>数据中心(AIDC)</strong>：库内新闻显示 2026-07-31 交付 800V 直流 SST、2026-09-09 已交付固态变压器预计四季度投运；<strong>库内无分业务营收拆分，无法确认这块贡献了多少收入</strong>（置信度：高——「有交付」是事实，「有营收」是缺口）</li>
+</ul>
+<p><strong>仅概念标签，未见营收佐证</strong></p>
+<ul>
+<li><strong>虚拟电厂</strong>：经营范围未明确涵盖，库内无相关业务披露</li>
+<li><strong>数字经济</strong>：宽口径标签，与公司主营无直接对应</li>
+<li><strong>宁德时代概念</strong>：属供应链联想标签，非业务描述</li>
+</ul>
+<p><strong>属指数成分或交易属性，不代表业务</strong></p>
+<ul>
+<li>沪深300样本股 · 同花顺漂亮100 · 深股通 · 融资融券 · 回购增持再贷款概念（对应 2026-08-03 公告的回购方案）</li>
+</ul>
+<h3>G-3 产业链位置</h3>
+<ul>
+<li><strong>上游</strong>：IGBT / 功率半导体、PCB、电容电感等电子元器件，铜铝金银锡等金属，电芯（储能系统）。<strong>议价能力在上游</strong>——联网信息显示 2026 年以来金、银、铜、锡等有色金属涨幅 30%–200%，PCB、IGBT、存储芯片等涨幅更大，这是本轮公司提价的成本端原因（来源：<a href="https://finance.jrj.com.cn/2026/09/12053758418764.shtml" target="_blank" rel="noopener">金融界 2026-09-12</a>、<a href="https://www.cnesa.org/information/detail/?column_id=2&amp;id=8397" target="_blank" rel="noopener">中关村储能产业技术联盟</a>，两源一致，置信度：中）。</li>
+<li><strong>本环节</strong>：光伏逆变器 / 储能变流器 / 储能系统集成 —— 电力电子设备制造与系统集成。</li>
+<li><strong>下游</strong>：光伏电站开发商、发电集团、工商业与户用终端、海外电力公司，以及新兴的 AI 数据中心。<strong>议价能力正在向本环节回摆</strong>——公司 9 月 11 日宣布提价 5%–15% 且同期十余家同行跟进（库内新闻 2026-09-14），说明下游至少短期接受了涨价（置信度：中，提价 9-20 才生效，实际执行率未知）。</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<h3>H-1 近 60 天重要新闻（库内新闻，共 90 条，按重要性挑选）</h3>
+<ol>
+<li><strong>2026-09-11 · 公司宣布光伏逆变器、储能变流器和储能系统向上调价 5%-15%</strong>（财联社/东方财富）——<strong>对基本面有实质影响</strong>：直接作用于毛利率，若下游接受则四季度盈利质量改善（联网补充：调价函自 9 月 20 日起执行，来源：金融界 2026-09-12）。</li>
+<li><strong>2026-09-09 · 公司已向客户交付固态变压器（SST），预计四季度投运</strong>（东方财富/财联社）——<strong>中期有实质影响，短期无</strong>：新业务落地的第一步，尚无收入规模。</li>
+<li><strong>2026-09-02 · 公司已累计回购 3.25 亿元股份</strong>（财联社，同日有回购进展公告）——<strong>对基本面无直接影响，对供求有边际影响</strong>：回购方案为 5 亿–10 亿元（2026-08-03 公告），董事长曹仁贤于 2026-07-21 提议。</li>
+<li><strong>2026-08-31 · BNP Paribas 将公司评级下调至落后大盘</strong>（财联社）——<strong>是别人的观点、不是事实</strong>，详见 J 节卖方观点段。</li>
+<li><strong>2026-08-30 · 报道标题《阳光电源的&quot;阴天&quot;：上半年营收净利双降国内收入腰斩、中东收入暴跌九成》</strong>（东方财富）——<strong>指向基本面</strong>：与 C 节营收同比下滑 28.99% 一致；「国内」「中东」两个区域的具体降幅是媒体转述半年报，库内无分区域数据，本报告不引用其数字（置信度：低）。</li>
+<li><strong>2026-08-28 · 半年报披露：上半年归母净利润 52.59 亿元、同比下降 32.01%，拟每 10 股派 6.4 元</strong>（财联社/东方财富）——<strong>基本面主事件</strong>，数字以库内财务为准。</li>
+<li><strong>2026-08-27 · 公司回应股价大跌：特朗普行政禁令的具体影响公司还在研究中</strong>（东方财富，分类为「关税贸易摩擦」）——<strong>政策风险未定价完成的信号</strong>。</li>
+<li><strong>2026-08-08 · 公司回应：FCC 政策主要限制新产品认证，不影响已获认证产品的销售</strong>（财联社/东方财富）——<strong>缩小了风险边界，但没有消除它</strong>（FCC 保留撤销已获批机型资质的权限，见 F 节）。</li>
+<li><strong>2026-09-03 · 中证中小投资者服务中心公开征集表决权公告</strong>（巨潮公告）——配合 2026-08-28 的独立董事候选人提名，属公司治理事项，<strong>对基本面无直接影响</strong>。</li>
+<li><strong>2026-07-24 · 欣旺达子公司欣旺达动力拟引入本公司等战略投资者增资 8.05 亿元</strong>；<strong>2026-08-11 · 公司等在苏州成立股权投资合伙企业，出资额 10 亿元</strong>；<strong>2026-07-23 · 控股子公司拟出资 1.99 亿元参与设立新能源产业基金</strong>（财联社/东方财富）——<strong>对当期利润无影响</strong>，属产业链投资布局。</li>
+</ol>
+<p>⚠️ 提醒：上面第 5 条与 8 月 31 日多条新闻标题里出现的涨跌幅（如「3 天跌去 20%」「盘中跌超 8%」）都是<strong>发稿当时的盘中旧快照</strong>。<strong>当前状态以库内行情为准：2026-09-14 15:35 收 84.98 元、当日 +0.69%。</strong></p>
+<h3>H-2 涨停记录</h3>
+<p>库内涨停记录（近 180 日）返回空列表 —— <strong>近 180 日无涨停记录</strong>（置信度：高）。这说明这只票在过去半年里没有出现过情绪面的极端拉升，它的波动主要由基本面与政策消息驱动，而非短线资金炒作。</p>
+<h3>H-3 资金与筹码（库内资金筹码）</h3>
+<div class="callout"><strong>纪律说明</strong>：本段是盘面与筹码现象，不是基本面证据，只作情绪面佐证，不进 J 节逻辑链，也不单独用来下操作结论。</div>
+<ul>
+<li><strong>主力资金</strong>：近 20 个交易日（20260818–20260914）净流入 -29.52 亿元，其中特大单净流入 -27.87 亿元；20 天里 8 天为净流入、12 天为净流出。流出集中且以特大单为主（置信度：高）。</li>
+<li><strong>筹码分布</strong>（截至 <strong>20260807</strong>）：获利盘 74.13%；加权平均成本 113.61 元；15% 分位成本 104.00 元、50% 分位成本 108.80 元、85% 分位成本 123.20 元。</li>
+</ul>
+<p>⚠️ <strong>这个快照已经过时，不能当作现在的状态</strong>：8 月 7 日当日收盘 114.16 元，而当前价 84.98 元，已低于 8-07 筹码 15% 分位成本 104.00 元。库内无更新的筹码数据。 <strong>两面都要说</strong>：8-07 那天获利盘 74.13% 属高位，意味着当时上方套牢盘少但短线获利抛压大；而按当前价推断，8 月上旬建仓的筹码现在多数处于亏损状态，<strong>上方 8-07 筹码 50% 分位成本 108.80 元一带存在密集的被套筹码，未来反弹到那个位置会有解套抛压</strong>（置信度：中，因筹码快照滞后一个多月）。</p>
+<ul>
+<li><strong>股东户数</strong>：截至 20260630 为 279,457 户，较 20260331 的 312,188 户减少 10.5%，即筹码趋于集中。⚠️ 这是<strong>季度披露数据、天然滞后</strong>，截止日在 8-9 月这轮下跌之前，不代表当前状态（置信度：中）。库内新闻显示 8 月有多位投资者在董秘问答中追问最新股东户数，公司未在库内数据中更新。</li>
+</ul>
+<h2>I. 未来 13 周事件日历</h2>
+<p>（W1 起始 2026-09-14。库内事件日历返回 7 条，全部为概念匹配的行业会议，<strong>无公司专属事件</strong>；公司事件由联网与库内公告补。）</p>
+<ul>
+<li><strong>W1（2026-09-14 起）</strong>
+<ul>
+<li>2026-09-14｜上合组织数字经济论坛在乌鲁木齐举办（9 月 14-16 日，国家数据局主办）· 会议 · 重要性中 · 影响：数据要素与数字经济题材轻度催化，属边缘事件（库内事件日历，概念匹配）</li>
+<li>2026-09-14｜甲骨文公布季度财报 · 公司事件（海外）· 重要性高 · 影响：其云业务订单被看作全球 AI 数据中心投资的风向标，牵动 G 节三个间接热点与本公司的 AIDC 线索（库内事件日历）</li>
+<li>2026-09-15｜第四届 AI 算力产业大会（北京，9 月 15-16 日）· 会议 · 重要性中 · 影响：国产算力与数据中心供电相关消息窗口（库内事件日历）</li>
+<li><strong>2026-09-20｜公司光储产品调价正式生效（上调 5%-15%）· 公司事件 · 重要性高 · 影响：直接验证 C 节「毛利率能否继续环比上行」</strong>（来源：金融界 2026-09-12 + 中关村储能产业技术联盟）</li>
+<li>公司 2026 年第一次临时股东会：<strong>具体日期未从公开来源核实到</strong>。已核实的是投服中心公开征集表决权的征集期为 2026-09-04 至 2026-09-12 17:00（来源：公司 2026-09-03 公告，经新浪财经页面读取，单源未交叉验证 · 置信度：低）</li>
+</ul></li>
+<li><strong>W2（2026-09-21 起）</strong>
+<ul>
+<li>2026-09-22｜中国国际信息通信展（PT 展，北京，9 月 22-24 日）· 会议 · 重要性中 · 影响：算力与数据中心方向消息催化（库内事件日历）</li>
+<li>2026-09-22｜世界新能源汽车大会（海口，9 月 22-24 日）· 会议 · 重要性中 · 影响：对应「新能源汽车」概念与 G 节车企销量热点（库内事件日历）</li>
+<li>2026-09-23｜全球数字贸易博览会（杭州，9 月 23-27 日）· 会议 · 重要性中（库内事件日历）</li>
+<li>2026-09-23｜中国国际数字经济博览会（石家庄，9 月 23-25 日）· 会议 · 重要性中（库内事件日历）</li>
+</ul></li>
+<li><strong>W3（2026-09-28 起）</strong>
+<ul>
+<li>2026 年 9 月底｜公司为国内某新型算力中心交付的 800V 直流 SST「预计九月底运营」· 公司事件 · 重要性中 · 影响：AIDC 新业务的第一个运营节点，可留意公司是否发公告确认（来源：库内新闻 2026-07-31）</li>
+<li>国庆假期临近，A 股休市安排以交易所公告为准</li>
+</ul></li>
+<li><strong>W4（2026-10-05 起）</strong>：长假休市与节后首个交易周，本周无已知公司事件</li>
+<li><strong>W5（2026-10-12 起）</strong>：本周无已知事件 · 可留意交易所披露的三季报预约日排定</li>
+<li><strong>W6（2026-10-19 起）</strong>：本周无已知事件</li>
+<li><strong>W7（2026-10-26 起）</strong>：<strong>三季报披露窗口</strong> · 财报 · 重要性高 · 影响：验证 C 节「二季度环比改善是不是趋势」与 A 节最该盯的信号。参照库内财务记录的 2025 年三季报公告日 2025-10-29；<strong>2026 年具体预约披露日未从公开来源核实到</strong>（置信度：中）</li>
+<li><strong>W8（2026-11-02 起）</strong>：本周无已知事件 · 三季报后的券商研报更新期</li>
+<li><strong>W9（2026-11-09 起）</strong>：本周无已知事件</li>
+<li><strong>W10（2026-11-16 起）</strong>：本周无已知事件</li>
+<li><strong>W11（2026-11-23 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-11-30 起）</strong>：本周无已知事件 · 可留意年底前海外订单与 2027 年排产指引</li>
+<li><strong>W13（2026-12-07 起）</strong>：<strong>美国能源部行政令执行规则窗口临近</strong> · 政策 · 重要性高 · 影响：行政令 2026-08-26 签署、要求能源部 120 天内制定执行规则，据签署日推算截止约在 2026-12-24（落在 W13 之后约一周），规则内容是 F-2 风险能否量化的关键（来源：美国之音中文网 2026-08-27、观察者网 2026-08-27）</li>
+</ul>
+<p><strong>日历里的信息缺口</strong>：库内没有限售解禁数据表，本报告<strong>无法核对未来 13 周是否有解禁</strong>；回购方案的实施期限与价格上限也未能从公开来源读到（公告 PDF 无法解析）。这两项都可能影响供求，补法见 M 节。</p>
+<h2>J. 逻辑链</h2>
+<h3>J-1 主链（可证伪）</h3>
+<p><strong>第 1 环（置信度：高）</strong>：因为<strong>上半年营收同比下滑 28.99%、净利润同比下滑 32.01%</strong>（库内财务），且<strong>一季度降幅为 18.26%、上半年扩大到 28.99%</strong>，所以<strong>收入端的收缩在 2026 年上半年尚未结束</strong>。</p>
+<p><strong>第 2 环（置信度：高）</strong>：但同时，<strong>上半年毛利率 35.92%、高于一季度的 33.26%</strong>，且据库内累计数推算<strong>二季度单季净利率 19.33%、高于一季度的 14.43%</strong>，所以<strong>盈利质量已在二季度出现环比改善，改善的来源不是收入增长（二季度单季营收环比下降 1.35%），而是价格或成本结构</strong>。</p>
+<p><strong>第 3 环（置信度：中）</strong>：因为<strong>公司 9 月 11 日宣布提价 5%-15% 并自 9 月 20 日起执行</strong>，且<strong>同期十余家光储企业同步调价</strong>（库内新闻 2026-09-14；联网多源一致），所以<strong>行业已从降价竞争转向成本传导，第 2 环的改善有机会在四季度延续</strong>。</p>
+<p><strong>第 4 环（置信度：低 —— 这是整条链最弱的一环）</strong>：<strong>如果</strong>第 3 环成立，<strong>那么</strong>应该能观察到：<strong>三季报单季毛利率高于二季度推算值、或单季净利率继续高于 19.33%</strong>。</p>
+<div class="callout"><strong>为什么这一环最弱</strong>：提价 9 月 20 日才生效，三季度只覆盖最后 10 天左右，传导到报表主要在四季度；而三季报同时要承受国内装机下滑的影响（F-3）。<strong>所以三季报很可能给出「收入还在下滑、利润率小幅改善」的混合信号，既证伪不了也证实不了这条链</strong>。真正的验证要等 2026 年报（约 2027 年 4 月），超出本报告 13 周窗口。</div>
+<p><strong>第 5 环（置信度：低，方向不定）</strong>：<strong>因为</strong>美国 FCC 受管制清单（7-28 生效）与总统行政令（8-26 签署，能源部 120 天内出规则）都直接覆盖逆变器与储能系统，<strong>所以</strong>在执行规则公布前，美国区收入的风险无法量化。<strong>如果</strong>规则明确只约束新机型认证、不撤销存量认证，<strong>那么</strong>估值折价有收敛空间；<strong>如果</strong>规则涉及存量设备或软件固件远程能力，<strong>那么</strong>影响会超出目前公司口径。<strong>这一环没有可推演的先验，只能等事实。</strong></p>
+<h3>J-2 卖方观点（单列，非事实）</h3>
+<p>库内研报近 90 天收录 <strong>17 篇研报、来自 16 家机构</strong>。评级分布：看多最高档 7 篇 · 看多最高档（带 -A 后缀）1 篇 · 增持 2 篇 · 推荐 1 篇 · 中性 1 篇 · Neutral 2 篇 · 未标评级 2 篇。</p>
+<ul>
+<li>〔卖方预期〕来源：中信建投证券研报（库内）· 日期：2026-09-12 · 观点：预测 2026 年 EPS 6.29 元、对应 PE 14.07，归母净利润 130.32 亿元；2027 年 EPS 8.10 元、PE 10.92，净利润 167.93 亿元；2028 年 EPS 9.05 元、PE 9.77，净利润 187.56 亿元；评级为看多最高档 · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：长江证券研报（库内）· 日期：2026-09-11 · 观点：预测 2026 年 EPS 6.13 元、对应 PE 14.01，归母净利润 127.17 亿元；2027 年 EPS 9.03 元、PE 9.51，净利润 187.28 亿元；2028 年 EPS 11.61 元、PE 7.40，净利润 240.66 亿元；评级为看多最高档 · 置信度：低</li>
+<li>〔卖方预期〕来源：国信证券研报（库内）· 日期：2026-09-09 · 观点：预测 2026 年 EPS 7.56 元、对应 PE 11.70；2027 年 EPS 8.91 元、对应 PE 10.00（该条未附评级与净利润预测）· 置信度：低</li>
+<li>〔卖方预期〕来源：中邮证券研报（库内）· 日期：2026-09-05 · 观点：标题为「二季度逆变器毛利率改善，AIDC 业务有望打开成长空间」· 置信度：低</li>
+<li>〔卖方预期〕来源：开源证券研报（库内）· 日期：2026-09-01 · 观点：标题为「H1 业绩同比承压，Q2 盈利环比改善」· 置信度：低</li>
+<li>〔卖方预期〕来源：东吴证券研报（库内）· 日期：2026-08-31 · 观点：标题为「储能出货全球领先、AI 电源生态潜力可期」· 置信度：低</li>
+<li>〔卖方预期〕来源：国金证券研报（库内）· 日期：2026-08-30 · 观点：标题为「业绩符合预期，下半年储能盈利有望改善」· 置信度：低</li>
+<li>〔卖方预期〕来源：BNP Paribas（经财联社转述，库内新闻）· 日期：2026-08-31 · 观点：将评级下调至落后大盘 · 置信度：低（本报告不引用其目标价）</li>
+</ul>
+<p><strong>读卖方预测的一个提醒（置信度：高）</strong>：上述 2026 年全年 EPS 预测区间为 6.13–7.56 元，而公司 2025 年实际 EPS 为 6.55 元、2026 年上半年实际 EPS 为 2.56 元（库内财务）。<strong>换句话说，卖方普遍预期下半年 EPS 要达到 3.57–5.00 元，远高于上半年的 2.56 元。</strong> 这个「下半年显著好于上半年」的假设是否成立，正是三季报要回答的问题。</p>
+<h3>J-3 库内数据与联网信息的一致性</h3>
+<p>本次调研<strong>未发现库内数字与联网信息的冲突</strong>。唯一需要标注的是：一条联网搜索结果同时给出「上半年储能系统收入约 372.87 亿元、占营业收入 41.81%」，这与库内上半年总营收 309.12 亿元自相矛盾，<strong>该条数据本报告不采用</strong>（置信度：低，已弃）。</p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜<strong>触发</strong>：三季报（约 W7）单季净利率高于二季度推算的 19.33%，且单季营收同比降幅收窄到 20% 以内；同时美国能源部执行规则（W13 后）明确只约束新机型认证｜<strong>路径</strong>：盈利改善被确认为趋势，估值从行业低分位向行业中位靠拢，股价重回 MA20 之上并挑战 8-07 筹码密集区</li>
+<li><strong>中性（50%）</strong>｜<strong>触发</strong>：三季报单季营收同比仍下滑 20%–30%，单季净利率在 15%–19% 区间，提价效果尚未充分体现；美国执行规则未在 13 周内明朗｜<strong>路径</strong>：在年内低点与 MA20 之间宽幅震荡，跟随光储板块的整体波动，成交与换手维持当前水平</li>
+<li><strong>悲观（25%）</strong>｜<strong>触发</strong>：三季报单季营收同比降幅扩大到 30% 以上，或单季净利率回落到一季度的 14.43% 之下；或美国能源部规则涉及存量设备认证与远程运维能力｜<strong>路径</strong>：跌破年内低点后进入新的下行区间，卖方 2026 年盈利预测出现下修，估值折价扩大</li>
+</ul>
+<p>（三项概率合计 100%。）</p>
+<h2>L. 决策与风控</h2>
+<div class="callout">本节不给目标价、不给评级、不给金额与股数。</div>
+<h3>L-1 条件式操作倾向</h3>
+<ol>
+<li><strong>如果</strong>三季报（约 W7，参照 2025 年三季报公告日 2025-10-29）披露的单季净利率高于据库内数推算的二季度 19.33%，<strong>且</strong>股价已站上 MA20，<strong>那么</strong>可考虑小仓位试仓——两个条件必须同时成立，只满足其一说明基本面改善没有被市场确认。</li>
+<li><strong>如果</strong>三季报单季营收同比降幅扩大到 30% 以上（上半年为 28.99%），<strong>或</strong>单季净利率回落到一季度的 14.43% 之下，<strong>那么</strong>回避——这等于 J 节第 2 环与第 3 环同时被证伪。</li>
+<li><strong>如果</strong>美国能源部在行政令签署后 120 天内（推算截止约 2026-12-24）公布的执行规则涉及<strong>已获认证存量设备</strong>或<strong>设备软件、固件、远程维护能力</strong>，<strong>那么</strong>减仓；<strong>如果</strong>规则确认延续 FCC「新老划断」口径、只限制新机型认证，<strong>那么</strong>这一条政策折价的压制解除，可回到第 1 条的判据上。</li>
+<li><strong>如果</strong>股价跌破 9-11 年内最低价并连续 3 个交易日不能收回，<strong>那么</strong>观望，等待新的基本面证据（三季报或提价效果数据）出现后再判断——技术破位本身不构成基本面结论，但它说明市场还没有把 9 月提价当回事。</li>
+</ol>
+<h3>L-2 这笔判断在什么情况下应当被推翻</h3>
+<ul>
+<li><strong>推翻条件一</strong>：三季报显示二季度的利润率环比改善来自一次性因素（如汇兑收益、资产处置、政府补助），而非产品价格或成本结构 → J 节第 2 环失效，整条链塌掉。</li>
+<li><strong>推翻条件二</strong>：9 月 20 日生效的提价在四季度出现大面积折让或订单流失（可观察同行是否集体撤回调价函）→ J 节第 3 环失效。</li>
+<li><strong>推翻条件三</strong>：美国政策从「限制新认证」升级为「限制存量销售」→ J 节第 5 环转为明确利空，本报告的「震荡」方向判断应改为偏跌。</li>
+<li><strong>推翻条件四</strong>：国内 2026 全年光伏装机落到行业协会预测区间（180–240 GW）的下沿甚至更低 → 收入端收缩会延续到 2027 年，C 节的拐点判断推迟。</li>
+</ul>
+<h3>L-3 仓位思路（只讲相对概念）</h3>
+<ul>
+<li>在三季报（W7）披露之前，<strong>信息尚不足以支持中等以上仓位</strong>——最关键的验证信号还没出现，而政策的最大不确定性（W13 之后的执行规则）也还没落地。</li>
+<li>若非要参与，<strong>轻仓</strong>并把三季报当作第一个复核点更符合本报告的证据强度；<strong>不参与</strong>同样是这份证据下合理的选择（置信度：中）。</li>
+<li>需要明确的一点：H 节显示近 20 个交易日主力资金净流出 29.52 亿元，<strong>这不构成参与或不参与的理由</strong>（盘面现象不是基本面证据），列在这里只是提醒：现阶段承接盘偏弱，仓位节奏比方向判断更重要。</li>
+</ul>
+<h2>M. 逻辑自查</h2>
+<h3>M-1 这份判断最依赖的假设是哪一条？</h3>
+<p><strong>最依赖的假设</strong>：「二季度的毛利率与净利率环比改善，是价格与成本结构带来的，因此可以延续」。</p>
+<p><strong>它错了会怎样</strong>：如果这个改善其实来自一次性因素，那么 A 节的核心驱动第 1 条不成立、J 节第 2 环断裂、K 节的乐观与中性情景概率都要下调，方向判断要从「震荡」改为「偏跌」。<strong>这是整份报告的命门，而验证它的数据要到 W7 的三季报才出现。</strong></p>
+<h3>M-2 有没有为了让逻辑好看而忽略的反面证据？</h3>
+<p>有三条，在此明确列出：</p>
+<ol>
+<li><strong>二季度单季营收环比是下降的</strong>（据库内累计数推算 153.51 亿元 vs 一季度 155.61 亿元，环比 -1.35%）。我在 A 节把「二季度改善」当作核心驱动，但<strong>收入并没有回升</strong>——这条反面证据与驱动 1 是同时成立的，读者应该一起看。</li>
+<li><strong>卖方对 2026 全年的 EPS 预测（6.13–7.56 元）隐含下半年要做到 3.57–5.00 元</strong>，而上半年实际只有 2.56 元。这个隐含假设相当激进，我在 J-2 已点出，但没有独立证据支持它。</li>
+<li><strong>PE(TTM) 16.04 的「便宜」有一部分是分母造成的</strong>：TTM 利润里还含 2025 年下半年的高基数。若下半年利润继续同比下滑，这个 PE 会被动抬高。我在 C 节已注明，此处再强调一次——<strong>不要把低 PE 当成安全垫</strong>。</li>
+</ol>
+<h3>M-3 信息缺口清单</h3>
+<ol>
+<li><strong>库中无分业务、分区域收入拆分</strong>。库内财务只给汇总口径，无法核对储能、逆变器、电站开发各自的收入与毛利率，也无法核对美国、中东、国内各区域的收入占比。</li>
+</ol>
+<p><strong>影响</strong>：F 节的美国政策风险、G-2 的「数据中心(AIDC)」概念分级、J 节第 5 环都只能定性不能定量，这是本报告最大的缺口。 <strong>补法</strong>：以公司半年报原文的分部数据为准（2026-08-28 巨潮公告），或等三季报后重跑本调研。</p>
+<ol>
+<li><strong>筹码数据滞后一个多月</strong>。库内资金筹码的筹码分布最新日期为 20260807，而 8 月 27 日至 9 月 11 日股价从 112.62 元跌到年内最低 83.12 元，筹码结构已完全改变。</li>
+</ol>
+<p><strong>影响</strong>：H-3 关于套牢盘位置的判断只能按「8 月上旬建仓者现处亏损」推断，精度低。 <strong>补法</strong>：等库内筹码数据更新后重看。</p>
+<ol>
+<li><strong>库内无限售解禁数据表</strong>，I 节无法核对未来 13 周是否有解禁。</li>
+</ol>
+<p><strong>影响</strong>：若 13 周内有大额解禁，供求判断会失准。 <strong>补法</strong>：查公司公告或交易所解禁日历后补入 I 节。</p>
+<ol>
+<li><strong>回购方案的价格上限与实施期限未能读取</strong>（公告 PDF 无法解析）。</li>
+</ol>
+<p><strong>影响</strong>：L 节的价位判据无法用「回购上限」作锚，只能用均线与年内低点。 <strong>补法</strong>：读 2026-08-03《关于回购公司股份方案的公告暨回购股份报告书》原文。</p>
+<ol>
+<li><strong>2026 年第一次临时股东会的具体日期、2026 年三季报预约披露日</strong>均未从公开来源核实到（W1、W7 已标注）。</li>
+</ol>
+<p><strong>补法</strong>：查交易所定期报告预约披露时间表与公司股东会通知公告。</p>
+<ol>
+<li><strong>库内事件日历返回的 7 条全部是概念匹配的行业会议，无一条是公司专属事件</strong>。这说明事件日历对本票的覆盖以板块为主，公司层面的时点需人工补，I 节已按此处理。</li>
+</ol>
+<ol>
+<li><strong>库内 A/H 对照返回 None</strong>（非两地上市），本报告不涉及 A/H 溢价——这是数据范围而非缺失。</li>
+</ol>
+<ol>
+<li><strong>本次调研 12 个库内取数全部调用</strong>：库内公司档案 / 库内财务 / 库内估值 / 库内行情 / 库内概念标签 / 库内涨停记录 / 库内新闻 / 库内同业对比 / 库内事件日历 / 库内研报 / 库内 A/H 对照 / 库内资金筹码 / 无遗漏。其中库内涨停记录返回空（近 180 日无涨停）、库内 A/H 对照返回 None，两者的「空」本身已在正文写明。</li>
+</ol>
+<p><strong>联网信息来源汇总</strong></p>
+<ul>
+<li><a href="https://news.qq.com/rain/a/20260729A0BAVY00" target="_blank" rel="noopener">腾讯新闻：美国FCC禁令突袭逆变器板块（2026-07-29）</a></li>
+<li><a href="https://m.thepaper.cn/newsDetail_forward_33683554" target="_blank" rel="noopener">澎湃新闻：美国FCC禁令突袭逆变器板块（2026-07-29）</a></li>
+<li><a href="https://www.yicai.com/news/103297099.html" target="_blank" rel="noopener">第一财经：美国FCC禁令&quot;突袭&quot;逆变器板块（2026-07-29）</a></li>
+<li><a href="https://www.voachinese.com/a/president-trump-declares-a-national-emergency-over-foreign-equipment-in-the-us-electricity-grid-20260827/8191029.html" target="_blank" rel="noopener">美国之音中文网：特朗普宣布国家紧急状态，授权限制高风险外国电网设备（2026-08-27）</a></li>
+<li><a href="https://www.guancha.cn/GongSi/2026_08_27_828854.shtml" target="_blank" rel="noopener">观察者网：特朗普对中国储能、逆变器下重手（2026-08-27）</a></li>
+<li><a href="https://www.epochtimes.com/gb/26/8/26/n14837356.htm" target="_blank" rel="noopener">大纪元：川普签行政令限外国能源设备接入美国电网（2026-08-26）</a></li>
+<li><a href="https://finance.jrj.com.cn/2026/09/12053758418764.shtml" target="_blank" rel="noopener">金融界：阳光电源发布调价函，9月20日起光储产品涨价5%至15%（2026-09-12）</a></li>
+<li><a href="https://www.cnesa.org/information/detail/?column_id=2&amp;id=8397" target="_blank" rel="noopener">中关村储能产业技术联盟：储能变流器、储能系统全系涨价</a></li>
+<li><a href="https://www.21jingji.com/article/20260106/65ea596675b882ca1b062167e77afbc1.html" target="_blank" rel="noopener">21经济网：136号文破局之后，多省新能源电价机制出炉（2026-01-06）</a></li>
+<li><a href="https://www.stcn.com/article/detail/3572476.html" target="_blank" rel="noopener">证券时报网：136号文破局之后，多省新能源电价机制出炉</a></li>
+<li><a href="https://www.cls.cn/detail/2356992" target="_blank" rel="noopener">财联社：&quot;136号文&quot;如何重塑分布式光伏</a></li>
+<li><a href="https://news.10jqka.com.cn/20260831/c679437643.shtml" target="_blank" rel="noopener">同花顺财经：阳光电源营收净利双降，储能业务首次占据&quot;半壁江山&quot;（2026-08-31）</a></li>
+<li><a href="https://xinwen.bjd.com.cn/content/s6a95ad16e4b03fa51a83a1cf.html" target="_blank" rel="noopener">北京日报客户端：阳光电源&quot;换挡&quot;</a></li>
+<li><a href="https://www.cls.cn/detail/2421590" target="_blank" rel="noopener">财联社：阳光电源固态变压器（SST）首先应用场景是面向AIDC</a></li>
+<li><a href="https://pv.snec.org.cn/article/d72ceee6-8810-40bd-bd5d-a40aca5c534c" target="_blank" rel="noopener">SNEC：从欧美主导到多极增长，全球储能市场进入新一轮扩张周期</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-14），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>美国行政令执行规则未出</li>
+      <li>上半年营收同比下滑28.99%</li>
+      <li>近20日主力净流出29.52亿</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>限售解禁</dt><dd>首发或定增取得的股份锁定期届满、可以上市流通。解禁本身不等于减持，但增加了潜在供给。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260729A0BAVY00" target="_blank" rel="noopener">腾讯新闻 2026-07-29</a> <em>2026-07-29</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.thepaper.cn/newsDetail_forward_33683554" target="_blank" rel="noopener">澎湃新闻 2026-07-29</a> <em>2026-07-29</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.yicai.com/news/103297099.html" target="_blank" rel="noopener">第一财经 2026-07-29</a> <em>2026-07-29</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.voachinese.com/a/president-trump-declares-a-national-emergency-over-foreign-equipment-in-the-us-electricity-grid-20260827/8191029.html" target="_blank" rel="noopener">美国之音中文网 2026-08-27</a> <em>2026-08-27</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.guancha.cn/GongSi/2026_08_27_828854.shtml" target="_blank" rel="noopener">观察者网 2026-08-27</a> <em>2026-08-27</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.epochtimes.com/gb/26/8/26/n14837356.htm" target="_blank" rel="noopener">大纪元 2026-08-26</a> <em>2026-08-26</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.21jingji.com/article/20260106/65ea596675b882ca1b062167e77afbc1.html" target="_blank" rel="noopener">21 经济网 2026-01-06</a> <em>2026-01-06</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.stcn.com/article/detail/3572476.html" target="_blank" rel="noopener">证券时报网</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2356992" target="_blank" rel="noopener">财联社</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.jrj.com.cn/2026/09/12053758418764.shtml" target="_blank" rel="noopener">金融界 2026-09-12</a> <em>2026-09-12</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cnesa.org/information/detail/?column_id=2&amp;id=8397" target="_blank" rel="noopener">中关村储能产业技术联盟</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.10jqka.com.cn/20260831/c679437643.shtml" target="_blank" rel="noopener">同花顺财经：阳光电源营收净利双降，储能业务首次占据&quot;半壁江山&quot;（2026-08-31）</a> <em>2026-08-31</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://xinwen.bjd.com.cn/content/s6a95ad16e4b03fa51a83a1cf.html" target="_blank" rel="noopener">北京日报客户端：阳光电源&quot;换挡&quot;</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2421590" target="_blank" rel="noopener">财联社：阳光电源固态变压器（SST）首先应用场景是面向AIDC</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://pv.snec.org.cn/article/d72ceee6-8810-40bd-bd5d-a40aca5c534c" target="_blank" rel="noopener">SNEC：从欧美主导到多极增长，全球储能市场进入新一轮扩张周期</a></li>
+      <li><span class="src-tag src-media">媒体</span> 北京日报客户端 2026-08-31 前后、财闻网、同花顺财经 2026-08-31，多源一致 <em>2026-08-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内新闻 2026-08-28 财联社 <em>2026-08-28</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 知乎产业号、ZAKER 转载 2026 年 7 月 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 单一产品参数来源，置信度：低 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 收录的库内新闻，2026-09-04 至 09-11 多条 <em>2026-09-04</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [金融界 2026-09-12](https://finance.jrj.com.cn/2026/09/12053758418764.shtml <em>2026-09-12</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 金融界 2026-09-12 + 中关村储能产业技术联盟 <em>2026-09-12</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公司 2026-09-03 公告，经新浪财经页面读取，单源未交叉验证 · 置信度：低 <em>2026-09-03</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内新闻 2026-07-31 <em>2026-07-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 美国之音中文网 2026-08-27、观察者网 2026-08-27 <em>2026-08-27</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公告日 2026-08-29 <em>2026-08-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 置信度：高，库内新闻 2026-09-11 + 金融界 2026-09-12 + 中关村储能产业技术联盟，多源一致 <em>2026-09-11</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 披露窗口约 10 月下旬，参照库内 2025 年三季报公告日 2025-10-29 <em>2025-10-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 对应 2026-08-03 公告的回购方案 <em>2026-08-03</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2026-08-03 公告 <em>2026-08-03</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> W1 起始 2026-09-14。库内事件日历返回 7 条，全部为概念匹配的行业会议，无公司专属事件 <em>2026-09-14</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公司事件由联网与库内公告补。 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 约 W7，参照 2025 年三季报公告日 2025-10-29 <em>2025-10-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2026-08-28 巨潮公告 <em>2026-08-28</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-14 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
