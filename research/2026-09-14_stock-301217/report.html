@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>铜冠铜箔（301217.SZ） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>铜冠铜箔（301217.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-14（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 电池</span>
+      <span style="flex-basis:100%"><b>概念标签</b> PET铜箔 · PCB概念 · 固态电池 · 宁德时代概念 · 5G · 锂电池概念 · 比亚迪概念 · 储能</span>
+      <span><b>来源</b> 37 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    铜冠铜箔（301217）主要做的是各类高精度电子铜箔的研发、制造和销售等；经营范围为电子铜箔制造销售及服务、铜商品贸易。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——上半年净利润同比增长 514.75%、高端铜箔放量是真的，但当前市盈率 371 倍、近 20 日资金净流出 9.13 亿元也是真的。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：上半年净利润同比增长 514.75%、高端铜箔放量是真的，但当前市盈率 371 倍、近 20 日资金净流出 9.13 亿元也是真的。支撑在于上半年净利同比增514.75%；高端PCB铜箔占比过半；PCB概念处资金确认状态。主要风险是市盈率371倍为行业中位5.2倍；20日主力净流出5.89亿元；二季度净利环比仅增2.8%。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>上半年净利同比增514.75%</li>
+      <li>高端PCB铜箔占比过半</li>
+      <li>PCB概念处资金确认状态</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据时点：库内取数 2026-09-14（行情库内行情数据时点 15:35，即当日收盘）｜联网信息截至 2026-09-14 数据来源：库内取数十三个取数点 + WebSearch（仅限政策 / 产业链景气 / 预期差 / 事件时点四类）</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：上半年净利润同比增长 514.75%、高端铜箔放量是真的，但当前市盈率 371 倍、近 20 日资金净流出 9.13 亿元也是真的。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>高端 PCB 铜箔供不应求带来的盈利改善已经在报表里兑现</strong>：2026 年上半年营收 40.21 亿元（同比 +34.16%）、归母净利润 2.15 亿元（同比 +514.75%），毛利率从 2025 全年的 3.55% 升到 8.42%（置信度：高，来自库内财务）。</li>
+<li><strong>所在板块正处在资金进场阶段</strong>：同花顺「PCB概念」9 月 9 日被系统标记为「资金确认」状态，依据是大单连续 3 日净流入 +294.4 亿元；另有「高阶HDI扩产对接算力需求」（9 月 11 日起升温，与本票直接相关）等 6 个活动中的题材（置信度：高，来自）。</li>
+<li><strong>AI 服务器带动的 HVLP 高频高速铜箔国产替代是一条有外部验证的产业主线</strong>：多家海外与国内机构确认 HVLP4 供给紧张、加工费上行（置信度：中，多源但均为媒体转述，见 F/G 节来源）。</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>估值定价已经把好消息算进去了</strong>：市盈率（TTM）371.49 倍，是所属「元器件」行业中位数 71.37 倍的 5.2 倍，在 312 家在市同行中按市盈率由低到高排第 210 位；市净率 16.06 倍（置信度：高，来自库内估值）。</li>
+<li><strong>个股资金与板块资金方向相反</strong>：板块在「资金确认」，而本票近 20 个交易日（8-18~9-14）主力资金净流出 9.13 亿元、其中特大单净流出 5.89 亿元，20 天里 12 天为净流出；股东户数从 7 月 31 日的 125,350 户增加到 8 月 10 日的 158,586 户，10 天增加 26.5%，筹码明显趋于分散（置信度：高，来自库内资金筹码）。</li>
+<li><strong>二季度盈利没有继续加速</strong>：据上半年与一季度相减推算，二季度单季净利润 1.09 亿元，比一季度的 1.06 亿元环比增长约 2.8%；上半年毛利率 8.42% 低于一季度的 8.79%，说明二季度单季毛利率低于一季度（置信度：中，属推算值，库内无单季直接数据）。</li>
+</ol>
+<p><strong>最该盯的信号</strong> ① <strong>三季报</strong>（上一年三季报披露日为 2025-10-27，创业板法定截止 10 月 31 日）——看单季净利润能否超过二季度推算的 1.09 亿元、毛利率能否高于上半年的 8.42%； ② <strong>主力资金方向</strong>——库内资金筹码近 20 日特大单净额能否由当前的 −5.89 亿元转正，可每周核验一次。</p>
+<p><strong>这份判断最可能错在哪</strong>：如果 HVLP4 代产品在三季度、四季度集中通过客户认证并批量出货，加工费与毛利率会出现一次台阶式上行，那么「二季度没有加速」就只是产能爬坡期的正常间歇，而不是趋势见顶。本报告缺少分产品营收数据（库内财务不含分部拆分），这条恰恰是我最看不清的地方。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>名称 / 代码</strong>：铜冠铜箔 · 301217 · 深交所创业板 · 上市状态（正常在市）</li>
+<li><strong>上市日期</strong>：2022-01-27（至今约 3 年 7 个月）</li>
+<li><strong>所属行业</strong>：元器件（库内基础资料分类）。⚠️ 注意：涨停复盘表（库内涨停记录）把它归在「电池」板块——同一家公司在两套分类体系下归属不同，读同业数据时要分清用的是哪一套（置信度：高）。</li>
+<li><strong>主营业务</strong>：各类高精度电子铜箔的研发、制造和销售等；经营范围为电子铜箔制造销售及服务、铜商品贸易。</li>
+<li><strong>公司背景</strong>（库内公司档案原文）：由铜陵有色金属集团股份有限公司与合肥国轩高科动力能源有限公司发起设立；下辖合肥铜冠电子铜箔、铜陵有色铜冠铜箔两家全资子公司；安徽省第一家分拆上市企业；中国电子材料行业协会副理事长单位、电子铜箔分会理事长单位；国家标准《印制板用电解铜箔》主持修订单位，国家标准《印刷电路用金属箔通用规范》及行业标准《锂离子电池用电解铜箔》主要参与制定者。</li>
+<li><strong>规模</strong>：员工 1,949 人；注册资本 82,901.55 万元（对应约 8.29 亿股）。</li>
+<li><strong>产能</strong>：库内快照只有「截至 2021 年底电子铜箔产能 4.5 万吨/年、在建 1 万吨/年」这一条，<strong>已严重过时</strong>（置信度：高——数据本身可靠，但时效性对当前判断无用；最新产能见 E 节联网信息）。</li>
+</ul>
+<p><strong>当前行情与估值</strong>（数据时点 2026-09-14 收盘）</p>
+<ul>
+<li>股价 108.70 元，当日涨 1.35%，成交额 28.50 亿元，当日最高涨 4.13%、最低跌 3.95%（当日振幅约 8 个百分点，波动不小）</li>
+<li>总市值 901.14 亿元 · 市盈率（TTM）371.49 倍 · 市净率 16.06 倍 · 股息率 0.0183% · 换手率 3.17%</li>
+<li>行业「元器件」共 312 家在市公司，行业市盈率中位数 71.37 倍；本票按市盈率由低到高排第 210 位（只统计盈利同行）</li>
+<li>据市值与股价推算，TTM 归母净利润约 2.43 亿元（901.14 ÷ 371.49），与「上半年 2.15 亿 + 2025 全年 0.63 亿 − 2025 上半年约 0.35 亿」的口径能对上（置信度：高）</li>
+</ul>
+<p><strong>A/H 溢价</strong>：库内 A/H 对照返回 None，该票非 A+H 两地上市，本节不适用。</p>
+<p><strong>仅估值口径的判断</strong>：以当前静态数据看，市盈率处于行业偏贵的三分之一区间，市净率 16.06 倍对应上半年年化后不到 8% 的净资产收益率——<strong>这只说明市场定价包含了对未来盈利大幅增长的预期，不等于公司好坏结论</strong>（置信度：高）。</p>
+<h2>C. 财务健康</h2>
+<p>近四期数据（库内财务，新→旧，金额为亿元）：</p>
+<ul>
+<li><strong>2026 年中报</strong>（截止 20260630，披露 20260827）：营收 40.21 · 净利 2.15 · 营收同比 +34.16% · 净利同比 +514.75% · ROE 3.91% · 毛利率 8.42% · 净利率 5.34% · 每股收益 0.26 元 · 资产负债率 29.06%</li>
+<li><strong>2026 年一季报</strong>（20260331，披露 20260428）：营收 18.42 · 净利 1.06 · 营收同比 +32.04% · 净利同比 +2138.17% · ROE 1.95% · 毛利率 8.79% · 净利率 5.77% · 每股收益 0.13 元 · 资产负债率 29.50%</li>
+<li><strong>2025 年年报</strong>（20251231，披露 20260418）：营收 66.89 · 净利 0.63 · 营收同比 +41.75% · 净利同比 +140.07% · ROE 1.16% · 毛利率 3.55% · 净利率 0.94% · 每股收益 0.08 元 · 资产负债率 29.59%</li>
+<li><strong>2025 年三季报</strong>（20250930，披露 20251027）：营收 47.35 · 净利 0.63 · 营收同比 +47.13% · 净利同比 +162.49% · ROE 1.16% · 毛利率 3.79% · 净利率 1.32% · 每股收益 0.08 元 · 资产负债率 27.94%</li>
+</ul>
+<p><strong>趋势怎么看</strong></p>
+<ol>
+<li><strong>拐点在毛利率，而且发生在 2026 年一季度</strong>：毛利率从 2025 年三季报的 3.79%、全年的 3.55%，一跃到 2026 年一季度的 8.79%，翻了一倍多。这是这家公司当前所有故事的财务起点（置信度：高）。</li>
+<li><strong>收入一直在增长，但利润是最近半年才跟上的</strong>：2025 年营收同比 +41.75%，净利润只有 0.63 亿元、净利率 0.94%，属于典型的增收不增利；2026 年上半年净利率升到 5.34%，才算实现了量和利的同步（置信度：高）。</li>
+<li><strong>一个容易被忽略的低基数事实</strong>：据 2025 年全年与前三季度相减推算，2025 年四季度单季归母净利润约为 −7.4 万元（即 2025 年四季度单季基本盈亏平衡、略微亏损）。今年增速看着极高，很大一部分来自去年基数几乎为零（置信度：中，属推算值）。</li>
+<li><strong>二季度增速放缓的迹象</strong>：据上半年与一季度相减推算，二季度单季营收 21.79 亿元、净利润 1.09 亿元，环比一季度分别增长约 18.3% 和 2.8%；同时上半年累计毛利率 8.42% 低于一季度的 8.79%，意味着二季度单季毛利率低于一季度（置信度：中，推算值）。<strong>这是整份报告里最该被三季报验证的一条</strong>。</li>
+<li><strong>资产负债表健康</strong>：资产负债率四期稳定在 27.9%~29.6% 区间，没有加杠杆迹象（置信度：高）。</li>
+<li><strong>ROE 绝对水平仍然低</strong>：上半年 ROE 3.91%，年化约 7.8%，在 D 节同业里排末位（置信度：高）。</li>
+</ol>
+<p><strong>信息缺口</strong>：库内财务只给合并口径总量，<strong>没有分产品/分子公司营收拆分，也没有现金流量表、存货、应收账款数据</strong>。影响：无法从库内验证「高频高速铜箔占比过半」这一关键论据，也无法核验铜价创历史新高对营运资金占用的影响（见 F 节）。补法：读 2026 年半年度报告原文（库内新闻给出 PDF 链接），或等三季报后重跑本调研。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比（取 3 家）返回的同行业对比（截止 20260630 财务数据 + 当日估值）：</p>
+<ul>
+<li><strong>铜冠铜箔 301217</strong> · 市值 901.14 亿 · 市盈率 371.49 · 市净率 16.06 · 上半年营收 40.21 亿 · 净利 2.15 亿 · ROE 3.91%</li>
+<li><strong>立讯精密 002475</strong> · 市值 4084.05 亿 · 市盈率 22.95 · 市净率 4.39 · 上半年营收 1745.04 亿 · 净利 78.43 亿 · ROE 8.79%</li>
+<li><strong>生益科技 600183</strong> · 市值 3546.35 亿 · 市盈率 68.27 · 市净率 19.17 · 上半年营收 190.26 亿 · 净利 32.87 亿 · ROE 18.66%</li>
+<li><strong>东山精密 002384</strong> · 市值 3390.49 亿 · 市盈率 94.58 · 市净率 13.91 · 上半年营收 277.98 亿 · 净利 29.57 亿 · ROE 12.90%</li>
+</ul>
+<p><strong>⚠️ 先说数据边界</strong>：这三家是「元器件」大类里市值最靠前的公司，<strong>不是铜箔业务的直接竞争对手</strong>。真正的同业（德福科技、诺德股份、嘉元科技等）没有被这个行业分类圈进来。所以下面的对比只能当作「产业链相对位置」来读，不能当作同业估值比较（置信度：高，这是取数口径决定的）。</p>
+<p><strong>这家在同行里处于什么位置</strong></p>
+<ol>
+<li><strong>规模最小、估值最贵</strong>：上半年营收 40.21 亿元，是四家里唯一没到百亿的；市盈率 371.49 倍是四家里最高的，接近第二高（东山精密 94.58 倍）的 4 倍（置信度：高）。</li>
+<li><strong>最值得看的一组是它和生益科技</strong>：生益科技做覆铜板，是铜箔的直接下游客户。生益的市净率 19.17 倍甚至略高于铜冠的 16.06 倍，但生益上半年 ROE 18.66%，是铜冠 3.91% 的 4.8 倍。<strong>同样贵的市净率，一个是靠当期回报撑起来的，一个是靠未来产能与份额预期撑起来的</strong>——这句话概括了铜冠当前定价的性质（置信度：中，是基于两组库内数字的解读）。</li>
+<li><strong>盈利质量差距明显</strong>：铜冠上半年毛利率 8.42%（C 节），而立讯、生益、东山的净利率（用净利/营收推算）分别约为 4.5%、17.3%、10.6%。铜冠的净利率 5.34% 在四家里排第三，但它的毛利率基数远低——<strong>说明它目前还是一家加工费驱动的材料厂，不是有溢价能力的品牌件厂</strong>（置信度：中，净利率为推算值）。</li>
+</ol>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>：电解铜箔属于「铜价传导 + 加工费」模式——铜原料成本大体向下游传导，公司赚的是加工费与良率、结构优化带来的差额。这就解释了为什么 2025 年营收同比增长 41.75% 而净利率只有 0.94%：收入随铜价放大，利润却只跟加工费走（置信度：中，模式判断结合库内毛利率数据与行业通行做法）。</p>
+<p><strong>护城河分级（诚实分档）</strong></p>
+<ul>
+<li><strong>阶段性优势（有，且目前正在兑现）</strong>：
+<ul>
+<li>高端产品结构领先。据公司 2026 年半年报（经证券之星 2026-09-05、搜狐财经等多家转述），上半年铜箔产量 36,228 吨，<strong>高频高速基板用铜箔产量占 PCB 铜箔产量比重突破 50%</strong>（置信度：中，来自公司披露的二手转述，未见原文核对）。</li>
+<li>设备配额的先发锁定。据多家财经媒体 2026 年报道，公司提前锁定日本三船高端表面处理设备产能（置信度：低，单一口径、未交叉验证）。</li>
+<li>客户认证周期本身构成时间壁垒——高端铜箔进入覆铜板与 PCB 大厂供应链需经历长期验证（腾讯新闻转载 2026-07-23 报道；置信度：中）。</li>
+</ul></li>
+<li><strong>结构性护城河（看不出来）</strong>：从库内信息（主营描述、毛利率 8.42%、ROE 3.91%）<strong>看不出牌照、专利或网络效应类的结构性护城河</strong>。8.42% 的毛利率水平本身就说明议价能力有限（置信度：中）。</li>
+<li><strong>需要打折看待的一条</strong>：公司是《印制板用电解铜箔》国家标准主持修订单位、电子铜箔分会理事长单位（库内公司档案）——<strong>行业地位是真的，但标准制定资格不直接转化为定价权</strong>，别把它当护城河（置信度：中）。</li>
+</ul>
+<p><strong>产能情况（联网补充，库内无最新数据）</strong>：截至 2026 年初铜箔总产能约 8 万吨/年、其中 PCB 铜箔 5.5 万吨/年；HVLP1~4 代全系列已完成客户供货布局，出货主力为 HVLP2 代，HVLP5 代在研（来源：同花顺 F10 及多家财经媒体 2026 年报道，置信度：低——均为媒体转述，未见公司公告原文交叉验证）。</p>
+<h2>F. 政策与监管</h2>
+<p>库内无政策数据，本节全部为联网信息，每条带来源与日期。</p>
+<ol>
+<li><strong>工信部将规范动力电池行业竞争秩序（直接相关，方向中性偏多）</strong> — 2026 年 9 月 4 日前后，2026 世界动力电池大会在宜宾举办，会上发布《动力电池产业发展指数（2026）》；工信部表示将进一步规范动力电池行业竞争秩序、加强产能动态预警、加快相关标准制定（来源：收录的 2026-09-04 新闻两条，系统标记为「升温」状态且与本票<strong>直接相关</strong>）。<strong>传导链条</strong>：规范竞争秩序 → 抑制低价无序扩产 → 锂电铜箔加工费下行压力缓解 → 利好公司锂电铜箔板块。置信度：中（政策方向明确，但传导到单家公司加工费需要时间验证）。</li>
+<li><strong>储能电芯扩产降温、监管摸底产能过剩（直接相关，方向中性）</strong> — 2026 年 9 月 10~11 日多篇报道：「储能电芯『扩产竞赛』降温：监管摸底剑指产能过剩」「防范盲目扩张储能电池扩产踩『刹车』」（来源：主题「工信部要规范动力电池」「固态电芯与储能满产」收录新闻）。<strong>传导链条</strong>：下游扩产放缓 → 锂电铜箔需求增速预期下调，但同时供给端出清 → 加工费企稳。方向两可。置信度：中。</li>
+<li><strong>七部门发文探索 800V 高压直流供电架构（间接相关，方向偏多）</strong> — 2026-09-07 报道「七部门发文探索 800V 高压直流供电架构 AIDC 电力设备迎增量机遇」（来源：中「电力设备」主题收录新闻）。传导链条较长（数据中心供电 → 电力设备 → 铜材需求），对本票属间接。置信度：低（单源、传导远）。</li>
+</ol>
+<p><strong>信息缺口</strong>：未检索到直接针对电解铜箔行业的专项产业政策（如产能准入、出口管制）。影响：F 节对结论的贡献度有限，公司主要受产业周期而非政策周期驱动。补法：季度性复查工信部原材料工业司与中国电子材料行业协会公告。</p>
+<h2>G. 题材与产业链关联</h2>
+<h3>G-1. 所在板块正在活动的热点（数据时点 2026-09-14）</h3>
+<p>系统当前记录到 <strong>8 个与本票相关的活动中热点</strong>，照录系统口径：</p>
+<ul>
+<li><strong>「PCB概念」（同花顺概念 885959.TI）· 状态：资金确认 · 进入日 2026-09-09 · 依据：大单连续 3 日净流入 +294.4 亿</strong></li>
+</ul>
+<p>近期新闻：9-14「PCB概念持续走高澳弘电子等近十股涨停」、9-14「PCB概念震荡回升超声电子 6 天 4 板」、9-11「PCB概念再度拉升超声电子触及涨停」。 <strong>这是本票当前最强的题材背景</strong>（置信度：高，系统记录）。</p>
+<ul>
+<li><strong>「高阶HDI扩产对接算力需求」· 状态：升温 · 进入日 2026-09-11 · 与本票直接相关 · 依据：这 5 天有 6 条新闻，平时几乎没有</strong></li>
+</ul>
+<p>发生了什么（系统记录）：9 月上旬多家公司披露高阶 HDI 电路板进展——中京电子表示 9-11 阶高阶 HDI 产品主要用于算力加速卡、处于导入拓展阶段；本川智能拟投资 20 亿元建设高阶 HDI 电路板产业化项目。 <strong>对本票的意义</strong>：高阶 HDI 是 HVLP 铜箔最主要的下游应用之一，下游扩产 = 上游铜箔需求（置信度：中）。</p>
+<ul>
+<li><strong>「博通AI芯片收入翻倍」· 状态：升温 · 进入日 2026-09-08 · 与本票间接相关 · 依据：这 5 天有 6 条新闻，平时几乎没有</strong></li>
+</ul>
+<p>发生了什么（系统记录）：博通公布 2026 财年三季度营收 295.91 亿美元、同比增长 86%，超市场预期，四季度营收展望 348 亿美元，其中 AI 半导体收入增长两倍；联电预计三季度其 8 寸厂产能利用率提升至约 85%。</p>
+<ul>
+<li><strong>「固态电芯与储能满产」· 状态：升温 · 进入日 2026-09-08 · 直接相关 · 依据：这 5 天有 8 条新闻，平时一周约 1 条</strong></li>
+</ul>
+<p>发生了什么（系统记录）：奇瑞称犀牛固态电芯能量密度达 400Wh/kg；德尔股份固态电池 PACK 中试线建成；宁德时代线上商城电芯 0.395 元/Wh 起；小米推出龙甲电池；业内称储能电芯未来数年或迎产能出清；德赛电池储能电芯满产。9-14 另有「9 月排产创年内新高，电池板块景气向上」「电池产业链掀起涨价潮⋯9 月电池排产环增 6%，全环节创年内新高」。</p>
+<ul>
+<li><strong>「工信部要规范动力电池」· 状态：升温 · 进入日 2026-09-08 · 直接相关</strong>（内容见 F 节第 1 条）</li>
+<li><strong>「国家电网中标密集落地」· 状态：升温 · 进入日 2026-09-08 · 直接相关 · 依据：这 5 天有 6 条新闻，平时几乎没有</strong>（与本票关联较弱，属铜材需求侧）</li>
+<li><strong>「折叠屏与PCB产能爬坡」· 状态：冒头 · 进入日 2026-09-11 · 间接相关 · 依据：5 天里有 4 条新闻</strong></li>
+</ul>
+<p>发生了什么（系统记录）：博敏电子梅州新工厂主产高阶 PCB、处于产能爬坡期；天岳先进 8 英寸产线产能利用率持续爬坡；比亚迪称闪充车型订单饱满、第二代刀片电池月产能将逐步爬坡；苹果折叠屏手机据报道正加快产量爬坡。</p>
+<ul>
+<li><strong>申万一级行业「电力设备」· 状态：热度回落 · 进入日 2026-08-19 · 依据：10 天比大盘 −2.5%，近 5 天没有大资金进入</strong></li>
+</ul>
+<p><strong>怎么读这一组</strong>：本票同时挂在「PCB / 算力」与「锂电 / 储能」两条线上，<strong>当前热的是前者</strong>（PCB概念已到「资金确认」，高阶 HDI 在升温），后者虽然也在升温但驱动来自排产与政策而非涨价。与 C 节的财务事实（高端 PCB 铜箔是这轮盈利改善的主因）方向一致（置信度：中）。</p>
+<h3>G-2. 概念标签逐个分级（库内概念标签，12 个同花顺标签）</h3>
+<p><strong>真有业务佐证</strong>：</p>
+<ul>
+<li><strong>PCB概念（885959.TI）</strong> — 主营即「各类高精度电子铜箔」，且是国家标准《印制板用电解铜箔》主持修订单位（库内公司档案）。✅ 真有业务</li>
+<li><strong>锂电池概念（885710.TI）</strong> — 公司由合肥国轩高科参与发起设立，是行业标准《锂离子电池用电解铜箔》主要参与制定者（库内公司档案）。✅ 真有业务</li>
+<li><strong>国企改革（886021.TI）</strong> — 控股股东为铜陵有色金属集团；库内公司档案明确记载「入选省国资委创新改革试点单位和国务院国资委『国企双百行动』企业名单」。✅ 真有业务（股东与治理层面）</li>
+<li><strong>2026中报预增（886110.TI）</strong> — 上半年净利同比 +514.75%（库内财务）。✅ 事实标签，非业务标签</li>
+</ul>
+<p><strong>交易属性标签（是事实，但与业务无关）</strong>：深股通（885694.TI）、融资融券（885338.TI）。</p>
+<p><strong>仅概念标签，未见营收佐证</strong>：</p>
+<ul>
+<li><strong>5G（885556.TI）</strong> — 通信板用铜箔在产业链上确实沾边，但库内无分产品营收拆分佐证。⚠️ 仅概念标签</li>
+<li><strong>PET铜箔（886020.TI）</strong> — 公司主营是电解铜箔，PET 复合铜箔是另一条技术路线，库内无任何营收或产能佐证。⚠️ 仅概念标签，<strong>这一条沾边程度最弱</strong></li>
+<li><strong>储能（885921.TI）</strong> — 锂电铜箔可用于储能电池，但无营收拆分佐证。⚠️ 仅概念标签</li>
+<li><strong>固态电池（886032.TI）</strong> — 固态电池对铜箔的需求形态尚未定型，库内无佐证。⚠️ 仅概念标签</li>
+<li><strong>宁德时代概念（885789.TI）</strong>、<strong>比亚迪概念（885997.TI）</strong> — 库内无客户结构数据，无法验证供货关系。⚠️ 仅概念标签</li>
+</ul>
+<h3>G-3. 产业链位置</h3>
+<p><strong>上游</strong>：电解铜 / 铜线杆（由控股股东铜陵有色体系覆盖，属集团内协同）。上游议价能力强——铜是标准化大宗商品，价格由期货市场决定，公司只能被动接受（见 F 节、H 节铜价）。 <strong>本环节</strong>：电解铜箔（PCB 铜箔 + 锂电铜箔）。赚加工费，议价能力取决于产品代际（HVLP 越高阶越稀缺）。 <strong>下游</strong>：覆铜板厂（如生益科技）→ PCB 厂（如东山精密、澳弘电子、中京电子）→ AI 服务器 / 交换机 / 新能源车。 <strong>议价能力在哪端</strong>：当前在<strong>高阶产品的供给端</strong>——因为 HVLP4 产能全球稀缺。但在标准品（普通 PCB 铜箔、锂电铜箔）上，议价能力在下游（置信度：中）。</p>
+<h2>H. 消息面与市场情绪</h2>
+<h3>H-1. 近 60 日新闻（库内新闻，共 20 条）</h3>
+<p>按重要性挑出 6 条：</p>
+<ol>
+<li><strong>2026-08-26 · 半年报及业绩相关（公告 + 媒体）</strong> — 「铜冠铜箔：上半年归母净利润 2.15 亿元同比增长 514.75%」（东方财富，情感值 0.8）。<strong>对基本面有实质影响</strong>：这是 C 节全部数字的来源，也是当前估值的支点。</li>
+<li><strong>2026-08-26 · 关于 2026 年中期利润分配预案的公告</strong>（巨潮 PDF ）。<strong>有实质影响但金额可能很小</strong>：公司 2025 年中期分配为每 10 股派 0.2 元（联网核实，来源为公开转述，置信度：低）；库内当前股息率仅 0.0183%，分红对持有回报的贡献可以忽略。</li>
+<li><strong>2026-08-26 · 关于召开 2026 年第三次临时股东会的通知</strong>（巨潮 PDF ）。<strong>有实质影响</strong>：中期利润分配预案需经此次股东会审议。⚠️ <strong>确切会期未能确认</strong>（见 I 节 W1 与 M 节信息缺口）。</li>
+<li><strong>2026-08-14 / 08-17 · 董事会秘书兼财务负责人无法正常履职、随后逝世的两则公告</strong>（情感值 −0.6 / −0.3）；<strong>2026-08-26 · 关于聘任董事会秘书的公告</strong>。<strong>对基本面无实质影响，对信息披露连续性有短期影响</strong>——8 月 26 日已聘任新董秘，事项已闭环（置信度：高）。</li>
+<li><strong>2026-08-27 · 「国轩高科成『投资高手』？一只股票浮盈 16.76 亿元主业却在『拖后腿』」</strong>（东方财富，情感值 −0.3）。<strong>对基本面无影响，对筹码面有影响</strong>——指向的正是国轩高科持有的本票股份（详见 H-3）。</li>
+<li><strong>2026-09-10 · 关于参加 2026 年安徽辖区上市公司投资者网上集体接待日活动的公告</strong>。<strong>无实质影响</strong>，属信息沟通类。</li>
+</ol>
+<p>其余多为常规公告（半年度募集资金专项报告、关联资金往来汇总表、财务公司风险评估报告、职工代表董事选举、董事会决议）与大盘行情快讯（如 9-01「收评：创业板指、深成指均跌超 1%」），不构成个股判断依据。</p>
+<p><strong>⚠️ 提示</strong>：上述新闻标题中出现的行情数字均为发稿时点的旧快照，本报告的行情事实一律以库内行情（2026-09-14 收盘 108.70 元）为准。</p>
+<h3>H-2. 涨停记录（库内涨停记录，近 180 日）</h3>
+<p>近 180 日共 <strong>2 次涨停</strong>，均为 20% 涨停（创业板），且均为 1 连板、0 次开板：</p>
+<ul>
+<li><strong>2026-06-15</strong> · 涨 20.0% · 首次封板 13:31:42 · 封单 1.18 亿元 · 涨停统计 1/1 · 榜单行业「电池」</li>
+<li><strong>2026-04-29</strong> · 涨 20.0% · 首次封板 14:12:48 · 封单 0.68 亿元 · 涨停统计 1/1 · 榜单行业「电池」</li>
+</ul>
+<p><strong>怎么读</strong>：两次都是<strong>下午盘中才封板、没有连板、封单相对 901.14 亿元市值极小</strong>（1.18 亿元约占市值 0.13%）。这说明情绪面关注是有的，但<strong>不是游资连续接力型的强势票</strong>，更像基本面驱动下的单日放量上行（置信度：中）。另外，公开报道显示公司在 2026 年 6 月披露过股价异动公告，股价阶段涨幅<strong>曾</strong>超过 100%（来源：经济观察网 2026-06-06、腾讯新闻 2026-06-15 转载；这是当时的历史快照，当前价格以库内行情为准）。</p>
+<h3>H-3. 资金与筹码（库内资金筹码）</h3>
+<div class="callout">⚠️ 本小节是盘面与筹码现象，<strong>不是基本面证据</strong>，只作情绪面佐证，不进 J 节逻辑链、不单独作为操作依据。</div>
+<ul>
+<li><strong>资金流（近 20 个交易日，2026-08-18~2026-09-14）</strong>：整体净流出 <strong>9.13 亿元</strong>，其中主力（特大单）净流出 <strong>5.89 亿元</strong>；20 天里净流入 8 天、净流出 12 天。</li>
+</ul>
+<p><strong>这与 G-1 里「PCB概念大单连续 3 日净流入 +294.4 亿」形成方向背离</strong>——板块在进钱，这只票在出钱（置信度：高，两组数字均为系统记录）。</p>
+<ul>
+<li><strong>筹码（数据时点 2026-08-07，⚠️ 距今已一个多月）</strong>：获利盘比例 <strong>79.97%</strong>，加权平均成本 <strong>105.11 元</strong>，15% 分位成本 84.50 元、50% 分位成本 97.50 元、85% 分位成本 127.40 元。</li>
+</ul>
+<p><strong>两面都要看</strong>：获利盘接近八成，意味着<strong>上方套牢盘很少、上行阻力小</strong>，但同时<strong>短线获利了结的抛压大</strong>——任何利空都容易引发集中止盈。 当前股价 108.70 元，据推算高于 8-07 加权均本约 3.4%、高于 50% 分位成本约 11.5%、低于 85% 分位成本约 14.7%。 ⚠️ 筹码数据时点是 8 月 7 日，此后一个多月的换手（当前换手率 3.17%）已使这组分位数失去精度，<strong>只能当粗略的刻度用</strong>（置信度：中）。</p>
+<ul>
+<li><strong>股东户数</strong>：2026-08-10 为 <strong>158,586 户</strong>，较 2026-07-31 的 125,350 户增加 <strong>26.5%</strong>。10 天内户数增加超四分之一，说明筹码从少数人手里分散到更多人手里，<strong>通常对应股价上行后的派发过程</strong>（置信度：中，股东户数为阶段性披露、天然滞后）。</li>
+<li><strong>产业资本动向（联网补充）</strong>：国轩高科于 2026 年 7 月 3 日晚公告，全资子公司合肥国轩在 2026 年上半年通过集中竞价累计减持本票 839.95 万股，成交金额 8.29 亿元，减持均价约 98.72 元/股，入股成本约 4.73 元/股；<strong>减持后仍持有 1,053.16 万股、占总股本 1.27%</strong>（来源：每日经济新闻 2026-07-03、新浪财经 2026-07-04、中国基金报、同花顺 2026-07-05 — 四家独立来源一致，置信度：高）。<strong>这部分剩余股份构成持续的潜在卖出压力</strong>。</li>
+</ul>
+<h2>I. 未来 13 周事件日历</h2>
+<div class="callout">数据来源：库内事件日历（近 120 日）仅返回 2 条（均为行业会议），其余为联网补充，逐条标注置信度。休市安排来自深交所 2025-12-22《关于 2026 年部分节假日休市安排的通知》。</div>
+<ul>
+<li><strong>W1（2026-09-14 起）</strong>：2026 年第三次临时股东会 · 公司事件 · 重要性中 · 影响：审议 2026 年中期利润分配预案等议案 · ⚠️ <strong>确切会期未确认</strong>（8-26 发出通知，库内事件日历未收录，公开检索未查到具体日期；按 A 股惯例通知后 15~20 日内召开，落在 W1~W2 的可能性较大，置信度：低）</li>
+<li><strong>W2（2026-09-21 起）</strong>：9-22~24 · 2026 中国国际信息通信展览会（PT展，北京）· 行业会议 · 重要性高（库内 importance 7）· 影响：华为与运营商新技术发布，是 5G / 算力 / 光模块方向的消息催化，间接指向高阶 PCB 与 HVLP 铜箔需求预期｜9-22~24 · 2026 世界新能源汽车大会（WNEVC，海口）· 行业会议 · 重要性高（importance 7）· 影响：锂电铜箔需求端指引｜9-25~9-27 中秋休市，9-28 恢复交易（置信度：高，深交所公告）</li>
+<li><strong>W3（2026-09-28 起）</strong>：9 月官方 PMI（按惯例月末公布）· 宏观 · 重要性低 · 影响：制造业景气度参考｜9 月电解铜箔加工费月度报价窗口 · 行业 · 重要性中 · 影响：验证「电子电路铜箔涨价、锂电铜箔加工费难涨」的分化说法（见 J 节第 3 环）｜9-30 为国庆长假前最后一个交易日（置信度：中，PMI 时点为惯例推断）</li>
+<li><strong>W4（2026-10-05 起）</strong>：10-01~10-07 国庆休市，10-08 恢复交易 · 重要性低 · 影响：长假期间外盘铜价与海外 AI 产业链消息将在 10-08 一次性反映在开盘价上（置信度：高，深交所公告）</li>
+<li><strong>W5（2026-10-12 起）</strong>：9 月及三季度进出口数据、铜材产量数据发布窗口 · 行业 · 重要性中 · 影响：验证高端铜箔进口替代进度（置信度：低，时点为惯例推断）</li>
+<li><strong>W6（2026-10-19 起）</strong>：A 股三季报密集披露期开启；同业（德福科技、诺德股份、嘉元科技等）三季报可能先于本票发布 · 行业 · 重要性中 · 影响：<strong>同业数据是本票三季报的提前读数</strong>，可用来预判加工费与毛利率走向（置信度：中）</li>
+<li><strong>W7（2026-10-26 起）</strong>：<strong>本公司 2026 年三季报</strong> · 财报 · 重要性高 · 影响：<strong>本报告最关键的验证点</strong>——直接检验 C 节的「二季度增速放缓」判断与 K 节三情景触发条件（依据：上一年三季报披露日为 2025-10-27，见库内财务的公告日；创业板法定披露截止 10 月 31 日。⚠️ 2026 年预约披露日未确认，置信度：中）</li>
+<li><strong>W8（2026-11-02 起）</strong>：三季报后卖方盈利预测集中更新窗口 · 机构 · 重要性中 · 影响：J 节所引东北证券 2026 年 5.10 亿元预测是否被上调或下调（置信度：中）</li>
+<li><strong>W9（2026-11-09 起）</strong>：本周无已知事件</li>
+<li><strong>W10（2026-11-16 起）</strong>：10 月社会融资、工业增加值等宏观数据发布 · 宏观 · 重要性低（置信度：低，惯例推断）</li>
+<li><strong>W11（2026-11-23 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-11-30 起）</strong>：11 月官方 PMI；年末铜箔加工费年度谈判季启动窗口 · 行业 · 重要性中 · 影响：决定 2027 年加工费基准，是明年盈利弹性的第一个观测点（置信度：低，谈判时点为行业惯例，未见公开确认）</li>
+<li><strong>W13（2026-12-07 起）</strong>：中央经济工作会议窗口（历年多在 12 月中旬召开）· 政策 · 重要性中 · 影响：新材料与算力基建方向的年度政策定调（置信度：低，时点为惯例推断）</li>
+</ul>
+<h2>J. 逻辑链</h2>
+<p><strong>第 1 环（置信度：高）</strong> 因为 2026 年一季度毛利率从 2025 全年的 3.55% 跳升到 8.79%，且上半年归母净利润 2.15 亿元、同比增长 514.75% —— <strong>所以</strong>这家公司的盈利改善不是预期而是已经发生的事实。 <strong>如果成立，应该能观察到</strong>：资产负债率保持稳定（实际 29.06%，✅ 已观察到）、净利率同步提升（实际从 0.94% 到 5.34%，✅ 已观察到）。</p>
+<p><strong>第 2 环（置信度：中）</strong> 因为公司披露上半年高频高速基板用铜箔产量占 PCB 铜箔产量比重突破 50%（媒体转述半年报），且「高阶HDI扩产对接算力需求」热点自 9 月 11 日起升温、下游 PCB 概念已进入「资金确认」状态 —— <strong>所以</strong>这轮盈利改善的主要来源是产品结构升级（高阶替代标准品），而非单纯的行业普涨。 <strong>如果成立，应该能观察到</strong>：三季报毛利率继续高于上半年的 8.42%；同业中高端占比低的公司三季报改善幅度明显小于本票。 <strong>如果不成立会看到</strong>：三季报毛利率回落到 8.42% 以下，说明上半年的高毛利率来自阶段性的加工费上调而非结构升级。</p>
+<p><strong>第 3 环（置信度：低 —— ⚠️ 这是整条链的命门）</strong> 因为电子电路铜箔与锂电铜箔的景气方向<strong>正在分化</strong>：联网信息显示电子电路铜箔供应紧缺、预计全年提价 2~3 次累计 20%~30%（经济观察网、我的钢铁网、DoNews 等 2026 年报道，置信度：中），而 <strong>9 月锂电铜箔加工费变化不大、部分企业存在下调 500~1000 元/吨的可能、上涨难度较大</strong>（上海有色网口径，置信度：中）—— <strong>所以</strong>公司的盈利弹性几乎全部押在 PCB 高端这一条腿上，锂电那条腿目前只提供「扭亏为盈」而非增量弹性。 <strong>如果成立，应该能观察到</strong>：三季报中若公司披露分部数据，PCB 铜箔的毛利率与锂电铜箔的毛利率差距进一步拉大。 <strong>为什么它是命门</strong>：库内财务 <strong>没有分部拆分数据</strong>（M 节信息缺口第 1 条），这一环<strong>目前完全无法用库内数据验证</strong>，只能靠外部报道与三季报披露来补。<strong>如果 HVLP 良率爬坡慢于预期或 AI 服务器出货延迟，这一环会先断</strong>。</p>
+<p><strong>第 4 环（置信度：高）</strong> 因为市盈率（TTM）371.49 倍是行业中位数 71.37 倍的 5.2 倍，市净率 16.06 倍对应上半年 ROE 仅 3.91% —— <strong>所以</strong>当前定价已经把「未来两年盈利继续大幅增长」当成了基准情形，而不是乐观情形。 <strong>如果成立，应该能观察到</strong>：任何一次盈利增速不及预期都会引发估值调整；反过来，只是「符合预期」的业绩很难推动股价继续上行。</p>
+<p><strong>第 5 环（置信度：中，属情绪面佐证，不作决策依据）</strong> 近 20 日主力资金净流出 5.89 亿元、股东户数 10 天增加 26.5%，与板块「资金确认」状态方向相反 —— <strong>所以</strong>当前更像是板块热度覆盖下的个股派发阶段，而非资金合力进场阶段。</p>
+<p><strong>⚠️ 命门总结</strong>：整条链最弱的是<strong>第 3 环</strong>。它决定了盈利弹性有多大，却恰恰是库内数据完全覆盖不到的地方。</p>
+<h2>K. 三情景推演（未来约 13 周，至 2026 年 12 月中旬）</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜触发：三季报单季归母净利润高于二季度推算值 1.09 亿元的 30% 以上，<strong>且</strong>单季毛利率高于上半年的 8.42%，<strong>且</strong> 库内资金筹码近 20 日特大单净额由当前的 −5.89 亿元转为净流入｜路径：J 节第 2、3 环同时被验证，卖方在 W8 集中上调盈利预测，股价向 8-07 筹码 85% 分位成本一线修复，PCB 概念热点状态维持在资金确认档</li>
+<li><strong>中性（50%）</strong>｜触发：三季报单季净利润落在二季度推算值 1.09 亿元的正负 20% 区间内，毛利率与上半年的 8.42% 持平｜路径：业绩没有证伪也没有强化结构升级逻辑，估值继续消化，股价在 8-07 筹码加权均本与 85% 分位成本之间宽幅震荡，跟随 PCB 板块整体节奏波动</li>
+<li><strong>悲观（25%）</strong>｜触发：三季报单季净利润低于二季度推算值 1.09 亿元，<strong>或</strong>单季毛利率低于 8.42%，<strong>或</strong>国轩高科对剩余 1.27% 股份披露新的减持计划｜路径：J 节第 4 环兑现，高市盈率与高获利盘比例叠加放大回撤，股价向 8-07 筹码 50% 分位成本方向回落，PCB 概念热点状态从资金确认档回落</li>
+</ul>
+<p>三档概率合计 100%。</p>
+<h2>L. 决策与风控</h2>
+<h3>条件式操作倾向</h3>
+<ol>
+<li><strong>如果</strong> 2026 年三季报（预计 10 月下旬，见 I 节 W7）单季归母净利润高于二季度推算的 1.09 亿元、<strong>且</strong>单季毛利率高于上半年的 8.42%，<strong>那么</strong>可按轻仓试仓。</li>
+<li><strong>如果</strong>股价跌破 8-07 筹码加权均本、<strong>且</strong> 库内资金筹码近 20 日特大单净额仍为负（当前 −5.89 亿元），<strong>那么</strong>观望，不新增。</li>
+<li><strong>如果</strong>股价跌破 8-07 筹码 50% 分位成本，<strong>或</strong>国轩高科对剩余 1.27% 股份披露新的减持计划，<strong>那么</strong>减仓或回避。</li>
+<li><strong>如果</strong> 中「PCB概念」的状态从当前的「资金确认」回落，<strong>且</strong>「高阶HDI扩产对接算力需求」主题不再有新增新闻，<strong>那么</strong>减仓。</li>
+</ol>
+<h3>这笔判断在什么情况下应当被推翻</h3>
+<ul>
+<li><strong>向上推翻（判断偏保守了）</strong>：公司公告 HVLP4 代产品通过头部客户认证并进入批量供货，<strong>或</strong>三季报披露分部数据显示 PCB 铜箔毛利率显著高于合并口径的 8.42%——J 节第 3 环（当前置信度最低的一环）被正面证实，整条逻辑链的强度会整体上移。</li>
+<li><strong>向下推翻（判断偏乐观了）</strong>：三季报显示上半年 8.42% 的毛利率来自一次性加工费上调而非结构升级（单季毛利率回落到 8% 以下），<strong>或</strong>下游覆铜板厂开始下调铜箔采购价——第 2、3 环同时被证伪。</li>
+<li><strong>中性推翻（框架失效）</strong>：出现库内与联网都没有覆盖的重大事项（重大资产重组、控股股东变更、大额减值）——本报告的所有推演均基于当前业务结构，结构变了就要重跑。</li>
+</ul>
+<h3>仓位思路</h3>
+<p><strong>轻仓，或不参与。</strong> 理由是三条事实的叠加，不是情绪判断：① 市盈率 371.49 倍在 312 家同行里排第 210 位（偏贵端），任何盈利不及预期都缺少估值缓冲；② 近 20 日资金净流出 9.13 亿元与板块「资金确认」状态背离；③ 获利盘比例 79.97%（8-07）意味着短线抛压随时可能集中释放。<strong>在 W7 三季报这个关键验证点之前，加大仓位的性价比不高</strong>（置信度：中）。</p>
+<p>⚠️ 本节不给目标价、不给评级，以上全部为条件式表述。</p>
+<h2>M. 逻辑自查</h2>
+<h3>这份判断最依赖的假设是哪一条？</h3>
+<p><strong>最依赖的是：「2026 年上半年 8.42% 的毛利率水平在三季度能够维持」。</strong> 它错了会怎样：如果三季度毛利率回落到 2025 年 3.55% 附近，那么按当前 901.14 亿元市值计算，估值会瞬间失去支撑——A 节的「震荡」判断会变成明确偏跌，K 节的悲观情景概率要从 25% 上调到 50% 以上。</p>
+<h3>有没有为了让逻辑好看而忽略的反面证据？</h3>
+<p>有三条，现在明确列出来：</p>
+<ol>
+<li><strong>公司自己在 2026 年 5 月 13 日说过「自主研发的高频高速铜箔产品已开始批量供应，目前整体出货占比不高」</strong>（来源：每日经济新闻 2026-05-13、新浪财经同日）。这与三个月后半年报的「占比突破 50%」之间是什么关系——是口径不同（「高频高速基板用铜箔」vs「自主研发的高频高速产品」），还是三个月内发生了实质跃升——<strong>我没有能力从库内数据分辨</strong>。这是一条我本可以略过但不该略过的反面证据。</li>
+<li><strong>媒体质疑当时已存在</strong>：腾讯新闻转载的 2026-07-23 报道提出，二季度盈利基本维持一季度水平、并未出现市场期待的持续加速增长，并援引 HVLP2 代年产能 800~1000 吨、HVLP3 代良率仅 30%~40% 等说法（置信度：低，产能与良率均为单一来源、未经交叉验证，公司未公开确认）。C 节用库内数据推算出的「二季度环比 +2.8%」与这篇报道的定性方向一致，<strong>两者互相印证，不能因为是自媒体口径就忽略</strong>。</li>
+<li><strong>铜价创历史新高是一把双刃剑</strong>：2026 年 9 月 8 日伦铜盘中触及 14,617 美元/吨、连续两日刷新历史新高，沪铜主力报 110,690 元/吨（来源：每日经济新闻 2026-09-08、新浪财经 2026-09-07 及 09-08、凤凰财经，四源一致，置信度：高）。铜箔按「铜价 + 加工费」定价，铜价上涨理论上可传导，<strong>但会显著增加原材料备货占用的资金，并抑制下游采购意愿</strong>（同一批报道提到「中下游企业受高价压制、畏高减产」）。<strong>我在 J 节没有把这条作为独立一环，因为库内没有现金流量表和存货数据可供验证——这是有意留白，不是遗漏。</strong></li>
+</ol>
+<h3>信息缺口清单</h3>
+<ol>
+<li><strong>库中无分产品 / 分子公司营收与毛利拆分</strong>（库内财务只给合并口径）。<strong>影响：最大</strong>——J 节第 3 环（整条链的命门）完全无法用库内数据验证，「高频高速铜箔占比过半」只能引用媒体转述的半年报内容。<strong>补法</strong>：读 2026 年半年度报告原文（库内新闻给出巨潮 PDF 链接），或等三季报披露分部数据后重跑本调研。</li>
+<li><strong>库中无现金流量表、存货、应收账款数据</strong>。影响：无法核验铜价创新高环境下的营运资金占用与经营性现金流质量，M 节反面证据第 3 条因此只能定性不能定量。补法：同上，读财报原文。</li>
+<li><strong>库内事件日历只返回 2 条，均为行业会议，无公司自身事件</strong>。影响：I 节的公司事件（临时股东会、三季报）全部依赖联网与惯例推断，W1 与 W7 的具体日期置信度只有「低」和「中」。补法：会期确定后以交易所公告为准修正日历。</li>
+<li><strong>筹码数据时点为 2026-08-07，距报告日已一个多月</strong>。影响：L 节所用的价格锚（加权均本 105.11 元、50% 分位 97.50 元）精度下降，只能当粗略刻度。补法：库内资金筹码的筹码分布块只覆盖关注票，下次重跑时先看交易日是否已更新。</li>
+<li><strong>库内研报库内样本极小</strong>：近 90 天仅 1 篇研报（1 家机构）+ 1 家机构的 3 期盈利预测。影响：J 节与下方卖方预期部分的代表性有限，不能据此判断市场一致预期。补法：三季报后（I 节 W8）重新调用库内研报看覆盖是否扩大。</li>
+<li><strong>库内同业对比返回的不是铜箔直接竞对</strong>（见 D 节数据边界说明）。影响：无法做同业估值比较，D 节只能做产业链相对位置判断。补法：直接竞对（德福科技、诺德股份、嘉元科技）在「元器件」行业分类下未被圈进来，需按概念标签或手工指定代码另行取数。</li>
+<li><strong>库内 A/H 对照返回 None</strong> —— 该票非 A+H 两地上市，这不是数据缺失而是事实，本报告不涉及跨市场估值参照。</li>
+</ol>
+<h3>卖方预期（全部单列，与库内事实严格分开）</h3>
+<p>〔卖方预期〕来源：国金证券研报（库内）· 日期：2026-08-27 · 观点：《半年报点评：AI铜箔放量，高端占比突出》· 置信度：低（卖方预期非事实；库内仅收录标题与链接，未收录具体预测数值）</p>
+<p>〔卖方预期〕来源：东北证券研报（库内）· 日期：2026-08-04 · 观点：预计 2026 年全年归母净利润 5.10 亿元、每股收益 0.61 元，评级「增持」· 置信度：低（卖方预期非事实，未经交叉验证）</p>
+<p>〔卖方预期〕来源：东北证券研报（库内）· 日期：2026-08-04 · 观点：预计 2027 年归母净利润 9.44 亿元、每股收益 1.14 元 · 置信度：低</p>
+<p>〔卖方预期〕来源：东北证券研报（库内）· 日期：2026-08-04 · 观点：预计 2028 年归母净利润 14.15 亿元、每股收益 1.71 元 · 置信度：低</p>
+<p><strong>近 90 天库内评级分布</strong>：增持 1 家（共 1 篇研报、1 家机构）。</p>
+<p><strong>读这组预测要留意两件事</strong>（这两句是我的推算与解读，不是卖方观点）： ① 东北证券 2026 年全年 5.10 亿元的预测，对应下半年需实现约 2.95 亿元归母净利润，比上半年实际的 2.15 亿元环比增长约 37%（据库内数据推算）——<strong>这是一个需要下半年继续加速的假设，与 C 节观察到的「二季度环比仅增长 2.8%」方向不一致</strong>。 ② 该研报发布于 2026-08-04，当时对应的 2026 年预测市盈率为 140.17 倍；按 2026-09-14 收盘价 108.70 元与其每股收益预测重算，对应 2026 / 2027 / 2028 年的市盈率分别约为 178 倍 / 95 倍 / 64 倍（据推算）。<strong>即便按卖方最乐观的 2028 年预测，市盈率仍接近当前行业中位数 71.37 倍的水平</strong>（置信度：中，推算值）。</p>
+<h3>来源清单（联网部分）</h3>
+<ul>
+<li><a href="https://www.nbd.com.cn/articles/2026-09-08/4575951.html" target="_blank" rel="noopener">沪铜重回11万元大关、伦铜续刷新高（每日经济新闻，2026-09-08）</a></li>
+<li><a href="https://finance.sina.com.cn/money/future/fmnews/2026-09-08/doc-inirceww4591860.shtml" target="_blank" rel="noopener">伦铜刷新历史新高，内外同频上涨（新浪财经，2026-09-08）</a></li>
+<li><a href="https://finance.sina.com.cn/jjxw/2026-09-07/doc-iniqznpq6320083.shtml" target="_blank" rel="noopener">今夜，创新高！铜价（新浪财经，2026-09-07）</a></li>
+<li><a href="https://finance.ifeng.com/c/8wFR7plwfwD" target="_blank" rel="noopener">伦铜创历史新高，铜股集体爆发（凤凰财经，2026-09）</a></li>
+<li><a href="https://m.10jqka.com.cn/20260705/c677956343.shtml" target="_blank" rel="noopener">国轩高科子公司出售铜冠铜箔股票，合计套现8.29亿元（同花顺，2026-07-05）</a></li>
+<li><a href="https://www.nbd.com.cn/articles/2026-07-03/4451985.html" target="_blank" rel="noopener">国轩高科出售铜冠铜箔800多万股（每日经济新闻，2026-07-03）</a></li>
+<li><a href="https://finance.sina.com.cn/roll/2026-07-04/doc-inifrtiz2589293.shtml" target="_blank" rel="noopener">成本约4.73元，卖出98元（新浪财经，2026-07-04）</a></li>
+<li><a href="https://www.chnfund.com/article/AR40a58b16-4844-905a-832c-3a223da708b5" target="_blank" rel="noopener">国轩高科子公司出售铜冠铜箔股份（中国基金报，2026-07）</a></li>
+<li><a href="https://news.qq.com/rain/a/20260723A070JQ00?ptag=ima" target="_blank" rel="noopener">AI铜箔热潮&quot;滤镜&quot;没了？铜冠铜箔高增长背后的估值压力（腾讯新闻转载，2026-07-23）</a></li>
+<li><a href="https://stock.stockstar.com/RB2026090500005210.shtml" target="_blank" rel="noopener">铜冠铜箔2026年半年报管理层讨论（证券之星，2026-09-05）</a></li>
+<li><a href="https://www.nbd.com.cn/articles/2026-05-13/4391069.html" target="_blank" rel="noopener">铜冠铜箔：自主研发的高频高速铜箔产品已开始批量供应目前整体出货占比不高（每日经济新闻，2026-05-13）</a></li>
+<li><a href="http://www.eeo.com.cn/2026/0319/813059.shtml" target="_blank" rel="noopener">锂电铜箔加工费首轮上调落地（经济观察网，2026-03-19）</a></li>
+<li><a href="https://news.smm.cn/news/102206212" target="_blank" rel="noopener">SMM：锂电铜箔加工费月度情况（上海有色网）</a></li>
+<li><a href="https://www.donews.com/news/detail/8/6504903.html" target="_blank" rel="noopener">铜箔供需趋紧，2026年加工费启动结构性提价（DoNews）</a></li>
+<li><a href="https://news.mysteel.com/a/26020309/660F1D7DE23B68AB.html" target="_blank" rel="noopener">Mysteel参考：2025年电解铜箔量价企稳，2026年或将强势向上（我的钢铁网，2026-02-03）</a></li>
+<li><a href="https://www.webull.com/news/13484366975206400" target="_blank" rel="noopener">Tianfeng Securities: AI server development helps replace high-end copper foil domestically（Webull）</a></li>
+<li><a href="https://www.eeo.news/2026/0611/911795.shtml" target="_blank" rel="noopener">算力&quot;卡&quot;在铜箔上（经济观察网，2026-06-11）</a></li>
+<li><a href="https://pcba-hyh.com/en/industry-news/hvlp-copper-foil-crisis-ai-server-pcb-bottleneck-2026" target="_blank" rel="noopener">AI Servers Are Stuck on Copper Foil: HVLP Supply Gap（PCBA-HYH，2026）</a></li>
+<li><a href="http://www.eeo.com.cn/2026/0606/905449.shtml" target="_blank" rel="noopener">铜冠铜箔股价异动公告，披露铜箔研发相关进展（经济观察网，2026-06-06）</a></li>
+<li><a href="https://www.szse.cn/disclosure/notice/t20251222_618087.html" target="_blank" rel="noopener">关于2026年部分节假日休市安排的通知（深交所，2025-12-22）</a></li>
+<li><a href="https://basic.10jqka.com.cn/301217/event.html" target="_blank" rel="noopener">铜冠铜箔(301217) 公司大事 F10（同花顺）</a></li>
+<li><a href="https://www.cls.cn/detail/2430509" target="_blank" rel="noopener">铜冠铜箔：上半年净利同比预增486%-544%（财联社，2026-07）</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-14），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>市盈率371倍为行业中位5.2倍</li>
+      <li>20日主力净流出5.89亿元</li>
+      <li>二季度净利环比仅增2.8%</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>一致预期</dt><dd>多家券商盈利预测的平均值。是别人的观点，不是事实。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.nbd.com.cn/articles/2026-09-08/4575951.html" target="_blank" rel="noopener">沪铜重回11万元大关、伦铜续刷新高（每日经济新闻，2026-09-08）</a> <em>2026-09-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/money/future/fmnews/2026-09-08/doc-inirceww4591860.shtml" target="_blank" rel="noopener">伦铜刷新历史新高，内外同频上涨（新浪财经，2026-09-08）</a> <em>2026-09-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/jjxw/2026-09-07/doc-iniqznpq6320083.shtml" target="_blank" rel="noopener">今夜，创新高！铜价（新浪财经，2026-09-07）</a> <em>2026-09-07</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.ifeng.com/c/8wFR7plwfwD" target="_blank" rel="noopener">伦铜创历史新高，铜股集体爆发（凤凰财经，2026-09）</a> <em>2026-09</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.10jqka.com.cn/20260705/c677956343.shtml" target="_blank" rel="noopener">国轩高科子公司出售铜冠铜箔股票，合计套现8.29亿元（同花顺，2026-07-05）</a> <em>2026-07-05</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.nbd.com.cn/articles/2026-07-03/4451985.html" target="_blank" rel="noopener">国轩高科出售铜冠铜箔800多万股（每日经济新闻，2026-07-03）</a> <em>2026-07-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/roll/2026-07-04/doc-inifrtiz2589293.shtml" target="_blank" rel="noopener">成本约4.73元，卖出98元（新浪财经，2026-07-04）</a> <em>2026-07-04</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.chnfund.com/article/AR40a58b16-4844-905a-832c-3a223da708b5" target="_blank" rel="noopener">国轩高科子公司出售铜冠铜箔股份（中国基金报，2026-07）</a> <em>2026-07</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260723A070JQ00?ptag=ima" target="_blank" rel="noopener">AI铜箔热潮&quot;滤镜&quot;没了？铜冠铜箔高增长背后的估值压力（腾讯新闻转载，2026-07-23）</a> <em>2026-07-23</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://stock.stockstar.com/RB2026090500005210.shtml" target="_blank" rel="noopener">铜冠铜箔2026年半年报管理层讨论（证券之星，2026-09-05）</a> <em>2026-09-05</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.nbd.com.cn/articles/2026-05-13/4391069.html" target="_blank" rel="noopener">铜冠铜箔：自主研发的高频高速铜箔产品已开始批量供应目前整体出货占比不高（每日经济新闻，2026-05-13）</a> <em>2026-05-13</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="http://www.eeo.com.cn/2026/0319/813059.shtml" target="_blank" rel="noopener">锂电铜箔加工费首轮上调落地（经济观察网，2026-03-19）</a> <em>2026-03-19</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.smm.cn/news/102206212" target="_blank" rel="noopener">SMM：锂电铜箔加工费月度情况（上海有色网）</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.donews.com/news/detail/8/6504903.html" target="_blank" rel="noopener">铜箔供需趋紧，2026年加工费启动结构性提价（DoNews）</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.mysteel.com/a/26020309/660F1D7DE23B68AB.html" target="_blank" rel="noopener">Mysteel参考：2025年电解铜箔量价企稳，2026年或将强势向上（我的钢铁网，2026-02-03）</a> <em>2026-02-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.webull.com/news/13484366975206400" target="_blank" rel="noopener">Tianfeng Securities: AI server development helps replace high-end copper foil domestically（Webull）</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.eeo.news/2026/0611/911795.shtml" target="_blank" rel="noopener">算力&quot;卡&quot;在铜箔上（经济观察网，2026-06-11）</a> <em>2026-06-11</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://pcba-hyh.com/en/industry-news/hvlp-copper-foil-crisis-ai-server-pcb-bottleneck-2026" target="_blank" rel="noopener">AI Servers Are Stuck on Copper Foil: HVLP Supply Gap（PCBA-HYH，2026）</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://www.eeo.com.cn/2026/0606/905449.shtml" target="_blank" rel="noopener">铜冠铜箔股价异动公告，披露铜箔研发相关进展（经济观察网，2026-06-06）</a> <em>2026-06-06</em></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.szse.cn/disclosure/notice/t20251222_618087.html" target="_blank" rel="noopener">关于2026年部分节假日休市安排的通知（深交所，2025-12-22）</a> <em>2025-12-22</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://basic.10jqka.com.cn/301217/event.html" target="_blank" rel="noopener">铜冠铜箔(301217) 公司大事 F10（同花顺）</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2430509" target="_blank" rel="noopener">铜冠铜箔：上半年净利同比预增486%-544%（财联社，2026-07）</a> <em>2026-07</em></li>
+      <li><span class="src-tag src-disc">披露</span> 同花顺 F10 及多家财经媒体 2026 年报道，置信度：低——均为媒体转述，未见公司公告原文交叉验证 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 收录的 2026-09-04 新闻两条，系统标记为「升温」状态且与本票直接相关 <em>2026-09-04</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 主题「工信部要规范动力电池」「固态电芯与储能满产」收录新闻 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 中「电力设备」主题收录新闻 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 经济观察网 2026-06-06、腾讯新闻 2026-06-15 转载 <em>2026-06-06</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 这是当时的历史快照，当前价格以库内行情为准 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 每日经济新闻 2026-07-03、新浪财经 2026-07-04、中国基金报、同花顺 2026-07-05 — 四家独立来源一致，置信度：高 <em>2026-07-03</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 每日经济新闻 2026-05-13、新浪财经同日 <em>2026-05-13</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 每日经济新闻 2026-09-08、新浪财经 2026-09-07 及 09-08、凤凰财经，四源一致，置信度：高 <em>2026-09-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 上一年三季报披露日为 2025-10-27，创业板法定截止 10 月 31 日 <em>2025-10-27</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 经证券之星 2026-09-05、搜狐财经等多家转述 <em>2026-09-05</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 腾讯新闻转载 2026-07-23 报道 <em>2026-07-23</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 置信度：中 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 依据：上一年三季报披露日为 2025-10-27，见库内财务的公告日 <em>2025-10-27</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 创业板法定披露截止 10 月 31 日。⚠️ 2026 年预约披露日未确认，置信度：中 — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-14 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
