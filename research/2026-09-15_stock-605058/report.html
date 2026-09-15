@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>澳弘电子（605058.SH） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>澳弘电子（605058.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-15（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 元件</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 毫米波雷达 · 共封装光学(CPO) · PCB概念 · 智能物流 · 智能家居 · 汽车电子 · 东数西算(算力) · 工业互联网</span>
+      <span><b>来源</b> 20 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    澳弘电子（605058）主要做的是印制电路板的研发、生产和销售。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——上半年营收增长 14.74% 但净利润同比下滑 17.89%，股价三天三个涨停靠的是 PCB 板块行情，不是自家业绩。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：上半年营收增长 14.74% 但净利润同比下滑 17.89%，股价三天三个涨停靠的是 PCB 板块行情，不是自家业绩。支撑在于PCB概念资金确认、CPO主升；PE37.95低于行业中位71.37；3.3亿高端PCB基地已开工。主要风险是半年报净利同比下滑17.89%；覆铜板涨价，公司是成本承受方；封板资金递减、放量7.5倍。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>PCB概念资金确认、CPO主升</li>
+      <li>PE37.95低于行业中位71.37</li>
+      <li>3.3亿高端PCB基地已开工</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据时点：库内行情数据时点 2026-09-15 15:34（收盘）｜财务最新期 2026 年半年报（披露日 2026-08-28）｜估值口径 2026-09-14 本报告不含任何持仓、自选、账户信息，可公开存档。</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：上半年营收增长 14.74% 但净利润同比下滑 17.89%，股价三天三个涨停靠的是 PCB 板块行情，不是自家业绩。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li>所在的「PCB概念」板块在热点记录里处于「资金确认」档（2026-09-09 进入，依据：大单连续 3 日净流入 +294.4 亿），「共封装光学(CPO)」处于「主升」档（2026-09-11 进入，依据：连续 3 天跑赢大盘、10 天比大盘多涨 3.3%）——板块资金是当前最直接的推动力（置信度：高，来自库内记录）。</li>
+<li>估值在行业里不贵：PE(TTM) 37.95 倍，元器件行业 312 只票的中位数是 71.37 倍，它排第 46 便宜（约在最便宜的前 15%，据排名推算）；PB 2.95 倍，明显低于三家对标公司（置信度：高）。</li>
+<li>公司有真实的高端产能扩建动作：全资子公司海弘电子拟投约 3.3 亿元建高端 PCB 定制化生产基地，计划 2026 年二季度开工，方向含汽车电子、AI 服务器、高频高速信号传输（置信度：中，来源为公司年报与业绩说明会公告，非库内数据）。</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li>上游覆铜板涨价，公司是承受成本的一方而不是收钱的一方：2026 年一季度净利润同比下滑 9.62%，公司说明的原因是覆铜板、铜球、铜箔、金盐涨价推高营业成本、向下游客户提价有滞后，加上人民币对美元升值造成汇兑损失 2090.53 万元（置信度：高，一季报口径，经济观察网 2026-05-20 报道）。</li>
+<li>主力产品仍是中低端板：2025 年单面板营收 4.22 亿元、双面多层板 7.74 亿元，两项合计约占当年营收 13.48 亿元的 88.7%（据 2025 年年报数据推算）——它挂着的 CPO、数据中心、算力等概念标签，目前在财报里找不到对应营收（置信度：高）。</li>
+<li>涨停质量在变弱且已放出大量：2026-09-14 那个涨停当天开板 7 次、封单只有 0.29 亿元，而 2026-09-11 是 0 次开板、封单 0.40 亿元；2026-09-15 单日成交 7.5 亿元，是近 20 日日均成交额约 1.0 亿元的约 7.5 倍（据库内日 K 推算）（置信度：高）。</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ol>
+<li><strong>三季报的单季净利润同比</strong>（参考 2025 年三季报披露日 2025-10-30，预计 2026 年 10 月下旬）——二季度单季净利润同比约 -25%（据半年报与一季报推算），三季度是继续下滑还是转正，是这条逻辑链的唯一硬验证点。</li>
+<li><strong>热点记录里「PCB概念」与「共封装光学(CPO)」的状态</strong>——只要这两项还在「主升 / 资金确认」，股价的板块支撑就在；一旦不在，缺乏业绩支撑的问题会立刻暴露。核验时点：每个交易日收盘后。</li>
+</ol>
+<p><strong>这份判断最可能错在哪</strong>：我把它定性为「成本承受方」，依据是 2025 年的产品结构和一季度的成本说明。如果 2026 年下半年高端 PCB 定制化基地的产能真的投产并拿到 AI 服务器订单，产品结构可能在三季报或年报里出现我现在看不到的变化——那样「概念沾边不沾业绩」这条判断会被推翻。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>公司</strong>：常州澳弘电子股份有限公司，简称澳弘电子，代码 605058，上交所主板（上市状态 = L，正常上市）。</li>
+<li><strong>上市时间</strong>：2020-10-21，至今约 5 年 11 个月（据上市日推算）。</li>
+<li><strong>主营业务</strong>（库内原文）：印制电路板的研发、生产和销售。</li>
+<li><strong>产品线</strong>：单面印制板、双面印制板、多层印制板、金属基印制板、OSP 板、喷锡板、化金/镀金板、碳膜板及复合基材印制板，年产各类印制电路板近 400 万平方米。</li>
+<li><strong>下游领域</strong>：家用电器、消费电子、电源能源、网络通讯及汽车电子。</li>
+<li><strong>客户</strong>（库内公司介绍所列）：海尔、海信、美的、奥克斯、台湾光宝、LG 电子、惠而浦、伊顿、博西华、艾默生、通用电气等。</li>
+<li><strong>子公司</strong>：常州海弘电子、香港昇耀、新加坡昇耀（三家全资）。两大生产基地：澳弘电子、海弘电子。</li>
+<li><strong>规模</strong>：员工 1328 人，注册资本 14292.395 万元（对应总股本约 1.43 亿股，按 1 元面值推算）。</li>
+<li><strong>行业归属</strong>（库内）：元器件。</li>
+</ul>
+<p><strong>当前行情与估值</strong></p>
+<ul>
+<li>2026-09-15 收盘价 40.30 元，当日涨 9.99%，当日最高涨幅 9.99%、最低涨幅 -0.93%，成交额 7.50 亿元（库内行情，数据时点 15:34 即当日收盘）。当日最高价与收盘价相同，是涨停板收盘。</li>
+<li>估值口径为 2026-09-14 收盘：PE(TTM) 37.95 倍、PB 2.95 倍、股息率 1.64%、总市值 52.37 亿元、换手率 11.21%。</li>
+<li>按 2026-09-15 涨停后推算：总市值约 57.6 亿元、PE(TTM) 约 41.7 倍（据 9-14 估值 × 1.0999 推算，非库内直接取数）。</li>
+<li><strong>行业分位</strong>：元器件行业 312 只票，PE 中位数 71.37 倍，本公司排第 46 便宜。<strong>仅估值口径</strong>看不贵，但便宜本身不构成好坏结论——PE 低也可能是市场对它的成长性定价更低。</li>
+</ul>
+<p><strong>A/H 溢价</strong>：库内 A/H 对照返回空，该公司不是 A+H 两地上市，无跨市场估值参照，属正常情况。</p>
+<h2>C. 财务健康</h2>
+<p>近四期（库内财务，单位亿元，新→旧）：</p>
+<ul>
+<li><strong>2026 年半年报</strong>（披露 2026-08-28）· 营收 7.73（同比 +14.74%）· 净利润 0.66（同比 <strong>-17.89%</strong>）· 毛利率 24.69% · 净利率 8.58% · ROE 3.67% · 资产负债率 51.63% · 每股收益 0.46 元</li>
+<li><strong>2026 年一季报</strong>（披露 2026-04-28）· 营收 3.59（同比 +6.14%）· 净利润 0.33（同比 <strong>-9.62%</strong>）· 毛利率 26.61% · 净利率 9.22% · ROE 1.81% · 资产负债率 46.25% · 每股收益 0.23 元</li>
+<li><strong>2025 年年报</strong>（披露 2026-04-16）· 营收 13.48（同比 +4.25%）· 净利润 1.52（同比 +7.74%）· 毛利率 23.21% · 净利率 11.31% · ROE 8.62% · 资产负债率 50.49% · 每股收益 1.07 元</li>
+<li><strong>2025 年三季报</strong>（披露 2025-10-30）· 营收 10.06（同比 +6.69%）· 净利润 1.07（同比 +6.45%）· 毛利率 22.65% · 净利率 10.63% · ROE 6.17% · 资产负债率 39.20% · 每股收益 0.75 元</li>
+</ul>
+<p><strong>趋势怎么看（不是罗列，是找拐点）</strong></p>
+<ol>
+<li><strong>拐点出现在 2026 年一季度：从增收又增利，变成增收不增利。</strong> 2025 年全年还是营收 +4.25%、净利润 +7.74%；到 2026 年一季度变成营收 +6.14%、净利润 -9.62%；半年报进一步拉大成营收 +14.74%、净利润 -17.89%。收入在加速，利润在往下走（置信度：高）。</li>
+</ol>
+<ol>
+<li><strong>二季度单季拆出来更清楚</strong>：2026 年二季度单季营收约 4.14 亿元、同比约 +23.3%；单季净利润约 0.33 亿元、同比约 <strong>-25.0%</strong>（均据半年报减一季报推算，2025 年同期同法推算）。收入增速在变快，利润降幅在变大——两条线是相反方向（置信度：中，因为是推算值不是库内直接取数）。</li>
+</ol>
+<ol>
+<li><strong>毛利率上升但净利率下降，说明问题不在毛利端。</strong> 2026 年半年报毛利率 24.69%，比 2025 年半年报的 22.30% 高了 2.39 个百分点；但净利率从 11.98% 降到 8.58%，降了 3.40 个百分点。毛利没有恶化、净利却掉了，钱是在毛利之下的环节被消耗掉的。库内没有费用明细表，无法直接确认是哪一项（<strong>信息缺口</strong>，见 M 节）。公司在一季报的说明里给过一个可能的解释：人民币对美元升值造成汇兑损失 2090.53 万元（经济观察网 2026-05-20，单源，置信度：中）。</li>
+</ol>
+<ol>
+<li><strong>资产负债率明显抬升，但原因清楚。</strong> 从 2025 年三季报的 39.20% 升到 2025 年年报的 50.49%，2026 年半年报 51.63%。对应的是 2025 年 12 月 11 日发行、2026 年 1 月 16 日上市的「澳弘转债」5.8 亿元（新浪财经公告，置信度：中）。这不是经营性负债恶化，是一次融资入表——但利息成本会实打实压 2026 年的利润（置信度：中）。</li>
+</ol>
+<ol>
+<li><strong>ROE 下台阶。</strong> 2025 年半年报 ROE 4.70%，2026 年半年报 3.67%。分母（净资产）因可转债和留存增加，分子（净利润）在下滑，两头都不利（置信度：高）。</li>
+</ol>
+<ol>
+<li><strong>股息率 1.64%</strong>（2026-09-14 口径），在当前股价下属偏低水平，不构成收益支撑（置信度：高）。</li>
+</ol>
+<p><strong>估值贵贱只做「仅估值口径」判断</strong>：PE(TTM) 37.95 倍在元器件行业里排第 46 便宜（共 312 只），PB 2.95 倍是四家对比公司里最低的。但这两个数字都建立在过去 12 个月的盈利上，而最近两期盈利在下滑——如果三季度继续下滑，PE 会被动抬高，「便宜」会自己消失（置信度：中）。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>同行业对比（库内同业对比，财务为 2026 年半年报口径，估值为 2026-09-14 口径）：</p>
+<ul>
+<li><strong>澳弘电子（605058）</strong> · 市值 52.37 亿 · PE(TTM) 37.95 · PB 2.95 · 半年营收 7.73 亿 · 半年净利 0.66 亿 · ROE 3.67%</li>
+<li><strong>立讯精密（002475）</strong> · 市值 4084.05 亿 · PE(TTM) 22.95 · PB 4.39 · 半年营收 1745.04 亿 · 半年净利 78.43 亿 · ROE 8.79%</li>
+<li><strong>生益科技（600183）</strong> · 市值 3546.35 亿 · PE(TTM) 68.27 · PB 19.17 · 半年营收 190.26 亿 · 半年净利 32.87 亿 · ROE 18.66%</li>
+<li><strong>东山精密（002384）</strong> · 市值 3390.49 亿 · PE(TTM) 94.58 · PB 13.91 · 半年营收 277.98 亿 · 半年净利 29.57 亿 · ROE 12.90%</li>
+</ul>
+<p><strong>这家公司在同行里处于什么位置</strong></p>
+<ul>
+<li><strong>规模上差两个数量级。</strong> 澳弘半年营收 7.73 亿元，生益科技 190.26 亿元、东山精密 277.98 亿元、立讯精密 1745.04 亿元。市值 52.37 亿元 vs 对标公司三四千亿元。它不是这条产业链上有定价权的一环（置信度：高）。</li>
+<li><strong>最有说服力的一组对比是它和生益科技。</strong> 生益科技是覆铜板（PCB 的原材料）龙头，2026 年半年 ROE 18.66%；澳弘是买覆铜板做 PCB 的下游厂，同期 ROE 3.67%。同一条产业链上,上游的赚钱能力是下游的五倍左右（据两家 ROE 直接对比）。这和 C 节里「原材料涨价压利润」的说法互相印证（置信度：高）。</li>
+<li><strong>贵在哪、便宜在哪</strong>：澳弘 PB 2.95 倍是四家里最低的，PE 37.95 倍低于生益（68.27）和东山（94.58）、高于立讯（22.95）。便宜的代价是盈利能力弱——ROE 3.67% 也是四家里最低的。<strong>低 PB 对应低 ROE，这不是错杀，是定价一致</strong>（置信度：中）。</li>
+<li><strong>相对优势</strong>：有两个生产基地、年产能近 400 万平方米、客户名单里有海尔、美的、LG、惠而浦、伊顿、通用电气等大厂，说明它在家电类 PCB 上有稳定的供货资质（置信度：中，来源为库内公司介绍，无库内营收占比佐证）。</li>
+<li><strong>相对劣势</strong>：产品结构偏中低端（见 G 节），在这轮由 AI 算力驱动的高端 PCB 行情里，它拿到的是成本上涨、不是价格上涨（置信度：中）。</li>
+</ul>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>：采购覆铜板、铜箔、铜球、金盐等原材料 → 加工成各类印制电路板 → 卖给家电、汽车电子、工控、电源能源等领域的整机厂。典型的中游加工制造，赚的是加工费和规模效率的钱。</p>
+<p><strong>分级判断</strong>：</p>
+<ul>
+<li><strong>结构性护城河</strong>：<strong>看不出来</strong>（置信度：中）。PCB 是高度分散、充分竞争的行业；库内信息里没有牌照壁垒、没有网络效应，专利 80 余项（发明及实用新型合计）在这个行业属常规水平，不构成排他性。</li>
+<li><strong>阶段性优势</strong>：<strong>有，但不强</strong>（置信度：中）。① 客户绑定：与海尔、海信、美的、LG、惠而浦、伊顿、通用电气等合作多年，家电 PCB 的认证周期长、换供应商有成本，这构成一定粘性；② 区位与产能：常州基地在长三角，靠近家电与汽车电子客户群；③ 资质完整：IATF16949（汽车行业质量体系）、ISO9001、ISO14001 认证齐全，汽车电子门槛已经跨过。</li>
+<li><strong>明确的弱点</strong>：<strong>议价能力两头受挤</strong>。上游覆铜板集中度高（建滔、生益、南亚等），2026 年已多轮涨价；下游是海尔、美的这类议价能力极强的家电巨头，提价有滞后。公司自己在一季报里说的就是这个：成本涨了，向下游传导有滞后（置信度：高，公司公开说明）。</li>
+</ul>
+<p><strong>一句话</strong>：从库内信息看不出结构性护城河，有的是客户认证形成的阶段性粘性；商业模式决定了它在原材料涨价周期里利润会先被压缩（置信度：中）。</p>
+<h2>F. 政策与监管</h2>
+<p>库内没有政策数据，本节全部来自联网，每条带来源与日期。</p>
+<p><strong>1. 美国 FCC 拟禁止进口中国新款高速光模块（对本公司为间接、情绪层面影响）</strong></p>
+<ul>
+<li>事实：路透社 2026-08-04 援引四名知情人士报道，美国联邦通信委员会正起草新规，拟禁止进口中国新研发的 800G、1.6T 等高速光模块，采用「新老划断」——只限制尚未获 FCC 认证的新款产品，存量型号不受影响，草案尚未定稿、未进入正式规则制定流程（来源：<a href="https://fiber.ofweek.com/2026-08/ART-210001-12003-30697217.html" target="_blank" rel="noopener">OFweek 光通讯网 2026-08</a>、<a href="https://www.sina.cn/news/detail/5328547478770902.html" target="_blank" rel="noopener">新浪新闻 2026-08</a>，两个独立转载源均指向路透社原报道）。</li>
+<li>库内事件日历也记有这一条：2026-09-20「美国FCC拟禁止进口中国下一代高速光模块（800G/1.6T）草案推进」，重要性 8，匹配原因是本公司挂了「共封装光学(CPO)」概念标签。</li>
+<li><strong>传导方向与链条</strong>：对本公司是<strong>中性偏负面的情绪风险</strong>，不是基本面风险——它没有光模块营收（见 G 节），传导路径只有「CPO 概念板块情绪回落 → 概念股跟跌」这一条（置信度：中）。</li>
+</ul>
+<p><strong>2. 覆铜板持续涨价（对本公司是直接的成本端利空）</strong></p>
+<ul>
+<li>事实一：覆铜板龙头建滔积层板 2026-08-28 下发年内第七份调价函，所有厚度 FR-4 覆铜板统一涨价 10%（来源：<a href="https://m.21jingji.com/article/20260901/herald/ea3bb9ff92942767111c1faf6a062215.html" target="_blank" rel="noopener">21 财经 2026-09-01</a>）。</li>
+<li>事实二：南亚塑料电子材料事业部通知客户，覆铜板及半固化片价格上调 20% 至 25%，2026-09-01 起生效（来源：<a href="https://news.qq.com/rain/a/20260826A08ULN00" target="_blank" rel="noopener">腾讯新闻 2026-08-26</a>）。</li>
+<li>事实三：行业层面 2026 年出现从上游基材到终端成品的全线涨价，普遍判断本轮景气至少贯穿全年（来源：<a href="https://paper.cnstock.com/html/2026-07/15/content_2244921.htm" target="_blank" rel="noopener">上海证券报 2026-07-15</a>、<a href="https://www.jiepei.com/design/10146.html" target="_blank" rel="noopener">捷配 2026</a>）。</li>
+<li><strong>传导方向与链条</strong>：<strong>直接利空本公司利润率</strong>。覆铜板是 PCB 的主要原材料 → 成本上升 → 公司向家电类下游客户提价有滞后 → 毛利与净利被压缩。这正是 C 节看到的现象，也是公司在一季报里自己给出的解释（置信度：高，多源交叉验证 + 公司公开说明）。</li>
+<li><strong>注意</strong>：同一条涨价新闻，对生益科技这类覆铜板厂是利好，对澳弘这类下游 PCB 加工厂是利空。<strong>看到「PCB 涨价」四个字不要默认它是受益方</strong>。</li>
+</ul>
+<p><strong>3. 无本公司专属的监管事项</strong></p>
+<ul>
+<li>库内事件日历返回的 8 条全部是概念匹配的行业/政策事件，没有一条是公司层面的监管、处罚或问询（置信度：高）。</li>
+</ul>
+<h2>G. 题材与产业链关联</h2>
+<h3>G-1 所在板块正在发生什么（交易日 2026-09-14）</h3>
+<p>库内记录该公司所在行业/概念当前有 8 个正在活动的热点，照抄系统口径：</p>
+<ul>
+<li><strong>共封装光学(CPO)</strong> · 概念 · 状态「<strong>主升</strong>」· 进入日 2026-09-11 · 依据：连续 3 天跑赢大盘，10 天比大盘多涨 3.3%</li>
+<li><strong>PCB概念</strong> · 概念 · 状态「资金确认」· 进入日 2026-09-09 · 依据：大单连续 3 日净流入 +294.4 亿</li>
+<li><strong>电子（申万一级行业）</strong> · 状态「资金确认」· 进入日 2026-09-07 · 依据：涨停 14 家（前日 0 家，20 日平均 4.2 家）</li>
+<li><strong>商业航天</strong> · 概念 · 状态「资金确认」· 进入日 2026-09-07 · 依据：涨停 13 家（前日 1 家，20 日平均 4.8 家）</li>
+<li><strong>8月车企销量分化</strong> · 系统发现的新热点 · 状态「资金确认」· 进入日 2026-09-07 · 关联方式：<strong>直接</strong> · 依据：涨停 28 家（前日 3 家，20 日平均 11.4 家）· 发生了什么：多家车企公布 8 月销量——长城汽车 11.34 万辆同比下降 1.87%，北汽新能源 17573 辆同比增长 29.88%，江铃汽车 32266 辆同比增长 7.54%，福特在美国销量 170,681 辆同比下降 10.3%；乘联分会称 1-7 月世界汽车销量达 5611 万台。相关新闻里另有乘联分会 2026-09-08 数据：8 月新能源乘用车国内零售 100.5 万辆，同比下降 10.1%。</li>
+<li><strong>三星存储产能锁长约</strong> · 系统发现的新热点 · 状态「资金确认」· 进入日 2026-09-07 · 关联方式：间接 · 发生了什么：9 月 3 日报道称三星存储器业务部门将在 2031 年前把约 70% 的产能分配给长约订单。</li>
+<li><strong>华为韬定律论文再更新</strong> · 系统发现的新热点 · 状态「资金确认」· 进入日 2026-09-07 · 关联方式：间接 · 发生了什么：9 月初华为半导体负责人何庭波更新发布「韬定律」论文，围绕 3D 堆叠散热等难题展开，分析师认为半导体设备等环节有望受益。</li>
+<li><strong>戴尔AI服务器订单积压</strong> · 系统发现的新热点 · 状态「升温」· 进入日 2026-09-07 · 关联方式：间接 · 发生了什么：9 月 2 日前后戴尔公布业绩，AI 基建部门营收大增近 90%，上调全年及 2027 财年营收预期，称 AI 服务器积压订单达 950 亿美元，同时表示 CPU、硬盘驱动器和 DRAM 供应短缺。</li>
+</ul>
+<p><strong>这组热点说明的事</strong>：推动这只票的是「PCB概念 + CPO + 电子」这一串板块级资金，不是公司自己的消息（置信度：高）。同时要注意「8月车企销量分化」是<strong>唯一一个和本公司有直接关联的热点</strong>，而它的内容是国内新能源乘用车 8 月零售同比下降 10.1%——对本公司的汽车电子板块是需求端的负面信息，不是正面的（置信度：中）。</p>
+<h3>G-2 概念标签逐个分级（库内概念标签，同花顺标签共 14 个）</h3>
+<p><strong>真有业务（有主营描述或年报数据佐证）</strong>：</p>
+<ul>
+<li><strong>PCB概念</strong> — 主营就是印制电路板，2025 年营收 13.48 亿元全部来自 PCB（置信度：高）。</li>
+<li><strong>汽车电子</strong> — 公司介绍明确列出汽车电子为产品应用领域，且持有 IATF16949 汽车行业质量体系认证（置信度：高，但库内无营收占比数据）。</li>
+<li><strong>智能家居</strong> — 主要客户为海尔、海信、美的、奥克斯、LG、惠而浦，家用电器是首要应用领域（置信度：中，家电 PCB 与「智能家居」概念不完全等同）。</li>
+</ul>
+<p><strong>仅概念标签，未见营收佐证</strong>（挂了标签但在财报和公司介绍里找不到对应收入）：</p>
+<ul>
+<li><strong>共封装光学(CPO)</strong> — 未见光模块或 CPO 相关营收佐证（置信度：高）。这一条尤其要注意，因为它正是当前处于「主升」档的那个热点。</li>
+<li><strong>数据中心(AIDC)</strong> — 公司在年报中提到布局「AI 服务器电源」方向，但 2025 年产品结构里单面板 4.22 亿元 + 双面多层板 7.74 亿元合计约占营收 88.7%（据 2025 年年报数据推算），未见数据中心业务的独立营收披露（置信度：中）。</li>
+<li><strong>东数西算(算力)</strong> — 同上，仅概念标签（置信度：高）。</li>
+<li><strong>5G</strong>、<strong>商业航天</strong>、<strong>毫米波雷达</strong>、<strong>储能</strong>、<strong>工业互联网</strong>、<strong>智能物流</strong>、<strong>新能源汽车</strong>、<strong>一带一路</strong> — 均未在库内财务数据或公司介绍中找到对应营收佐证，按「仅概念标签」处理（置信度：高）。</li>
+</ul>
+<p><strong>一句话</strong>：14 个标签里，能在财报或主营描述上找到支撑的是 3 个（PCB、汽车电子、智能家居）；当前推动股价的那两个（CPO、数据中心）恰好都属于「仅概念标签」（置信度：高）。</p>
+<h3>G-3 产业链位置</h3>
+<ul>
+<li><strong>上游</strong>：覆铜板（生益科技、建滔积层板、南亚塑料等）、铜箔、铜球、金盐。集中度高，2026 年多轮涨价，<strong>议价能力在上游</strong>。</li>
+<li><strong>本公司</strong>：中游 PCB 加工制造。年产能近 400 万平方米，产品以单面板、双面多层板为主。</li>
+<li><strong>下游</strong>：家用电器（海尔、海信、美的、奥克斯、LG、惠而浦）、汽车电子、工控 EMS、电源能源、通讯安防。下游是大型整机厂，<strong>议价能力也在下游</strong>。</li>
+<li><strong>结论</strong>：它夹在两头都强的中间环节，这决定了原材料涨价周期里它的利润会先被压缩、后才有可能通过提价补回来（置信度：中）。</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<h3>H-1 近 60 日新闻（库内新闻返回 10 条）</h3>
+<p><strong>重要的发现是：10 条里没有一条是公司自身的基本面新闻。</strong> 全部是板块行情和大盘复盘类快讯，事件分类都被系统标为「噪音其他」或「market」。挑出最相关的几条：</p>
+<ol>
+<li><strong>2026-09-14 13:19 财联社</strong>《PCB概念持续走高澳弘电子等近十股涨停》——公司被点名，但性质是板块跟随行情的行情播报，不含任何公司经营信息，对基本面<strong>无实质影响</strong>（情感分 0.70）。</li>
+<li><strong>2026-09-15 09:38 财联社</strong>《PCB概念反复走强超声电子7天5板》——板块仍在活跃，领涨的是超声电子不是本公司，说明板块内部有更强的领头票（情感分 0.70）。</li>
+<li><strong>2026-09-15 09:38 东方财富</strong>《PCB概念板块短线拉升华正新材涨停》——同上，板块效应确认（情感分 0.60）。</li>
+<li><strong>2026-09-15 15:43 财联社</strong>《9月15日连板股分析：连板股晋级率36% 高位股大面积热度回落》（标题原文含系统词，此处按事实转述）——当日连板股只有 36% 能继续涨停，高位品种整体热度下降。这是<strong>当日收盘后最该注意的一条</strong>，情感分 -0.25（置信度：高，来源为库内新闻）。</li>
+<li><strong>2026-09-15 15:06 财联社</strong>《收评：创业板指冲高回落跌超1% 宁德时代股价创近1年以来新低》——大盘当日走弱，情感分 -0.50。本公司在大盘走弱的一天封住涨停，说明板块资金强度确实存在，但也意味着风险敞口更集中（置信度：中）。</li>
+<li><strong>2026-09-14 14:10 财联社</strong>《14点快评：市场量能明显萎缩短线情绪分化》——情感分 -0.50。</li>
+</ol>
+<p><strong>信息缺口</strong>：近 60 天库内没有一条公司层面的实质公告新闻（订单、扩产落地、业绩预告、股东变动），本节对基本面的增量信息为零（置信度：高）。</p>
+<h3>H-2 涨停记录（库内涨停记录，近 180 日，库内截至 2026-09-14）</h3>
+<p>共 3 次涨停：</p>
+<ul>
+<li><strong>2026-09-14</strong> · 涨 10.00% · <strong>2 连板</strong> · 首次封板 13:12:03 · 最后封板 13:38:18 · <strong>开板 7 次</strong> · 封板资金 0.29 亿元 · 涨停统计 2/2</li>
+<li><strong>2026-09-11</strong> · 涨 10.01% · 首板 · 首次封板 10:20:17 · <strong>开板 0 次</strong> · 封板资金 0.40 亿元 · 涨停统计 1/1</li>
+<li><strong>2026-06-15</strong> · 涨 9.99% · 首板 · 首次封板 10:45:44 · <strong>开板 0 次</strong> · 封板资金 0.68 亿元 · 涨停统计 1/1</li>
+</ul>
+<p><strong>怎么读</strong>：三次涨停的封板资金一次比一次少（0.68 → 0.40 → 0.29 亿元），最近一次还开板 7 次、下午 1 点多才封住。<strong>封板质量在下降</strong>，说明愿意在涨停价排队接货的资金在减少（置信度：高）。</p>
+<p>2026-09-15 收盘 40.30 元、涨 9.99%、当日最高价等于收盘价，是涨停板收盘，按连续性推算应为第 3 个连板——但该日涨停数据要等当日 17:45 数据入库后才能确认，此处标注为推算（置信度：中）。</p>
+<h3>H-3 资金与筹码（库内资金筹码）</h3>
+<p>⚠️ 本小节是盘面现象，不是基本面证据，只作情绪面佐证，不进 J 节逻辑链。</p>
+<ul>
+<li><strong>资金流</strong>（近 20 个交易日，2026-08-18 至 2026-09-14）：全口径净流入 0.20 亿元；<strong>特大单（主力）净流入 1.11 亿元</strong>；净流入为正的天数 12 天、为负 8 天。主力在这 20 天里是净买入方向，但全口径净流入只有 0.20 亿元，说明主力买的同时有散户和中小单在卖（置信度：高）。</li>
+<li><strong>筹码分布</strong>：<strong>库内暂无</strong>。筹码数据库内仅覆盖关注票，该票不在覆盖范围内——这是数据覆盖范围问题，不是事实缺失。影响：无法判断获利盘比例、无法给出「上方套牢盘」或「获利抛压」的量化判断（见 M 节）。</li>
+<li><strong>股东户数</strong>：2026-06-30 为 15435 户。库内<strong>没有上一期数据</strong>，无法算环比，也就无法判断筹码是在集中还是在分散。另外股东户数是季度披露、天然滞后——这个数字反映的是半年报时点的状态，和 9 月的三连板无关（置信度：高）。</li>
+</ul>
+<h3>H-4 成交与换手</h3>
+<ul>
+<li>2026-09-15 成交额 7.50 亿元（库内行情），近 20 个交易日日均成交额约 1.0 亿元（据库内日 K 推算），放大约 7.5 倍。</li>
+<li>2026-09-14 换手率 11.21%（库内估值）。</li>
+<li><strong>读法</strong>：这种量能是典型的短线资金集中进场，好处是流动性充足，风险是同样的量出来的时候承接也会很薄（置信度：中）。</li>
+</ul>
+<h2>I. 未来 13 周事件日历</h2>
+<p>来源标注：（库）= 库内事件日历；（网）= 联网补充；（推）= 据库内历史披露日推算。</p>
+<ul>
+<li><strong>W1（2026-09-14 起）</strong>
+<ul>
+<li>09-15 · SpaceX 星舰第 14 次试飞（目标入轨并部署星链 V3）· 事件 · 重要性高（库，8）· 影响：商业航天概念催化，本公司无该业务营收佐证，仅标签关联</li>
+<li>09-15~16 · 2026 第四届 AI 算力产业大会暨展览会（北京国家会议中心）· 会议 · 重要性中（库，6）· 影响：算力链情绪，间接影响 PCB 板块热度</li>
+<li>09-17 · 长征十二号执行星网（GW 星座）低轨组网发射 · 事件 · 重要性中高（库，7）· 影响：同商业航天，仅标签关联</li>
+<li>09-17~21 · 第 23 届中国-东盟博览会（南宁）· 会议 · 重要性中（库，6）· 影响：一带一路标签，影响偏局部</li>
+<li>09-20 · 美国 FCC 拟禁止进口中国下一代高速光模块（800G/1.6T）草案推进 · 政策 · 重要性高（库，8）· 影响：CPO 概念的风险事件，若消息发酵会直接冲击 G-1 里处于「主升」档的那个热点</li>
+</ul></li>
+<li><strong>W2（2026-09-21 起）</strong>
+<ul>
+<li>09-22~24 · 2026 中国国际信息通信展览会（PT 展，北京）· 会议 · 重要性中高（库，7）· 影响：5G、算力、光模块方向的消息催化窗口</li>
+<li>09-22~24 · 2026 世界新能源汽车大会（海口）· 会议 · 重要性中高（库，7）· 影响：可能给出新能源车全年需求指引，对应本公司汽车电子业务</li>
+</ul></li>
+<li><strong>W3（2026-09-28 起）</strong>
+<ul>
+<li>月末覆铜板调价窗口 · 行业 · 重要性中（网，建滔积层板年内已 7 次调价、南亚 9-1 起涨 20~25%）· 影响：直接决定 C 节的成本端压力是否延续到三季度</li>
+</ul></li>
+<li><strong>W4（2026-10-05 起）</strong>
+<ul>
+<li>10-01 · 英伟达 Vera Rubin AI 计算平台预计开始交付 · 事件 · 重要性高（库，8）· 影响：算力链最直接的订单催化，但对本公司只有板块情绪传导</li>
+<li>国庆假期，A 股本周多数日无交易</li>
+</ul></li>
+<li><strong>W5（2026-10-12 起）</strong>
+<ul>
+<li>9 月及三季度汽车产销数据发布（中汽协、乘联分会，通常月中）· 行业 · 重要性中（网）· 影响：验证 G-1 里「8月车企销量分化」这个热点的方向，关系到汽车电子需求</li>
+</ul></li>
+<li><strong>W6（2026-10-19 起）</strong>
+<ul>
+<li>三季报披露窗口开启 · 财报 · 重要性高（推，依据 2025 年三季报披露日 2025-10-30）· 影响：等待本公司披露</li>
+</ul></li>
+<li><strong>W7（2026-10-26 起）</strong>
+<ul>
+<li>2026 年三季报预计披露 · 财报 · 重要性 <strong>最高</strong>（推，依据去年同期 10-30，置信度：低，公司未公告预约日）· 影响：<strong>这是本报告唯一的硬验证点</strong>——验证 C 节「增收不增利」是否延续、二季度单季净利润约 -25% 的同比降幅是收窄还是扩大</li>
+</ul></li>
+<li><strong>W8（2026-11-02 起）</strong>
+<ul>
+<li>10 月覆铜板调价窗口 + 10 月汽车产销数据 · 行业 · 重要性中（网）</li>
+</ul></li>
+<li><strong>W9（2026-11-09 起）</strong>：本周无已知事件</li>
+<li><strong>W10（2026-11-16 起）</strong>：本周无已知事件</li>
+<li><strong>W11（2026-11-23 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-11-30 起）</strong>
+<ul>
+<li>11 月覆铜板调价窗口 + 11 月汽车产销数据 · 行业 · 重要性中（网）</li>
+</ul></li>
+<li><strong>W13（2026-12-07 起）</strong>
+<ul>
+<li>澳弘转债发行满一周年（2025-12-11 网上申购，2026-01-16 上市，规模 5.8 亿元）· 公司 · 重要性低（网，新浪财经公告）· 影响：转股进度与股本摊薄需在年报中跟踪</li>
+</ul></li>
+</ul>
+<h2>J. 逻辑链</h2>
+<p><strong>主链（可证伪）</strong></p>
+<p>因为 ① 2025 年产品结构中单面板 4.22 亿元 + 双面多层板 7.74 亿元合计约占营收 88.7%（据 2025 年年报推算，<strong>置信度：中</strong>——数据来自联网年报摘要，非库内直接取数）； 且 ② 上游覆铜板 2026 年已多轮涨价、建滔 8-28 第七次调价涨 10%、南亚 9-1 起涨 20~25%（网，多源交叉，<strong>置信度：高</strong>）； 且 ③ 公司在一季报中自述净利润下滑的原因是原材料涨价 + 向下游提价滞后 + 汇兑损失 2090.53 万元（公司公开说明，<strong>置信度：中</strong>，单源转述）；</p>
+<p>→ <strong>所以推论</strong>：这一轮 AI 算力驱动的 PCB 涨价周期里，澳弘电子的财务角色是「成本承受方」而不是「涨价受益方」（<strong>置信度：中</strong>）；</p>
+<p>→ <strong>如果推论成立，应该能观察到</strong>： a) 库内财务数据显示营收增长但净利润同比下滑 —— <strong>已观察到</strong>：2026 年半年报营收 +14.74%、净利润 -17.89%（库内财务，<strong>置信度：高</strong>）； b) 它的 ROE 显著低于上游覆铜板厂 —— <strong>已观察到</strong>：2026 年半年 ROE 3.67% vs 生益科技 18.66%（库内同业对比，<strong>置信度：高</strong>）； c) 它的估值低于同行业中位 —— <strong>已观察到</strong>：PE 37.95 vs 行业中位 71.37（库内估值，<strong>置信度：高</strong>）； d) <strong>尚未验证</strong>：三季报单季净利润同比是否继续为负。这是这条链的<strong>未来验证点</strong>（见 I 节 W7）。</p>
+<p><strong>副链（股价为什么涨）</strong></p>
+<p>因为 ① 热点记录显示「PCB概念」处于「资金确认」、「共封装光学(CPO)」处于「主升」、「电子」行业处于「资金确认」（<strong>置信度：高</strong>）； 且 ② 近 60 日库内没有一条公司自身的基本面新闻，被点名的三条都是板块行情播报（库内新闻，<strong>置信度：高</strong>）； → <strong>所以推论</strong>：2026-09-11 至 09-15 的连续涨停由板块资金驱动，与公司自身经营变化无关（<strong>置信度：高</strong>）； → <strong>如果推论成立，应该能观察到</strong>：股价走势与 PCB 板块同步、且板块内有更强的领头票 —— <strong>已观察到</strong>：同期超声电子 7 天 5 板、华正新材涨停（库内新闻，<strong>置信度：中</strong>）。</p>
+<p><strong>最弱的一环（整条链的命门）</strong></p>
+<p>是主链的 ①——<strong>产品结构占比来自联网的年报摘要，不是库内数据</strong>。库内财务只给总营收和总利润，不给分产品拆分。如果这个 88.7% 的数字有误，或者 2026 年结构已经发生显著变化（比如高端定制化基地提前贡献收入），那么「成本承受方」这个定性就站不住（<strong>置信度：中</strong>）。</p>
+<p>这也是为什么 I 节 W7 的三季报是唯一的硬验证点：<strong>只有财报能同时验证第①环和第 d) 项</strong>。</p>
+<p><strong>券商观点</strong>：库内研报返回空——库内近 90 天没有覆盖该公司的研报。联网检索也未找到近期的卖方盈利预测。因此本报告<strong>不包含任何〔卖方预期〕条目</strong>（说明见 M 节）。</p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（30%）</strong>｜<strong>触发</strong>：2026 年三季报（预计 10 月下旬）单季净利润同比由负转正，且毛利率不低于半年报的 24.69%；同时热点记录里「PCB概念」仍处于「资金确认」或更强状态｜<strong>路径</strong>：业绩证伪了「成本承受方」定性，估值从行业最便宜的前 15% 向元器件行业 PE 中位收敛，股价站上 6-18 收盘前高后打开上行空间</li>
+</ul>
+<ul>
+<li><strong>中性（45%）</strong>｜<strong>触发</strong>：三季报单季净利润同比仍为负但降幅比二季度推算的约 -25% 收窄；板块热点仍在活动但不再是「主升」档｜<strong>路径</strong>：业绩不证实也不证伪，股价失去板块加速度后在 MA20 与 6-18 收盘前高之间宽幅震荡，跟随 PCB 板块整体波动</li>
+</ul>
+<ul>
+<li><strong>悲观（25%）</strong>｜<strong>触发</strong>：三季报单季净利润同比降幅比二季度推算的约 -25% 更大；或热点记录里「PCB概念」与「共封装光学(CPO)」双双不再处于「主升 / 资金确认」状态；或日成交额回落至近 20 日日均水平附近而股价不能守住｜<strong>路径</strong>：连板阶段的溢价回吐，股价向 MA20 乃至 MA40 方向回落，估值回到与 ROE 匹配的水平</li>
+</ul>
+<p>三档概率合计 100%。</p>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong></p>
+<ol>
+<li><strong>如果</strong> 2026 年三季报（预计 10 月下旬披露，参考 2025 年三季报披露日 2025-10-30）显示单季净利润同比由负转正、且毛利率不低于 2026 年半年报的 24.69%，<strong>那么</strong>可考虑轻仓试仓——这是唯一能推翻「成本承受方」定性的证据。</li>
+<li><strong>如果</strong> 热点记录里「PCB概念」或「共封装光学(CPO)」不再处于「主升」或「资金确认」状态，或日成交额回落到近 20 日日均成交额（约 1.0 亿元，据库内日 K 推算）附近，<strong>那么</strong>观望——副链显示当前股价靠的就是这两个板块的资金。</li>
+<li><strong>如果</strong> 股价跌破 2026-09-14 收盘且当日成交额低于近 20 日日均成交额约 1.0 亿元，<strong>那么</strong>回避在当前位置追高；<strong>如果</strong>进一步跌破 MA20（截至 2026-09-14 为 28.46 元，据库内日 K 收盘价推算），<strong>那么</strong>减仓——那意味着连板行情的资金已经离场。</li>
+<li><strong>如果</strong> 三季报显示财务费用（含汇兑损失）继续扩大、或毛利率较半年报的 24.69% 环比下降，<strong>那么</strong>回避——说明成本传导仍未完成。</li>
+</ol>
+<p><strong>风控要点（什么情况下这份判断应当被推翻）</strong></p>
+<ul>
+<li><strong>推翻「震荡」方向的证据</strong>：公司披露与 AI 服务器、高多层板或高频高速板相关的实质订单公告或产能投产公告，且在财报里看到对应营收——那时它就不再是「仅概念标签」，方向要重估为偏涨。</li>
+<li><strong>推翻「成本承受方」定性的证据</strong>：三季报分产品结构显示中低端板占比显著下降、或毛利率较半年报明显提升。</li>
+<li><strong>需要立即重跑本调研的触发</strong>：三季报披露当日；或热点记录里 PCB概念 / CPO 的状态发生变化当日。</li>
+<li><strong>本报告的时效</strong>：主要结论建立在 2026 年半年报（披露 2026-08-28）之上。三季报一旦披露，C、J、K 三节需要整体重算。</li>
+</ul>
+<p><strong>仓位思路</strong></p>
+<ul>
+<li>从基本面看：<strong>不参与或轻</strong>——最近两期净利润连续同比下滑，估值便宜与 ROE 偏低是匹配的，不构成价值发现。</li>
+<li>从板块与情绪看：<strong>轻</strong>——即便认可板块行情，当前位置已是第 3 个连板、放量约 7.5 倍、封板资金逐次递减，属于风险回报比明显变差的位置。</li>
+<li>不给具体金额、不给股数、不给目标价。</li>
+</ul>
+<p>⚠️ 本节所有结论均为条件式，不构成任何形式的操作指令。</p>
+<h2>M. 逻辑自查</h2>
+<p><strong>最依赖的假设是哪一条，错了会怎样</strong></p>
+<p>最依赖的是：<strong>「这家公司的产品以中低端板为主，因此覆铜板涨价对它是成本利空而非收入利好」</strong>。</p>
+<p>这条假设的唯一量化支撑（2025 年单面板 4.22 亿元 + 双面多层板 7.74 亿元）来自联网的年报摘要，<strong>库内财务不提供分产品拆分</strong>。如果这条错了：J 节主链的第①环塌掉 → 「成本承受方」定性不成立 → K 节三档概率需要整体向乐观侧重新分配 → A 节「震荡」的方向判断也要改。这就是为什么我把三季报列为唯一的硬验证点。</p>
+<p><strong>有没有为了让逻辑好看而忽略的反面证据</strong></p>
+<p>有三条，主动列出来：</p>
+<ol>
+<li><strong>公司确实在往高端走，不是没动作。</strong> 海弘电子拟投约 3.3 亿元建高端 PCB 定制化生产基地，计划 2026 年二季度开工，方向含 HDI、汽车电子、智能驾驶、AI 服务器、高频高速信号传输（来源：公司 2025 年年报及业绩说明会公告）。我把它放在了 A 节驱动力第 3 条，但在 J 节逻辑链里没给它权重——因为项目还在建设期，不会体现在 2026 年的财报里。如果读者更看重预期而非当期业绩，这条的分量应该更高。</li>
+<li><strong>毛利率其实在改善。</strong> 2026 年半年报毛利率 24.69%，比 2025 年同期的 22.30% 高了 2.39 个百分点。这和「成本被上游挤压」的叙事是相反的——真正下滑的是净利率（-3.40 个百分点）。也就是说问题更可能出在毛利之下的费用端（很可能是汇兑与利息），而不是采购端。我在 C 节第 3 点写了这个矛盾，但没能解决它，因为库内没有费用明细。<strong>这是本报告最实质的一处未解矛盾</strong>。</li>
+<li><strong>主力资金近 20 日是净流入 1.11 亿元的。</strong> 这和「封板资金逐次递减」的负面读法方向相反。两者的时间尺度不同（20 日 vs 单日），不冲突，但我在 A 节核心风险里只写了后者，没写前者——此处补上。</li>
+</ol>
+<p><strong>信息缺口清单</strong></p>
+<ol>
+<li><strong>缺口：库内无分产品/分行业营收拆分。</strong> 库内财务只到总营收、总利润层级。</li>
+</ol>
+<p>影响：<strong>最大</strong>——J 节主链第①环只能靠联网年报摘要支撑，置信度被压到「中」。 补法：三季报或年报披露后，从交易所公告 PDF 里取「主营业务分产品情况」表，或在库内增加财报明细表的采集。</p>
+<ol>
+<li><strong>缺口：库内无费用明细（销售/管理/研发/财务费用）。</strong></li>
+</ol>
+<p>影响：<strong>大</strong>——无法解释「毛利率上升而净利率下降」这个矛盾，只能引用公司在一季报里给的单源说明（汇兑损失 2090.53 万元）。 补法：同上，需要财报明细数据。</p>
+<ol>
+<li><strong>缺口：库内研报返回空，库内近 90 天无该票研报；联网也未找到近期卖方盈利预测。</strong></li>
+</ol>
+<p>影响：<strong>中</strong>——本报告没有任何外部盈利预测作为交叉参照，J 节和 K 节的三季度判断完全建立在我自己对历史趋势的外推上。这也是为什么本报告<strong>不含任何〔卖方预期〕条目</strong>——不是漏写，是确实没有可引的卖方观点。 补法：等券商覆盖，或三季报后再查库内研报。</p>
+<ol>
+<li><strong>缺口：库内资金筹码的筹码分布为空——筹码数据库内仅覆盖关注票，该票暂无。</strong></li>
+</ol>
+<p>影响：<strong>中</strong>——无法给出获利盘比例，因此 H 节写不出「上方套牢盘厚不厚、获利抛压大不大」的量化判断。在一只三连板、放量 7.5 倍的票上，这个缺口是实打实的。 补法：把该票纳入筹码数据采集范围后重跑。</p>
+<ol>
+<li><strong>缺口：股东户数只有 2026-06-30 一期（15435 户），无上期数据、算不出环比。</strong></li>
+</ol>
+<p>影响：<strong>小</strong>——季度数据本身滞后，对 9 月的行情没有解释力。 补法：等三季报的股东户数披露。</p>
+<ol>
+<li><strong>缺口：库内事件日历返回的 8 条全是概念匹配的行业事件，没有一条公司层面事件；库内也没有财报预约披露日期表。</strong></li>
+</ol>
+<p>影响：<strong>中</strong>——I 节 W6/W7 的三季报时点是按 2025 年三季报披露日 2025-10-30 推算的，置信度低，公司实际预约日可能前后移动。 补法：公司公告披露预约日后更新日历。</p>
+<ol>
+<li><strong>说明（非缺口）：库内 A/H 对照返回空。</strong> 该公司不是 A+H 两地上市，全市场只有几十只 A+H 票，返回空属正常，无跨市场估值参照可用。</li>
+</ol>
+<ol>
+<li><strong>说明（非缺口）：库内涨停记录库内数据截至 2026-09-14。</strong> 2026-09-15 的涨停记录要等当日 17:45 数据入库后才会出现，本报告中「第 3 个连板」是据库内行情的收盘涨幅 9.99% 与最高价等于收盘价推算的，已在 H-2 标注。</li>
+</ol>
+<p><strong>联网来源清单（供读者自行核对）</strong></p>
+<ul>
+<li><a href="https://paper.cnstock.com/html/2026-07/15/content_2244921.htm" target="_blank" rel="noopener">上海证券报 2026-07-15《景气度攀升覆铜板领涨产业链 PCB行业盈利能力大增》</a></li>
+<li><a href="https://m.21jingji.com/article/20260901/herald/ea3bb9ff92942767111c1faf6a062215.html" target="_blank" rel="noopener">21 财经 2026-09-01《涨价潮愈演愈烈！覆铜板龙头第七次调价，PCB赛道持续走强》</a></li>
+<li><a href="https://news.qq.com/rain/a/20260826A08ULN00" target="_blank" rel="noopener">腾讯新闻 2026-08-26《PCB板块午后反弹，9月涨价潮正式落地》</a></li>
+<li><a href="https://www.jiepei.com/design/10146.html" target="_blank" rel="noopener">捷配 2026《从基材到成品全线涨价，2026年PCB行业景气贯穿全年》</a></li>
+<li><a href="https://fiber.ofweek.com/2026-08/ART-210001-12003-30697217.html" target="_blank" rel="noopener">OFweek 光通讯网 2026-08《雷声大雨点小！美国对华光模块进口禁令终究难以落地》</a></li>
+<li><a href="https://www.sina.cn/news/detail/5328547478770902.html" target="_blank" rel="noopener">新浪新闻 2026-08《特朗普拟禁中国光模块》</a></li>
+<li><a href="http://www.eeo.com.cn/2026/0520/883702.shtml" target="_blank" rel="noopener">经济观察网 2026-05-20《澳弘电子2026年一季度营收增6.14%，拟产品升级应对成本压力》</a></li>
+<li><a href="https://www.guancha.cn/GongSi/2026_05_08_816260.shtml" target="_blank" rel="noopener">观察者网 2026-05-08《澳弘电子2025年报：营收13.48亿元净利增7.74%》</a></li>
+<li><a href="http://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?stockid=605058&amp;id=11913617" target="_blank" rel="noopener">新浪财经《澳弘电子：向不特定对象发行可转换公司债券上市公告书》</a></li>
+<li><a href="http://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?stockid=605058&amp;id=12092770" target="_blank" rel="noopener">新浪财经《澳弘电子：2025年年度报告》</a></li>
+<li><a href="https://www.esmchina.com/news/14256.html" target="_blank" rel="noopener">国际电子商情《疯狂扩产！PCB上市公司抢筹AI风口，投资额超500亿》</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-15），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>半年报净利同比下滑17.89%</li>
+      <li>覆铜板涨价，公司是成本承受方</li>
+      <li>封板资金递减、放量7.5倍</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>业绩预告</dt><dd>上市公司在正式财报前发布的盈利区间预告，达到规定变动幅度时强制披露。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://fiber.ofweek.com/2026-08/ART-210001-12003-30697217.html" target="_blank" rel="noopener">OFweek 光通讯网 2026-08</a> <em>2026-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.sina.cn/news/detail/5328547478770902.html" target="_blank" rel="noopener">新浪新闻 2026-08</a> <em>2026-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.21jingji.com/article/20260901/herald/ea3bb9ff92942767111c1faf6a062215.html" target="_blank" rel="noopener">21 财经 2026-09-01</a> <em>2026-09-01</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260826A08ULN00" target="_blank" rel="noopener">腾讯新闻 2026-08-26</a> <em>2026-08-26</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://paper.cnstock.com/html/2026-07/15/content_2244921.htm" target="_blank" rel="noopener">上海证券报 2026-07-15</a> <em>2026-07-15</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.jiepei.com/design/10146.html" target="_blank" rel="noopener">捷配 2026</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="http://www.eeo.com.cn/2026/0520/883702.shtml" target="_blank" rel="noopener">经济观察网 2026-05-20《澳弘电子2026年一季度营收增6.14%，拟产品升级应对成本压力》</a> <em>2026-05-20</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.guancha.cn/GongSi/2026_05_08_816260.shtml" target="_blank" rel="noopener">观察者网 2026-05-08《澳弘电子2025年报：营收13.48亿元净利增7.74%》</a> <em>2026-05-08</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?stockid=605058&amp;id=11913617" target="_blank" rel="noopener">新浪财经《澳弘电子：向不特定对象发行可转换公司债券上市公告书》</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?stockid=605058&amp;id=12092770" target="_blank" rel="noopener">新浪财经《澳弘电子：2025年年度报告》</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.esmchina.com/news/14256.html" target="_blank" rel="noopener">国际电子商情《疯狂扩产！PCB上市公司抢筹AI风口，投资额超500亿》</a></li>
+      <li><span class="src-tag src-media">媒体</span> [腾讯新闻 2026-08-26](https://news.qq.com/rain/a/20260826A08ULN00 <em>2026-08-26</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [上海证券报 2026-07-15](https://paper.cnstock.com/html/2026-07/15/content_2244921.htm <em>2026-07-15</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公司 2025 年年报及业绩说明会公告 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 置信度：高，一季报口径，经济观察网 2026-05-20 报道 <em>2026-05-20</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 参考 2025 年三季报披露日 2025-10-30，预计 2026 年 10 月下旬 <em>2025-10-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 经济观察网 2026-05-20，单源，置信度：中 <em>2026-05-20</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内同业对比，财务为 2026 年半年报口径，估值为 2026-09-14 口径 <em>2026-09-14</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 推，依据 2025 年三季报披露日 2025-10-30 <em>2025-10-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 预计 10 月下旬披露，参考 2025 年三季报披露日 2025-10-30 <em>2025-10-30</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-15 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
