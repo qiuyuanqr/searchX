@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>景旺电子（603228.SH） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>景旺电子（603228.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-16（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 元件</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 华为手机 · 华为数字能源 · AI PC · 英伟达概念 · 6G概念 · 柔性屏(折叠屏) · 毫米波雷达 · OLED</span>
+      <span><b>来源</b> 10 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    景旺电子（603228）主要做的是印制电路板（PCB）的研发、生产和销售（库内公司档案）。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——上半年营收同比增长 21.37%、净利润同比下降 7.38%，增收不增利；股价按 PCB 板块主升行情定价，估值已透支利润拐点尚未验证的预期。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：上半年营收同比增长 21.37%、净利润同比下降 7.38%，增收不增利；股价按 PCB 板块主升行情定价，估值已透支利润拐点尚未验证的预期。支撑在于PCB与CPO概念同处主升状态；二季度单季毛利率环比回升约2.7个百分点；港股发行已通过聆讯待落地。主要风险是净利润连续两期同比为负；PE88.51高于行业中位71.61；资产负债率四期升至51.16%。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>PCB与CPO概念同处主升状态</li>
+      <li>二季度单季毛利率环比回升约2.7个百分点</li>
+      <li>港股发行已通过聆讯待落地</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据基准：库内行情数据时点 2026-09-16 15:34（当日收盘值）；估值库内估值交易日 2026-09-15；财务库内财务最新期 2026 半年报（披露日 2026-08-22）。 本报告不含任何持仓、自选或账户信息。</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：上半年营收同比增长 21.37%、净利润同比下降 7.38%，增收不增利；股价按 PCB 板块主升行情定价，估值已透支利润拐点尚未验证的预期。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>所在板块正处「主升」阶段</strong>—— 记录：PCB 概念 2026-09-15 进入主升，依据「连续 5 天跑赢大盘，10 天比大盘 +8.0%」；共封装光学（CPO）概念 2026-09-11 进入主升，依据「连续 3 天跑赢大盘，10 天比大盘 +3.3%」。（置信度：高，系统记录的客观状态）</li>
+<li><strong>二季度单季毛利率已环比回升</strong>——一季度累计毛利率 18.76%，半年报累计 20.22%，据两期数据推算二季度单季毛利率约 21.43%、单季营收约 47.20 亿元、单季净利润约 3.69 亿元。毛利率下行趋势在二季度出现环比修复。（置信度：中，为推算值非直接披露值）</li>
+<li><strong>AI 服务器用高多层板与高阶 HDI 是行业确定性增量</strong>——公司主营覆盖多层板、厚铜板、高频高速板、HDI 板、刚挠结合板（库内公司档案主营描述）；产业侧多家媒体报道高端 AI 服务器 PCB 层数由 20 层升至 50 层以上、单台覆铜板用量为传统服务器 3–5 倍（来源与日期见 F/G 节）。（置信度：中）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>利润与收入背离仍在持续</strong>——最近四期净利润同比：2025Q3 +4.83%、2025 年报 +5.30%、2026Q1 −28.37%、2026H1 −7.38%，已连续两期同比为负；同期营收同比始终在 16%–22%。（置信度：高，库内财务数据）</li>
+<li><strong>估值处在同业偏贵一端</strong>——PE(TTM) 88.51、PB 7.94（2026-09-15），行业「元器件」PE 中位数 71.61；在 PE 为正的同业中由便宜到贵排第 145 位（同业在市票共 312 只）。ROE 半年 4.58%，是三家对标公司里最低的。（置信度：高）</li>
+<li><strong>资产负债率四期连续上升</strong>——43.05%（2025Q3）→ 44.07%（2025 年报）→ 46.77%（2026Q1）→ 51.16%（2026H1），八个月内上升 8.11 个百分点。（置信度：高）</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ul>
+<li><strong>三季报的单季净利润同比是否转正</strong>（核验时点：预计 10 月下旬，上年三季报披露日为 2025-10-31，见 I 节 W7）——这是「毛利率二季度环比回升是否成立」的唯一硬验证。</li>
+<li><strong>股权激励 2026 年净利润考核完成度</strong>（核验时点：同上）——上半年净利润 6.02 亿元、对应激励计划 2026 年 22 亿元目标值的完成度 27.36%（据库内净利润与公开披露的目标值推算），下半年需完成约 15.98 亿元。</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong>：我把「PCB 板块主升」和「公司利润未兑现」当成一对矛盾来处理，给了震荡判断。如果这轮行情定价的根本不是 2026 年利润、而是 2027–2028 年 AI 订单放量（多家券商的 2027 年预测净利润是 2026 年的两倍以上，见 J 节），那么利润端的短期未兑现就不会构成压制，方向判断会偏保守。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>公司名称</strong>：景旺电子（603228）｜上交所主板｜上市日期 2017-01-06（上市 9 年 8 个月）｜上市状态 L（正常上市）</li>
+<li><strong>主营业务</strong>：印制电路板（PCB）的研发、生产和销售（库内公司档案）</li>
+<li><strong>行业归属</strong>：元器件（库内基础资料；涨停库口径为「元件」）</li>
+<li><strong>产品与布局</strong>：产品类型覆盖多层板、厚铜板、高频高速板、铝基电路板、双面多层柔性线路板、细密线路柔性线路板、HDI 板、刚挠结合板、特种材料 PCB、高端电子材料；是国内少数同时覆盖刚性电路板、柔性电路板和金属基电路板的厂商。生产基地在深圳宝安、广东龙川、江西吉水。下游应用为通讯设备、计算机及网络设备、消费电子、汽车电子、工业控制。（以上均引自库内公司档案）</li>
+<li><strong>员工人数</strong>：20,680 人｜<strong>注册资本</strong>：98,485.71 万元</li>
+</ul>
+<p><strong>当前行情（库内行情，数据时点 2026-09-16 15:34）</strong></p>
+<ul>
+<li>收盘价 <strong>104.57 元</strong>，当日 <strong>−3.36%</strong>；当日最高 +4.98%、最低 −3.89%，据此推算当日振幅约 8.87 个百分点；成交额 <strong>42.0 亿元</strong></li>
+<li>据当日涨跌幅推算，前一交易日（2026-09-15）收盘价约 108.21 元</li>
+</ul>
+<p><strong>估值（库内估值，交易日 2026-09-15）</strong></p>
+<ul>
+<li>PE(TTM) <strong>88.51</strong>｜PB <strong>7.94</strong>｜股息率 <strong>0.7143%</strong>｜总市值 <strong>1,047.05 亿元</strong>｜换手率 <strong>3.994%</strong></li>
+<li>行业「元器件」在市票 <strong>312 只</strong>，行业 PE 中位数 <strong>71.61</strong>；本票在 PE 为正的同业中由便宜到贵排第 <strong>145</strong> 位</li>
+<li>据 2026-09-16 收盘跌幅推算，当日总市值约 1,012 亿元</li>
+<li><strong>仅估值口径判断</strong>：PE(TTM) 88.51 高于行业中位数 71.61，PB 7.94 在半年 ROE 仅 4.58% 的背景下并不便宜；该判断只说明「按当前已实现利润定价偏贵」，不等于公司质地好坏。（置信度：高）</li>
+</ul>
+<p><strong>A/H 溢价</strong>：库内 A/H 对照返回 None——该票目前非两地上市，无 A/H 溢价数据。（注：港股发行尚在途中，见 H/I 节）</p>
+<h2>C. 财务健康</h2>
+<p>近四期数据（库内财务（近 4 期），新→旧，金额单位亿元）：</p>
+<ul>
+<li><strong>2026H1</strong>（截止 2026-06-30，披露 2026-08-22）｜营收 86.11 · 同比 <strong>+21.37%</strong>｜净利润 6.02 · 同比 <strong>−7.38%</strong>｜ROE 4.58%｜毛利率 20.22%｜净利率 7.09%｜EPS 0.61 元｜资产负债率 51.16%</li>
+<li><strong>2026Q1</strong>（截止 2026-03-31，披露 2026-04-23）｜营收 38.92 · 同比 <strong>+16.41%</strong>｜净利润 2.33 · 同比 <strong>−28.37%</strong>｜ROE 1.76%｜毛利率 18.76%｜净利率 6.24%｜EPS 0.24 元｜资产负债率 46.77%</li>
+<li><strong>2025 年报</strong>（截止 2025-12-31，披露 2026-03-28）｜营收 153.08 · 同比 <strong>+20.92%</strong>｜净利润 12.31 · 同比 <strong>+5.30%</strong>｜ROE 10.10%｜毛利率 21.59%｜净利率 8.13%｜EPS 1.30 元｜资产负债率 44.07%</li>
+<li><strong>2025Q3</strong>（截止 2025-09-30，披露 2025-10-31）｜营收 110.83 · 同比 <strong>+22.08%</strong>｜净利润 9.48 · 同比 <strong>+4.83%</strong>｜ROE 7.88%｜毛利率 21.60%｜净利率 8.67%｜EPS 1.03 元｜资产负债率 43.05%</li>
+</ul>
+<p><strong>趋势判断（不是罗列，看哪一项是拐点）</strong></p>
+<ol>
+<li><strong>收入端稳定，利润端同比转负。</strong> 四期营收同比分别为 +22.08% / +20.92% / +16.41% / +21.37%，始终在两成上下；净利润同比从 +4.83%、+5.30% 转为 −28.37%、−7.38%。典型的增收不增利。（置信度：高）</li>
+<li><strong>毛利率是主因，且二季度出现环比回升。</strong> 毛利率 21.60% → 21.59% → 18.76% → 20.22%（累计口径）。用半年累计与一季度累计倒推，<strong>二季度单季毛利率约 21.43%，比一季度单季高出约 2.7 个百分点</strong>，单季营收约 47.20 亿元、单季净利润约 3.69 亿元、单季净利率约 7.82%。<strong>这是本报告里最重要的一个拐点信号，但它是推算值、不是公司披露值，需三季报验证。</strong>（置信度：中）</li>
+<li><strong>资产负债率是最值得警惕的一项。</strong> 43.05% → 44.07% → 46.77% → 51.16%，四期连续上升、八个月内上升 8.11 个百分点，已越过 50%。结合公司在扩产（见 E 节），这更可能是产能投入而非经营恶化，但它确实压缩了后续的财务弹性。（置信度：中，因库内无有息负债与现金流明细，无法区分负债结构）</li>
+<li><strong>ROE 下台阶。</strong> 2025 年报全年 ROE 10.10%，2026 上半年仅 4.58%，年化后与上年基本持平甚至略低——利润率下降被规模增长抵消掉了。（置信度：高）</li>
+</ol>
+<p><strong>联网补充的利润下滑成因</strong>（库内财务表不含费用明细，以下为公开报道，非库内事实）：</p>
+<ul>
+<li>上半年因人民币升值产生汇兑损失 1.23 亿元，上年同期为汇兑收益 0.38 亿元；公司海外收入占比在 37%–40% 区间。来源：东方财富网《景旺电子上半年毛利率继续下行净利润仅完成目标值不到三成》· 2026-08-27；FX168《景旺电子通过港交所上市聆讯，聚焦 PCB 产品，毛利率逐年下滑》· 2026-09。<strong>两条报道均转述同一份中期报告，属同源，标置信度中。</strong></li>
+<li>主要原材料（覆铜板、铜箔、金盐）涨价侵蚀毛利，公司向下游转移材料成本存在滞后期。来源：中鹏信评跟踪评级报告 · 2025-06-27；每日经济新闻《景旺电子再度递表港交所：核心刚性 PCB 产品毛利率持续走低》· 2026-07-06。（置信度：中，两个独立来源）</li>
+</ul>
+<p><strong>信息缺口</strong>：库中无 2026 年三季报（库内财务最新期为 2026H1，截止 2026-06-30）。影响：C 节「二季度毛利率环比回升」的拐点判断只有推算证据，若三季度毛利率重新回落，本报告的中性偏乐观成分全部失效。补法：三季报披露后重跑本调研（预计 10 月下旬，见 I 节 W7）。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比（取 3 家）返回同行业（元器件）三只对标票，财务数据均为 2026-06-30 期：</p>
+<ul>
+<li><strong>景旺电子（603228）</strong>｜总市值 1,047.05 亿（9-15）· PE 88.51 · PB 7.94 · 半年营收 86.11 亿 · 半年净利 6.02 亿 · ROE 4.58%</li>
+<li><strong>立讯精密（002475）</strong>｜总市值 3,995.07 亿 · PE 22.45 · PB 4.29 · 半年营收 1,745.04 亿 · 半年净利 78.43 亿 · ROE 8.79%</li>
+<li><strong>生益科技（600183）</strong>｜总市值 3,649.58 亿 · PE 70.26 · PB 19.73 · 半年营收 190.26 亿 · 半年净利 32.87 亿 · ROE 18.66%</li>
+<li><strong>东山精密（002384）</strong>｜总市值 3,348.54 亿 · PE 93.41 · PB 13.74 · 半年营收 277.98 亿 · 半年净利 29.57 亿 · ROE 12.90%</li>
+</ul>
+<p><strong>这家在同行里处于什么位置</strong></p>
+<ol>
+<li><strong>规模最小。</strong> 市值约为三家对标的四分之一到三分之一；半年营收 86.11 亿，是生益科技的 45%、东山精密的 31%、立讯精密的 5%。（置信度：高）</li>
+<li><strong>盈利能力最弱。</strong> 半年 ROE 4.58%，低于立讯 8.79%、东山 12.90%、生益 18.66%，是四家里唯一低于 5% 的。（置信度：高）</li>
+<li><strong>估值不便宜但也不是最贵。</strong> PE 88.51 低于东山精密 93.41、高于生益 70.26 和立讯 22.45；PB 7.94 反而是四家里第二低（低于生益 19.73、东山 13.74，高于立讯 4.29）。<strong>PE 高而 PB 相对低，说明贵在「当期利润少」而不是「净资产被给了高溢价」</strong>——这与 C 节的利润率下滑互相印证。（置信度：中）</li>
+<li><strong>最值得注意的一组对比：生益科技（覆铜板／上游）ROE 18.66%，景旺电子（PCB／中游）ROE 4.58%。</strong> 同一条产业链上，上游材料端的盈利能力是中游制造端的四倍。这是「原材料涨价、成本转移滞后」在同业数据上的直接体现，比任何叙述都硬。（置信度：高，两家均为库内同期数据）</li>
+</ol>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>：按客户订单生产各类印制电路板，收入来自产品销售。公司自述定位是「一站式服务」——国内少数同时覆盖刚性、柔性、金属基三类电路板的厂商，提供多样化产品选择（库内公司档案）。经营范围登记为「生产经营双面线路板、多层线路板、柔性线路板」（库内经营范围）。</p>
+<p><strong>护城河诚实分级</strong></p>
+<ul>
+<li><strong>阶段性优势（置信度：中）</strong>：① <strong>产品线宽度</strong>——刚性 + 柔性 + 金属基三线并存在国内厂商中不常见，对需要单一供应商配齐多类板材的客户有绑定作用；② <strong>多基地产能布局</strong>——深圳宝安、广东龙川、江西吉水三地生产基地（库内主营描述），分散了单一基地的产能与成本风险；③ <strong>资质体系</strong>——通过 ISO9001:2015、IATF16949:2016（汽车电子强制体系）、ISO13485（医疗器械）认证，其中 IATF16949 是进入汽车电子供应链的门槛性资质，认证周期长，构成对新进入者的时间壁垒。</li>
+<li><strong>结构性护城河：从库内信息看不出（置信度：中）</strong>。PCB 是典型的重资产制造业，产品按客户图纸生产、切换供应商的技术门槛有限；最直接的反证就是 D 节的数据——<strong>如果存在定价权意义上的护城河，原材料涨价不会让 ROE 掉到 4.58%、而上游覆铜板厂做到 18.66%</strong>。公司对上游议价能力弱、对下游转价滞后，这是制造环节的结构性位置问题，不是经营失误。</li>
+<li><strong>正在建设中的壁垒（置信度：低，依赖联网信息）</strong>：公司拟以自有资金 50 亿元对珠海经济技术开发区基地扩产，用于技术改造升级、产能扩充和新工厂建设，提升高阶 HDI、HLC、SLP 产能；珠海基地 2021 年投产、投资 42 亿元，形成年产 120 万㎡高多层板及 60 万㎡ HDI 产能。来源：搜狐科技转载产业报道 · 2026 年；景旺电子官网《AI 驱动全球科技产业升级，景旺电子加码高阶 HDI 彰显发展信心》。<strong>单源+公司自述，未交叉验证，置信度低。</strong> 若属实，高阶 HDI 与高多层板产能是唯一有可能把阶段性优势转成结构性壁垒的方向——因为 AI 服务器用高层数板的工艺良率门槛显著高于常规板。</li>
+</ul>
+<h2>F. 政策与监管</h2>
+<p>库内无政策数据，本节全部来自联网，每条带来源与日期。</p>
+<ol>
+<li><strong>美国 FCC 拟限制中国下一代高速光模块进口（利空，间接传导，置信度：中）</strong>
+<ul>
+<li>库内事件日历记录：2026-09-20「美国 FCC 拟禁止进口中国下一代高速光模块（800G/1.6T）草案推进」，事件类型 policy、重要性 8，匹配原因为本票的共封装光学（CPO）概念标签。</li>
+<li>联网交叉验证：禁令针对新型号光模块（1.6T、3.2T 及后续迭代），现有 800G 产品不在禁令范围；草案仍处早期起草阶段，尚未进入 FCC 正式规则制定程序，未公布公众意见征询时间表；禁令不限制中国厂商海外工厂供货。来源：OFweek 光通讯网《突发！美国拟禁止中国光模块》· 2026-08；OFweek 光通讯网《雷声大雨点小！美国对华光模块进口禁令终究难以落地》· 2026-08；虎嗅《特朗普政府拟禁止美国进口新型中国光模块》。（三个来源，其中两个同属 OFweek，视为两个独立来源）</li>
+<li><strong>传导链条与对本票的实际相关性</strong>：政策 → 限制中国产 1.6T 光模块进美 → 影响光模块整机厂出口 → 间接影响其上游高速 PCB 需求。<strong>但景旺电子是 PCB 厂、不是光模块厂，该禁令不直接约束其产品</strong>；且草案未进入正式程序。<strong>这是概念标签牵连出的事件，不是对本票的直接监管。</strong>（置信度：中）</li>
+</ul></li>
+</ol>
+<ol>
+<li><strong>原材料端无政策管制，属市场化涨价（中性，置信度：中）</strong>：覆铜板、铜箔涨价源于 AI 算力需求导致的供需失衡，非政策所致，因此也不存在政策回调预期。来源：21 财经《价格暴涨四倍！AI 算力强力赋能 PCB，高端订单排至 2027 年》· 2026-08-10；东方财富网转载《中国和日本覆铜板同时涨价，AI 服务器把高端材料产能先锁了》· 2026-06-29。</li>
+</ol>
+<ol>
+<li><strong>境外上市备案（中性偏正面，置信度：高）</strong>：公司港股发行已获中国证监会备案，并于 2026-09-07 通过港交所上市聆讯。来源：财联社《景旺电子港股上市获中国证监会备案》；凤凰网财经《聆讯通过！景旺电子闯关港交所，PCB 龙头即将实现 A+H 双平台》· 2026-09；观点网《景旺电子通过港交所上市聆讯》· 2026-09-07。库内新闻同步记录了 2026-09-08 的《景旺电子关于刊发 H 股发行聆讯后资料集的公告》。（多源交叉验证）</li>
+</ol>
+<p><strong>信息缺口</strong>：库中无政策类结构化数据，F 节全部依赖联网，且未检索到任何针对 PCB 制造环节本身的新增环保、能耗或出口管制政策。影响：若下半年出现针对 PCB 行业的环保限产或出口限制，本报告完全没有覆盖。补法：三季报前后重新检索行业政策。</p>
+<h2>G. 题材与产业链关联</h2>
+<h3>G1. 所在板块正在活动的热点（交易日 2026-09-15）</h3>
+<p>系统记录到本票所在板块有 <strong>8 个正在活动的热点</strong>，按状态与相关性排列：</p>
+<ul>
+<li><strong>PCB 概念</strong>（ths:885959.TI）｜状态 <strong>主升</strong>｜进入日期 2026-09-15｜依据：<strong>连续 5 天跑赢大盘，10 天比大盘 +8.0%</strong>
+<ul>
+<li>板块内新闻（系统 AI 确认）：2026-09-15「PCB 概念反复走强超声电子 7 天 5 板」、2026-09-15「PCB 概念板块短线拉升华正新材涨停」、2026-09-14「PCB 概念持续走高澳弘电子等近十股涨停」、2026-09-14「PCB 概念震荡回升超声电子 6 天 4 板」</li>
+<li><strong>这是本票的主赛道题材，也是当前最强的一个。</strong>（置信度：高，系统客观记录）</li>
+</ul></li>
+<li><strong>共封装光学（CPO）</strong>（ths:886033.TI）｜状态 <strong>主升</strong>｜进入日期 2026-09-11｜依据：<strong>连续 3 天跑赢大盘，10 天比大盘 +3.3%</strong>
+<ul>
+<li>板块内新闻：2026-09-15「国民技术：800G、1.6T 光模块专用 MCU 已小批量出货」、2026-09-14 龙虎榜解读提及「PCB + 800G 光模块 + 陶瓷板，正与北美大厂合作研发 AI 服务器用陶瓷板，800G 光模块 PCB 产品部分客户已完成样品研发和小批量供货，并首次接到 20K 批量订单」、2026-09-14「AI 算力催化高多层 PCB 与光模块检测需求」</li>
+</ul></li>
+<li><strong>首款量产 AI 智能体手机</strong>（发现型热点）｜状态 <strong>资金确认</strong>｜进入日期 2026-08-04｜关联度 <strong>direct</strong>｜依据：涨停 40 家（前日 13，20 日均 12.3）
+<ul>
+<li>系统记录的事情经过：字节与中兴通讯联合打造全球首款量产 AI 智能体手机，二代豆包手机努比亚 NaviX Ultra 获入网许可、9 月内上市；同时魅族等品牌回应手机涨价。</li>
+</ul></li>
+<li><strong>苹果发新机含折叠款</strong>（发现型）｜状态 <strong>资金确认</strong>｜进入日期 2026-09-07｜关联度 <strong>direct</strong>｜依据：涨停 20 家（前日 1，20 日均 6.9）
+<ul>
+<li>经过：苹果 9 月 10 日公布 iPhone 18 Pro 于 9 月 12 日接受订单、9 月 18 日发布，同时介绍搭载 A20 Pro 芯片的折叠款 iPhone Duo。</li>
+</ul></li>
+<li><strong>华为密集发新品</strong>（发现型）｜状态 <strong>资金确认</strong>｜进入日期 2026-09-07｜关联度 <strong>direct</strong>｜依据：涨停 32 家（前日 4，20 日均 13.5）</li>
+<li><strong>8 月车企销量分化</strong>（发现型）｜状态 <strong>资金确认</strong>｜进入日期 2026-09-07｜关联度 <strong>direct</strong>｜依据：涨停 28 家（前日 3，20 日均 11.4）
+<ul>
+<li>经过：长城汽车 8 月 11.34 万辆同比下降 1.87%，北汽新能源 17,573 辆同比增长 29.88%，乘联分会 8 月新能源乘用车国内零售 100.5 万辆同比下降 10.1%。<strong>这条对本票是负面方向的板块信息</strong>——公司下游含汽车电子。</li>
+</ul></li>
+<li><strong>华为韬定律论文再更新</strong>（发现型）｜状态 <strong>资金确认</strong>｜进入日期 2026-09-07｜关联度 <strong>indirect</strong></li>
+<li><strong>三星存储产能锁长约</strong>（发现型）｜状态 <strong>资金确认</strong>｜进入日期 2026-09-07｜关联度 <strong>indirect</strong></li>
+</ul>
+<p><strong>这一段说明什么</strong>：本票当下的股价定价环境，是 PCB 与 CPO 两个概念同时处在「主升」、外加四个直接相关的消费电子／汽车电子热点处在「资金确认」的组合。<strong>板块热度是当前最强的支撑项，也是最容易变化的一项</strong>——热点状态是按跑赢大盘天数与涨停家数计算的，一旦这两项数据回落，状态会自动改变。（置信度：高）</p>
+<h3>G2. 概念标签逐个分级（库内概念标签，同花顺口径，共 25 个）</h3>
+<p><strong>真有业务（有主营描述或财报佐证支撑）</strong></p>
+<ul>
+<li><strong>PCB 概念</strong>——公司主营即印制电路板研发、生产和销售，2026 上半年营收 86.11 亿元全部来自该业务。（置信度：高）</li>
+<li><strong>汽车电子</strong>——库内公司档案明确「产品广泛应用于……汽车电子」，且公司通过 IATF16949:2016 汽车行业质量体系认证。（置信度：高）</li>
+<li><strong>消费电子概念</strong>——主营描述列明应用于「消费电子」。（置信度：高）</li>
+<li><strong>5G / 通信相关</strong>——主营描述列明应用于「通讯设备、计算机及网络设备」，且产品含高频高速板。（置信度：中，主营支持通讯应用，但库内无 5G 专项营收拆分）</li>
+<li><strong>柔性屏（折叠屏）</strong>——公司产品含双面多层柔性线路板、细密线路柔性线路板、刚挠结合板，柔性板是折叠屏终端的必需部件。（置信度：中，有产品佐证、无客户与营收佐证）</li>
+<li><strong>OLED</strong>——同上，柔性板与 OLED 模组配套，属产品能力沾边。（置信度：低，仅产品类别关联）</li>
+</ul>
+<p><strong>仅概念标签，未见营收佐证</strong></p>
+<ul>
+<li><strong>6G 概念 / AI PC / 共封装光学（CPO）/ 英伟达概念 / 华为手机 / 华为数字能源 / 华为概念 / 卫星导航 / 商业航天 / 新能源汽车 / 无人驾驶 / 比亚迪概念 / 毫米波雷达 / 特斯拉概念</strong>——库内主营描述与财报数据中<strong>均未见对应客户名称或营收拆分</strong>。这些标签成立的逻辑都是「PCB 是所有电子终端的必需件，所以任何电子终端概念都能挂上」，<strong>属于行业属性牵连，不是这家公司特有的业务</strong>。（置信度：高，此判断基于库内无佐证这一事实）
+<ul>
+<li>其中 <strong>CPO 与英伟达概念</strong>值得单独说一句：联网报道称公司 AI 服务器相关业务已有批量订单、与北美客户实现稳定出货（来源：搜狐转载产业报道《解密 AI 服务器市场：景旺电子迎来批量订单》；财联社《营收、净利双增长！景旺电子卡位&quot;AI+&quot;核心赛道》）。<strong>但库内财报无 AI 相关营收拆分，联网来源亦未给出金额或占比</strong>，因此仍归入「仅概念标签」，不能当作已验证的业务。（置信度：低）</li>
+</ul></li>
+<li><strong>上证 180 成份股 / 上证 380 成份股 / 中证 500 成份股 / 沪股通 / 融资融券</strong>——这五个是指数成份与交易机制标签，不是业务标签。有实际意义的一条：<strong>属沪股通标的且可融资融券，意味着资金进出渠道比非标的票更宽</strong>。（置信度：高）</li>
+</ul>
+<h3>G3. 产业链位置</h3>
+<pre>上游（材料）              中游（本票所在）           下游（终端）
+覆铜板 / 铜箔 / 玻纤布  →  PCB 制造：多层板、HDI、  →  通讯设备、计算机及网络
+金盐等化学材料             柔性板、金属基板、          设备、消费电子、汽车
+（生益科技等）             刚挠结合板                  电子、工业控制
+   ↑ 议价能力强              ↑ 议价能力弱               ↑ 集中度高、压价能力强</pre>
+<p><strong>议价能力在哪端</strong>：两头都比中游强。上游侧的硬证据是 D 节——生益科技半年 ROE 18.66% 对景旺电子 4.58%；下游侧的证据是 C 节——营收同比 +21.37% 而净利润同比 −7.38%，说明成本上涨没有及时传导出去。<strong>公司处在产业链利润分配最被动的一环，这是结构性的，不会因为一两个季度的经营改善而改变。</strong>（置信度：高）</p>
+<h2>H. 消息面与市场情绪</h2>
+<h3>H1. 板块热点（先写所在板块，详见 G1）</h3>
+<p>当前定价环境由 <strong>PCB 概念（主升，进入 2026-09-15）</strong>与 <strong>CPO 概念（主升，进入 2026-09-11）</strong>主导，另有四个直接相关的消费电子／汽车电子热点处于「资金确认」。<strong>读消息面时先记住这个背景：近期本票的涨跌，板块因素的权重高于公司因素。</strong>（置信度：高）</p>
+<h3>H2. 本票自己的消息（库内新闻（近 60 日），按重要性挑选）</h3>
+<ol>
+<li><strong>2026-09-07 22:03（财联社）｜深圳市景旺电子股份有限公司通过港交所上市聆讯</strong>——对基本面有实质影响：通过聆讯是 H 股发行的最后一道监管关口，意味着发行进入倒计时。募资可缓解 C 节提到的资产负债率上升（51.16%）压力，但同时带来股本摊薄。联网补充：公司拟发行不超过 125,837,100 股境外上市普通股，联席保荐人为中信证券、美银证券、国联证券国际；今年 7 月初重新递表，此前 2026 年初首次递表。来源：凤凰网财经 · 2026-09；观点网 · 2026-09-07。（置信度：高，多源交叉）</li>
+<li><strong>2026-09-10 10:45（东方财富）｜景旺电子 H 股闯关：营收增两成利润为何跌了 7%？</strong>——媒体对中报增收不增利的质疑，情感分 −0.1333，是 60 天内唯一一条情感为负的本票新闻。对基本面无新增信息，但说明市场已注意到利润端问题。（置信度：高）</li>
+<li><strong>2026-09-08 20:05（公告）｜关于刊发 H 股发行聆讯后资料集的公告</strong>——发行流程推进的确认性公告。对基本面无实质影响，属流程节点。（置信度：高）</li>
+<li><strong>2026-09-08 10:10（东方财富）｜景旺电子成立技术公司含集成电路设计业务</strong>——情感分 0.3。<strong>对基本面的实质影响目前判断为「无」</strong>：新设公司无出资额、无业务规模披露，从 PCB 制造向集成电路设计延伸需要完全不同的能力体系，短期内不构成营收贡献。（置信度：中）</li>
+<li><strong>2026-09-07 20:04（公告）｜景旺电子股票交易异常波动公告</strong> + <strong>2026-09-07 18:40（财联社）｜景旺电子：不存在应披露而未披露的重大信息</strong>——公司对 9 月初股价异动的例行回应，明确否认有未披露重大事项。<strong>这条的意义是排除法</strong>：9-07 的涨停不是公司层面新消息驱动的，而是板块驱动的。（置信度：高）</li>
+<li><strong>2026-09-07 一系列公告｜公司章程（草案）（H 股发行并上市后适用）、董事及高管薪酬管理办法（草案）、股东会议事规则（草案）、第五届董事会第十四次会议决议、2026 年第二次临时股东会决议</strong>——全套 H 股上市后适用的治理文件修订，属发行必备程序。（置信度：高）</li>
+<li><strong>板块类新闻（非本票专属，但解释了行情背景）</strong>：2026-09-09「PCB 概念持续走强奥士康涨停创历史新高」、2026-09-08「CPO 概念持续活跃剑桥科技两连板」、2026-09-07「收评：创业板指高开高走涨超 3% 算力硬件概念集体爆发」、2026-09-07「午评：创业板指半日涨 2.63% PCB、CPO 等算力硬件股集体走强」、2026-09-07「PCB 概念震荡拉升中京电子涨停」。（置信度：高）</li>
+</ol>
+<p>⚠️ 以上新闻标题中若出现涨跌幅，均为<strong>发稿时点的旧快照</strong>，不代表当前状态。本票当前行情以库内行情为准：2026-09-16 收盘 104.57 元、当日 −3.36%。</p>
+<h3>H3. 涨停史（库内涨停记录（近 180 日））</h3>
+<p>近 180 日共 <strong>7 次涨停</strong>，全部归入「元件」行业，按时间倒序：</p>
+<ul>
+<li><strong>2026-09-07</strong>｜1 板｜首次封板 09:58:13、最后封板 10:32:04｜<strong>开板 6 次</strong>｜封单 1.77 亿元｜行业涨停统计 1/1</li>
+<li><strong>2026-08-12</strong>｜1 板｜首次封板 14:43:07｜开板 0 次｜封单 4.45 亿元｜行业涨停统计 3/5</li>
+<li><strong>2026-08-07</strong>｜<strong>2 连板</strong>｜首次封板 09:31:07、最后封板 09:47:37｜开板 1 次｜封单 6.51 亿元｜行业涨停统计 2/2</li>
+<li><strong>2026-08-06</strong>｜1 板｜首次封板 09:43:44｜开板 0 次｜封单 4.60 亿元｜行业涨停统计 1/1</li>
+<li><strong>2026-07-27</strong>｜1 板｜首次封板 14:35:18｜开板 0 次｜封单 4.38 亿元｜行业涨停统计 1/1</li>
+<li><strong>2026-05-22</strong>｜1 板｜首次封板 09:38:24、最后封板 10:23:57｜开板 3 次｜封单 2.49 亿元｜行业涨停统计 1/1</li>
+<li><strong>2026-04-27</strong>｜1 板｜首次封板 09:47:41｜开板 0 次｜封单 3.57 亿元｜行业涨停统计 1/1</li>
+</ul>
+<p><strong>怎么读这组数据（置信度：中）</strong>：① 7 次涨停集中在 4 月至 9 月，说明这只票全年都有情绪面关注，不是突然被发现的；② <strong>封板质量在变差</strong>——8-07 封单 6.51 亿元、只开板 1 次，到 9-07 封单降到 1.77 亿元、开板 6 次，同样是涨停，承接力差了很多；③ 8 月 6-7 日是唯一一次连板，8 月 12 日之后再未出现连板；④ 多次涨停发生在尾盘（7-27 的 14:35、8-12 的 14:43），尾盘封板通常比早盘封板的持续性弱。</p>
+<h3>H4. 资金与筹码（库内资金筹码）</h3>
+<ul>
+<li><strong>主力资金流（近 20 个交易日，2026-08-19 至 2026-09-15）</strong>：净流入合计 <strong>5.01 亿元</strong>，其中特大单净流入 <strong>8.88 亿元</strong>；净流入为正 <strong>9 天 / 20 天</strong>，为负 11 天。
+<ul>
+<li>读法：<strong>特大单净流入（8.88 亿）显著高于整体净流入（5.01 亿）</strong>，说明大单在买、中小单在卖，筹码有从散户向大资金转移的迹象；但正流入天数只占 9/20，流入不连续、是脉冲式的。（置信度：中）</li>
+</ul></li>
+<li><strong>筹码分布</strong>：筹码分布为 None——<strong>筹码数据库内仅覆盖关注票，该票暂无</strong>。这是数据覆盖范围问题，不是事实缺失。因此<strong>本报告无法给出获利盘比例（获利盘比例）与筹码成本分位</strong>，H 节的情绪面判断少了一条重要佐证，L 节的操作触发条件也因此<strong>不使用筹码成本类价位锚</strong>。</li>
+<li><strong>股东户数</strong>：截止 2026-06-30 为 <strong>124,615 户</strong>；上一报告期与均为空，<strong>无法计算环比变化</strong>，因此不能判断筹码是趋于集中还是趋于分散。股东户数为季度披露数据，天然滞后约一个季度。（置信度：高，就数据本身而言）</li>
+</ul>
+<p>⚠️ <strong>纪律声明</strong>：本节的资金流与股东户数是盘面与持有人结构现象，<strong>不是基本面证据</strong>。它们只作为情绪面佐证出现在 H 节，不进入 J 节逻辑链充当决定性一环，也不单独支撑任何操作结论。</p>
+<h2>I. 未来 13 周事件日历</h2>
+<p>来源：库内事件日历（近 120 日）共 11 条（已滤掉猜测项）+ 联网补充（标注来源）。凡未标注来源的均为库内事件；「本周无已知事件」为占位。</p>
+<ul>
+<li><strong>W1（2026-09-16 起）</strong>：
+<ul>
+<li>2026-09-17 · 长征十二号火箭执行星网（GW 星座）低轨组网发射 · 公司事件 · 重要性 7 · 匹配本票「商业航天」概念 · 影响：仅概念标签牵连，对本票基本面无直接影响</li>
+<li>2026-09-18 · iPhone 18 Pro 系列及首款折叠屏 iPhone 正式开售 · 公司事件 · 重要性 7 · 匹配「消费电子概念」 · 影响：验证 G1「苹果发新机含折叠款」热点能否延续，销量表现影响消费电子板块预期</li>
+<li>2026-09-18 · 特斯拉 Cybercab 无人驾驶出租车国内首次公开亮相（北京、上海）· 公司事件 · 重要性 7 · 匹配「无人驾驶」概念 · 影响：概念标签牵连</li>
+<li>2026-09-20 · 美国 FCC 拟禁止进口中国下一代高速光模块（800G/1.6T）草案推进 · 政策 · 重要性 8 · 匹配「CPO」概念 · 影响：验证 F 节第 1 条，若草案正式进入规则制定程序，CPO 概念主升状态可能改变</li>
+<li>2026-09-22 · 2026 中国国际信息通信展览会（PT 展）北京，9/22–24 · 会议 · 重要性 7 · 匹配「5G」概念 · 影响：通信与算力方向的消息窗口</li>
+<li>2026-09-22 · 2026 世界新能源汽车大会（WNEVC）海口开幕，9/22–24 · 会议 · 重要性 7 · 匹配「新能源汽车」概念 · 影响：对应 G1「8 月车企销量分化」热点</li>
+<li><strong>H 股发行定价与招股（联网推测窗口，无确切日期）</strong>：公司已于 2026-09-07 通过聆讯，通常通过聆讯后数周内启动招股。来源：凤凰网财经 · 2026-09；观点网 · 2026-09-07。<strong>具体时点未知，W1–W5 均有可能，需以公司公告为准。</strong></li>
+</ul></li>
+<li><strong>W2（2026-09-23 起）</strong>：
+<ul>
+<li>2026-09-23 · 华为 Mate 90 系列发布会（深圳，首发新一代麒麟芯片）· 公司事件 · 重要性 8 · 匹配「华为手机」概念 · 影响：对应 G1「华为密集发新品」热点，验证消费电子链条热度</li>
+<li>2026-09-23 · 高通 2026 骁龙峰会（发布首款 2nm 旗舰芯片）· 会议 · 重要性 7 · 匹配「消费电子概念」</li>
+</ul></li>
+<li><strong>W3（2026-09-30 起）</strong>：
+<ul>
+<li>2026-10-01 · 英伟达 Vera Rubin AI 计算平台预计开始交付 · 公司事件 · 重要性 8 · 匹配「CPO」概念 · 影响：<strong>本周最值得盯的一条</strong>——下一代 AI 服务器平台出货意味着高多层 PCB 配套订单开始放量，是 G2 中「AI 服务器业务」能否从概念变成营收的产业侧起点</li>
+<li>国庆节假期，A 股休市（10 月 1 日至 8 日前后，以交易所公告为准）</li>
+</ul></li>
+<li><strong>W4（2026-10-07 起）</strong>：本周无已知事件（节后首个交易周）</li>
+<li><strong>W5（2026-10-14 起）</strong>：
+<ul>
+<li>2026-10-12 · 中国 9 月新能源汽车产销及动力电池装机数据（中汽协／乘联会）· 数据发布 · 重要性 6 · 匹配「新能源汽车」概念 · 影响：验证 G1「8 月车企销量分化」是否延续，本票下游含汽车电子</li>
+<li>2026-10-15 · 台积电（TSMC）公布 2026 年第三季度财报（法说会）· 公司事件 · <strong>重要性 9（库内本票关联事件里最高）</strong> · 匹配「CPO」概念 · 影响：其 AI 芯片订单与先进封装（CoWoS）产能是算力链最重要的风向标，具体日期以公司公告为准</li>
+</ul></li>
+<li><strong>W6（2026-10-21 起）</strong>：本周无已知事件</li>
+<li><strong>W7（2026-10-28 起）</strong>：
+<ul>
+<li><strong>2026 年三季报披露（推算时点）</strong> · 财报 · <strong>重要性最高</strong> · 影响：<strong>本报告全部关键判断的验证点</strong>。依据：上年三季报披露日为 2025-10-31（库内财务的公告日），据此推算今年在 10 月下旬。<strong>库内与联网均未查到今年的预约披露日期，此为推算，需以公司公告为准。</strong></li>
+<li>核验清单：① 三季度单季净利润同比是否转正；② 三季度单季毛利率是否守住二季度推算的约 21.43%；③ 前三季度净利润对股权激励 2026 年 22 亿元目标值的完成度（上半年为 27.36%）；④ 资产负债率是否继续超过 51.16%</li>
+</ul></li>
+<li><strong>W8（2026-11-04 起）</strong>：本周无已知事件（三季报披露后的消化周）</li>
+<li><strong>W9（2026-11-11 起）</strong>：本周无已知事件；<strong>10 月新能源汽车产销数据通常在本周前后发布（依 W5 同类事件的月度节奏推算）</strong></li>
+<li><strong>W10（2026-11-18 起）</strong>：本周无已知事件</li>
+<li><strong>W11（2026-11-25 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-12-02 起）</strong>：本周无已知事件；<strong>11 月新能源汽车产销数据通常在本周前后发布（按月度节奏推算）</strong></li>
+<li><strong>W13（2026-12-09 起）</strong>：本周无已知事件；年末通常是次年机构策略会与行业年度展望的密集窗口，属可预期但无确切日期的消息窗口</li>
+</ul>
+<p><strong>信息缺口</strong>：库内事件日历的 11 条事件<strong>全部是概念标签匹配出来的行业／宏观事件，没有一条是本票自己的公司事件</strong>（无财报预约披露日、无解禁日、无股东大会、无分红除权日）。联网亦未查到 2026 年三季报预约披露日期与限售股解禁安排。影响：W6 及之后的日历基本是空的，<strong>W8–W13 六周的空白更可能是数据缺失而非真的无事</strong>，尤其是 H 股发行上市日、限售解禁日这两类对股价有直接影响的事件完全没有覆盖。补法：三季报披露后重跑本调研，并单独核查上交所公告页的解禁与发行时间表。</p>
+<h2>J. 逻辑链</h2>
+<p><strong>主链（每一环标置信度）</strong></p>
+<ol>
+<li><strong>因为</strong> AI 服务器带动高层数 PCB 与高阶 HDI 需求上行——产业侧证据：高端 AI 服务器 PCB 层数由 20 层升至 50 层以上、单台覆铜板用量为传统服务器 3–5 倍、价值提升 8–12 倍（来源：捷配 PCB《从基材到成品全线涨价，2026 年 PCB 行业景气贯穿全年》；21 财经 · 2026-08-10）；<strong>且</strong> 本票主营覆盖多层板、高频高速板、HDI 板（库内公司档案）——</li>
+</ol>
+<p><strong>→ 所以</strong> 公司收入端应当持续增长。（置信度：<strong>高</strong>） <strong>观察验证</strong>：已验证。四期营收同比 +22.08% / +20.92% / +16.41% / +21.37%，全部为两位数增长。✅</p>
+<ol>
+<li><strong>因为</strong> 同一轮 AI 需求同时推高上游覆铜板价格——建滔积层板年内七次发涨价函、6 月 16 日一轮涨 15%、全年累计涨幅超 50%（来源：新浪新闻《覆铜板涨价潮》；东方财富网转载 · 2026-06-29）；<strong>且</strong> 公司对上游议价能力弱、向下游转移成本有滞后期（来源：中鹏信评跟踪评级报告 · 2025-06-27；每日经济新闻 · 2026-07-06）——</li>
+</ol>
+<p><strong>→ 所以</strong> 毛利率会被压缩、利润增速慢于收入增速。（置信度：<strong>高</strong>） <strong>观察验证</strong>：已验证。毛利率 21.60% → 21.59% → 18.76% → 20.22%；净利润同比 +4.83% → +5.30% → −28.37% → −7.38%。同业验证更硬：上游生益科技半年 ROE 18.66%，本票 4.58%。✅</p>
+<ol>
+<li><strong>因为</strong> 二季度单季毛利率据推算回升至约 21.43%（比一季度单季高约 2.7 个百分点）；<strong>且</strong> 产业侧报道称高端订单已排至 2027 年、AI 相关产品价格更高（来源：21 财经 · 2026-08-10）——</li>
+</ol>
+<p><strong>→ 所以</strong> 如果高毛利的 AI 相关产品在营收中占比继续上升，下半年毛利率有机会继续修复、利润同比有机会转正。（置信度：<strong>低</strong>） <strong>观察验证</strong>：<strong>尚未验证，这是整条链的命门。</strong> 应该能观察到的现象是：三季报单季毛利率不低于约 21.43%、且单季净利润同比转正。</p>
+<ol>
+<li><strong>因为</strong> 港股发行已通过聆讯（2026-09-07，多源验证）；<strong>且</strong> 资产负债率已升至 51.16%——</li>
+</ol>
+<p><strong>→ 所以</strong> 募资落地会改善资产负债结构、支撑珠海高阶 HDI 扩产，但同时摊薄每股收益。（置信度：<strong>中</strong>，发行事实置信度高、募资规模与用途置信度低）</p>
+<p><strong>最弱的一环（命门）</strong>：<strong>第 3 环</strong>。它是整份报告里唯一支撑「不看空」的环节，而它建立在两个软证据上——① 二季度毛利率是我用累计数推算出来的，不是公司披露的单季数；② 「AI 产品占比上升」这个前提，库内财报<strong>完全没有营收拆分</strong>可以佐证，公开报道也只说「有批量订单」「稳定出货」，没给任何金额或占比。<strong>如果三季报显示毛利率重回 19% 以下或单季净利润同比仍为负，第 3 环断裂，A 节的震荡判断应直接下修为偏跌。</strong>（置信度：高——这是对自身逻辑弱点的判断，不是对公司的判断）</p>
+<p><strong>卖方观点（库内研报，近 90 天窗口，5 篇研报、4 家机构；评级分布：5 篇全部为最高档正面评级）</strong></p>
+<div class="callout">〔卖方预期〕来源：申万宏源研究（库内）· 日期：2026-08-25 · 观点：预测 2026 年 EPS 2.23 元、净利润 22.29 亿元，对应当时 PE 41 倍；2027 年 EPS 4.57 元、净利润 45.79 亿元，对应 PE 20 倍；2028 年 EPS 6.30 元、净利润 63.13 亿元，对应 PE 15 倍 · 置信度：低（卖方预期非事实，未经交叉验证）</div>
+<div class="callout">〔卖方预期〕来源：中泰证券（库内）· 日期：2026-08-24 · 观点：预测 2026 年 EPS 2.47 元、净利润 24.74 亿元，对应当时 PE 38.4 倍；2027 年 EPS 4.61 元、净利润 46.12 亿元，对应 PE 20.6 倍 · 置信度：低（卖方预期非事实，未经交叉验证）</div>
+<div class="callout">〔卖方预期〕来源：长江证券（库内）· 日期：2026-08-27 · 观点：预测 EPS 2.20 元、净利润 22.05 亿元，对应当时 PE 43.08 倍；次年 EPS 3.43 元、净利润 34.31 亿元，对应 PE 27.68 倍；第三年 EPS 4.88 元、净利润 48.85 亿元，对应 PE 19.44 倍 · 置信度：低（卖方预期非事实，未经交叉验证）</div>
+<div class="callout">〔卖方预期〕来源：中邮证券研报《线路联通世界，共建万物互联》（库内）· 日期：2026-09-03 · 观点：给予最高档正面评级（库内仅有标题与评级，无预测数据）· 置信度：低</div>
+<div class="callout">〔卖方预期〕来源：券商研报转载《景旺电子：26 年股权激励业绩目标超预期，AI 订单有望 H2 逐季放量》（联网，新浪财经／中财网转载，日期 2026-06-11）· 观点：2026 年股权激励净利润目标值 22 亿元（触发值 20 亿元），对比 2025 年实际 12.31 亿元，隐含增速约 +79%，高于市场预期；2029 年目标值 55.34 亿元，四年复合增速约 46% · 置信度：低（卖方预期非事实）</div>
+<p><strong>读卖方数据的两个提醒（这是我的判断，不是卖方观点）</strong></p>
+<ul>
+<li><strong>研报里的 PE 是发布当时的股价算出来的。</strong> 三家机构 8 月下旬给的 2026 年 PE 在 38.4–43.08 倍之间；用 2026-09-16 收盘价 104.57 元重新除一遍，对申万宏源 EPS 预测 2.23 元是约 46.9 倍、对中泰 EPS 预测 2.47 元是约 42.3 倍（<strong>均为我自行推算</strong>）。<strong>也就是说，研报发布至今股价已经涨过了它们当时对应的估值水平。</strong>（置信度：中，推算依据为库内 EPS 预测与库内收盘价）</li>
+<li><strong>卖方 2026 年预测净利润 22.05–24.74 亿元，与股权激励目标值 22 亿元高度一致，而上半年实际净利润只有 6.02 亿元、完成度 27.36%（我自行推算，与公开报道的 27.36% 一致）。要达成，下半年需完成约 15.98 亿元，是上半年的 2.65 倍。</strong>这个差距是本报告最需要读者自己掂量的一个数字。（置信度：高，均为库内数字的算术推算）</li>
+</ul>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（30%）</strong>｜<strong>触发</strong>：2026 年三季报单季净利润同比转正，且单季毛利率不低于二季度推算值约 21.43%；同时 PCB 概念在中维持「主升」状态｜<strong>路径</strong>：利润拐点获得财报确认，市场把定价依据从「2026 年利润」切换到「2027 年订单放量」，估值中枢向卖方 2027 年预测口径靠拢，股价沿板块主升节奏运行，回调不破中期均线体系</li>
+<li><strong>中性（45%）</strong>｜<strong>触发</strong>：三季报单季净利润同比在 −10% 至 0% 之间，毛利率在 20%–21.5% 区间，全年净利润对股权激励 22 亿元目标值的完成度在 60% 以下｜<strong>路径</strong>：基本面没有证伪也没有证实，股价跟随 PCB 板块热度宽幅震荡，在中期均线与前期反弹高点之间来回，热点状态从「主升」转为其他状态时回落、重新转强时修复</li>
+<li><strong>悲观（25%）</strong>｜<strong>触发</strong>：三季报单季毛利率回落至 19% 以下，或单季净利润同比降幅扩大至 −20% 以上，或资产负债率继续升破 51.16%；亦或 FCC 光模块草案正式进入规则制定程序导致 CPO 概念热度回落｜<strong>路径</strong>：J 节第 3 环断裂，估值失去业绩支撑，PE 88.51 与行业中位 71.61 的差距被迫收敛，股价向中期均线下方寻找支撑，A 节方向判断下修为偏跌</li>
+</ul>
+<p>三档概率合计 100%。</p>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong></p>
+<ol>
+<li><strong>如果</strong> 2026 年三季报显示单季净利润同比转正、且单季毛利率不低于二季度推算值约 21.43%（核验时点见 I 节 W7），<strong>那么</strong> 可按中等仓位试仓。</li>
+<li><strong>如果</strong> 三季报单季毛利率回落至 19% 以下、或前三季度净利润对股权激励 2026 年 22 亿元目标值的完成度低于 50%，<strong>那么</strong> 回避。</li>
+<li><strong>如果</strong> 中 PCB 概念从「主升」状态退出（即不再满足「连续跑赢大盘」与「跑赢幅度」的判定），<strong>且</strong> 股价跌破 MA20，<strong>那么</strong> 对已有部位减仓；<strong>如果</strong> 板块状态未变但股价单日跌破 9-16 收盘价后三个交易日内收回，<strong>那么</strong> 观望、不做动作。</li>
+<li><strong>如果</strong> H 股招股价与发行规模正式公告，<strong>那么</strong> 先观望至发行完成，等摊薄后的每股收益口径明确再重新评估——库内目前无发行规模与定价数据，任何基于摊薄前 EPS 的判断都会失真。</li>
+</ol>
+<p><strong>风控要点：这笔判断在什么情况下应当被推翻</strong></p>
+<ul>
+<li><strong>推翻「震荡」判断、下修为偏跌的条件</strong>：三季报单季毛利率低于 19%，或单季净利润同比降幅大于 −20%（J 节第 3 环断裂）。</li>
+<li><strong>推翻「震荡」判断、上修为偏涨的条件</strong>：三季报单季净利润同比转正<strong>且</strong>公司首次在定期报告中披露 AI 服务器相关产品的营收金额或占比——后者会把 G2 中「仅概念标签」的 CPO／英伟达概念升级为「真有业务」，是逻辑等级的变化，不只是数字的变化。</li>
+<li><strong>需要额外警惕的一条</strong>：本报告缺失筹码数据（筹码分布为 None）与股东户数环比（为空），因此<strong>完全无法判断当前持有人结构是集中还是分散</strong>。在 H3 显示「封板质量在变差」（9-07 封单 1.77 亿元、开板 6 次，对比 8-07 封单 6.51 亿元、开板 1 次）的背景下，这个缺口意味着对短期承接力的评估缺少关键一环。</li>
+</ul>
+<p><strong>仓位思路</strong>：<strong>中性偏轻，不做重仓</strong>。理由：板块处于主升给了做多的理由，但公司利润端连续两期同比为负、估值高于行业中位、逻辑链最弱的一环要等到 10 月下旬才有答案——<strong>在 I 节 W7 的三季报之前，方向上的信息增量几乎为零，任何加码都是在为一个未验证的假设付钱。</strong> 不给具体金额、不给股数。</p>
+<h2>M. 逻辑自查</h2>
+<p><strong>这份判断最依赖的假设是哪一条？它错了会怎样？</strong></p>
+<p>最依赖的假设是：<strong>「二季度单季毛利率约 21.43% 的环比回升是真实的经营改善，而不是会计期间或产品结构的一次性扰动。」</strong> 它错了的话，C 节的「拐点」、J 节第 3 环、K 节的乐观与中性情景会同时失效，A 节的震荡判断应直接改为偏跌。<strong>而这个假设目前的证据强度只有「我用两期累计数倒推出来的一个数字」，公司没有单独披露过单季毛利率。这是本报告最脆弱的地方，我把它明确写在这里而不是藏在正文。</strong></p>
+<p><strong>有没有为了让逻辑好看而忽略的反面证据？</strong></p>
+<p>有三条，我把它们单列出来：</p>
+<ol>
+<li><strong>涨停封板质量在明显变差</strong>（H3）。8-07 封单 6.51 亿元、开板 1 次 → 9-07 封单 1.77 亿元、开板 6 次。我在 A 节把「板块主升」列为第一核心驱动，但同一个板块行情里，这只票自己的承接力在下降。<strong>这条对「板块强＝这只票强」的推论是直接的反证，我在 A 节没有给它同等篇幅。</strong></li>
+<li><strong>主力资金净流入并不连续</strong>（H4）。近 20 日净流入 5.01 亿元听起来不少，但正流入只有 9 天、负流入 11 天，超过一半的交易日是净流出的。我在正文里用了「脉冲式」这个描述，但如果只看 5.01 亿元这个总数，很容易得出比实际更积极的印象。</li>
+<li><strong>下游汽车电子方向的板块信息是负面的</strong>（G1）。系统记录的「8 月车企销量分化」热点里，乘联分会数据是 8 月新能源乘用车国内零售 100.5 万辆、<strong>同比下降 10.1%</strong>。公司下游明确包含汽车电子且持有 IATF16949 认证，这条对本票是负面方向。我在 A 节的核心风险里没有列它——因为库内没有汽车电子营收占比数据，无法判断影响量级，但<strong>「无法量化」不等于「不存在」</strong>。</li>
+</ol>
+<p><strong>信息缺口清单（缺什么 · 影响多大 · 怎么补）</strong></p>
+<ol>
+<li><strong>2026 年三季报（最大缺口）</strong>——库内财务最新期为 2026H1（截止 2026-06-30）。影响：<strong>决定性</strong>，本报告全部关键判断的验证点都在三季报。补法：三季报披露后重跑本调研（推算时点 10 月下旬，见 I 节 W7，具体日期以公司公告为准）。</li>
+<li><strong>筹码分布数据</strong>——库内资金筹码返回 None，<strong>库内筹码数据仅覆盖关注票，该票暂无</strong>。影响：中等，导致本报告无法给出获利盘比例与筹码成本分位，H 节情绪面判断少一条佐证，L 节的操作触发条件因此<strong>没有使用任何筹码成本类价位锚</strong>。补法：该票进入库内筹码覆盖范围后自动补全。</li>
+<li><strong>股东户数环比</strong>——股东户数有 2026-06-30 的 124,615 户，但上一报告期与均为空，无法计算环比。影响：小，且该数据本身季度披露、天然滞后。补法：三季报披露股东户数后重跑。</li>
+<li><strong>本票自己的公司事件日历</strong>——库内事件日历返回的 11 条<strong>全部是概念标签匹配出的行业事件，没有一条公司事件</strong>；联网也未查到三季报预约披露日期与限售解禁安排。影响：中等，I 节 W8–W13 六周空白更可能是数据缺失而非真的无事。补法：单独核查上交所公告页的定期报告预约披露表与限售股解禁时间表。</li>
+<li><strong>AI 相关业务的营收拆分</strong>——库内财报无此维度，公开报道只说「批量订单」「稳定出货」，未给金额或占比。影响：<strong>大</strong>，这是 G2 把 CPO／英伟达概念判为「仅概念标签」的直接原因，也是 J 节第 3 环置信度只有「低」的原因。补法：等待公司在定期报告中首次披露该口径（若披露，见 L 节「上修条件」）。</li>
+<li><strong>H 股发行规模与定价</strong>——已知拟发行不超过 125,837,100 股（联网，凤凰网／观点网 · 2026-09），但招股价、募资净额、资金用途均未公告。影响：中等，无法测算摊薄后每股收益。补法：等待发行公告。</li>
+<li><strong>A/H 溢价</strong>——库内 A/H 对照返回 None，因该票目前非两地上市。这不是缺口，是事实；H 股发行完成后该指标才会出现。</li>
+<li><strong>本报告调用的取数块使用情况</strong>：库内公司档案（B/E 节）、库内财务（C 节）、库内估值（B/D 节）、库内行情（B 节）、库内概念标签（G2）、库内涨停记录（H3）、库内新闻（H2）、库内同业对比（D 节）、库内事件日历（I 节）、库内研报（J 节）、库内资金筹码（H4）（G1/H1）<strong>全部已在正文引用</strong>；库内 A/H 对照返回 None，按口径不展开。</li>
+</ol>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-16），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>净利润连续两期同比为负</li>
+      <li>PE88.51高于行业中位71.61</li>
+      <li>资产负债率四期升至51.16%</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>限售解禁</dt><dd>首发或定增取得的股份锁定期届满、可以上市流通。解禁本身不等于减持，但增加了潜在供给。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> 搜狐转载产业报道《解密 AI 服务器市场：景旺电子迎来批量订单》 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社《营收、净利双增长！景旺电子卡位&quot;AI+&quot;核心赛道》 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 捷配 PCB《从基材到成品全线涨价，2026 年 PCB 行业景气贯穿全年》 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 21 财经 · 2026-08-10 <em>2026-08-10</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪新闻《覆铜板涨价潮》 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富网转载 · 2026-06-29 <em>2026-06-29</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-research">研究</span> 中鹏信评跟踪评级报告 · 2025-06-27 <em>2025-06-27</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 每日经济新闻 · 2026-07-06 <em>2026-07-06</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 核验时点：预计 10 月下旬，上年三季报披露日为 2025-10-31，见 I 节 W7 <em>2025-10-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 联网，新浪财经／中财网转载，日期 2026-06-11 <em>2026-06-11</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-16 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
