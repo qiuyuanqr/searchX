@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>赢时胜（300377.SZ） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>赢时胜（300377.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-16（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 软件开发</span>
+      <span style="flex-basis:100%"><b>概念标签</b> Web3.0 · 数字货币 · 华为昇腾 · 华为鲲鹏 · 互联网金融 · 区块链 · 腾讯概念 · 信创</span>
+      <span><b>来源</b> 25 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    赢时胜（300377）主要做的是为金融机构及其高端客户的资产管理业务和托管业务提供整体信息化建设解决方案的应用软件及增值服务（库内公司档案）。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——2026 年二季度单季净利润转为 +0.09 亿元、滚动四个季度净利润已收窄到 -0.03 亿元，但半年报累计仍亏损 0.78 亿元，盈亏平衡尚未被一份完整财报确认。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：2026 年二季度单季净利润转为 +0.09 亿元、滚动四个季度净利润已收窄到 -0.03 亿元，但半年报累计仍亏损 0.78 亿元，盈亏平衡尚未被一份完整财报确认。支撑在于二季度单季净利润转正0.09亿元；滚动四季度净利润仅-0.03亿元；资产负债率8.24%无偿债压力。主要风险是半年报仍亏损0.78亿元；半年度减值金额未披露；近20日资金净流出2.57亿元。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>二季度单季净利润转正0.09亿元</li>
+      <li>滚动四季度净利润仅-0.03亿元</li>
+      <li>资产负债率8.24%无偿债压力</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据时点：行情 2026-09-16 16:29（库内行情，当日收盘）｜估值 2026-09-15（库内估值）｜财务最新期 2026 年半年报（2026-08-20 公告） 本报告全部库内数字来自库内取数；联网内容均标来源与日期。不含任何持仓/账户信息。</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：2026 年二季度单季净利润转为 +0.09 亿元、滚动四个季度净利润已收窄到 -0.03 亿元，但半年报累计仍亏损 0.78 亿元，盈亏平衡尚未被一份完整财报确认。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>单季盈利已出现，滚动四季度逼近盈亏平衡</strong>——据库内累计数推算，2026Q2 单季营收 3.47 亿元、净利润 +0.09 亿元（2025Q2 单季为 -0.12 亿元），最近四个季度净利润合计约 -0.03 亿元。（置信度：高，数字为库内累计值相减推算）</li>
+<li><strong>资产负债表干净，抗风险能力强</strong>——2026 年半年报资产负债率 8.24%，在 A 股软件公司里属极低水平，短期没有债务压力。（置信度：高）</li>
+<li><strong>题材侧催化密集</strong>—— 显示所在板块有 4 个处于「资金确认」状态的活动中热点；库内事件日历未来两周内排了华为全联接大会、云栖大会、OpenAI 开发者大会等 7 个概念相关事件。（置信度：高，均为库内记录）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>半年报仍是亏损，且刚公告过计提资产减值准备</strong>——2026-08-19 公司发布《关于 2026 年半年度计提资产减值准备的公告》，库内将其归为「商誉减值」类，<strong>具体金额库内无记录、联网也未检索到公告文本</strong>。（置信度：高｜金额缺口置信度：不适用，属信息缺口）</li>
+<li><strong>近 20 个交易日资金净流出</strong>——2026-08-19 至 2026-09-15，合计净流入 -2.57 亿元、特大单净额 -0.16 亿元，20 天里只有 8 天净流入。（置信度：高，属盘面现象不作基本面证据）</li>
+<li><strong>卖方覆盖缺失，没有外部盈利预测可对照</strong>——库内研报返回空；同花顺 F10 盈利预测页显示 2026、2027 年暂无机构做出业绩预测（同花顺，页面无日期标注）。意味着一旦业绩偏离，没有第三方预期作参照系。（置信度：中）</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ul>
+<li><strong>三季报单季是否连续盈利</strong>：核验时点＝2026 年三季报披露日（上年同期公告日为 2025-10-28，库内公告日；按创业板规则最晚 2026-10-31）。看点是「Q3 单季净利润是否为正」「毛利率能否回到 40% 以上」——2026H1 毛利率 32.35%，比 2025H1 的 34.57% 下降 2.2 个百分点，比 2025 全年的 42.13% 低近 10 个百分点。</li>
+<li><strong>资产减值准备的具体金额</strong>：半年报全文（2026-08-19 公告）里能查到；金额大小决定「Q2 盈利是主营改善还是减值计提规模有限」。</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong>：我把 2026Q2 的 +0.09 亿元单季盈利当作「主营在改善」的证据，但这个数字是累计数相减推算出来的，而且软件公司季度间收入确认波动很大（2025 年四个季度净利润分别是 -0.69、-0.12、+0.36、+0.40 亿元，Q1 亏、Q4 赚是常态）。如果 2026Q2 的盈利只是收入确认节奏往前挪了一点，Q3 就可能重新回到亏损。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>公司</strong>：深圳市赢时胜信息技术股份有限公司｜代码 300377｜上市状态 L（正常上市）</li>
+<li><strong>主营</strong>：为金融机构及其高端客户的资产管理业务和托管业务提供整体信息化建设解决方案的应用软件及增值服务（库内公司档案）</li>
+<li><strong>行业归属</strong>：库内基础资料标注为「软件服务」；库内涨停记录表对同一天的行业标注为「软件开发」——两套分类口径不同，本报告统一用「软件服务」做同业比较</li>
+<li><strong>板块/上市时间</strong>：创业板，2014-01-27 上市，至今约 12 年 7 个月</li>
+<li><strong>员工</strong>：5,633 人｜注册资本 75,100.308 万元（约 7.51 亿股）</li>
+<li><strong>资质</strong>：国家发改委等五部委联合认定的国家规划布局内重点软件企业，深圳市首批国家级高新技术企业，2009 年通过 CMMI3 级认证、2011 年通过 ISO9001 认证（库内公司档案原文）</li>
+</ul>
+<p><strong>当前行情与估值</strong></p>
+<ul>
+<li>股价 13.35 元｜当日涨跌 -1.69%｜成交额 2.50 亿元｜当日最高 +1.33%、最低 -1.77%（库内行情，数据时点 2026-09-16 16:29）</li>
+<li>总市值 100.26 亿元｜PB 4.1508｜换手率 2.6745%（库内估值，2026-09-15）</li>
+<li><strong>PE（TTM）为空</strong>——因为滚动四个季度净利润为负（据库内累计数推算约 -0.03 亿元），算不出正的市盈率。所以「同行业 PE 分位」这一项行业内 PE 排名也是空值，本报告无法给出 PE 排名。（置信度：高）</li>
+<li>同行业（软件服务，共 280 只在市票）PE 中位数 84.90（库内估值，2026-09-15）</li>
+<li><strong>仅估值口径的推算</strong>：市销率约 7.0 倍（100.26 亿元市值 ÷ 滚动四季度营收 14.25 亿元，据库内数据推算）；人均营收约 25.3 万元/年（14.25 亿元 ÷ 5,633 人，据库内数据推算，员工数为快照口径、未必与滚动期间完全匹配）。（置信度：中）</li>
+<li>A/H 溢价：库内 A/H 对照返回空，该票非两地上市，本节不涉及。</li>
+</ul>
+<h2>C. 财务健康</h2>
+<p>近 4 期（累计口径，库内财务，单位亿元）：</p>
+<ul>
+<li><strong>2026 年半年报</strong>（公告日 2026-08-20）｜营收 6.30（同比 +8.90%）· 净利润 -0.78 · 毛利率 32.35% · 净利率 -12.60% · ROE -3.19% · EPS -0.1044 元 · 资产负债率 8.24%</li>
+<li><strong>2026 年一季报</strong>（公告日 2026-04-21）｜营收 2.82（同比 +7.52%）· 净利润 -0.88 · 毛利率 24.34% · 净利率 -31.32% · ROE -3.58% · EPS -0.1168 元 · 资产负债率 8.05%</li>
+<li><strong>2025 年年报</strong>（公告日 2026-04-21）｜营收 13.73（同比 +2.33%）· 净利润 -0.05 · 毛利率 42.13% · 净利率 -0.50% · ROE -0.21% · EPS -0.007 元 · 资产负债率 8.51%</li>
+<li><strong>2025 年三季报</strong>（公告日 2025-10-28）｜营收 9.37（同比 -5.18%）· 净利润 -0.45 · 毛利率 42.96% · 净利率 -5.01% · ROE -1.82% · 资产负债率 8.00%</li>
+</ul>
+<p>更早两期做背景（同一函数拉取）：2025 年半年报营收 5.78 亿元、净利润 -0.81 亿元、毛利率 34.57%；2024 年年报营收 13.42 亿元（同比 -15.73%）、净利润 -4.44 亿元、ROE -16.11%。</p>
+<p><strong>趋势怎么看</strong></p>
+<ol>
+<li><strong>亏损在逐年收窄，但还没转正。</strong> 2024 年净亏损 4.44 亿元 → 2025 年净亏损 0.05 亿元（亏损大幅收窄，净利同比 +98.81%）→ 2026 年半年报净亏损 0.78 亿元，比 2025 年半年报的 0.81 亿元小幅收窄 2.7%。三个完整会计年度口径下，这是<strong>连续两年亏损后的第三年仍未扭亏</strong>。（置信度：高）</li>
+<li><strong>拐点出现在单季数据上。</strong> 据库内累计数相减推算，最近四个单季净利润为：2025Q3 +0.36 亿元、2025Q4 +0.40 亿元、2026Q1 -0.88 亿元、2026Q2 +0.09 亿元，合计约 -0.03 亿元。<strong>四个季度里三个盈利，全部亏损集中在 Q1</strong>。对应单季营收：3.59、4.37、2.82、3.47 亿元。（置信度：中，为推算值）</li>
+<li><strong>一季度亏损是季节性的，不是新出现的问题。</strong> 2025Q1 净利润 -0.69 亿元、2026Q1 -0.88 亿元，两年的 Q1 都亏。软件公司收入确认后置、人力成本前置，Q4 是收入大头——2025Q4 单季营收 4.37 亿元，是全年最高的一个季度。（置信度：中）</li>
+<li><strong>营收增速由负转正。</strong> 2025 年半年报营收同比 -7.84%，2026 年半年报同比 +8.90%；但 2026 年半年报的 6.30 亿元与 2024 年半年报的 6.27 亿元基本持平——<strong>等于只是回到了两年前的规模</strong>。（置信度：高）</li>
+<li><strong>毛利率同比下降是本期最需要注意的一项。</strong> 2026H1 毛利率 32.35%，同比下降 2.2 个百分点；比 2025 年全年的 42.13% 低 9.8 个百分点。软件公司毛利率下降通常指向两件事之一：定制开发占比提升（人力成本高）或项目降价。库内无收入结构拆分，无法判断是哪一种。（置信度：中）</li>
+<li><strong>资产负债率 8.24%，是这家公司最扎实的一项。</strong> 2024 年 9.38% → 2025 年 8.51% → 2026H1 8.24%，连续下降。几乎没有有息负债压力，意味着即便再亏一两年也不存在偿债风险。（置信度：高）</li>
+</ol>
+<p><strong>亏损原因（公司自己的说法，非库内数据）</strong></p>
+<p>〔公司口径〕来源：新浪财经《调研速递｜赢时胜接待线上投资者调研 2025 年大幅减亏 98.81% AI+信创双轮驱动业绩改善》· 日期：2026-05-12 · 表述：「2025 年亏损主要因长期股权投资计提减值准备，主营业务利润已呈增长态势」，同时提到 2025 年销售费用、管理费用、研发费用分别同比下降 0.06%、16.74%、3.91% · 置信度：中（公司自述，单一报道来源，未经独立交叉验证）</p>
+<p>这条说法与库内 2026-08-19 的《关于 2026 年半年度计提资产减值准备的公告》（库内归类「商誉减值」）方向一致：<strong>这家公司近两年的账面亏损里，减值计提占了相当分量</strong>。（置信度：中）</p>
+<p><strong>一个值得注意的推论</strong>：2026Q2 单季在「半年度计提了资产减值准备」的同时仍录得 +0.09 亿元盈利，说明本期减值规模有限，或主营利润已足以覆盖。但由于减值金额未取得，这只是推论。（置信度：中）</p>
+<p><strong>信息缺口</strong>：库中无 2026 年半年度资产减值准备的具体金额与分项明细（库内新闻只记录了公告标题）；联网检索（2026-09-16）尝试抓取巨潮该公告 PDF 未能解析文本，其他渠道亦未检索到金额。影响：无法判断 Q2 盈利里有多少来自主营改善、多少来自减值规模收缩，C 节第 6 条与 J 节第 3 环都会因此变弱。补法：查阅 2026 年半年报全文（巨潮 2026-08-20 发布）的「资产减值损失」科目，或等三季报再验一次。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>⚠️ <strong>口径说明</strong>：库内同业对比取的是<strong>同行业市值最大的 3 只在市票</strong>，不是按体量匹配挑的。赢时胜市值 100.26 亿元，下面三家都在 1000 亿元以上，<strong>不构成同量级可比公司</strong>，只能当作行业头部的参照坐标。（置信度：高，已核对函数取数逻辑）</p>
+<p>同行业市值前三（财务数据截至 2026-06-30）：</p>
+<ul>
+<li><strong>同花顺（300033）</strong>｜市值 1535.39 亿元 · PE(TTM) 42.00 · PB 20.01 · 营收 26.46 亿元 · 净利润 9.52 亿元 · ROE 11.10%</li>
+<li><strong>金山办公（688111）</strong>｜市值 1046.44 亿元 · PE(TTM) 29.01 · PB 6.94 · 营收 33.13 亿元 · 净利润 25.18 亿元 · ROE 18.03%</li>
+<li><strong>润泽科技（300442）</strong>｜市值 999.56 亿元 · PE(TTM) 18.61 · PB 6.90 · 营收 37.46 亿元 · 净利润 12.03 亿元 · ROE 8.55%</li>
+<li><strong>赢时胜（300377）</strong>｜市值 100.26 亿元 · PE(TTM) 无（亏损） · PB 4.15 · 营收 6.30 亿元 · 净利润 -0.78 亿元 · ROE -3.19%</li>
+</ul>
+<p><strong>这家在同行里处于什么位置</strong></p>
+<ul>
+<li>体量上是小盘：市值只有上述三家的 1/10 到 1/15，营收不到它们的 1/4。（置信度：高）</li>
+<li>估值上 PB 最低（4.15 对 6.90~20.01），但<strong>这个「便宜」是亏损换来的</strong>——另外三家 ROE 在 8.55%~18.03% 之间且全部盈利，赢时胜 ROE 为 -3.19%。PB 低而 ROE 为负，在估值逻辑上不构成「折价」，只说明市场没有给它盈利公司的定价。（置信度：高）</li>
+<li>行业 PE 中位数 84.90（280 只软件服务股），头部三家的 PE 都远低于中位数——说明这个行业的中位数被大量微利、高估值的小票抬高了，中位数本身不是好的比较基准。（置信度：中）</li>
+</ul>
+<p><strong>真正的直接竞争对手不在这张表里</strong>。赢时胜做的是资产管理与资产托管信息化，A 股里对位的是恒生电子（600570）。库内同业对比按市值取样取不到它。从公开报道看：</p>
+<p>〔行业参照〕来源：新浪财经《东吴非银｜恒生电子 2026 年一季报点评》· 日期：2026-05-01 · 要点：恒生电子 2026 年一季报营业总收入 9.05 亿元、同比下降 11.75%，归母净利润 1.39 亿元、同比上升 342.87%，报道称「投资收益贡献近半利润，业务结构调整致营收略承压」· 置信度：低（第三方报道转述，且属于另一家公司的数据，不能当作赢时胜的基本面证据）</p>
+<p>〔行业参照〕来源：搜狐《每周股票复盘：恒生电子 2026 年迎自主可控加速期》转述 · 日期：无明确标注 · 要点：资管科技条线营收同比 -28.23%，业绩下滑主因「降费降佣」政策影响 · 置信度：低（单一来源、日期不明）</p>
+<p><strong>可比含义</strong>：若行业龙头的资管科技条线在 2026 年上半年确实承压，那么赢时胜 2026 年半年报营收同比 +8.90% 反而是相对偏强的表现。（置信度：低——两家口径与业务结构不同，且龙头数据来自二手报道）</p>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>：卖软件 + 收服务费。据证券之星/东方财富百科的公司资料页（未标注日期）记载，主营业务收入构成为服务费收入 50.89%、定制软件开发销售 49.11%。（置信度：低——来源未标日期，可能是旧年报口径，库内无收入结构拆分数据可对）</p>
+<p><strong>护城河分级（诚实分级）</strong></p>
+<ul>
+<li><strong>阶段性优势：客户绑定与切换成本（置信度：中）</strong>。资产托管与估值核算系统是金融机构的后台核心系统，一旦上线，切换要重做数据迁移与合规验证，成本很高。公司自述已为「银行、基金、保险资管等 400 余家金融机构」提供服务（来源：新浪财经 2026-05-12 调研报道，公司口径，单一来源）。客户数多且集中在持牌金融机构，这类客户一般不轻易换供应商。</li>
+<li><strong>阶段性优势：资质与行业认可（置信度：中）</strong>。库内公司档案记载公司是国家规划布局内重点软件企业、通过 CMMI3 与 ISO9001，其核算估值、资产托管、QDII 资产管理软件产品曾获「中国软件金奖」。这类资质在金融机构招标中是加分项，但不是排他性牌照。</li>
+<li><strong>无明显结构性护城河（置信度：中）</strong>。库内信息里看不到排他性牌照、专利壁垒或网络效应。金融 IT 是充分竞争市场，恒生电子等对手体量大得多。<strong>更关键的反证是财务本身</strong>：真有结构性护城河的公司不会连续两年亏损、毛利率从 42.13% 降到 32.35%。</li>
+</ul>
+<p><strong>商业模式的一个结构性弱点</strong>：人均营收约 25.3 万元/年（据库内数据推算），对一家软件公司来说偏低，说明业务里人力密集的定制开发占比不轻。定制开发难以规模化复制，收入增长要靠加人，利润率就上不去。这与 2026H1 毛利率同比下降 2.2 个百分点是自洽的。（置信度：中）</p>
+<h2>F. 政策与监管</h2>
+<p>本节以联网信息为主（库内无政策数据），只列与这家公司/这个行业直接相关的。</p>
+<p><strong>1）金融信创：2027 年是考核节点，2026 年是放量年（利好，置信度：中）</strong></p>
+<ul>
+<li>来源：新浪财经《信创万亿空间可期？2027 年考核节点临近，国产操作系统订单加速释放！》· 日期：2026-08-19 · 要点：2027 年临近，党政信创与行业信创均有望迎来全面替换高峰。</li>
+<li>来源：人大金仓（Kingbase）技术专栏《金融系统数据库国产化替换是什么？2026 年全面解析与落地指南》· 日期：2026 年（页面未标具体日）· 要点：国资委要求至 2027 年金融等八大重点行业实现数据库 100% 国产替代；金融核心业务系统（交易结算、资金管理、TA 系统、清分清算等）需整体迁移到国产数据库。</li>
+<li>⚠️ 第二个来源是数据库厂商自有博客，存在商业立场，<strong>不是一手政策文件</strong>。两个来源方向一致但独立性有限，因此这条定为置信度：中，不上调到高。</li>
+<li><strong>传导链条</strong>：2027 考核节点 → 银行/基金/保险资管必须在 2026-2027 完成核心系统国产化改造 → 资产托管、估值核算这类后台核心系统是改造范围 → 赢时胜的信创改造与适配订单有增量空间。公司自述「已为 400 余家金融机构提供信创技术支持，支撑资产管理、资产托管业务全栈信创自主可控」（新浪财经 2026-05-12 调研报道，公司口径）。</li>
+</ul>
+<p><strong>2）资管行业降费降佣：压制下游 IT 预算（利空，置信度：低）</strong></p>
+<ul>
+<li>来源：搜狐转述的恒生电子行业复盘（日期不明）· 要点：资管条线业绩下滑主因「降费降佣」政策影响，修复依赖市场环境改善。</li>
+<li>单源、日期不明，<strong>标注为单源未交叉验证</strong>。传导链条是：公募/资管降费 → 管理费收入下降 → IT 预算收紧 → 金融 IT 公司订单价格与节奏承压。这与赢时胜 2026H1 毛利率同比下降 2.2 个百分点方向一致，但因果关系未被证实。</li>
+</ul>
+<p><strong>3）《金融产品网络营销管理办法》2026-09-30 施行（中性偏利好，置信度：低）</strong></p>
+<ul>
+<li>来源：本次联网检索返回的行业综述内容提及该办法将于 2026-09-30 施行、金融机构合规系统需求集中释放。<strong>未能定位到监管部门原文或第二个独立来源</strong>，因此标注为单源未交叉验证。与赢时胜的关联度也弱——该办法针对营销端，赢时胜做的是后台托管与核算，不在直接受益链上。</li>
+</ul>
+<p><strong>信息缺口</strong>：本次联网未检索到 2026 年针对资产托管信息化的专项监管文件。影响：F 节对公司的政策传导判断主要靠「金融信创」这一条通用主线，缺少直接针对托管业务的政策证据。补法：跟踪银保监/证监会关于托管业务系统、估值核算规范的规则更新。</p>
+<h2>G. 题材与产业链关联</h2>
+<h3>G1. 所在板块正在活动的热点（数据日 2026-09-15）</h3>
+<p>库内记录了 4 个处于活动状态的热点，均为「资金确认」状态（照抄系统口径）：</p>
+<ul>
+<li><strong>首款量产 AI 智能体手机</strong>｜关联度：直接｜状态：资金确认｜进入日期：2026-08-04｜依据：涨停 40 家（前日 13，20 日均 12.3）</li>
+</ul>
+<p>发生了什么（系统记录）：近日多款 AI 手机消息密集，字节与中兴通讯联合打造全球首款量产 AI 智能体手机，二代豆包手机努比亚 NaviX Ultra 获入网许可、9 月内上市；同时魅族等品牌回应手机涨价。相关新闻最新一条为 2026-09-15《&quot;豆包手机二代&quot;努比亚 NaviX Ultra 预约超 36 万台》。</p>
+<ul>
+<li><strong>华为密集发新品</strong>｜关联度：直接｜状态：资金确认｜进入日期：2026-09-07｜依据：涨停 32 家（前日 4，20 日均 13.5）</li>
+</ul>
+<p>发生了什么（系统记录）：华为近日密集公布新品与动向，新款 MatePad Air 将升级 OLED 屏，新款非凡探索手表搭载鸿蒙 7，WATCH 6 系列 9 月 7 日发布。最新新闻 2026-09-15《华为将推出第三代血压手表》。</p>
+<ul>
+<li><strong>华为韬定律论文再更新</strong>｜关联度：间接｜状态：资金确认｜进入日期：2026-09-07｜依据：涨停 31 家（前日 4，20 日均 13.9）</li>
+</ul>
+<p>发生了什么（系统记录）：9 月初华为半导体负责人何庭波更新发布&quot;韬定律&quot;论文，围绕 3D 堆叠散热等难题展开论述，分析师认为半导体设备等环节有望受益。最新新闻 2026-09-15《半导体设备板块震荡反弹》。</p>
+<ul>
+<li><strong>计算机（申万一级）</strong>｜关联度：系统未标注｜状态：资金确认｜进入日期：2026-09-14｜依据：涨停 6 家（前日 2，20 日均 1.9）</li>
+</ul>
+<p><strong>怎么理解这四条</strong>：前三个热点的驱动事件都在<strong>硬件与半导体端</strong>（AI 手机、华为终端、半导体设备），赢时胜是做金融后台软件的，<strong>与这些热点的事件本体没有业务关系</strong>，它被归进来靠的是「华为概念 / 华为昇腾 / 华为鲲鹏 / AI 应用」这几个概念标签。第四条「计算机」板块资金确认，是与它关系最直接的一条——同板块资金在活动。（置信度：中）</p>
+<h3>G2. 概念标签逐个分级（库内概念标签，共 20 个，来源同花顺）</h3>
+<p><strong>相对有业务支撑的（仍需财报佐证，置信度：中）</strong></p>
+<ul>
+<li><strong>信创</strong>：公司自述已为 400 余家金融机构提供信创技术支持（新浪财经 2026-05-12 调研报道，公司口径）。<strong>库内财报无信创业务的营收拆分</strong>，无法量化。</li>
+<li><strong>互联网金融 / AI 应用 / 人工智能</strong>：主营即金融机构信息化，AI 方向公司自述推出「AI-AGENT 专业服务器」等软硬一体方案，并为头部公募基金、保险资管完成资产管理全系统 AI 原生适配、为大型股份制银行完成资产托管系统大模型兼容改造（同上，公司口径）。<strong>未见单独营收披露</strong>。</li>
+<li><strong>数据要素</strong>：公司参股东方金信，后者提供数据要素确权、评估、入表等服务。来源一：新浪财经《赢时胜新增数据要素概念股价回落一季度亏损 8769 万元》，2026-07-28；来源二：鲸平台《东方金信拟闯关科创板曾获腾讯融资 A 股公司赢时胜位列第三大股东》（日期不明）。两个独立来源均确认参股关系，但<strong>持股比例口径不一致</strong>（检索到 12.8% 与 17.02% 两种说法），比例本身标注为单源未交叉验证、置信度低。这是<strong>参股收益/投资性质的关联，不是主营业务</strong>。</li>
+</ul>
+<p><strong>仅概念标签，未见营收佐证（置信度：高——即&quot;没有佐证&quot;这件事本身可确认）</strong></p>
+<ul>
+<li><strong>华为昇腾 / 华为鲲鹏 / 华为概念</strong>：公司在 2026-07-31 董秘问答中被问到「与华为昇腾、DeepSeek、通义千问的深度适配，有无联合推出金融 AI 一体机」（库内新闻库内记录，库内未记录答复内容）。适配关系与营收贡献是两回事，<strong>未见营收佐证</strong>。</li>
+<li><strong>DeepSeek 概念 / AI 智能体</strong>：同上，属技术适配层面的标签。</li>
+<li><strong>区块链 / 数字货币 / Web3.0</strong>：公开资料提到公司是金链盟首批成员、参与数字人民币相关项目实践、有保理区块链 SaaS 系统（证券之星/东方财富公司资料页，日期不明）。<strong>库内外均未查到这块业务的营收占比</strong>，按标准应归为「仅概念标签，未见营收佐证」。</li>
+<li><strong>机器人概念 / 腾讯概念 / 阿里巴巴概念 / 粤港澳大湾区 / 股权转让(并购重组)</strong>：均未见主营或财报佐证，属关系型或地域型标签。</li>
+<li><strong>深股通 / 融资融券</strong>：交易属性标签，与业务无关。</li>
+</ul>
+<p><strong>一句话总结</strong>：20 个概念标签里，<strong>真正能对回主营描述的只有「信创」「互联网金融」「AI 应用」三类</strong>，其余大部分是标签沾边。这也是一个风险点——<strong>题材驱动的上涨缺少业绩兑现路径</strong>。（置信度：中）</p>
+<h3>G3. 产业链位置</h3>
+<ul>
+<li><strong>上游</strong>：基础软硬件（服务器、数据库、操作系统、大模型）。公司自述不参与大模型研发，聚焦成熟大模型与金融场景融合（新浪财经 2026-05-12，公司口径）——意味着<strong>对上游没有议价权，是采购方与适配方</strong>。</li>
+<li><strong>自身</strong>：应用软件层，做资产管理与资产托管的核算、估值、清算系统。</li>
+<li><strong>下游</strong>：银行、公募基金、保险资管、证券、社保基金等持牌金融机构。<strong>下游极度集中且强势</strong>——都是大机构，招标压价能力强。</li>
+<li><strong>议价能力在下游</strong>。这解释了为什么营收回暖（2026H1 +8.90%）而毛利率反而同比下降 2.2 个百分点。（置信度：中）</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<h3>H1. 板块热点（见 G1）</h3>
+<p>四个「资金确认」状态的活动中热点里，<strong>与赢时胜业务本体相关的只有「计算机」板块资金活跃这一条</strong>；另外三条是硬件与半导体侧事件，通过「华为概念」「AI 应用」标签把它带进来。这种关联方式的特点是：<strong>板块涨时能跟涨，但事件落地时没有订单可兑现</strong>。（置信度：中）</p>
+<h3>H2. 个股新闻（库内新闻，近 60 日共 9 条）</h3>
+<p>按重要性排序：</p>
+<ol>
+<li><strong>2026-08-19｜《关于 2026 年半年度计提资产减值准备的公告》</strong>（库内重要性分级归为「商誉减值」，情感分 -0.5）——<strong>对基本面有实质影响</strong>，直接影响 H1 利润表。金额库内未记录，是本报告最大的信息缺口。</li>
+<li><strong>2026-08-19｜《2026 年半年度报告》及摘要</strong>——对应 C 节全部数字（营收 6.30 亿元、净利润 -0.78 亿元）。</li>
+<li><strong>2026-08-19｜《2026 年半年度非经营性资金占用及其他关联资金往来情况汇总表》</strong>（库内情感分 -1.0）——这是定期报告的标准附表，<strong>所有上市公司都要披露</strong>，情感分为负是自动打分的结果，不代表真的存在资金占用。库内未记录表内内容，不能据此下任何结论。（置信度：高，指&quot;不能据此下结论&quot;这件事）</li>
+<li><strong>2026-08-19｜《第六届董事会第九次会议决议公告》</strong>——例行披露，库内未记录议案内容。</li>
+<li><strong>2026-07-31｜董秘问答：与华为昇腾、DeepSeek、通义千问深度适配，有无联合推出金融 AI 一体机</strong>——投资者提问，库内未记录答复。<strong>属题材关注度信号，非基本面事实</strong>。</li>
+<li><strong>2026-07-31｜董秘问答：建议公司与恒生电子合并，做大做强</strong>——投资者建议，<strong>不是公司行为，无任何基本面含义</strong>。列出来是为了说明散户关注的方向。</li>
+<li><strong>2026-07-31｜董秘问答：建议公司回购注销一部分流通股</strong>——同上，投资者建议，非公司决策。</li>
+<li><strong>2026-08-27｜《数字货币概念活跃楚天龙 5 连板》</strong>——板块类新闻，赢时胜只是被顺带提及（库内 relevance 100 但 severity 归为「噪音其他」），<strong>与公司基本面无关</strong>。</li>
+</ol>
+<p><strong>这 9 条里，真正有基本面含义的只有第 1、2 条</strong>（半年报与减值公告），其余是例行披露、投资者问答和板块新闻。近 60 日<strong>没有订单公告、没有重大合同、没有股权激励或回购方案</strong>。（置信度：高）</p>
+<p>⚠️ 联网检索到的一篇报道（新浪财经 2026-07-28）提到：该股「7 月 21 日<strong>曾</strong>涨 4.3% 摸到 14.47 元，7 月 27 日收盘 13.14 元」「概念刚出来那两天涨了一波，但后续没接住」。<strong>这些是发稿时点的旧快照</strong>，当前价以库内行情为准：2026-09-16 收盘 13.35 元、当日 -1.69%。</p>
+<h3>H3. 涨停记录（库内涨停记录，近 180 日）</h3>
+<p>近 180 日<strong>仅 1 次涨停</strong>：</p>
+<ul>
+<li><strong>2026-06-12</strong>｜涨幅 +20.00%（创业板涨停）｜连板数 1｜首次封板 10:52:12｜最后封板 14:36:54｜<strong>当日开板 2 次</strong>｜封单金额 0.35 亿元｜晋级统计 1/1｜库内行业标注「软件开发」</li>
+</ul>
+<p><strong>怎么读</strong>：首封在上午 10:52，之后开板 2 次、到下午 14:36 才重新封住，封单只有 0.35 亿元（对应 100 亿市值的票，封单偏薄）——<strong>这是一个封板不坚决的涨停</strong>，第二天没有连板（1 连板即结束）。同花顺当日《涨停雷达》把原因归为「金融科技+AI 应用+信创+资产托管」（同花顺，2026-06-12）。说明市场对它的定价仍以<strong>题材驱动的短线关注</strong>为主，而非业绩驱动。（置信度：中）</p>
+<h3>H4. 资金与筹码（库内资金筹码）⚠️ 本段是盘面现象，不作基本面证据，也不单独用来下操作结论</h3>
+<ul>
+<li><strong>主力资金（近 20 个交易日，2026-08-19 至 2026-09-15）</strong>：净流入合计 <strong>-2.57 亿元</strong>（净流出）；其中特大单净额 -0.16 亿元；20 天里净流入为正 8 天、为负 12 天。<strong>净流出天数多于流入天数，且流出规模不小</strong>。（置信度：高）</li>
+<li><strong>筹码分布（数据日 2026-08-07）</strong>：获利盘比例 66.13%｜加权平均成本 14.14 元｜15% 分位成本 13.40 元｜50% 分位成本 14.00 元｜85% 分位成本 14.60 元。</li>
+</ul>
+<p><strong>两面都要说</strong>：获利盘 66.13% 属偏高水平——好的一面是上方套牢盘相对少、反弹时抛压结构清晰；不好的一面是短线获利了结的压力大，一旦板块热度退下来容易被兑现。 ⚠️ <strong>这是 2026-08-07 的快照</strong>。当前价 13.35 元已低于当时的 50% 分位成本 14.00 元和加权平均成本 14.14 元，也略低于 15% 分位成本 13.40 元——意味着 8 月初那批筹码<strong>现在大部分已处于浮亏</strong>，66.13% 这个获利盘数字对今天不再适用。（置信度：高）</p>
+<ul>
+<li><strong>股东户数</strong>：2026-06-30 为 102,817 户，较 2026-03-31 的 107,110 户<strong>减少 4.0%</strong>，筹码略有集中。⚠️ 季度数据天然滞后，这反映的是二季度末的状态，7-9 月的变化要等三季报。（置信度：中）</li>
+</ul>
+<h2>I. 未来 13 周事件日历</h2>
+<p>（库内事件日历库内事件 + 联网与规则推断补充。库内返回的 7 条事件全部是<strong>概念关联的行业会议</strong> 显示是通过「AI 应用」「数据要素」「机器人概念」等概念标签匹配进来的，<strong>没有一条是公司自身事件</strong>——这本身说明这只票近期缺少自身催化。）</p>
+<ul>
+<li><strong>W1（2026-09-14 起）</strong>：2026 华为全联接大会（上海，9/17-19）· 行业会议 · 重要性高（库内 8）· 影响：华为通常发布昇腾 AI 算力、鸿蒙新进展，对「华为概念/华为昇腾/华为鲲鹏」三个标签是直接题材催化，但<strong>与公司订单无直接关系</strong>，验证 G2 的「仅概念标签」判断</li>
+<li><strong>W1（2026-09-14 起）</strong>：2026 世界制造业大会（合肥，9/20-23，国务院批准）· 行业会议 · 重要性中（库内 7）· 影响：经「机器人概念」标签关联，与主营无关，预期影响极弱</li>
+<li><strong>W2（2026-09-21 起）</strong>：2026 云栖大会（杭州，9/22-24，阿里云主办）· 行业会议 · 重要性高（库内 8）· 影响：通义大模型与算力新品发布，对「AI 应用」「阿里巴巴概念」标签是催化窗口</li>
+<li><strong>W2（2026-09-21 起）</strong>：第五届全球数字贸易博览会（杭州，9/23-27，商务部主办）· 行业会议 · 重要性中（库内 7）· 影响：AI 赋能数字贸易主题，利好数据要素板块情绪</li>
+<li><strong>W2（2026-09-21 起）</strong>：2026 中国国际数字经济博览会（石家庄，9/23-25）· 行业会议 · 重要性中（库内 6）· 影响：议题覆盖数据要素市场，可能释放数字经济政策信号，与 G2「数据要素」标签相关</li>
+<li><strong>W3（2026-09-28 起）</strong>：OpenAI 2026 开发者大会（旧金山，9/29）· 行业会议 · 重要性高（库内 8）· 影响：AI 应用概念最直接的题材催化窗口</li>
+<li><strong>W3（2026-09-28 起）</strong>：Anthropic 招股书（S-1）预计 9 月底公布 · 公司事件 · 重要性中（库内 7）· 影响：库内记录称其为「AI 热度风向标」，影响 A 股 AI 板块估值情绪</li>
+<li><strong>W3（2026-09-28 起）</strong>：A 股国庆长假前最后交易周（10/1-10/8 休市，按往年安排推断）· 市场 · 重要性中 · 影响：长假前资金通常降低仓位，成交额可能收缩</li>
+<li><strong>W4（2026-10-05 起）</strong>：国庆假期休市，节后首个交易周 · 市场 · 重要性低 · 影响：本周无公司层面已知事件</li>
+<li><strong>W5（2026-10-12 起）</strong>：本周无已知公司事件 · 影响：可留意三季报预约披露日期的公布（交易所例行安排）</li>
+<li><strong>W6（2026-10-19 起）</strong>：中国三季度宏观经济数据发布窗口（按统计局往年节奏推断，通常在 10 月中下旬）· 宏观 · 重要性中 · 影响：影响整体市场风险偏好，非个股专属</li>
+<li><strong>W7（2026-10-26 起）</strong>：<strong>2026 年三季报披露窗口</strong> · 财报 · 重要性 <strong>高</strong> · 影响：<strong>本报告最关键的核验节点</strong>。上年同期公告日为 2025-10-28（库内公告日），按创业板规则最晚 2026-10-31 披露。验证 A 节「单季盈利能否延续」与 C 节「毛利率能否回升」两个核心问题（置信度：中——具体日期未获公司预约披露公告确认）</li>
+<li><strong>W8（2026-11-02 起）</strong>：三季报后的机构调研与业绩说明会窗口（公司 2026-05-12 曾召开业绩说明会，按此节奏推断）· 公司事件 · 重要性中 · 影响：可能补充减值与信创订单的口径说明</li>
+<li><strong>W9（2026-11-09 起）</strong>：本周无已知事件</li>
+<li><strong>W10（2026-11-16 起）</strong>：本周无已知事件</li>
+<li><strong>W11（2026-11-23 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-11-30 起）</strong>：本周无已知事件 · 提示：临近年末，可留意金融信创 2027 考核节点前的招标节奏（见 F 节第 1 条）</li>
+<li><strong>W13（2026-12-07 起）</strong>：中央经济工作会议召开窗口（按往年通常在 12 月中旬，未获官方日期）· 政策 · 重要性中 · 影响：定调次年科技与数字经济政策方向</li>
+</ul>
+<p><strong>13 周之外但需要提前知道</strong>：2027 年 1 月底是创业板年度业绩预告窗口（公司 2025 年度业绩预告公告日为 2026-01-30，来源：巨潮公告编号 2026-003）。若全年仍亏损，届时需强制预告。</p>
+<p><strong>信息缺口</strong>：库内事件日历没有任何公司自身事件（限售解禁、股东大会、股权激励、回购），联网也未检索到 2026 年四季度的解禁安排。影响：I 节的公司层面事件只能靠财报节奏推断，若存在未知的解禁或减持计划，本日历会漏掉一个重要变量。补法：查阅巨潮/交易所的限售股解禁明细与股东减持公告。</p>
+<h2>J. 逻辑链</h2>
+<p><strong>第 1 环（置信度：高）</strong>：因为 2024 年净亏损 4.44 亿元、2025 年净亏损收窄至 0.05 亿元、2026 年半年报净亏损 0.78 亿元同比小幅收窄 2.7%，<strong>所以这家公司正处在从大额亏损向盈亏平衡靠拢的过程中，但过程尚未完成</strong>。</p>
+<p><strong>第 2 环（置信度：中，为累计数相减的推算值）</strong>：因为最近四个单季净利润为 +0.36、+0.40、-0.88、+0.09 亿元、合计约 -0.03 亿元，且亏损集中在两年都亏的一季度，<strong>所以季节性因素解释了大部分账面亏损，公司的常态经营已接近盈亏平衡</strong>。</p>
+<p><strong>第 3 环（置信度：中——本条是整条链最弱的一环）</strong>：因为公司自述 2025 年亏损主因是长期股权投资计提减值、主营业务利润已呈增长态势（新浪财经 2026-05-12 调研报道，公司口径），且 2026Q2 在「半年度已计提资产减值准备」的同时仍录得单季盈利，<strong>所以推测减值是账面亏损的主要来源，主营本身的盈利能力好于净利润所显示的水平</strong>。 ⚠️ <strong>这是整条链的命门</strong>：减值的具体金额没拿到（库内无、联网未获），公司口径也没有独立来源交叉验证。如果 H1 计提的减值金额其实很小，那么 Q2 那 0.09 亿元盈利就不是「主营强于表观」的证据，而只是季节性收入确认的结果——<strong>第 3 环一倒，A 节的第一条驱动就失效</strong>。</p>
+<p><strong>第 4 环（置信度：中）</strong>：因为金融信创 2027 考核节点临近、金融机构核心系统国产化改造必须在 2026-2027 完成（新浪财经 2026-08-19 + 人大金仓技术专栏 2026 年），而公司的资产托管与估值核算系统正属于改造范围，<strong>所以未来 4-6 个季度存在订单增量的窗口</strong>。</p>
+<p><strong>第 5 环（置信度：中）</strong>：因为毛利率 2026H1 为 32.35%、同比下降 2.2 个百分点、比 2025 年全年低 9.8 个百分点，而下游是议价能力强的持牌金融机构，<strong>所以即便订单增长，利润弹性也可能被价格与人力成本吃掉——&quot;增收不增利&quot;的风险是真实存在的</strong>（2026H1 已经是营收同比 +8.90% 而仍然亏损）。</p>
+<p><strong>推论与可观察现象</strong>：如果第 2、3、4 环都成立，<strong>应该能观察到</strong>——2026 年三季报单季净利润继续为正、毛利率环比 2026H1 的 32.35% 回升、营收同比增速维持在 8% 以上。这三个现象将在 2026 年 10 月底前（见 I 节 W7）被一次性验证或证伪。</p>
+<p><strong>如果三季报单季重新亏损、或毛利率继续下降</strong>，则第 3 环被证伪，本报告的偏乐观部分应整体推翻。</p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜触发：2026 年三季报（W7，最晚 10/31）单季净利润为正且高于 2026Q2 的 0.09 亿元，同时毛利率回升到 40% 以上、营收同比增速维持 8% 以上｜路径：市场开始按「已扭亏的金融信创标的」重新定价，估值从 PB 口径向同行业盈利公司靠拢，股价回到 8 月初筹码密集区上沿一带并企稳，成交额较近期放大</li>
+</ul>
+<ul>
+<li><strong>中性（55%）</strong>｜触发：三季报单季小幅盈利或小幅亏损（绝对值在 0.1 亿元以内），毛利率在 32%-40% 之间，营收同比增速 5%-10%｜路径：基本面既没证实也没证伪，股价继续由概念板块的情绪驱动，在 8 月初筹码密集区下方宽幅震荡，跟随计算机与 AI 应用板块的 beta 波动，缺少独立行情</li>
+</ul>
+<ul>
+<li><strong>悲观（20%）</strong>｜触发：三季报单季重新亏损超过 0.2 亿元，或再次公告计提资产减值准备，或毛利率跌破 2026Q1 的 24.34%｜路径：连续三年亏损的预期被强化，卖方覆盖缺失导致没有机构资金接盘，股价向 8 月初筹码分布的下沿及更低区域回落，成交持续萎缩</li>
+</ul>
+<p>（三档概率合计 100%。三个触发条件都能用三季报数字直接核对。）</p>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong></p>
+<ol>
+<li><strong>如果</strong> 2026 年三季报（最晚 2026-10-31 披露）显示单季净利润连续第二个季度为正、且毛利率回到 40% 以上，<strong>同时</strong>股价站上 8-07 筹码 50% 分位成本并站稳，<strong>那么</strong> 可以考虑小仓位试仓。</li>
+<li><strong>如果</strong> 2026 年三季报单季重新亏损，<strong>或</strong> 公司再次公告计提资产减值准备，<strong>那么</strong> 回避，等年报重新评估。</li>
+<li><strong>如果</strong> 股价跌破 8-07 筹码 15% 分位成本，<strong>且</strong> 主力资金延续近 20 日 -2.57 亿元的净流出态势，<strong>那么</strong> 观望，不在三季报出来之前做任何判断。</li>
+<li><strong>如果</strong> 已持有且股价回到 8-07 筹码 85% 分位成本 14.60 元之上，<strong>而</strong> 三季报尚未披露、基本面拐点未被数据确认，<strong>那么</strong> 可考虑减仓，把仓位留到财报验证之后。</li>
+</ol>
+<p><strong>什么情况下这笔判断应当被推翻</strong></p>
+<ul>
+<li>三季报单季净利润重新为负 → J 节第 2、3 环同时失效，「接近盈亏平衡」的整个前提不成立。</li>
+<li>半年报全文披露的资产减值金额很小（比如低于 0.1 亿元）→ 说明 H1 的 0.78 亿元亏损主要来自主营经营本身，而不是一次性减值，J 节第 3 环被证伪。</li>
+<li>出现未在 I 节日历里的大额限售解禁或股东减持公告 → 供给端变量改变，H 节的筹码判断需要重做。</li>
+<li>金融信创政策节奏推迟或考核要求放宽 → F 节第 1 条与 J 节第 4 环的订单增量逻辑消失。</li>
+</ul>
+<p><strong>仓位思路</strong>：基本面拐点尚未被任何一份完整财报确认、卖方零覆盖、近 20 日资金净流出——在三季报披露之前，<strong>属于&quot;观察仓或不参与&quot;的位置，不适合中等以上仓位</strong>。若三季报确认拐点，再按第 1 条的条件逐步建立观察仓。只讲相对概念，不涉及具体金额与股数。</p>
+<h2>M. 逻辑自查</h2>
+<p><strong>这份判断最依赖的假设是哪一条？</strong></p>
+<p>最依赖的是「<strong>2026 年上半年的账面亏损主要来自资产减值计提，主营本身已接近盈亏平衡</strong>」。它错了会怎样：如果减值金额很小，那么 0.78 亿元的半年亏损就是主营造成的，公司实际上是「营收增长 8.90% 但仍然大额亏损」的状态，毛利率同比下降 2.2 个百分点就是结构性恶化而非扰动——那样的话方向判断应从「震荡」调整为偏谨慎，L 节第 1 条的试仓条件也应作废。</p>
+<p><strong>有没有为了让逻辑好看而忽略的反面证据？</strong></p>
+<p>有三条，在此明确列出：</p>
+<ol>
+<li><strong>营收其实没有真正增长。</strong> 2026H1 营收 6.30 亿元，与 2024H1 的 6.27 亿元基本持平——所谓「同比 +8.90%」是相对 2025H1 低基数的回升，两年维度上是零增长。我在 C 节第 4 条写了，但它的分量比正文语气显示的更重。</li>
+<li><strong>1 次涨停、且封板不坚决。</strong> 近 180 日唯一一次涨停（2026-06-12）开板 2 次、封单只有 0.35 亿元、次日未连板。这说明连题材资金对它的认可度也有限。</li>
+<li><strong>20 个概念标签里只有 3 类有业务支撑。</strong> 题材看起来热闹，但缺少订单兑现路径——这是一个「涨得动但守不住」的结构。</li>
+</ol>
+<p><strong>信息缺口清单</strong></p>
+<ol>
+<li><strong>2026 年半年度资产减值准备的具体金额与分项</strong>（库内新闻只有公告标题；联网抓取巨潮 PDF 未能解析，其他渠道未检索到）。影响：<strong>最大的一个缺口</strong>，直接决定 J 节第 3 环成立与否。补法：读半年报全文的「资产减值损失」科目，或等三季报再验一次。</li>
+<li><strong>收入结构拆分</strong>（信创改造、AI 相关、传统托管软件各占多少）。库内财务只有总量。影响：G 节无法把概念标签与营收对上，E 节的商业模式判断只能靠外部转述的旧口径（服务费 50.89% / 定制开发 49.11%，来源未标日期）。补法：查半年报「主营业务分行业、分产品」表。</li>
+<li><strong>券商研报与盈利预测全部缺失</strong>。库内研报返回空；同花顺 F10 盈利预测页显示 2026、2027 年暂无机构做出业绩预测。影响：本报告没有任何〔卖方预期〕条目可引，K 节三情景的概率完全是自行判断的，缺少外部预期作为交叉参照。补法：跟踪三季报后是否有机构恢复覆盖。</li>
+<li><strong>公司自身事件日历为空</strong>（无解禁、股东大会、激励、回购的库内记录，联网也未查到）。影响：I 节 W4-W13 大量周次只能写「本周无已知事件」，可能漏掉供给端变量。补法：查巨潮的限售解禁明细与减持公告。</li>
+<li><strong>现金与金融资产状况未知</strong>。库内财务无现金流与资产负债表明细，只有资产负债率 8.24%。影响：无法判断公司能承受多久的亏损。补法：读半年报资产负债表。</li>
+<li><strong>东方金信的持股比例与 IPO 进展未确认</strong>。两个来源给出 12.8% 与 17.02% 两个不同数字；2026 年的 IPO 审核进展联网未检索到。影响：G2「数据要素」标签的分量无法量化。</li>
+<li><strong>取数点覆盖说明</strong>：本次调用的 12 个库内取数中，库内 A/H 对照返回空（该票非 A+H 两地上市，属正常），库内研报返回空（库内近 90 天无该票研报）——两项均已在正文中写明原因，不是遗漏。其余 9 个函数（库内公司档案 / 库内财务 / 库内估值 / 库内行情 / 库内概念标签 / 库内涨停记录 / 库内新闻 / 库内同业对比 / 库内事件日历 / 库内资金筹码 / ）的返回数据均已在正文引用。</li>
+</ol>
+<p><strong>联网来源清单</strong>（本报告引用的库外信息，供读者自行核对）</p>
+<ul>
+<li><a href="https://finance.sina.com.cn/roll/2026-07-28/doc-inikirnf2522834.shtml" target="_blank" rel="noopener">赢时胜新增数据要素概念股价回落一季度亏损8769万元（新浪财经，2026-07-28）</a></li>
+<li><a href="https://finance.sina.cn/2026-05-12/detail-inhxrwqe1425321.d.html" target="_blank" rel="noopener">调研速递｜赢时胜接待线上投资者调研 2025年大幅减亏98.81% AI+信创双轮驱动业绩改善（新浪财经，2026-05-12）</a></li>
+<li><a href="https://m.10jqka.com.cn/20260612/c677413890.shtml" target="_blank" rel="noopener">涨停雷达：金融科技+AI应用+信创+资产托管赢时胜触及涨停（同花顺，2026-06-12）</a></li>
+<li><a href="https://finance.sina.com.cn/money/fund/etf/2026-08-19/doc-ininvfsv7148156.shtml" target="_blank" rel="noopener">信创万亿空间可期？2027年考核节点临近，国产操作系统订单加速释放！（新浪财经，2026-08-19）</a></li>
+<li><a href="https://www.kingbase.com.cn/explore/tech-blog/%E9%87%91%E8%9E%8D%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E5%BA%93%E5%9B%BD%E4%BA%A7%E5%8C%96%E6%9B%BF%E6%8D%A2%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F2026%E5%B9%B4%E5%85%A8%E9%9D%A2%E8%A7%A3%E6%9E%90/" target="_blank" rel="noopener">金融系统数据库国产化替换是什么？2026年全面解析与落地指南（人大金仓技术专栏）</a></li>
+<li><a href="https://www.infoobs.com/article/20240919/66836.html" target="_blank" rel="noopener">三年倒计时，金融信创加速｜银行数据库和核心系统替换到什么程度了？（信息化观察网）</a></li>
+<li><a href="https://finance.sina.com.cn/wm/2026-05-01/doc-inhwmeqw5341604.shtml" target="_blank" rel="noopener">【东吴非银｜恒生电子2026年一季报点评】（新浪财经，2026-05-01）</a></li>
+<li><a href="https://www.sohu.com/a/1005514681_115377" target="_blank" rel="noopener">每周股票复盘：恒生电子2026年迎自主可控加速期（搜狐）</a></li>
+<li><a href="https://www.jingpt.com/article/630392" target="_blank" rel="noopener">东方金信拟闯关科创板曾获腾讯融资 A股公司赢时胜位列第三大股东（鲸平台）</a></li>
+<li><a href="http://basic.10jqka.com.cn/300377/worth.html" target="_blank" rel="noopener">赢时胜(300377) 盈利预测_F10（同花顺）</a></li>
+<li><a href="https://stock.quote.stockstar.com/corp_300377.shtml" target="_blank" rel="noopener">赢时胜(300377)_公司资料（证券之星）</a></li>
+<li><a href="http://static.cninfo.com.cn/finalpage/2026-08-20/1225482096.PDF" target="_blank" rel="noopener">赢时胜:关于2026年半年度计提资产减值准备的公告（巨潮，2026-08-19）</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-16），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>半年报仍亏损0.78亿元</li>
+      <li>半年度减值金额未披露</li>
+      <li>近20日资金净流出2.57亿元</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>商誉</dt><dd>收购时溢价支付的部分记在账上的资产。被收购方业绩不达预期时要计提减值、直接冲减利润。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>限售解禁</dt><dd>首发或定增取得的股份锁定期届满、可以上市流通。解禁本身不等于减持，但增加了潜在供给。</dd><dt>业绩预告</dt><dd>上市公司在正式财报前发布的盈利区间预告，达到规定变动幅度时强制披露。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/roll/2026-07-28/doc-inikirnf2522834.shtml" target="_blank" rel="noopener">赢时胜新增数据要素概念股价回落一季度亏损8769万元（新浪财经，2026-07-28）</a> <em>2026-07-28</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.cn/2026-05-12/detail-inhxrwqe1425321.d.html" target="_blank" rel="noopener">调研速递｜赢时胜接待线上投资者调研 2025年大幅减亏98.81% AI+信创双轮驱动业绩改善（新浪财经，2026-05-12）</a> <em>2026-05-12</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.10jqka.com.cn/20260612/c677413890.shtml" target="_blank" rel="noopener">涨停雷达：金融科技+AI应用+信创+资产托管赢时胜触及涨停（同花顺，2026-06-12）</a> <em>2026-06-12</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/money/fund/etf/2026-08-19/doc-ininvfsv7148156.shtml" target="_blank" rel="noopener">信创万亿空间可期？2027年考核节点临近，国产操作系统订单加速释放！（新浪财经，2026-08-19）</a> <em>2026-08-19</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.kingbase.com.cn/explore/tech-blog/%E9%87%91%E8%9E%8D%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E5%BA%93%E5%9B%BD%E4%BA%A7%E5%8C%96%E6%9B%BF%E6%8D%A2%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F2026%E5%B9%B4%E5%85%A8%E9%9D%A2%E8%A7%A3%E6%9E%90/" target="_blank" rel="noopener">金融系统数据库国产化替换是什么？2026年全面解析与落地指南（人大金仓技术专栏）</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.infoobs.com/article/20240919/66836.html" target="_blank" rel="noopener">三年倒计时，金融信创加速｜银行数据库和核心系统替换到什么程度了？（信息化观察网）</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/wm/2026-05-01/doc-inhwmeqw5341604.shtml" target="_blank" rel="noopener">【东吴非银｜恒生电子2026年一季报点评】（新浪财经，2026-05-01）</a> <em>2026-05-01</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.sohu.com/a/1005514681_115377" target="_blank" rel="noopener">每周股票复盘：恒生电子2026年迎自主可控加速期（搜狐）</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.jingpt.com/article/630392" target="_blank" rel="noopener">东方金信拟闯关科创板曾获腾讯融资 A股公司赢时胜位列第三大股东（鲸平台）</a></li>
+      <li><span class="src-tag src-research">研究</span> <a href="http://basic.10jqka.com.cn/300377/worth.html" target="_blank" rel="noopener">赢时胜(300377) 盈利预测_F10（同花顺）</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://stock.quote.stockstar.com/corp_300377.shtml" target="_blank" rel="noopener">赢时胜(300377)_公司资料（证券之星）</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://static.cninfo.com.cn/finalpage/2026-08-20/1225482096.PDF" target="_blank" rel="noopener">赢时胜:关于2026年半年度计提资产减值准备的公告（巨潮，2026-08-19）</a> <em>2026-08-19</em></li>
+      <li><span class="src-tag src-research">研究</span> 新浪财经 2026-05-12 调研报道，公司口径，单一来源 <em>2026-05-12</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2026-08-20 公告 <em>2026-08-20</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 上年同期公告日为 2025-10-28，库内公告日 <em>2025-10-28</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 按创业板规则最晚 2026-10-31 <em>2026-10-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2026-08-19 公告 <em>2026-08-19</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公告日 2026-08-20 <em>2026-08-20</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公告日 2026-04-21 <em>2026-04-21</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公告日 2025-10-28 <em>2025-10-28</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 巨潮 2026-08-20 发布 <em>2026-08-20</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-research">研究</span> 新浪财经 2026-05-12 调研报道，公司口径 <em>2026-05-12</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-05-12，公司口径 <em>2026-05-12</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-07-28 <em>2026-07-28</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-08-19 + 人大金仓技术专栏 2026 年 <em>2026-08-19</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-16 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
