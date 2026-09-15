@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>润泽科技（300442.SZ） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>润泽科技（300442.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-15（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>关联板块</b> 算力 · AI应用</span>
+      <span><b>申万行业</b> 通信服务</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 算力租赁 · 抖音概念(字节概念) · 液冷服务器 · 东数西算(算力) · 数据中心(AIDC) · 机器人概念</span>
+      <span><b>来源</b> 16 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    润泽科技（300442）是一家 A 股上市公司。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——AIDC 收入同比翻倍并首超老业务，但重资产扩张同步推高负债与担保规模。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：AIDC 收入同比翻倍并首超老业务，但重资产扩张同步推高负债与担保规模。支撑在于AIDC收入同比增126%占比超半；液冷机柜价格回升至高峰水平；通信板块8-13起处主升状态。主要风险是担保上限达净资产600.97%；近20日主力净流出5.18亿；PE18.6含REITs一次性收益。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>AIDC收入同比增126%占比超半</li>
+      <li>液冷机柜价格回升至高峰水平</li>
+      <li>通信板块8-13起处主升状态</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据时点：2026-09-15 收盘（行情数据时点 16:29）｜数据来源：本地库库内取数 13 项取数 + 联网补充（政策/产业链/预期差/事件时点）</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：AIDC 收入同比翻倍并首超老业务，但重资产扩张同步推高负债与担保规模。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>2026 上半年营收 37.46 亿元、同比增长 50.05%，净利润 12.03 亿元、同比增长 36.43%</strong>（库内财务），其中 AIDC 算力业务收入 19.95 亿元、同比增长 126.24%，占总营收 53.26%，首次超过传统 IDC 业务（联网：<a href="http://mp.cnfol.com/53702/article/1777278227-142388426.html" target="_blank" rel="noopener">中金在线</a>、<a href="https://xueqiu.com/9526353655/407025929" target="_blank" rel="noopener">雪球半年报解读</a>，2026-04/08）。（置信度：高——营收与净利数字与库内完全一致，业务拆分为联网双源）</li>
+<li><strong>液冷机柜价格回升到行业高峰时期水平</strong>，公司 8-30 公开确认（库内新闻，情感分 0.80，为近 60 日最正面一条），行业侧多家媒体同期交叉印证订单排至年底（<a href="https://www.chinanews.com.cn/cj/2026/08-31/10686998.shtml" target="_blank" rel="noopener">中新网</a>、<a href="https://www.cls.cn/detail/2469258" target="_blank" rel="noopener">财联社</a>，2026-08-30/31）。系统热点记录中「液冷订单排至年底价格回升」被标记为与本票<strong>直接相关</strong>（relation: direct），状态「升温」。（置信度：高——库内新闻＋≥2 独立联网来源）</li>
+<li><strong>所属通信行业（申万一级）自 8-13 起进入「主升」状态</strong>，系统记录依据为「连续 3 天跑赢大盘，10 天比大盘 +4.7%」（2026-09-15）。（置信度：高——系统直接记录）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>对外担保总额上限将达 820.71 亿元，占最近一期经审计净资产的 600.97%</strong>；公司自身作了特别风险提示：对资产负债率超过 70% 的单位担保金额超过净资产的 50%（联网：<a href="https://www.21jingji.com/article/20260915/herald/9fd644dcbf1d0bb86d6ef1def55645c4.html" target="_blank" rel="noopener">21经济网</a>、<a href="https://24topnews.com/news/company/runze-technology-plans-up-to-rmb-50-billion-in-new-guarantees-total-cap-e9859079" target="_blank" rel="noopener">24topnews</a>，2026-09-14/15）。库内资产负债率已从 2025Q3 的 62.53% 升至 2026H1 的 64.91%。（置信度：高——公司公告口径，双源）</li>
+<li><strong>近 20 个交易日（08-19 至 09-15）主力资金净流出 5.18 亿元，其中特大单净流出 4.63 亿元，20 天里仅 6 天为净流入</strong>（库内资金筹码）。（置信度：高——库内数据）</li>
+<li><strong>估值口径有陷阱</strong>：库内 PE(TTM) 18.61 倍看似在 280 只同行业股票里排第 2 便宜（中位数 84.90 倍），但 TTM 净利润包含 2025 年第三季度一笔约 37.46 亿元的非流动资产处置收益（转让全资孙公司至南方润泽科技数据中心 REIT）。据库内数据与该笔金额推算，剔除后对应市盈率约 61 倍。（置信度：中——处置金额来自联网引用的三季报原文，剔除后倍数为本报告推算）</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ul>
+<li><strong>信号一</strong>：2026 年三季报中 AIDC 业务收入占比与毛利率——验证「营收增速 50.05% 高于净利增速 36.43%」这个差距是在收窄还是扩大。核验时点：2026 年 10 月下旬（见 I 节 W6–W7）。</li>
+<li><strong>信号二</strong>：主力资金近 20 日净流入是否由负转正（当前 -5.18 亿元，正流入 6/20 天）。核验时点：每周对库内资金筹码复查一次。</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong></p>
+<p>最可能错在把「AIDC 收入翻倍」当成了利润的同步保证。库内已经显示营收增速（+50.05%）明显高于净利增速（+36.43%），而新建算力中心的折旧与利息是先发生、收入后爬坡的。如果三季报里这个差距继续扩大，那么 A 节的「震荡」判断应当向偏跌修正。</p>
+<h2>B. 公司快照</h2>
+<p><strong>基本信息</strong>（库内公司档案，全部为库内值）</p>
+<ul>
+<li>证券简称：润泽科技｜代码：300442｜上市状态：L（正常上市，非退市）</li>
+<li>公司全称：润泽智算科技集团股份有限公司（据库内 9-14 公告标题「北京市中伦（重庆）律师事务所关于润泽智算科技集团股份有限公司…」）</li>
+<li>行业分类（库内）：软件服务｜板块：创业板｜上市日期：2015-04-24</li>
+<li>员工人数：2,018 人｜注册资本：164,124.66 万元（约 16.41 亿元）</li>
+<li>经营范围（库内经营范围）：基础电信业务、第一类/第二类增值电信业务、互联网信息服务；人工智能行业应用系统集成服务、人工智能基础软件开发、<strong>数据处理和存储支持服务</strong>、信息系统集成服务</li>
+</ul>
+<div class="callout">⚠️ <strong>库内数据不一致，必须先说明</strong>：库内公司档案返回的公司简介与主营业务两个字段写的仍是「乳品、饮料加工及包装设备的研发制造」「生产制造食品机械」——这是本公司借壳上市<strong>之前</strong>的原主体业务描述，库内该字段未随主体变更更新。只有库内经营范围字段反映了当前业务（电信业务 + 人工智能 + 数据处理和存储支持服务）。本报告涉及业务实质的论述一律以库内经营范围为准，并在 E 节以联网信息补足。（置信度：高——两个字段在同一次返回里直接冲突，可自行复核）</div>
+<p><strong>当前行情</strong>（库内行情，唯一行情事实源，数据时点 = 16:29 即当日收盘）</p>
+<ul>
+<li>收盘价 <strong>60.91 元</strong>，涨跌幅 <strong>+1.10%</strong>，成交额 8.90 亿元</li>
+<li>当日最高 +2.57%、最低 +0.58%（全天收在正区间，未翻绿）</li>
+<li>换手率 0.8878%（库内估值，20260915）</li>
+</ul>
+<div class="callout">⚠️ <strong>9-15 当天是除权除息日</strong>（库内事件日历：每 10 股派 4.288 元含税）。所以 60.91 元是<strong>除权后价格</strong>，与 9-12 及之前的价格不可直接比较。（置信度：高——库内事件日历直接记录）</div>
+<p><strong>估值</strong>（库内估值，20260915）</p>
+<ul>
+<li>PE(TTM) <strong>18.61 倍</strong>｜PB <strong>6.90 倍</strong>｜股息率 0.8623%｜总市值 <strong>999.56 亿元</strong></li>
+<li>所属「软件服务」行业共 280 只股票，行业 PE 中位数 84.90 倍，本股 PE 在行业内排名<strong>第 2 便宜</strong></li>
+</ul>
+<div class="callout"><strong>这个「第 2 便宜」不能直接当结论用</strong>，原因有两层，都在 C 节与 D 节展开：① TTM 净利润含 2025Q3 的一次性 REITs 处置收益；② 行业分类「软件服务」与公司实际的重资产数据中心业务模型不匹配，横向 PE/PB 比较的可比性有限。（置信度：中）</div>
+<p><strong>A/H 溢价</strong>：库内 A/H 对照返回 None，本股非两地上市，本节不涉及。</p>
+<h2>C. 财务健康</h2>
+<p><strong>近 4 期数据</strong>（库内财务，全部为库内值，金额单位亿元；末期在前）</p>
+<ul>
+<li><strong>2026H1</strong>（截止 20260630·公告 20260828）｜营收 37.46（同比 +50.05%）· 净利 12.03（同比 +36.43%）· 毛利率 46.58% · 净利率 32.69% · ROE 8.55% · EPS 0.74 元 · 资产负债率 64.91%</li>
+<li><strong>2026Q1</strong>（截止 20260331·公告 20260410）｜营收 18.40（同比 +53.55%）· 净利 5.82（同比 +35.35%）· 毛利率 46.80% · 净利率 31.84% · ROE 4.17% · EPS 0.36 元 · 资产负债率 64.97%</li>
+<li><strong>2025 年报</strong>（截止 20251231·公告 20260410）｜营收 56.74（同比 +29.99%）· 净利 50.50（同比 +182.07%）· 毛利率 46.04% · <strong>净利率 88.99%</strong> · ROE 42.76% · EPS 3.00 元 · 资产负债率 62.84%</li>
+<li><strong>2025Q3</strong>（截止 20250930·公告 20251030）｜营收 39.77（同比 +15.05%）· 净利 47.04（同比 +210.74%）· 毛利率 48.11% · <strong>净利率 118.18%</strong> · ROE 40.01% · EPS 2.74 元 · 资产负债率 62.53%</li>
+</ul>
+<h3>C1. 2025 年那两个「净利率超过 100%」是怎么回事</h3>
+<p>2025 年第三季度累计净利率 118.18%、全年 88.99%，都<strong>大幅高于同期毛利率</strong>（48.11% / 46.04%）。净利率高于毛利率在正常经营中不可能持续，说明利润主要不来自主营。</p>
+<p>联网核实：公司 2025 年三季报披露，非流动性资产处置损益年初至报告期末金额为 <strong>3,746,067,923.72 元（约 37.46 亿元）</strong>，主要系将一家全资孙公司转让至南方润泽科技数据中心 REIT 所产生的股权处置收益；该 REIT 于 2025-08-08 在深交所上市，发行规模 45 亿元。同期扣非净利润为 18.8 亿–19.8 亿元，同比增长 5.71%–11.33%（联网：<a href="http://www.news.cn/finance/20260410/27cbbb69491740d3bb618570989235e6/c.html" target="_blank" rel="noopener">新华网年报报道</a>、<a href="https://www.cls.cn/detail/2339584" target="_blank" rel="noopener">财联社</a>，2026-04-10）。（置信度：高——处置金额为三季报原文，扣非区间为年报口径，双源）</p>
+<p>用库内数字反推可以自洽：2026H1 净利 12.03 亿元 ÷ (1+36.43%) ≈ 2025H1 净利 8.82 亿元；2025Q3 累计净利 47.04 亿元 − 8.82 亿元 ≈ <strong>2025 年第三季度单季净利约 38.2 亿元</strong>，与上述 37.46 亿元处置收益量级吻合。（置信度：高——纯库内数据推算，可自行复核）</p>
+<p><strong>这条结论对估值的影响</strong>：TTM 净利润 = 2025 全年 50.50 − 2025H1 8.82 + 2026H1 12.03 ≈ <strong>53.71 亿元</strong>，对应 999.56 亿市值即 PE 18.61 倍，与库内值一致。剔除那笔 37.46 亿元处置收益后，经营性 TTM 净利约 16.25 亿元，<strong>对应市盈率约 61 倍</strong>。（置信度：中——为本报告据库内数据与联网处置金额推算的派生值，非库内直接取数）</p>
+<h3>C2. 2026 年的增长是真实经营增长</h3>
+<p>2026H1 扣非归母净利润 12.06 亿元、同比增长 37.34%（联网：<a href="http://mp.cnfol.com/53702/article/1777278227-142388426.html" target="_blank" rel="noopener">中金在线</a>、<a href="https://xueqiu.com/9526353655/407025929" target="_blank" rel="noopener">雪球半年报解读</a>，2026-08/09），与库内归母净利 12.03 亿元、同比 +36.43% 高度接近——<strong>说明 2026 上半年没有依赖一次性收益，是干净的经营性增长</strong>。（置信度：高——扣非与归母两个口径互相印证）</p>
+<h3>C3. 四个趋势判断</h3>
+<ol>
+<li><strong>营收增速在高位保持，未见放缓</strong>：2025Q3 累计 +15.05% → 2025 全年 +29.99% → 2026Q1 +53.55% → 2026H1 +50.05%。（置信度：高）</li>
+<li><strong>利润增速持续低于营收增速</strong>：2026Q1 是 +35.35% vs +53.55%（差 18.2 个百分点），2026H1 是 +36.43% vs +50.05%（差 13.6 个百分点）。差距在<strong>小幅收窄但仍然存在</strong>。这是重资产扩张期的典型形态——新算力中心的折旧与利息先计入成本，收入随上架率爬坡后置。（置信度：中——形态判断，机理为行业通识，非库内直接证据）</li>
+<li><strong>毛利率基本企稳，未继续下降</strong>：48.11%（25Q3）→ 46.04%（25 年报）→ 46.80%（26Q1）→ 46.58%（26H1）。从 2025Q3 的高点回落约 1.5 个百分点后，近三期稳定在 46% 上下。（置信度：高）</li>
+<li><strong>资产负债率上行</strong>：62.53%（25Q3）→ 62.84%（25 年报）→ 64.97%（26Q1）→ 64.91%（26H1），一年内上升约 2.4 个百分点。配合 9 月新增的 500 亿元授信与 500 亿元担保额度申请，这个方向短期内不太可能逆转。（置信度：高——库内数据 + 公司公告）</li>
+</ol>
+<p><strong>据库内数据推算的单季拆分</strong>：2026 年第二季度单季营收约 19.06 亿元（37.46 − 18.40）、单季净利约 6.21 亿元（12.03 − 5.82），环比第一季度的 18.40 亿元 / 5.82 亿元均为小幅增长。（置信度：高——纯库内数据相减）</p>
+<p><strong>信息缺口</strong>：库内财务不返回经营活动现金流、有息负债余额、在建工程余额。对一家重资产数据中心运营商，这三项比利润表更能说明扩张的可持续性。联网侧查到 2026H1 经营活动现金流量净额 29.58 亿元、同比增长 30.78%，总资产 478.55 亿元、归母净资产 144.92 亿元（<a href="http://mp.cnfol.com/53702/article/1777278227-142388426.html" target="_blank" rel="noopener">中金在线</a>，单源未与第二来源交叉，置信度：低）。<strong>补法</strong>：三季报披露后重跑本调研，并单独核对现金流量表（见 I 节 W6–W7）。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比按库内「软件服务」行业返回的 3 家最接近同行（财务口径均为 20260630）：</p>
+<ul>
+<li><strong>润泽科技 300442</strong>｜市值 999.56 亿 · PE 18.61 · PB 6.90 · 营收 37.46 亿 · 净利 12.03 亿 · ROE 8.55%</li>
+<li><strong>同花顺 300033</strong>｜市值 1535.39 亿 · PE 42.00 · PB 20.01 · 营收 26.46 亿 · 净利 9.52 亿 · ROE 11.10%</li>
+<li><strong>金山办公 688111</strong>｜市值 1046.44 亿 · PE 29.01 · PB 6.94 · 营收 33.13 亿 · 净利 25.18 亿 · ROE 18.03%</li>
+<li><strong>科大讯飞 002230</strong>｜市值 936.81 亿 · PE 107.13 · PB 4.10 · 营收 116.23 亿 · 净利 -2.04 亿 · ROE -0.98%</li>
+</ul>
+<p><strong>这组对比的可比性有限，必须先说清楚</strong>：同花顺（金融信息服务）、金山办公（办公软件）、科大讯飞（AI 软件与应用）都是<strong>轻资产软件公司</strong>——它们的主要成本是人力和研发，资产负债率通常远低于本公司的 64.91%，收入不需要靠固定资产投入去换。而润泽科技按库内经营范围是<strong>数据处理和存储支持服务</strong>，属于重资产基础设施运营，收入增长必须先建机房、先上电力和机柜。库内行业分类把它归进「软件服务」是分类口径问题，横向 PE / PB 直接比较得出的「便宜」或「贵」都不可靠。（置信度：高——两类商业模式的资产结构差异是客观事实）</p>
+<p><strong>在这组里能读出的几件事</strong>（置信度：中）：</p>
+<ol>
+<li><strong>PE 最低但 PB 不低</strong>：润泽 PE 18.61 是四家最低，但 PB 6.90 高于金山办公的 6.94 之外的科大讯飞（4.10），略低于金山办公。PE 低 PB 不低，正是「利润被一次性收益推高、净资产没有同步增厚」的表现——呼应 C1。</li>
+<li><strong>ROE 8.55% 是四家中第三</strong>，低于金山办公 18.03% 和同花顺 11.10%，高于亏损的科大讯飞。但 8.55% 是<strong>半年度累计口径</strong>，年化后约 17%，与金山办公同一量级。跨公司比 ROE 必须统一口径，这里的排序不宜直接当结论。（置信度：中——年化为线性推算，重资产公司下半年通常不是线性）</li>
+<li><strong>净利率 32.69% 在四家中处于高位</strong>，仅次于金山办公（25.18/33.13 ≈ 76%，该值本身高得异常，可能含一次性因素，本报告未核实）。</li>
+</ol>
+<p><strong>真正的同行业可比公司（世纪互联、万国数据、光环新网、奥飞数据等 IDC 运营商）不在库内同业对比的返回范围内</strong>——因为它们的行业分类标签不同。这是本节最大的局限。<strong>补法</strong>：如需完整的 IDC 同业对比，应按概念板块（885887.TI 数据中心 AIDC）而非行业分类重新取样。</p>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>：按库内经营范围，公司持有<strong>基础电信业务</strong>与<strong>第一类、第二类增值电信业务</strong>经营许可，主营数据处理和存储支持服务，即建设并运营数据中心 / 智算中心，向客户出租机柜、带宽与算力。收入模式是长期合约下的机柜与算力租赁，属于「先重资本投入、后按上架率逐年回收」的模式。（置信度：高——经营范围为库内字段）</p>
+<p><strong>护城河分级</strong>（诚实分级，逐条标注证据强度）：</p>
+<ol>
+<li><strong>牌照 —— 结构性护城河（置信度：高）</strong>。基础电信业务经营许可证在中国是稀缺牌照，工信部审批、数量有限，这是库内经营范围直接写明的。持牌是进入这个行业的硬门槛，新进入者无法短期复制。</li>
+<li><strong>电力与土地指标 —— 结构性护城河（置信度：中）</strong>。数据中心的瓶颈资源是电力配额与能耗指标，一线及周边城市的指标受严格总量控制。联网信息显示公司全球已部署 9 个人工智能基础设施集群，合计规划规模约 6GW、已投运规模约 750MW（<a href="https://news.qq.com/rain/a/20260915A07OKR00" target="_blank" rel="noopener">腾讯新闻转天风</a>，2026-09-15，单源未交叉验证，置信度：低）。规划规模本身不等于已获批指标，这一条的证据强度弱于牌照。</li>
+<li><strong>成熟园区的高上架率 —— 阶段性优势（置信度：中）</strong>。联网信息显示公司成熟算力中心上架率稳定在 90% 以上，平湖园区单体 100MW 智算中心上架速度创历史新高（<a href="https://xueqiu.com/9526353655/407025929" target="_blank" rel="noopener">雪球半年报解读</a>、<a href="http://mp.cnfol.com/53702/article/1777278227-142388426.html" target="_blank" rel="noopener">中金在线</a>，2026-08/09）。行业侧数据佐证了这个区位优势的价值：2025 年全国智算型机柜中，北京、上海、深圳的平均上架率 92.4%，而内蒙古河套、甘肃庆阳、贵州贵安等西部枢纽节点仅 41.3%（<a href="https://finance.sina.com.cn/stock/relnews/cn/2026-03-06/doc-inhpzeqv6047663.shtml" target="_blank" rel="noopener">新浪财经引研究报告</a>，2026-03）。<strong>公司主力园区在京津冀与长三角，属于上架率高的东部区域</strong>——这是阶段性优势而非结构性护城河，因为区位不能阻止同样在东部的竞争对手扩产。</li>
+<li><strong>客户绑定 —— 无法判断（置信度：低）</strong>。库内没有任何客户结构数据，库内概念标签里有「抖音概念（字节概念）」标签，但库内无营收佐证（见 G 节）。大客户集中度是这类公司最关键的风险变量之一，<strong>本报告无法评估</strong>。</li>
+</ol>
+<p><strong>没有观察到的护城河</strong>：技术专利、网络效应、品牌溢价——从库内信息看不出本公司在这三项上有区别于同业的优势（置信度：低，因缺乏证据而非有反证）。</p>
+<p><strong>这个模式的固有软肋</strong>：收入锁定在长期租约里，但成本（折旧、利息）在机房建成当天就开始全额发生。上架率爬坡快一个季度还是慢一个季度，直接决定利润表好看与否——这正是 C 节看到的「营收增速高于净利增速」的来源。（置信度：中）</p>
+<h2>F. 政策与监管</h2>
+<p>库内无政策数据，本节全部为联网信息，每条带来源与日期。</p>
+<p><strong>F1. 美国拟将 AI 算力出口管制延伸至海外数据中心与云服务（利空与利多并存·置信度：中）</strong></p>
+<p>库内事件日历 9-15 记录：「美国商务部拟就封堵中国 AI 企业『远程调用海外算力』新规征求意见」，重要性 8（库内事件日历）。联网交叉核实：美国商务部工业与安全局正在研究一套新制度，可能要求海外数据中心加强「了解你的客户」（KYC）审查，确认客户身份与先进 GPU 集群的具体用途，新规最早可能于 9 月开放公开征求意见；美方关注的是中国 AI 企业通过泰国、新加坡等第三国数据中心远程使用先进芯片这一通道（<a href="https://www.secretchina.com/news/gb/2026/08/30/1104154.html" target="_blank" rel="noopener">看中国</a>、<a href="https://hankunlaw.com/portal/article/index/cid/8/id/15704.html" target="_blank" rel="noopener">汉坤律所 AI 管制观察</a>，2026-08/09）。</p>
+<p><strong>传导链条分两个方向</strong>：</p>
+<ul>
+<li><strong>利多境内业务</strong>：海外算力通道收窄 → 国内 AI 企业对境内自主可控算力的依赖度上升 → 境内 AIDC 需求更刚性、议价能力增强 → 有利于公司境内园区的上架率与单价。（置信度：中）</li>
+<li><strong>利空境外布局</strong>：公司已设立香港沙岭、印尼巴淡岛两个海外节点，近期合计规划规模 600MW，巴淡园区预计 2026 年内实现部分算力中心交付（<a href="https://news.qq.com/rain/a/20260915A07OKR00" target="_blank" rel="noopener">腾讯新闻转天风</a>，2026-09-15，单源未交叉验证·置信度：低）。若 KYC 新规落地且覆盖中资背景的海外数据中心，这些节点获取先进 GPU 的能力将受限，境外布局的兑现节奏存在不确定性。（置信度：低——规则尚在征求意见阶段，覆盖范围未定）</li>
+</ul>
+<p><strong>F2. 东数西算与算力普惠政策（中性偏利多·置信度：中）</strong></p>
+<p>库内 9-12 新闻记录「首批普惠算力赋能中小企业发展服务清单发布」（库内新闻，情感分 0.33）。联网侧显示，随着东数西算干线直连链路全面开通（时延目标压到 15ms 以内）、绿电交易规则细化，2026 年西部枢纽上架率预计从 41.3% 改善至 62.8%（<a href="https://finance.sina.com.cn/stock/relnews/cn/2026-03-06/doc-inhpzeqv6047663.shtml" target="_blank" rel="noopener">新浪财经引研究报告</a>，2026-03，单源·置信度：低）。</p>
+<p><strong>传导链条</strong>：西部枢纽上架率改善 → 全国算力供给总量增加 → 长期看对东部高价机柜形成分流压力；但时延敏感的推理类业务仍必须放在东部，短期内分流有限。对本公司是<strong>中长期的竞争加剧因素、短期中性</strong>。（置信度：低——依赖单一来源的预测数据）</p>
+<p><strong>F3. 工信部光通信技术研发部署（间接利多·置信度：中）</strong></p>
+<p>库内热点记录「光传输政策与量子突破」（升温，9-08 进入）收录：工信部提出加强超高速大容量光传输、光接入、海缆光通信技术研发，加快空芯光纤等新型光纤技术研发及应用（2026-09-07）。传导链条：数据中心之间的互联带宽提升 → 跨区域算力调度可行性提高 → 对本公司多园区协同有间接帮助。属于<strong>行业层面的中性偏利多</strong>，与公司营收无直接可量化关联。（置信度：低——传导链条长，无量化佐证）</p>
+<p><strong>信息缺口</strong>：本节未查到直接针对数据中心 PUE（能耗效率）标准、电价政策或能耗指标审批的最新变动。这三项对本公司成本端影响最直接。<strong>补法</strong>：后续调研时定向检索工信部与国家发改委的数据中心绿色低碳相关文件。</p>
+<h2>G. 题材与产业链关联</h2>
+<h3>G1. 所属板块正在发生什么（2026-09-15）</h3>
+<p>系统记录本票所在行业 / 概念当前有 <strong>8 个活动中的热点</strong>，其中 2 个与本票<strong>直接相关</strong>（relation: direct）：</p>
+<p><strong>① 通信（申万一级 801770.SI）｜状态：主升｜进入日期：2026-08-13</strong> 系统依据：「连续 3 天跑赢大盘，10 天比大盘 +4.7%」。板块内当日新闻包括「华为发布全球首个 3D 数据中心，机构看好 AIDC 产业链的持续高景气」（2026-09-15 20:59）、「美股光通信板块开盘走高，Coherent 涨超 4%」（2026-09-15 21:33）。（置信度：高——系统直接记录，口径照录未改）</p>
+<p><strong>② 液冷订单排至年底价格回升｜状态：升温｜进入日期：2026-09-03｜关系：直接相关</strong> 系统记录的事件经过：液冷行业订单明显增长，多家液冷企业订单排至年底；<strong>润泽科技表示高品质液冷机柜价格已回升至行业高峰时期水平</strong>；金帝股份拟投资 4.26 亿元建设液冷关键部件智能制造项目，凯旺科技拟定增募资不超 1.3 亿元用于液冷项目。系统判定依据：「这 5 天有 10 条新闻，平时几乎没有」。（置信度：高——公司自己的表述，且联网多源交叉印证）</p>
+<p><strong>③ 光交换机订单积压大增｜状态：升温｜进入日期：2026-09-10｜关系：直接相关</strong> 系统记录的事件经过：机构上调光交换机（OCS）市场预测至 80 亿美元，Lumentum 的 OCS 积压订单超 4 亿美元，Coherent 订单排至 2028 年，英伟达有望成为 OCS 新玩家；德科立宣布 64×64 OCS 完成样品开发，中信证券称全球 OCS 市场需求有望大幅增长。（置信度：高——系统记录；但对本公司的财务影响需另行验证，光交换机是数据中心的设备供应侧，本公司是设备的采购方而非销售方）</p>
+<p><strong>间接相关的 5 个热点</strong>（均为「升温」状态，反映的是全球 AI 算力投入的景气度，对本公司是需求端的外部环境而非直接业务）：</p>
+<ul>
+<li><strong>戴尔 AI 服务器订单积压</strong>（9-07 进入）：戴尔 AI 基建部门营收大增近 90%，上调全年及 2027 财年营收预期，AI 服务器积压订单达 950 亿美元；同时表示 CPU、硬盘驱动器和 DRAM 供应短缺。</li>
+<li><strong>博通 AI 芯片收入翻倍</strong>（9-08 进入）：2026 财年 Q3 营收 295.91 亿美元、同比增长 86%，AI 半导体收入增长两倍；剩余履约义务约 1792 亿美元。</li>
+<li><strong>Nscale 融资与 AI 订单</strong>（9-04 进入）：Nscale 完成近 30 亿美元融资，凭借 Anthropic 订单已获超 1000 亿美元合同收入，与 Figure 签署超 60 亿美元合作。</li>
+<li><strong>GPT-6 Astra 发布</strong>（9-09 进入）：OpenAI 发布新一代旗舰模型，用 10 万块 NVLink 72 芯片完成训练。</li>
+<li><strong>光传输政策与量子突破</strong>（9-08 进入）：见 F3。</li>
+</ul>
+<div class="callout"><strong>这组热点的读法</strong>：五个间接热点讲的是同一件事——<strong>全球 AI 算力资本开支仍在加速</strong>（戴尔积压 950 亿美元、博通剩余履约义务 1792 亿美元、Nscale 合同收入超 1000 亿美元）。这构成了本公司需求端的宏观背景，但<strong>没有一条能直接换算成本公司的订单</strong>。（置信度：中）</div>
+<h3>G2. 概念标签逐个分级（库内概念标签，13 个同花顺标签）</h3>
+<p><strong>真有业务（有库内经营范围或财报佐证）：</strong></p>
+<ul>
+<li><strong>数据中心（AIDC）885887.TI</strong> —— 经营范围明确含「数据处理和存储支持服务」，2026H1 AIDC 业务收入 19.95 亿元、占比 53.26%（联网双源）。<strong>这是公司的主业标签</strong>。（置信度：高）</li>
+<li><strong>东数西算（算力）885957.TI</strong> —— 同上，公司是算力基础设施的直接运营方。（置信度：高）</li>
+<li><strong>算力租赁 886050.TI</strong> —— 同上，机柜与算力出租即为主营收入模式。（置信度：高）</li>
+<li><strong>液冷服务器 886044.TI</strong> —— 公司 8-30 公开表述「高品质液冷机柜价格已回升至行业高峰时期的单价水平」（库内新闻），说明公司确实在运营液冷机柜。<strong>但注意方向</strong>：公司是液冷机柜的<strong>使用者 / 出租方</strong>，不是液冷设备的制造商——这个标签下的设备厂商（金帝股份、凯旺科技等）与本公司在产业链上是上下游关系而非同类。（置信度：高）</li>
+</ul>
+<p><strong>部分佐证（业务方向相关，但无具体营收拆分）：</strong></p>
+<ul>
+<li><strong>中国 AI 50 886102.TI</strong> —— 经营范围含「人工智能行业应用系统集成服务」「人工智能基础软件开发」，方向对得上；但库内无 AI 软件类营收数据，无法确认这部分是否已产生收入。（置信度：中）</li>
+<li><strong>京津冀一体化 885514.TI</strong> —— 公司主力园区位于京津冀区域（联网信息，非库内），地域标签成立但与营收无因果关系。（置信度：低）</li>
+</ul>
+<p><strong>仅概念标签，未见营收佐证：</strong></p>
+<ul>
+<li><strong>抖音概念（字节概念）885890.TI</strong> —— 库内<strong>无任何客户结构数据</strong>，无法确认字节跳动是否为本公司客户、贡献多少营收。仅概念标签，未见营收佐证。（置信度：低）</li>
+<li><strong>机器人概念 885517.TI</strong> —— 库内经营范围中没有任何机器人相关业务。该标签可能源自 9-15 公告的「拟出资 10 亿元参与设立创业投资基金，主要投资于人工智能、具身智能等领域」（库内新闻）——<strong>参与投资基金不等于有机器人业务营收</strong>。仅概念标签，未见营收佐证。（置信度：高——这是明确的沾边而非实质）</li>
+</ul>
+<p><strong>交易属性 / 事件标签（不是业务标签）：</strong></p>
+<ul>
+<li>沪深 300 样本股 883300.TI、深股通 885694.TI、融资融券 885338.TI —— 反映的是流动性与投资者结构，不涉及业务。</li>
+<li>2025 年报预增 886107.TI —— 对应 2025 年净利同比 +182.07%，但该增幅主要来自 REITs 处置收益（见 C1），<strong>这个标签具有误导性</strong>。（置信度：高）</li>
+<li>回购增持再贷款概念 886089.TI —— 库内近 60 日新闻中未见回购相关公告，无法确认当前状态。（置信度：低）</li>
+</ul>
+<h3>G3. 产业链位置</h3>
+<ul>
+<li><strong>上游</strong>：土地与电力指标（政府审批）、机房建设与配电设备、服务器与 GPU（英伟达等）、液冷设备（金帝股份、凯旺科技等制造商）、光通信设备与光交换机。<strong>议价能力偏弱</strong>——电力指标是行政配给、先进 GPU 受出口管制、液冷设备当前处于卖方市场（订单排至年底）。（置信度：中）</li>
+<li><strong>本环节</strong>：数据中心 / 智算中心的建设与运营，持基础电信牌照。</li>
+<li><strong>下游</strong>：互联网大厂、云服务商、AI 模型公司、金融机构等算力需求方。<strong>议价能力近期在改善</strong>——依据是公司自己确认的「高品质液冷机柜价格已回升至行业高峰时期的单价水平」，以及行业侧一线城市高功率定制机柜（≥30kW）预订排队已达 14.2 个月、实际交付平均延迟 5.8 个月（<a href="https://finance.sina.com.cn/stock/relnews/cn/2026-03-06/doc-inhpzeqv6047663.shtml" target="_blank" rel="noopener">新浪财经引研究报告</a>，2026-03，单源·置信度：低）。（整体置信度：中）</li>
+</ul>
+<p><strong>这条链上本公司的位置判断</strong>：夹在「上游议价弱」和「下游议价改善」之间。当前的有利变化全部来自下游需求侧（AI 算力投入加速 → 机柜涨价 → 上架率高），而不利变化来自上游成本侧（设备紧缺、GPU 管制）。<strong>两端同时收紧时，赚的是中间的运营效率差</strong>——这决定了上架率爬坡速度是这门生意的核心指标。（置信度：中）</p>
+<h2>H. 消息面与市场情绪</h2>
+<h3>H1. 近 60 日重要新闻（库内新闻，按重要性挑选）</h3>
+<ol>
+<li><strong>2026-09-15 18:07｜拟出资 10 亿元参与设立创业投资基金，主要投资于人工智能、具身智能等领域</strong>（情感分 0.25）。同日另有公告「关于与专业投资机构共同投资的公告」。<strong>对基本面的实质影响</strong>：10 亿元相对 999.56 亿市值与 478.55 亿总资产是小额，短期不改变主营；但在资产负债率已达 64.91%、同时申请 500 亿元新增授信的背景下，把资金投向非主营的股权投资，值得关注资本配置纪律。（置信度：中）</li>
+<li><strong>2026-09-14 19:57｜拟向金融机构申请新增不超过 500 亿元授信额度，持续加大 AIDC 领域投入力度</strong>（情感分 0.33）。联网核实：授信形式包括流动资金贷款、固定资产贷款、项目贷款、承兑汇票、保函、信用证、票据贴现、供应链金融、应收账款保理、融资租赁；该事项有效期自股东会审议通过之日起至 2026-12-31 止（<a href="https://www.jiemian.com/article/15094048.html" target="_blank" rel="noopener">界面新闻</a>、<a href="https://cn.investing.com/news/stock-market-news/article-3565531" target="_blank" rel="noopener">智通财经</a>，2026-09-14）。<strong>实质影响</strong>：这是扩张决心的强信号，也是杠杆上升的直接来源，<strong>利多与风险同源</strong>。（置信度：高——双源）</li>
+<li><strong>2026-09-14 20:01｜关于 2026 年度新增对外担保额度的公告</strong>（情感分 -0.0833，为近 60 日唯一负分公告）。联网核实：在原有不超过 150 亿元担保额度基础上，新增不超过 500 亿元，<strong>对外担保总额上限将达 820.71 亿元，占最近一期经审计净资产 600.97%</strong>；公司特别提示：对资产负债率超过 70% 的单位担保金额超过最近一期经审计净资产的 50%（<a href="https://www.21jingji.com/article/20260915/herald/9fd644dcbf1d0bb86d6ef1def55645c4.html" target="_blank" rel="noopener">21经济网</a>、<a href="https://24topnews.com/news/company/runze-technology-plans-up-to-rmb-50-billion-in-new-guarantees-total-cap-e9859079" target="_blank" rel="noopener">24topnews</a>，2026-09-14/15）。<strong>实质影响：这是近 60 日消息面中风险含量最高的一条</strong>——担保对象是子孙公司（合并报表内），风险在于杠杆总量与被担保主体的偿债能力，而非对外部第三方的或有负债。（置信度：高——双源，且含公司自身的风险提示）</li>
+<li><strong>2026-08-30 23:33｜高品质液冷机柜价格已回升至行业高峰时期的单价水平</strong>（情感分 0.80，近 60 日最正面）。<strong>实质影响：这是对基本面最直接的正面信息</strong>——单价回升意味着新签约机柜的毛利率有支撑，可以部分对冲折旧压力。联网多源交叉印证行业同步回暖（见 A 节驱动 2）。（置信度：高）</li>
+<li><strong>2026-09-15｜除权除息日</strong>，每 10 股派 4.288 元（含税）。对应库内股息率 0.8623%。<strong>实质影响</strong>：在重资本投入期仍维持现金分红，说明经营性现金流有余裕；但派息率不高，分红不构成主要持有理由。（置信度：中）</li>
+<li><strong>2026-09-14 20:01｜第五届董事会第十次会议决议、关于选举公司非独立董事、关于职工代表董事卸任、关于调整第五届董事会专门委员会成员</strong>（情感分均为 0.00）。<strong>实质影响</strong>：董事会成员的常规变动，公告情感分为中性，未见异常表述。（置信度：中——仅凭标题判断，未读公告全文）</li>
+<li><strong>2026-08-31 00:04｜投资者关系活动记录表</strong>（情感分 0.00）。通常包含机构调研的问答内容，是了解管理层对上架率与价格指引口径的一手材料。<strong>本报告未读该文件全文</strong>，列为信息缺口。（置信度：低）</li>
+<li><strong>2026-09-12 17:44｜首批普惠算力赋能中小企业发展服务清单发布</strong>（情感分 0.33）。行业政策层面的中性偏正面信息，见 F2。</li>
+</ol>
+<div class="callout"><strong>消息面整体读法</strong>：近 60 日公告密集，主线非常清晰——<strong>加杠杆扩产</strong>（500 亿授信 + 500 亿担保 + 10 亿产业基金），配合一条<strong>价格回升</strong>的经营利好。库内把这些全部归为「噪音其他」，但从内容看，担保额度那一条的实质重要性被低估了。（置信度：中）</div>
+<h3>H2. 涨停史（库内涨停记录，近 180 日）</h3>
+<p><strong>近 180 日无涨停记录</strong>。这本身是有用的信息：说明这只票在过去半年里<strong>没有被游资短线情绪炒作过</strong>，股价走势更可能由机构定价与基本面预期主导，而非情绪面脉冲。对应库内换手率 0.8878%（20260915），也处于低位。（置信度：高——库内直接查询结果）</p>
+<h3>H3. 资金与筹码（库内资金筹码）</h3>
+<div class="callout">⚠️ <strong>纪律声明</strong>：本小节是盘面与筹码现象，<strong>只作情绪面佐证，不进 J 节逻辑链当决定性论据，也不单独用来推导操作结论</strong>。</div>
+<p><strong>主力资金流（近 20 个交易日，2026-08-19 至 2026-09-15）</strong></p>
+<ul>
+<li>净流入合计 <strong>-5.18 亿元</strong>（净流出）</li>
+<li>特大单净流入合计 <strong>-4.63 亿元</strong>（净流出，占总净流出的 89%）</li>
+<li>净流入为正的天数：<strong>6 天 / 20 天</strong>（14 天为净流出）</li>
+</ul>
+<p>解读：连续一个月的资金净流出，且主要由特大单贡献——意味着流出方以大资金为主，不是散户行为。这与 H1 里「消息面偏正面」形成背离。（置信度：高——库内数据；但资金流数据本身只反映已发生的交易方向，不预测后续）</p>
+<p><strong>筹码分布（筹码分布，数据时点 2026-08-07，滞后当前 39 天）</strong></p>
+<ul>
+<li>获利盘比例 <strong>44.25%</strong>（8-07 当日口径）</li>
+<li>加权平均成本 <strong>74.09 元</strong></li>
+<li>成本 15% 分位 <strong>64.00 元</strong>｜50% 分位 <strong>70.00 元</strong>｜85% 分位 <strong>86.00 元</strong></li>
+</ul>
+<p><strong>两面都要说</strong>：44.25% 的获利盘属于中等偏低水平——一方面，短线获利抛压不算重；另一方面，超过一半的持仓处于浮亏状态，<strong>上方存在深套筹码</strong>，这些筹码在股价反弹到其成本区时会形成解套抛压。</p>
+<p><strong>更重要的一点</strong>：当前收盘价 60.91 元，<strong>低于 8-07 筹码 15% 分位成本 64.00 元</strong>。据此推算，按 8-07 的筹码分布，现价之下的持仓占比不足 15%，即<strong>当前约 85% 以上的持仓处于浮亏</strong>。（置信度：中——筹码数据滞后 39 天，期间成交会重塑分布；另外 9-15 除权每股 0.4288 元，对 64.00 元成本线的技术性影响约 0.7%，不改变结论方向）</p>
+<p><strong>股东户数（股东户数）</strong></p>
+<ul>
+<li>2026-06-30：<strong>182,002 户</strong>，较 2026-05-29 的 197,840 户<strong>减少 8.0%</strong></li>
+</ul>
+<p>解读：户数下降 8.0% 意味着<strong>筹码在集中</strong>——户均持股数量上升。这通常被视为偏正面的信号。但必须写明：<strong>该数据为季度末口径、天然滞后</strong>，截止日 6-30 距今已 77 天，无法反映 7 月以来（特别是 8-19 后主力净流出期间）的变化。（置信度：中——数据本身高置信，但时效性弱）</p>
+<p><strong>H3 小结（情绪面）</strong>：三项指标给出的方向不一致——资金流偏负（近 20 日净流出 5.18 亿）、筹码结构偏负（现价低于 15% 分位成本）、股东户数偏正（-8.0% 集中）但滞后 77 天。<strong>综合看情绪面偏弱，且与基本面的改善方向背离</strong>。这种背离本身就是 A 节判断「震荡」而非「偏涨」的主要原因之一。（置信度：中）</p>
+<h2>I. 未来 13 周事件日历</h2>
+<p>来源说明：W1–W3 的事件来自库内事件日历（已滤掉猜测项）；W4 之后库内无数据，标注为「按规则/惯例推算」的条目均已注明依据，<strong>未经确认的不写成确定事件</strong>。</p>
+<ul>
+<li><strong>W1（2026-09-15 起）</strong>：
+<ul>
+<li>润泽科技除权除息日 · 公司事件 · 重要性 4 · 影响：每 10 股派 4.288 元（含税），当日股价为除权后价格，与此前价格不可直接比较 —— <strong>已发生</strong></li>
+<li>工信部人形机器人「首台套」认定首批申报开启 · 政策 · 重要性 8 · 影响：对应「机器人概念」标签，但本公司无机器人业务营收（见 G2），<strong>对基本面无实质影响</strong></li>
+<li>美国商务部拟就封堵中国 AI 企业「远程调用海外算力」新规征求意见 · 政策 · 重要性 8 · 影响：验证 F1 的两个方向——境内需求刚性增强 vs 海外节点受限</li>
+<li>2026 第四届 AI 算力产业大会暨展览会（北京国家会议中心，9-15 至 9-16）· 会议 · 重要性 6 · 影响：将首发《中国推理算力产业白皮书》，可对照其中的上架率与价格数据核验 G3 判断</li>
+<li>2026 华为全联接大会（上海，9-17 至 9-19）· 会议 · 重要性 8 · 影响：昇腾 AI 算力进展，关系国产算力链的需求节奏</li>
+<li>2026 世界制造业大会（合肥，9-20 至 9-23）· 会议 · 重要性 7 · 影响：与本公司主业关联弱</li>
+</ul></li>
+<li><strong>W2（2026-09-22 起）</strong>：
+<ul>
+<li>2026 中国国际信息通信展览会（PT 展，北京，9-22 至 9-24）· 会议 · 重要性 7 · 影响：通信与算力方向大展，可能出现行业指引性表述</li>
+<li>2026 年第三次临时股东会 · 公司事件 · 重要性 <strong>高</strong> · 影响：<strong>审议 500 亿元新增授信与 500 亿元新增担保额度议案</strong>——这是 A 节风险 1 的落地时点。会议通知已于 9-15 发布（库内公告），按创业板规则通知后至少 15 日召开，<strong>预计在 W2 至 W3 区间，确切日期以公司公告为准</strong>（置信度：中——日期为按规则推算，非确认时点）</li>
+</ul></li>
+<li><strong>W3（2026-09-29 起）</strong>：
+<ul>
+<li>英伟达 Vera Rubin AI 计算平台预计开始交付（10-01）· 公司事件 · 重要性 8 · 影响：下一代 AI 服务器平台出货，牵动液冷、光模块、铜连接的订单节奏，是 G1 液冷热点能否从「升温」推进的外部验证点</li>
+<li>国庆长假前最后交易周，节前通常流动性下降</li>
+</ul></li>
+<li><strong>W4（2026-10-06 起）</strong>：国庆假期（10-01 至 10-07 前后），交易日不足；本周无已知公司事件</li>
+<li><strong>W5（2026-10-13 起）</strong>：本周无已知事件。<strong>观察点</strong>：三季报预约披露日期通常在此前后由交易所网站公布，可关注</li>
+<li><strong>W6（2026-10-20 起）</strong>：<strong>2026 年三季报披露窗口开启</strong> · 财报 · 重要性 <strong>高</strong> · 影响：这是本报告最关键的验证时点——核验 ① AIDC 业务收入占比是否继续提升（H1 为 53.26%）② 营收增速与净利增速的差距是否收窄（H1 为 50.05% vs 36.43%）③ 资产负债率是否突破 65%（H1 为 64.91%）④ 经营活动现金流。（依据：上年同期三季报于 2025-10-30 披露，库内财务的公告日字段；具体日期以预约披露公告为准）</li>
+<li><strong>W7（2026-10-27 起）</strong>：<strong>三季报大概率在本周披露</strong>（上年为 10-30）· 财报 · 重要性 <strong>高</strong> · 影响：同 W6</li>
+<li><strong>W8（2026-11-03 起）</strong>：本周无已知事件。<strong>观察点</strong>：三季报披露后的机构调研与研报更新，可重新运行库内研报检查卖方预测是否随中报与三季报上调或下调</li>
+<li><strong>W9（2026-11-10 起）</strong>：本周无已知事件</li>
+<li><strong>W10（2026-11-17 起）</strong>：本周无已知事件。<strong>观察点</strong>：年度电力保供与能耗指标政策通常在四季度出台，关注对数据中心用电成本的影响（见 F 节信息缺口）</li>
+<li><strong>W11（2026-11-24 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-12-01 起）</strong>：<strong>500 亿元授信额度有效期截止日临近</strong> · 公司事件 · 重要性中 · 影响：授信事项有效期至 2026-12-31 止（联网：<a href="https://cn.investing.com/news/stock-market-news/article-3565531" target="_blank" rel="noopener">智通财经</a>，2026-09-14），年底前可观察实际使用了多少额度——<strong>签约额度与实际提款是两回事</strong>，实际提款规模才是扩张力度的真实刻度</li>
+<li><strong>W13（2026-12-08 起）</strong>：本周无已知事件。<strong>观察点</strong>：年末机构调仓期，可复查库内资金筹码的主力资金方向是否由负转正</li>
+</ul>
+<p><strong>信息缺口</strong>：库内事件日历最远只覆盖到 2026-10-01，W4 之后全部依赖惯例推算。另外，<strong>本报告未查到限售股解禁时间表</strong>——对一家借壳上市、2026 年 2 月还在筹划发行可转债购买资产的公司，解禁节奏是重要变量。<strong>补法</strong>：定向检索解禁公告，或在三季报披露后重跑本调研。</p>
+<h2>J. 逻辑链</h2>
+<p>把 B–I 的事实串成一条可证伪的链，每一环标置信度。</p>
+<p><strong>第 1 环（置信度：高）</strong> 因为 ① 库内 2026H1 营收 37.46 亿元、同比 +50.05%，净利 12.03 亿元、同比 +36.43%，且联网核实扣非净利 12.06 亿元、同比 +37.34%（扣非与归母几乎相等）；且 ② 2025 年 182.07% 的净利增幅主要来自约 37.46 亿元的 REITs 股权处置收益，2025 年扣非净利仅增长 5.71%–11.33% <strong>→ 所以</strong>：公司的真实经营性增长是从 2026 年才开始加速的，2025 年的高增长数字不能作为趋势外推的起点。</p>
+<p><strong>第 2 环（置信度：中）</strong> 因为 ① AIDC 算力业务 2026H1 收入 19.95 亿元、同比 +126.24%、占比 53.26%，而传统 IDC 业务仅增长 8.44%（联网双源）；且 ② 成熟园区上架率稳定在 90% 以上，东部区域行业平均上架率 92.4% 而西部仅 41.3% <strong>→ 所以</strong>：增长几乎全部由 AIDC 单一引擎驱动，老 IDC 业务已接近停滞。 <strong>→ 如果这个推论成立，应该能观察到</strong>：三季报里 AIDC 收入占比继续上升并突破 55%，同时 IDC 业务收入增速维持在个位数。（核验时点：W6–W7）</p>
+<p><strong>第 3 环（置信度：中）</strong> 因为 ① 库内营收增速（+50.05%）持续高于净利增速（+36.43%），差距 13.6 个百分点；且 ② 库内资产负债率一年内从 62.53% 升至 64.91%；且 ③ 公司同时申请 500 亿元新增授信与 500 亿元新增担保 <strong>→ 所以</strong>：公司正处在「先投入后回收」的扩张周期中段，新建产能的折旧与利息正在压制利润率，这个压制在扩张停止前不会消失。 <strong>→ 如果这个推论成立，应该能观察到</strong>：三季报里营收增速与净利增速的差距<strong>不会显著收窄</strong>（仍在 10 个百分点以上），且资产负债率继续上行。（核验时点：W6–W7）</p>
+<p><strong>第 4 环（置信度：中）</strong> 因为 ① 公司 8-30 确认高品质液冷机柜价格已回升至行业高峰水平，行业侧多源印证订单排至年底；且 ② 全球 AI 资本开支仍在加速（博通剩余履约义务 1792 亿美元、戴尔积压订单 950 亿美元记录） <strong>→ 所以</strong>：新签约机柜的单价与毛利率有支撑，能部分对冲第 3 环的折旧压力。 <strong>→ 如果这个推论成立，应该能观察到</strong>：三季报毛利率不低于 2026H1 的 46.58%，最好能回到 2025Q3 的 48.11% 附近。（核验时点：W6–W7）</p>
+<p><strong>第 5 环 —— 这条链最弱的一环（置信度：低）｜⚠️ 命门</strong> 因为 ① 库内<strong>完全没有客户结构数据</strong>，库内概念标签的「抖音概念」标签无任何营收佐证；且 ② 库内财务不返回经营现金流、有息负债、在建工程 <strong>→ 所以</strong>：前四环全部建立在「收入端是稳的、现金流能覆盖利息」这个<strong>未经验证的假设</strong>上。</p>
+<p><strong>为什么这是命门</strong>：这门生意的风险不在收入增速，而在<strong>客户集中度</strong>与<strong>债务期限结构</strong>。一家重资产运营商，若前三大客户占比过高，任何一家削减算力采购，都会让已建成的机柜空置，而折旧与利息照付。在担保总额将达净资产 600.97% 的杠杆水平下，这种冲击的放大倍数很高。<strong>本报告无法评估这一环，这是整份判断最大的盲区。</strong>（置信度：低——非「判断不确定」，是「没有数据可判断」）</p>
+<p><strong>逻辑链总结</strong>：第 1–4 环构成一条自洽的「AIDC 放量 + 价格回升 → 增长可持续，但利润率被扩张压制」的链条，且每一环都给出了可在三季报核验的具体观察项。第 5 环的缺失意味着——<strong>这条链在顺境里成立，但它没有回答逆境时会怎样</strong>。（置信度：中）</p>
+<h2>K. 三情景推演</h2>
+<p>三个概率加总 100%。触发条件均为可用数据核对的财报数字或已公告事件。</p>
+<ul>
+<li><strong>乐观（25%）</strong>｜<strong>触发</strong>：2026 年三季报 AIDC 业务收入占比突破 55%，且毛利率不低于 2026H1 的 46.58%，同时净利增速与营收增速的差距收窄到 10 个百分点以内｜<strong>路径</strong>：市场开始按经营性利润而非 TTM 口径重估，估值向行业中位重新对齐，股价逐步收复 8-07 筹码 15% 分位成本一线并向加权平均成本靠拢</li>
+</ul>
+<ul>
+<li><strong>中性（50%）</strong>｜<strong>触发</strong>：三季报营收增速维持在 40%–55% 区间，但净利增速与营收增速的差距仍在 10 个百分点以上，资产负债率继续小幅上行｜<strong>路径</strong>：基本面改善与资金持续净流出两股力量相互抵消，股价在 8-07 筹码 15% 分位成本下方与加权平均成本之间宽幅震荡，跟随通信板块贝塔波动</li>
+</ul>
+<ul>
+<li><strong>悲观（25%）</strong>｜<strong>触发</strong>：三季报出现下列任一项——① 毛利率跌破 46%；② 资产负债率突破 68%；③ AIDC 收入环比不增；④ 美国 KYC 新规正式落地并明确覆盖中资背景海外数据中心，导致香港沙岭 / 印尼巴淡岛节点交付计划推迟｜<strong>路径</strong>：市场重新按扣非口径给估值，加上杠杆担忧，股价向下寻找更低的成本密集区，主力资金净流出的天数占比进一步上升</li>
+</ul>
+<h2>L. 决策与风控</h2>
+<div class="callout">⚠️ 本节不给目标价、不给评级。所有倾向均为条件式，触发条件全部来自本报告前文出现过的库内指标或已公告事件。</div>
+<h3>条件式操作倾向</h3>
+<ol>
+<li><strong>如果</strong> 2026 年三季报（预计 W6–W7 披露）显示 AIDC 业务收入占比突破 55%（2026H1 为 53.26%）<strong>且</strong> 毛利率不低于 2026H1 的 46.58%，<strong>那么</strong> 可转为<strong>轻仓试仓</strong>观察——这意味着第 2 环与第 4 环同时得到验证，扩张在创造利润而非只创造收入。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> 股价重新站上 <strong>8-07 筹码 15% 分位成本</strong> <strong>并且</strong> 库内资金筹码的近 20 日主力资金净流入由当前的 -5.18 亿元转为正值，<strong>那么</strong> 可<strong>加仓</strong>——前者说明浮亏筹码开始解套、抛压减轻，后者说明大资金停止撤离，两个条件必须同时满足，单独一个都不够。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> 2026 年第三次临时股东会（预计 W2–W3）通过 500 亿元新增担保议案后，三季报的资产负债率突破 68%（2026H1 为 64.91%）<strong>或</strong> 毛利率跌破 46%，<strong>那么</strong> <strong>回避</strong>——这说明扩张的成本压力已超出价格回升能够对冲的范围。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> 美国商务部的海外算力 KYC 新规正式落地<strong>且</strong>明确覆盖中资背景的海外数据中心，导致公司公告香港沙岭或印尼巴淡岛节点的交付计划推迟，<strong>那么</strong> 对海外布局部分的预期应<strong>下调</strong>，并重新评估 6GW 规划规模的兑现概率。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> 股价跌破 <strong>9-15 收盘</strong> 后<strong>未能在后续公告中看到 AIDC 业务或机柜价格的正面进展</strong>，<strong>那么</strong> <strong>观望</strong>——单纯的价格下跌不构成参与理由，本报告的所有正面论据都需要三季报来兑现。</li>
+</ol>
+<h3>风控要点：这笔判断在什么情况下应当被推翻</h3>
+<ul>
+<li><strong>推翻条件一</strong>：三季报显示 2026H1 的扣非净利与归母净利高度接近（12.06 亿 vs 12.03 亿）这一「干净增长」特征消失，即前三季度出现显著的非经常性损益。那意味着 C2 的结论失效，2026 年的增长质量需要重新评估。</li>
+<li><strong>推翻条件二</strong>：公司披露单一客户收入占比超过 30%。那意味着 J 节第 5 环的盲区变成了明确的集中度风险，整份报告的「震荡」判断应直接下修。</li>
+<li><strong>推翻条件三</strong>：经营活动现金流由正转负。对一家资产负债率 64.91%、担保额度将达净资产 600.97% 的重资产公司，经营现金流是偿债的第一道防线，它转负意味着 J 节前四环的全部推论都失去支撑。</li>
+<li><strong>推翻条件四</strong>：三季报 AIDC 业务收入出现环比下降。这将直接证伪第 2 环——单一增长引擎熄灭（此处指业务收入环比转为下降），而老 IDC 业务只有 8.44% 的增速，无法接棒。</li>
+</ul>
+<h3>仓位思路</h3>
+<p><strong>轻仓或不参与，直到三季报给出验证。</strong>（置信度：中）</p>
+<p>理由有三：① 基本面改善方向明确，但改善的关键证据（AIDC 占比、毛利率、负债率三项）全部要等到 W6–W7 才能核验；② 情绪面与基本面背离——近 20 日主力资金净流出 5.18 亿元、现价低于 8-07 筹码 15% 分位成本，说明市场当前并不认同基本面叙事；③ J 节第 5 环的客户集中度盲区无法在本报告内消除。</p>
+<p>在这三项里有任何一项变清晰之前，<strong>本报告不支持中等以上仓位</strong>。三季报是天然的分水岭——它同时能回答 ①②，所以 W6–W7 之前，时间成本低于信息价值。</p>
+<h2>M. 逻辑自查</h2>
+<h3>M1. 这份判断最依赖的假设是哪一条？它错了会怎样？</h3>
+<p><strong>最依赖的假设</strong>：2026H1 的「干净增长」（扣非 12.06 亿 ≈ 归母 12.03 亿，同比约 +37%）能延续到三季报，即 AIDC 收入放量是一个可持续的经营趋势，而非合同确认时点造成的阶段性高点。</p>
+<p><strong>如果错了</strong>：整份报告的正面部分全部失效。因为 2025 年的高增长已被证明主要来自 REITs 一次性处置收益（C1），如果 2026 年的高增长也带上一次性因素或呈现前高后低，那么这家公司的真实经营增速可能长期停留在扣非口径 2025 年的 5.71%–11.33% 那个量级——<strong>而市场当前按 999.56 亿市值给的定价，剔除一次性收益后已对应约 61 倍市盈率</strong>（C1 推算）。那种情况下 K 节的悲观情景概率应从 25% 大幅上调。</p>
+<h3>M2. 有没有为了让逻辑好看而忽略的反面证据？</h3>
+<p><strong>有三条，逐条摊开</strong>：</p>
+<ol>
+<li><strong>传统 IDC 业务只增长 8.44%</strong>（联网信息）。我在 A 节把「AIDC +126.24%」写成了核心驱动，但同一组数据里，占营收 46.74% 的老业务几乎停滞。如果按加权算，老业务的低增速实际上在拖累整体——<strong>总营收 +50.05% 是被 AIDC 单腿拉起来的</strong>，这个结构比单看总数脆弱。我在 J 节第 2 环写到了，但 A 节的表述确实偏向了正面一侧。</li>
+</ol>
+<ol>
+<li><strong>近 20 日主力资金净流出 5.18 亿元，且 14/20 天为净流出</strong>。这是一个月的持续性行为，不是单日波动。我按 skill 纪律把它限制在 H 节作情绪面佐证、没有进逻辑链——这个处理是对的，但读者应当意识到：<strong>基本面叙事很完整，而真金白银正在往外走，两者必有一方是错的</strong>。</li>
+</ol>
+<ol>
+<li><strong>「机器人概念」「抖音概念」两个标签在 G2 被我判为「仅概念标签」</strong>。但反过来看，市场给这只票 999.56 亿市值时，可能正是部分地在为这些概念定价。如果这部分概念溢价消散，股价的下跌幅度会超过基本面恶化所能解释的范围。这是估值的下行弹性，我在 K 节悲观情景里没有单独列出。</li>
+</ol>
+<h3>M3. 信息缺口清单</h3>
+<ol>
+<li><strong>库内公司简介与主营业务字段仍是借壳前的食品机械业务描述</strong>，与库内经营范围直接冲突。</li>
+</ol>
+<p><strong>影响</strong>：E 节的商业模式与护城河判断只能靠库内经营范围一个字段 + 联网信息支撑，证据强度低于正常水平。 <strong>补法</strong>：修复库内基础资料该票的主营描述字段（属数据维护事项，本报告只读不写）。</p>
+<ol>
+<li><strong>库内无分业务营收拆分</strong>（AIDC vs IDC 的 19.95 亿 / 17.51 亿全部来自联网）。</li>
+</ol>
+<p><strong>影响</strong>：J 节第 2 环——本报告最重要的一环——建立在库外数据上，不符合「库内硬数据」的最高置信标准。 <strong>补法</strong>：三季报披露后从公告原文核对该拆分。</p>
+<ol>
+<li><strong>库内财务不返回经营活动现金流、有息负债余额、在建工程</strong>。</li>
+</ol>
+<p><strong>影响</strong>：对一家资产负债率 64.91%、担保总额将达净资产 600.97% 的重资产公司，这三项比利润表更能说明扩张可持续性。L 节「推翻条件三」直接依赖现金流，而本报告无法从库内验证它。 <strong>补法</strong>：定向读取三季报现金流量表，或扩展库内财务取数字段。</p>
+<ol>
+<li><strong>库内研报返回的 3 篇研报最新日期为 2026-06-23，早于 8-28 的中报披露</strong>（详见下方 M4）。</li>
+</ol>
+<p><strong>影响</strong>：J 节所有卖方预测都未反映中报实际数据，参考价值受限。 <strong>补法</strong>：三季报后重跑库内研报（见 I 节 W8）。</p>
+<ol>
+<li><strong>筹码分布筹码数据时点为 2026-08-07，滞后当前 39 天，且跨越了 9-15 除权日</strong>；股东户数截止 2026-06-30，滞后 77 天。</li>
+</ol>
+<p><strong>影响</strong>：H3 的「现价低于 15% 分位成本」结论与 L 节触发条件 2 的锚点都基于这份滞后数据。 <strong>补法</strong>：等待筹码数据更新后复核该锚点。</p>
+<ol>
+<li><strong>库内无客户集中度数据</strong>——这是 J 节第 5 环的命门，也是整份报告最大的盲区。</li>
+</ol>
+<p><strong>影响</strong>：无法评估收入端的稳定性，L 节「推翻条件二」写了但无法自行验证。 <strong>补法</strong>：读取三季报或年报中的「前五大客户」披露。</p>
+<ol>
+<li><strong>未查到限售股解禁时间表</strong>。</li>
+</ol>
+<p><strong>影响</strong>：I 节 13 周日历可能遗漏了一个重要的供给冲击时点。 <strong>补法</strong>：定向检索解禁公告。</p>
+<ol>
+<li><strong>库内事件日历最远只覆盖到 2026-10-01</strong>，W4–W13 全部为惯例推算。</li>
+</ol>
+<p><strong>影响</strong>：I 节后十周的事件锚点强度弱于前三周，已在各条目中注明依据。</p>
+<h3>M4. 卖方预期（库内研报，库内近 90 天研报，共 3 家机构 / 3 篇研报）</h3>
+<div class="callout">以下全部是<strong>别人的预测，不是事实</strong>，与前文所有库内财务数字性质完全不同。评级分布：Buy 1 篇 / 买入 1 篇 / 无评级 1 篇。</div>
+<ul>
+<li>〔卖方预期〕来源：汇丰前海证券研报（库内）· 日期：2026-06-23 · 观点：预计 2026 年 EPS 1.65 元、归母净利 27.11 亿元；2027 年 EPS 2.29 元、净利 37.62 亿元；2028 年 EPS 3.27 元、净利 53.66 亿元 · 评级 Buy · 置信度：低（卖方预期非事实，且发布日早于 8-28 中报披露，未反映中报实际数据）</li>
+<li>〔卖方预期〕来源：天风证券研报（库内）· 日期：2026-06-22 · 观点：预计 2026 年 EPS 1.87 元、归母净利 30.66 亿元、对应市盈率 43.45 倍；2027 年 EPS 2.57 元、净利 42.19 亿元、市盈率 31.58 倍；2028 年 EPS 3.48 元、净利 57.10 亿元、市盈率 23.33 倍 · 评级买入 · 置信度：低（同上；另外其市盈率数值是按研报发布日股价计算，与当前收盘 60.91 元对应的倍数不同，不可直接套用）</li>
+<li>〔卖方预期〕来源：西部证券研报（库内）· 日期：2026-06-17 · 观点：预计 2026 年 EPS 1.986 元、归母净利 32.60 亿元；2027 年 EPS 2.565 元、净利 42.10 亿元 · 无评级 · 置信度：低（同上）</li>
+</ul>
+<p><strong>把卖方预测与库内事实并排看（这是对比，不是背书）</strong>：三家机构对 2026 全年归母净利的预测区间为 27.11 亿–32.60 亿元。库内 2026H1 实际归母净利为 12.03 亿元——<strong>要达到区间下限，下半年需要实现约 15.1 亿元净利，即比上半年增长约 25%</strong>（据库内 H1 数字与卖方区间下限推算）。这个缺口是否合理，只有三季报能回答。（置信度：低——推算基于卖方预测，而卖方预测本身置信度低）</p>
+<p><strong>另需说明</strong>：库内研报返回的研报标题字段为空列表，库内未记录研报标题，因此无法引用各家的具体论证逻辑，只能引用其数字预测。</p>
+<h3>M5. 取数点覆盖自查</h3>
+<p>本报告调用并在正文中实际引用的库内取数：库内公司档案（B/E/G）、库内财务（C）、库内估值（B/D）、库内行情（B）、库内概念标签（G2）、库内涨停记录（H2）、库内新闻（H1）、库内同业对比（D）、库内事件日历（I）、库内研报（M4）、库内资金筹码（H3）（G1）—— <strong>12 项全部引用</strong>。库内 A/H 对照返回 None（本股非两地上市），按规则不写。</p>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-15），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>担保上限达净资产600.97%</li>
+      <li>近20日主力净流出5.18亿</li>
+      <li>PE18.6含REITs一次性收益</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>扣非净利</dt><dd>扣除非经常性损益后的净利润。剔除卖资产、政府补助、公允价值变动等一次性项目，更接近主业真实盈利。</dd><dt>非经常性损益</dt><dd>与主营业务无关、偶发的收益或损失，如处置资产、政府补助、金融资产公允价值变动。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>经营现金流</dt><dd>经营活动产生的现金流量净额。利润是账面数，这个是真金白银进出。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="http://mp.cnfol.com/53702/article/1777278227-142388426.html" target="_blank" rel="noopener">中金在线</a></li>
+      <li><span class="src-tag src-comm">社区</span> <a href="https://xueqiu.com/9526353655/407025929" target="_blank" rel="noopener">雪球半年报解读</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.chinanews.com.cn/cj/2026/08-31/10686998.shtml" target="_blank" rel="noopener">中新网</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2469258" target="_blank" rel="noopener">财联社</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.21jingji.com/article/20260915/herald/9fd644dcbf1d0bb86d6ef1def55645c4.html" target="_blank" rel="noopener">21经济网</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://24topnews.com/news/company/runze-technology-plans-up-to-rmb-50-billion-in-new-guarantees-total-cap-e9859079" target="_blank" rel="noopener">24topnews</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="http://www.news.cn/finance/20260410/27cbbb69491740d3bb618570989235e6/c.html" target="_blank" rel="noopener">新华网年报报道</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2339584" target="_blank" rel="noopener">财联社</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260915A07OKR00" target="_blank" rel="noopener">腾讯新闻转天风</a></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://finance.sina.com.cn/stock/relnews/cn/2026-03-06/doc-inhpzeqv6047663.shtml" target="_blank" rel="noopener">新浪财经引研究报告</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.secretchina.com/news/gb/2026/08/30/1104154.html" target="_blank" rel="noopener">看中国</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://hankunlaw.com/portal/article/index/cid/8/id/15704.html" target="_blank" rel="noopener">汉坤律所 AI 管制观察</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.jiemian.com/article/15094048.html" target="_blank" rel="noopener">界面新闻</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://cn.investing.com/news/stock-market-news/article-3565531" target="_blank" rel="noopener">智通财经</a></li>
+      <li><span class="src-tag src-disc">披露</span> 依据：上年同期三季报于 2025-10-30 披露，库内财务的公告日字段 <em>2025-10-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 具体日期以预约披露公告为准 — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-15 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
