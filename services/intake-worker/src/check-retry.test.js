@@ -119,9 +119,12 @@ test("recheck：父任务 done → 新建任务挂 parentId/parentTitle，载荷
   const { id } = await res.json();
   const t = stored(kv, id);
   expect(t).toMatchObject({ status: "pending", parentId: "p1", parentTitle: "某公众号称XX", text: "新证据：官方公告说……" });
-  // 全空也允许（只是"再查一遍"）
+  // 全空也允许（只是"再查一遍"）；列表摘要用父任务标题顶着，不显示成"（无摘要）"
   const res2 = await recheckJson(env, "p1", {});
   expect(res2.status).toBe(201);
+  const { id: id2 } = await res2.json();
+  const rec = await (await recent(env)).json();
+  expect(rec.tasks.find((x) => x.id === id2).textSnippet).toBe("重查：某公众号称XX");
   // pending 附父任务整篇与原始内容
   const p = await (await pending(env)).json();
   const mine = p.tasks.find((x) => x.id === id);

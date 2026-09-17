@@ -352,7 +352,10 @@ function taskSnippet(t) {
     try { return new URL(link).hostname; } catch { return link.slice(0, 40); }
   }
   const n = Array.isArray(t.images) ? t.images.length : 0;
-  return n > 0 ? `${n} 张图` : "";
+  if (n > 0) return `${n} 张图`;
+  // 补证据重查可以全空（只按原内容再查一遍）：跑完前用父任务标题顶着，别显示成"（无摘要）"
+  const pt = String(t.parentTitle || "").trim();
+  return pt ? `重查：${pt}` : "";
 }
 
 // GET /check/pending —— runner 凭 CHECK_RUNNER_SECRET 取待处理任务
