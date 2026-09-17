@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>宏景科技（301396.SZ） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>宏景科技（301396.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-17（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>关联板块</b> 算力 · AI应用</span>
+      <span><b>申万行业</b> IT服务Ⅱ</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 空间计算 · 财税数字化 · MR(混合现实) · 职业教育 · ChatGPT概念 · 旅游概念 · 多模态AI · 安防</span>
+      <span><b>来源</b> 30 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    宏景科技（301396）主要做的是面向政府、事业单位、企业等客户，在智慧民生、城市综合管理、智慧园区三大领域提供智慧医疗、智慧教育、智慧社区、智慧楼宇、智慧政务、智慧园区等智慧城市解决方案。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——算力业务把营收和利润做起来了，但资产负债率已升到 91.60%、市盈率是行业中位数的约 4.3 倍，好数字已被价格提前反映。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：算力业务把营收和利润做起来了，但资产负债率已升到 91.60%、市盈率是行业中位数的约 4.3 倍，好数字已被价格提前反映。支撑在于上半年营收同比增156%利润增127%；毛利率从21.26%升至34.88%；9月算力政策密集出台。主要风险是资产负债率已升至91.60%；市盈率364倍为行业中位4.3倍；股东户数两月增50.3%主力净流出。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>上半年营收同比增156%利润增127%</li>
+      <li>毛利率从21.26%升至34.88%</li>
+      <li>9月算力政策密集出台</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据时点：2026-09-17｜行情取自库内行情（数据时点 15:35，当日收盘）｜财务取自库内财务（最新期 2026 年半年报，2026-08-28 披露）</div>
+<h2>A. 结论先看这里</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：算力业务把营收和利润做起来了，但资产负债率已升到 91.60%、市盈率是行业中位数的约 4.3 倍，好数字已被价格提前反映。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li>2026 年上半年营收 18.43 亿元、同比增长 156.43%，净利润 1.37 亿元、同比增长 127.43%，毛利率由 2025 年全年的 21.26% 升至 34.88%——增收也增利，且利润率同步改善（置信度：高，库内财务）。</li>
+<li>业务重心从智慧城市转到人工智能算力服务，算力订单支撑收入确认（置信度：中，多家媒体与一份券商研报口径一致，非库内数据，详见 E/J 节）。</li>
+<li>2026 年 9 月政策密集：工业和信息化部印发《信息通信行业发展&quot;十五五&quot;规划》、国务院常务会议专题研究算力网建设、《&quot;人工智能+软件&quot;专项行动实施方案》发布（置信度：中，两个独立来源，详见 F 节）。</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li>资产负债率连续四期抬升：72.37%（2025Q3 累计）→ 76.43%（2025 年末）→ 89.82%（2026Q1）→ 91.60%（2026H1）。这是库内最刺眼的一个数（置信度：高）。</li>
+<li>估值绝对高：市盈率（TTM）364.03 倍，同行业中位数 83.85 倍；市净率 28.60 倍（置信度：高）。</li>
+<li>筹码与资金不配合：股东户数从 2026-06-30 的 42,609 户增至 2026-08-10 的 64,023 户、增加 50.3%；近 20 个交易日特大单净流出 2.14 亿元（置信度：高，均为库内数据；性质是盘面现象，不作基本面证据）。</li>
+</ol>
+<p><strong>最该盯的信息</strong>：</p>
+<ul>
+<li>三季度报告（上年同期为 2025-10-30 披露，见 I 节 W7）——看两件事：营收同比增速能不能延续，以及资产负债率有没有继续高于 2026H1 的 91.60%。</li>
+<li>2026-09-23 股权登记日、2026-09-24 除权除息日（每 10 股派现金 1 元，含税），是最近的一个确定时点（来源：公司 2026-09-17《2026 年中期权益分派实施公告》）。</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong>：如果算力订单的交付节奏比我假设的快，三季度营收继续翻倍式增长，高负债率会被&quot;规模扩张的必要代价&quot;这个解释消化掉，届时&quot;高估值&quot;这条风险会失效相当一部分。反过来，如果我低估了高负债的融资成本压力，&quot;震荡&quot;就偏乐观了。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>公司</strong>：宏景科技股份有限公司，代码 301396，创业板，上市日期 2022-11-11（上市不到 4 年）。上市状态（正常上市）。</li>
+<li><strong>行业</strong>：软件服务（库内分类）；涨停数据里记录的细分行业为&quot;IT服务Ⅱ&quot;。</li>
+<li><strong>主营</strong>（库内原文）：面向政府、事业单位、企业等客户，在智慧民生、城市综合管理、智慧园区三大领域提供智慧医疗、智慧教育、智慧社区、智慧楼宇、智慧政务、智慧园区等智慧城市解决方案。</li>
+<li><strong>规模</strong>：员工 341 人，注册资本 21,492.4565 万元。总部广州科学城，成立于 1997 年，有 4 家全资子公司和 4 家控股子公司。</li>
+<li><strong>当前行情</strong>（库内行情，数据时点 15:35，即 2026-09-17 收盘）：股价 174.90 元，当日上涨 2.54%，成交额 26.1 亿元；当日最高较前收盘涨 6.79%，最低涨 0.29%——盘中振幅 6.5 个百分点，波动不小。</li>
+<li><strong>估值</strong>（库内估值，交易日 20260917）：市盈率（TTM）364.03 倍，市净率 28.60 倍，股息率 0.035%，总市值 375.9 亿元，换手率 10.4884%。</li>
+<li><strong>同行业估值位置</strong>：软件服务行业在市股票 280 只，行业市盈率中位数 83.84725 倍。宏景科技按市盈率由小到大排第 116 位（1 = 最便宜）。注意这个名次的算法只把有正市盈率的同行纳入排序，而 280 是全部在市票数，两个数不能直接相除看百分位（置信度：高，已核对库内取数的算法）。</li>
+<li><strong>横向看</strong>：364.03 倍是行业中位数 83.85 倍的约 4.3 倍（据库内两数推算）。<strong>这只是估值口径的贵贱，不等于公司好坏</strong>。</li>
+<li>A/H 溢价：库内 A/H 对照返回空，该公司非两地上市，本节不涉及。</li>
+</ul>
+<h2>C. 财务健康</h2>
+<p>库内近四期（库内财务，新→旧）：</p>
+<ul>
+<li><strong>2026 年半年报（截止 20260630，2026-08-28 披露）</strong>：营收 18.43 亿元（同比 +156.43%）· 净利润 1.37 亿元（同比 +127.43%）· 每股收益 0.6379 元 · 净资产收益率 10.8704% · 毛利率 34.8782% · 净利率 16.5373% · 资产负债率 91.6023%</li>
+<li><strong>2026 年一季报（截止 20260331）</strong>：营收 3.77 亿元（同比 +7.01%）· 净利润 0.30 亿元（同比 +39.75%）· 每股收益 0.1971 元 · 净资产收益率 2.4739% · 毛利率 34.2293% · 净利率 17.1438% · 资产负债率 89.8248%</li>
+<li><strong>2025 年年报（截止 20251231）</strong>：营收 11.82 亿元（同比 +79.62%）· 净利润 0.26 亿元（同比 +134.94%）· 每股收益 0.172 元 · 净资产收益率 2.2015% · 毛利率 21.262% · 净利率 2.2676% · 资产负债率 76.4296%</li>
+<li><strong>2025 年三季报（截止 20250930）</strong>：营收 10.21 亿元（同比 +358.04%）· 净利润 1.08 亿元（同比 +448.91%）· 每股收益 0.7004 元 · 净资产收益率 8.6578% · 毛利率 23.1528% · 净利率 10.5721% · 资产负债率 72.3663%</li>
+</ul>
+<p><strong>三条趋势，按重要性排</strong>：</p>
+<p><strong>① 2025 年四季度单季由盈转亏，2026 年二季度恢复并放量。</strong> 2025 年前三季度净利润已有 1.08 亿元，全年却只有 0.26 亿元——据这两个库内数推算，2025 年第四季度单季亏损约 0.82 亿元，单季营收约 1.61 亿元。到 2026 年，据半年报与一季报推算，第二季度单季营收约 14.66 亿元、单季净利润约 1.07 亿元，是全年收入确认最集中的一个季度。（置信度：高，均为库内数字直接相减；但&quot;为什么集中在二季度&quot;库内无解释，见 M 节缺口）</p>
+<p><strong>② 毛利率是真正的拐点项，不是营收。</strong> 毛利率四期走势：23.15% → 21.26% → 34.23% → 34.88%，2026 年以来抬升了约 13 个百分点。净利率同步从 2.27%（2025 年全年）回到 16.54%。作为对比，界面新闻 2025 年 4 月的报道称公司 2024 年销售毛利率为 12.23%、算力业务毛利率仅 12.55%（来源：界面新闻，2025-04 发布，非库内数据）——若该旧数据成立，毛利率两年间的改善幅度相当大，<strong>这一项最需要在三季度报告里复核</strong>（置信度：中，库内两期毛利率为高置信，与 2024 年旧数据的对比为中置信）。</p>
+<p><strong>③ 资产负债率是最需要盯的恶化项。</strong> 四期 72.37% → 76.43% → 89.82% → 91.60%，一年内上升约 19 个百分点，且仍在上行。91.60% 对一家净资产收益率 10.87%（半年度口径）的公司来说是很重的杠杆——收入和利润是靠加杠杆撑起来的规模换来的（置信度：高，库内数据；但库内不含有息负债结构与利息费用，无法判断偿债压力具体有多大，见 M 节缺口）。</p>
+<p><strong>估值口径的一句话</strong>：市盈率（TTM）364.03 倍对应的是过去 12 个月的利润，而这 12 个月里包含了 2025 年第四季度那个亏损季。如果 2026 年下半年利润延续上半年的水平，静态市盈率会自然下降；但这属于假设，不是事实（置信度：中）。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比给出同为&quot;软件服务&quot;行业的三家（均为 2026 年半年报口径，报告期 20260630）：</p>
+<ul>
+<li><strong>同花顺（300033）</strong>｜总市值 1513.11 亿元 · 市盈率 41.3923 · 市净率 19.7217 · 营收 26.46 亿元 · 净利润 9.52 亿元 · 净资产收益率 11.0965%</li>
+<li><strong>金山办公（688111）</strong>｜总市值 1034.98 亿元 · 市盈率 28.6948 · 市净率 6.8648 · 营收 33.13 亿元 · 净利润 25.18 亿元 · 净资产收益率 18.0278%</li>
+<li><strong>润泽科技（300442）</strong>｜总市值 1021.38 亿元 · 市盈率 19.0157 · 市净率 7.0478 · 营收 37.46 亿元 · 净利润 12.03 亿元 · 净资产收益率 8.5507%</li>
+<li><strong>宏景科技（301396）</strong>｜总市值 375.9 亿元 · 市盈率 364.0298 · 市净率 28.5996 · 营收 18.43 亿元 · 净利润 1.37 亿元 · 净资产收益率 10.8704%</li>
+</ul>
+<p><strong>位置怎么看</strong>（置信度：高，数字层面；置信度：中，解读层面）：</p>
+<ul>
+<li><strong>市值最小、估值最贵。</strong> 宏景市值只有三家的四分之一到三分之一，但市盈率是同花顺的约 8.8 倍、金山办公的约 12.7 倍、润泽科技的约 19.1 倍（据上述库内数推算）。市净率 28.60 倍甚至高于同花顺的 19.72 倍。</li>
+<li><strong>赚钱效率差距在净利润，不在净资产收益率。</strong> 宏景半年度净资产收益率 10.87%，与同花顺 11.10% 接近、高于润泽科技 8.55%——<strong>但这是靠 91.60% 的资产负债率撑出来的</strong>。同一口径下，高杠杆天然抬高净资产收益率，这个指标在此处不具可比性（这是本节最重要的一句）。</li>
+<li><strong>和谁比才对</strong>：润泽科技是四家里唯一同属数据中心/算力基础设施赛道的，它市盈率 19.02 倍、净利润 12.03 亿元。宏景在营收规模（18.43 亿 vs 37.46 亿）和利润规模（1.37 亿 vs 12.03 亿）上都还差一个量级，估值却高出近 19 倍（置信度：中，库内同业对比只给 3 家，样本太小，不能当作行业全貌）。</li>
+</ul>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>分级结论：阶段性优势，未见结构性护城河（置信度：中）。</strong></p>
+<ul>
+<li><strong>从库内主营描述看</strong>：公司自述的核心技术是物联网平台、基于地理信息系统的数据可视化、建筑信息模型可视化、视频监控图像识别、室内高精度位置服务等。经营范围横跨系统集成、软件开发、工程安装、设备批发——这是典型的<strong>系统集成与工程服务模式</strong>，属于项目制、按合同交付，不是可复制的产品化收入。系统集成行业的通病是议价能力弱、垫资重、回款慢，这与 C 节看到的资产负债率快速抬升是一致的（置信度：中）。</li>
+<li><strong>公司资质</strong>：国家高新技术企业、省级企业技术中心、博士后创新实践基地、广东省建筑智能工程技术研究开发中心依托单位、连续 23 年广东省守合同重信用企业（库内简介原文）。这些是<strong>资质门槛</strong>，不是结构性护城河——同类企业普遍具备。</li>
+<li><strong>业务重心的转变</strong>（非库内，需标注来源）：中邮证券 2026-05-15 研报称&quot;公司已完成从智慧城市向 AI 算力服务转型，算力业务已成第一大主业，2025 年收入 9.04 亿元&quot;，占当年营收比例 76.53%。腾讯新闻 2026-08-30 与财联社 2026-08-28（库内新闻 45457）均报道上半年营收增长的主因是&quot;算力业务市场需求旺盛、算力相关订单规模持续增长、业务交付规模提升&quot;。三个来源口径一致（置信度：中，多源交叉但均非库内财务数据）。</li>
+<li><strong>算力租赁这门生意有没有护城河</strong>：从商业模式本身看，算力租赁的核心投入是采购图形处理器与机柜，属于<strong>资本密集、可被复制</strong>的重资产模式，差异化主要来自能否拿到卡、能否拿到长约客户、以及融资成本。<strong>这类模式不存在结构性护城河</strong>，优势只能是阶段性的——谁拿到卡、谁签到长约，谁在这一轮领先（置信度：中，为行业常识推断，非公司专属证据）。</li>
+<li><strong>一个重要的负面信号</strong>（非库内）：界面新闻 2025 年 4 月报道称，公司订单高度集中于两家客户，最大客户累计订单 16.26 亿元、占总订单 56%，客户集中度从 2023 年的 16.51% 升至约 60%，同时应收账款一季度末 7.71 亿元、较期初增长 38.04%（来源：界面新闻，2025-04，单一来源未交叉验证·置信度：低）。该报道基于 2024 年年报与 2025 年一季报，时效已过一年多，<strong>不能直接套到今天</strong>，但客户集中度这个维度值得在三季度报告与年报里复核。</li>
+</ul>
+<h2>F. 政策与监管</h2>
+<p>本节全部来自联网，每条带来源与日期。</p>
+<p><strong>① 2026 年 9 月是算力政策的密集发布期（置信度：中，两个独立来源）</strong></p>
+<ul>
+<li>科技日报 2026-09-13 报道：我国算力&quot;一张网、一盘棋、一体化&quot;发展格局基本形成；截至 2026 年 6 月，全国智算规模达到 2185 EFLOPS（FP16 口径），同比增长 177%；已建成超 70 条连通算力枢纽与重点区域的算力传输通道，批复 17 个国家算力互联互通区域节点。</li>
+<li>腾讯新闻 2026-09-15 综述：2026 年 9 月工业和信息化部印发《信息通信行业发展&quot;十五五&quot;规划》，国务院常务会议专题研究算力网建设，工业和信息化部《&quot;人工智能+软件&quot;专项行动实施方案》及配套发布会相继推出。</li>
+<li>国家数据局官网转载（2026-04-30）：国家数据局明确算力基建四大方向。</li>
+</ul>
+<p><strong>传导链条</strong>：国家层面推进&quot;全国一体化算力网&quot;与&quot;人工智能+&quot;行动 → 地方与行业智算中心建设加速 → 智算中心的建设集成与算力租赁需求增加 → 直接落在宏景科技现在的主业上。<strong>方向判断：利好</strong>（置信度：中）。</p>
+<p><strong>② 但政策利好是行业级的，不是公司级的（置信度：高，这是逻辑判断不是数据）</strong></p>
+<p>政策扩大的是整个赛道的蛋糕，同时也会吸引更多参与者进入算力租赁。对宏景这种没有结构性护城河的参与者，政策带来的是&quot;需求变多&quot;，同时也是&quot;竞争者变多&quot;——<strong>净影响取决于它能不能在扩张中保住毛利率</strong>，而毛利率正是 C 节点出的那个拐点项。</p>
+<p><strong>③ 监管层面的一个待观察项（置信度：低，单一来源）</strong></p>
+<p>新浪财经 2026-05-22 一篇质疑性报道提出三点：公司净资产仅 13.17 亿元而资产负债率升至 89.82%（该负债率数字与库内 2026Q1 的 89.8248% 一致，可交叉验证），对外担保比例超 1100%；公司 2026-03-18 公告申请综合授信额度，公告原文表述为&quot;不超过人民币 600,000 万元&quot;；以及公司曾做过会计差错更正，将部分业务收入确认方法由总额法改为净额法，2025 年三季报调整金额超 5 亿元、占调整前营收比例超 30%。 ⚠️ <strong>口径冲突需说明</strong>：多家媒体标题把该授信额度写作&quot;600 亿&quot;，而公告原文的 600,000 万元等于 60 亿元，两者相差 10 倍。本报告<strong>不采信任一数字</strong>，列入 M 节信息缺口（置信度：低，单源未交叉验证）。</p>
+<p><strong>④ 会计差错更正这件事对本报告的直接影响（置信度：低，推断）</strong></p>
+<p>若收入确认由总额法改为净额法，营业收入与营业成本会被同步调减，<strong>毛利率会因分母变小而机械性上升</strong>。C 节看到的毛利率从 21.26% 升到 34.88%，有多少来自真实的业务结构改善、有多少来自会计口径变化，<strong>库内数据分不开</strong>。这是本报告最需要读者自己去半年报原文核的一项。</p>
+<h2>G. 题材与产业链关联</h2>
+<h3>G1. 这只票所在的板块里，系统正在记录的活跃方向（交易日 20260917）</h3>
+<p>系统记录了 4 个与它有概念重合的方向，<strong>没有一个是&quot;算力硬件/智算中心&quot;本身</strong>——这一点本身就是信息：它的基本面驱动力（算力业务）当天并不在系统判定为活跃的方向清单里（置信度：高，直接读取系统记录）。</p>
+<ul>
+<li><strong>AI应用</strong>｜阶段：延续 · 第 15 天 · 起始 2026-08-28</li>
+</ul>
+<p>为什么热（系统记录原文）：国产大模型公司智谱说协同办公产品商业化快于预期、行业订单已超 10 亿元，写代码的用户两周增长超 100 万；智谱AI净流入 22.9 亿元、比大盘多涨 0.3 个百分点；百度概念和 ChatGPT 概念今天都没到门槛。 要注意的风险（系统记录原文）：智谱AI今天一家涨停都没有；元宇宙 3 家涨停但净流出 3.8 亿元，涨停股更像是消费电子那一批。 系统当晚参考过的新闻：《智谱：Co-work 商业化快于预期行业订单已超 10 亿元》（2026-09-16 15:01）、《智谱透露 Coding 用户中报后两周增长超 100 万》（2026-09-16 16:58）、《南向资金今日净买入约 21 亿港元智谱获买入居前》（2026-09-16 17:40）。 与宏景的连接点：概念标签&quot;AI应用&quot;&quot;多模态AI&quot;&quot;ChatGPT概念&quot;&quot;腾讯概念&quot;。</p>
+<ul>
+<li><strong>计算机与国产软件</strong>｜阶段：热度回落 · 第 4 天 · 起始 2026-09-14</li>
+</ul>
+<p>为什么（系统记录原文）：计算机、智慧政务、财税数字化今天都没到门槛，计算机比大盘少涨 0.5 个百分点、近 10 天合计少涨 2.0 个百分点，前几天的软件政策消息一直没有接上。 风险（系统记录原文）：软件这条线连着几天没有动静，钱都去了硬件和电网这些方向。 与宏景的连接点：概念标签&quot;智慧政务&quot;&quot;财税数字化&quot;。<strong>这条与它的老主业（智慧城市/智慧政务）最贴，而它正在热度回落阶段。</strong></p>
+<ul>
+<li><strong>全国统一大市场与智能物流</strong>｜阶段：延续 · 第 19 天 · 起始 2026-08-24</li>
+</ul>
+<p>为什么（系统记录原文）：只有资金在动，没找到对应的消息；智能物流 5 家涨停、平时只有 2.4 家，净流入 6.1 亿元、近 3 日累计 4.7 亿元。 风险（系统记录原文）：智能物流的领头股其实是一家电路板公司，涨停更像是别的方向带过去的，涨幅只比大盘多 0.1 个百分点。 与宏景的连接点：仅概念标签&quot;智能物流&quot;，<strong>未见营收佐证</strong>。</p>
+<ul>
+<li><strong>房地产与物业管理</strong>｜阶段：热度回落 · 第 40 天 · 起始 2026-07-24</li>
+</ul>
+<p>为什么（系统记录原文）：房地产、建筑装饰、新型城镇化、长三角一体化今天都没到门槛；只有物业管理 3 家涨停、少于平时的 3.6 家。 与宏景的连接点：仅概念标签&quot;新型城镇化&quot;，<strong>未见营收佐证</strong>。</p>
+<p><strong>一句话读法</strong>：跟它关系最近的两条线里，&quot;计算机与国产软件&quot;处在热度回落第 4 天、&quot;AI应用&quot;虽在延续第 15 天但当天一家涨停都没有——<strong>板块层面没有给它明显助力</strong>（置信度：中）。</p>
+<h3>G2. 概念标签逐个分级（库内概念标签，同花顺口径，共 31 个）</h3>
+<p><strong>真有业务（有主营描述或公开业务佐证）</strong>：</p>
+<ul>
+<li><strong>智慧城市 / 智慧政务 / 智能医疗</strong>——库内主营描述直接对应&quot;智慧医疗、智慧教育、智慧社区、智慧楼宇、智慧政务、智慧园区&quot;，属公司原有主业（置信度：高）。</li>
+<li><strong>物联网 / 云计算 / 数字经济 / 信创</strong>——库内简介明确提到物联网平台、大数据、人工智能等技术在智慧城市的应用；经营范围含&quot;数据处理和存储服务&quot;&quot;信息系统集成服务&quot;&quot;软件开发&quot;（置信度：中）。</li>
+<li><strong>安防</strong>——经营范围含&quot;监控系统工程安装服务&quot;&quot;保安监控及防盗报警系统工程服务&quot;&quot;视频监控图像识别&quot;技术（置信度：高）。</li>
+<li><strong>算力租赁 / 数据中心(AIDC) / 东数西算(算力)</strong>——<strong>库内财务科目层面无法直接佐证</strong>（库内财务只给总营收不给分部收入）；但中邮证券 2026-05-15 研报称算力业务 2025 年收入 9.04 亿元、占比 76.53%，腾讯新闻 2026-08-30 与财联社 2026-08-28（库内新闻）均称上半年营收增长源于算力订单——<strong>按公开信息应属&quot;真有业务&quot;，但请读者注意佐证来自库外</strong>（置信度：中）。</li>
+<li><strong>专精特新</strong>——库内简介有国家高新技术企业、省级企业技术中心资质（置信度：中）。</li>
+<li><strong>深股通 / 融资融券</strong>——交易机制类标签，客观事实（置信度：高）。</li>
+</ul>
+<p><strong>仅概念标签，未见营收佐证</strong>：</p>
+<ul>
+<li><strong>AI智能体 / ChatGPT概念 / DeepSeek概念 / 多模态AI / 人工智能 / AI应用</strong>——公司自述&quot;探索人工智能等前沿技术与智慧城市的深度融合&quot;，但库内与公开信息<strong>均未见自研大模型或人工智能软件产品的收入</strong>。它的角色是算力与系统的提供方，不是模型或应用的开发方。这六个标签<strong>是沾边不是主业</strong>（置信度：中）。</li>
+<li><strong>MR(混合现实) / 空间计算</strong>——库内简介提到&quot;室内高精度位置服务&quot;&quot;建筑信息模型可视化&quot;，与空间计算沾边，但<strong>无营收佐证</strong>（置信度：低）。</li>
+<li><strong>华为概念 / 腾讯概念</strong>——库内无任何合作披露，<strong>纯标签</strong>（置信度：低）。</li>
+<li><strong>乡村振兴 / 新型城镇化 / 旅游概念 / 职业教育 / 智能物流 / 财税数字化 / 数据要素</strong>——均属智慧城市方案可能覆盖的应用场景，<strong>库内无对应营收拆分</strong>（置信度：低）。</li>
+</ul>
+<h3>G3. 产业链位置</h3>
+<ul>
+<li><strong>上游</strong>：图形处理器与服务器厂商、机柜与机房设施、网络设备、基础软件。议价能力<strong>在上游</strong>——高端算力芯片长期偏紧，采购方通常只能接受供给方定价与交付排期（置信度：中，为行业常识推断）。</li>
+<li><strong>公司位置</strong>：中游的<strong>集成与运营服务商</strong>，把上游硬件组装成可交付的算力或智慧城市系统，再对外交付或出租。这个环节技术壁垒不高、资本占用重，本质是<strong>用资产负债表换收入</strong>——这与 C 节看到的资产负债率从 72.37% 升到 91.60% 完全对应（置信度：中）。</li>
+<li><strong>下游</strong>：政府、事业单位、企业客户，以及算力租赁的大客户。议价能力<strong>在下游</strong>——政府客户回款周期长，算力大客户集中度高（E 节引用的界面新闻 2025-04 数据显示前两大客户曾占订单约 60%）。</li>
+<li><strong>结论</strong>：两头挤中间。<strong>这个位置的盈利能力高度依赖&quot;能不能拿到便宜的钱和便宜的卡&quot;，以及&quot;下游肯不肯签长约&quot;</strong>（置信度：中）。</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<h3>H1. 板块层面正在发生什么</h3>
+<p>见 G1——与它最近的两条线，一条在热度回落（计算机与国产软件，第 4 天），一条在延续但当天无涨停（AI应用，第 15 天）。<strong>板块没有给助力</strong>（置信度：中）。</p>
+<h3>H2. 这只票自己的新闻（库内新闻，近 60 日共 20 条）</h3>
+<p>近 60 日的新闻<strong>全部是公司自己发的公告，没有一条外部深度报道</strong>，且系统给的严重性分类清一色是&quot;噪音其他&quot;——说明这段时间没有基本面级别的突发事件（置信度：高）。按重要性挑：</p>
+<ol>
+<li><strong>《2026 年半年度报告》《2026 年半年度报告摘要》</strong>（2026-08-28 17:25 / 17:53，公告）——本报告 C 节全部财务数字的来源。实质影响：有，是本轮唯一的硬基本面更新。</li>
+<li><strong>《宏景科技：2026 年半年度净利润同比增长 127.43%》</strong>（财联社，2026-08-28 17:02，情感分 0.8）——库内唯一一条非公告来源的新闻，内容是半年报数字的转述。实质影响：无额外信息。</li>
+<li><strong>《2026 年中期权益分派实施公告》</strong>（2026-09-17 17:21，公告）——最近的一条。按公告原文：以总股本 214,924,565 股剔除回购专户持有的 60,700 股后的 214,863,865 股为基数，每 10 股派发现金股利 1 元（含税），现金总额 21,486,386.5 元；股权登记日 2026-09-23，除权除息日 2026-09-24，除权除息价格调整幅度 0.0999717 元/股。实质影响：<strong>分红金额相对 375.9 亿元市值可以忽略，对股价的机械影响不足 0.06%（据两数推算）</strong>；它的意义是&quot;公司愿意分红&quot;这个姿态，不是回报本身。同时可看出<strong>回购专户目前只持有 60,700 股，回购规模很小</strong>（置信度：高，公告原文）。</li>
+<li><strong>《关于回购公司股份的进展公告》</strong>（2026-09-01 18:01，公告，情感分 0.3）——回购在推进中，但结合第 3 条的 60,700 股，<strong>执行规模目前非常有限</strong>（置信度：中，库内只有标题，进展细节需查原文）。</li>
+<li><strong>《关于变更经营范围、修订〈公司章程〉并办理工商变更登记的公告》《公司章程（2026 年 09 月修订）》</strong>（2026-09-04 17:01，公告）——经营范围变更的<strong>具体新增项目库内无记录</strong>，联网也未检索到明确内容。考虑到它正在向算力服务转型，经营范围变更<strong>可能与新业务资质相关，但这是推测，未经证实</strong>（置信度：低）。</li>
+<li><strong>《2026 年第六次临时股东会决议公告》</strong>（2026-09-15 20:01，公告）——审议中期利润分配预案，已通过，对应第 3 条的实施。</li>
+<li><strong>《关于对外担保的进展公告》</strong>（2026-08-28，公告）——与 F 节引用的&quot;对外担保比例&quot;质疑呼应，<strong>库内只有标题、无金额</strong>。结合 91.60% 的资产负债率，这是一条<strong>应当去查原文</strong>的线索（置信度：中，线索有价值但内容缺失）。</li>
+<li><strong>《关于参加 2026 年广东上市公司投资者集体接待日暨半年报业绩说明会活动的公告》</strong>（2026-09-09，公告）+ 两份《投资者关系管理信息》（2026-09-09、2026-09-15）——公司近期与投资者沟通频繁。实质影响：无直接基本面影响，但<strong>说明管理层在主动做沟通</strong>（置信度：中）。</li>
+</ol>
+<h3>H3. 涨停记录（库内涨停记录，近 180 日）</h3>
+<p>近 180 日共 4 次涨停（创业板涨跌幅 20%），<strong>全部是首板、无连板</strong>：</p>
+<ul>
+<li><strong>2026-08-04</strong>｜涨 20.0% · 首次封板 11:10:03 · 最后封板 11:10:03 · 开板 0 次 · 封单 1.3 亿元 · 涨停统计 2/3</li>
+<li><strong>2026-07-31</strong>｜涨 20.0% · 首次封板 09:32:21 · 最后封板 09:32:21 · 开板 0 次 · 封单 2.5 亿元 · 涨停统计 1/1</li>
+<li><strong>2026-06-24</strong>｜涨 20.0% · 首次封板 10:41:30 · 最后封板 14:06:03 · <strong>开板 5 次</strong> · 封单 0.71 亿元 · 涨停统计 1/1</li>
+<li><strong>2026-04-16</strong>｜涨 20.0% · 首次封板 13:00:03 · 最后封板 14:33:33 · 开板 1 次 · 封单 0.82 亿元 · 涨停统计 1/1</li>
+</ul>
+<p><strong>读法</strong>：7 月 31 日开盘 2 分钟就封板、封单 2.5 亿元，是这 180 天里情绪最强的一天；8 月 4 日紧随其后。但<strong>最近一次涨停已是 2026-08-04，距今 6 周有余，且四次全部没有连板</strong>——说明有资金会在事件驱动下短线进场，<strong>但没有形成持续的做多共识</strong>（置信度：高，均为库内记录）。</p>
+<h3>H4. 资金与筹码（库内资金筹码）</h3>
+<div class="callout">⚠️ <strong>本段是盘面现象，不是基本面证据</strong>，只作情绪面参考，不进 J 节逻辑链、不单独作为操作依据。</div>
+<ul>
+<li><strong>资金流向</strong>（近 20 个交易日，20260821–20260917）：全口径净流出 0.83 亿元；<strong>特大单（主力）净流出 2.14 亿元</strong>；净流入 9 天、净流出 11 天。<strong>主力口径流出大于全口径，说明大单在减、散单在接</strong>（置信度：高）。</li>
+<li><strong>筹码分布</strong>（交易日 20260807，⚠️ <strong>数据时点比今天早 41 天，已明显滞后</strong>）：获利盘比例 87.03%，加权平均成本 190.67 元，15% 分位成本 165.60 元，50% 分位成本 198.00 元，85% 分位成本 201.60 元。</li>
+</ul>
+<p><strong>两面都要说</strong>：87.03% 的获利盘意味着 8 月 7 日那天上方套牢盘很少、上行阻力小，但同时<strong>短线获利抛压重</strong>——任何风吹草动都容易引发兑现。 <strong>与当前价的关系</strong>：2026-09-17 收盘 174.90 元，低于 8-07 加权平均成本 190.67 元约 8.3%、低于 8-07 的 50% 分位成本 198.00 元约 11.7%、高于 8-07 的 15% 分位成本 165.60 元约 5.6%（据库内两组数推算）。也就是说，<strong>8 月初进场的资金现在多数处于浮亏状态</strong>，那 87.03% 的获利盘在这 41 天里已经大幅缩水（置信度：中，因筹码数据本身已滞后，推算只说明方向不说明精确比例）。</p>
+<ul>
+<li><strong>股东户数</strong>：2026-08-10 为 64,023 户，上期 2026-06-30 为 42,609 户，<strong>环比增加 50.3%</strong>。户数大幅增加 = 筹码从少数人手里分散到多数人手里，通常伴随的是<strong>大户减、散户接</strong>（置信度：高，数据为库内；⚠️ 该数据截止 2026-08-10，晚于此后的走势未反映）。</li>
+<li><strong>换手率</strong>：2026-09-17 当日 10.4884%，成交 26.1 亿元——<strong>交投仍然活跃，分歧很大</strong>（置信度：高）。</li>
+</ul>
+<p><strong>H 节合起来的情绪面画像</strong>：主力在流出、筹码在分散、涨停已隔 6 周、板块在回落，但换手仍高、分红与回购在做——<strong>多空双方都在场，没有一边压倒另一边</strong>（置信度：中）。</p>
+<h2>I. 未来 13 周事件日历</h2>
+<p>来源：库内事件日历（120 日，已滤掉猜测项）+ 公司 2026-09-17 权益分派公告 + 库内财报披露历史。</p>
+<ul>
+<li><strong>W1（2026-09-14 起）</strong>：2026 华为全联接大会（上海，9 月 17–19 日）· 会议 · 重要性高（系统标 8）· 影响：华为年度信息通信大会，通常发布昇腾算力与行业解决方案进展，是算力方向的题材节点；宏景仅通过&quot;华为概念&quot;标签沾边，<strong>库内无合作披露</strong>，对它属间接影响</li>
+<li><strong>W2（2026-09-21 起）</strong>：<strong>本周是最密集的一周，五件事</strong>
+<ul>
+<li>2026-09-22｜2026 云栖大会（杭州，9 月 22–24 日，阿里云主办）· 会议 · 重要性中（系统标 7）· 影响：通常发布大模型与算力新进展，利好云计算与人工智能应用方向</li>
+<li>2026-09-22｜2026 中国国际信息通信展览会（北京，9 月 22–24 日）· 会议 · 重要性中（系统标 7）· 影响：通信与算力大展，是数据中心方向的消息催化</li>
+<li><strong>2026-09-23｜股权登记日（每 10 股派现金 1 元，含税）· 公司事件 · 重要性中 · 影响：确定时点，除权除息价格调整幅度 0.0999717 元/股</strong></li>
+<li>2026-09-23｜华为 Mate 90 系列发布会（深圳）+ Meta Connect 2026（9 月 23–24 日）+ 第五届全球数字贸易博览会（杭州，9 月 23–27 日）+ 2026 中国国际数字经济博览会（石家庄，9 月 23–25 日）· 会议 · 重要性高/中 · 影响：人工智能应用与数字经济方向集中释放消息</li>
+<li><strong>2026-09-24｜除权除息日 · 公司事件 · 重要性中 · 影响：股价机械下调不足 0.06%（据库内市值与分红总额推算），无实质影响</strong></li>
+</ul></li>
+<li><strong>W3（2026-09-28 起）</strong>：2026-09-29｜OpenAI 2026 开发者大会（旧金山）· 会议 · 重要性高（系统标 8）· 影响：全球人工智能应用风向标；2026-09-30｜Anthropic 招股书（S-1）预计公布 · 公司事件 · 重要性中（系统标 7）· 影响：人工智能热度风向标；2026-10-01｜英伟达 Vera Rubin 人工智能计算平台预计开始交付 · 公司事件 · 重要性高（系统标 8）· 影响：<strong>这一条与宏景关系最近</strong>——新一代算力平台交付意味着算力供给节奏变化，直接关系到算力租赁的采购成本与租金曲线</li>
+<li><strong>W4（2026-10-05 起）</strong>：国庆假期前后，A 股休市安排以交易所公告为准；<strong>公司层面本周无已知事件</strong></li>
+<li><strong>W5（2026-10-12 起）</strong>：本周无已知事件。三季度报告预约披露窗口通常在此期间公布，<strong>留意交易所的预约披露时间表</strong></li>
+<li><strong>W6（2026-10-19 起）</strong>：本周无已知事件</li>
+<li><strong>W7（2026-10-26 起）</strong>：<strong>三季度报告披露高概率窗口</strong> · 财报 · 重要性高 · 影响：<strong>本报告最关键的验证节点</strong>——上年同期 2025 年三季报于 2025-10-30 披露（库内财务的公告日）。要核三件事：营收同比增速、毛利率能否守住 2026H1 的 34.88%、资产负债率是否高于 91.60%</li>
+<li><strong>W8（2026-11-02 起）</strong>：本周无已知事件（若三季报未在 W7 披露，则顺延至本周，法定截止日为 10 月 31 日，本周属超期，概率很低）</li>
+<li><strong>W9（2026-11-09 起）</strong>：2026-11-11 为公司上市四周年 · 里程碑 · 重要性低 · 影响：无实质影响，仅作时间参照</li>
+<li><strong>W10（2026-11-16 起）</strong>：本周无已知事件</li>
+<li><strong>W11（2026-11-23 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-11-30 起）</strong>：本周无已知事件</li>
+<li><strong>W13（2026-12-07 起）</strong>：本周无已知事件</li>
+</ul>
+<p><strong>时点待定、但会落在这 13 周附近的一件事</strong>：向特定对象发行股票（定向增发）。据中国经济网 2026-04-01 报道，公司不超过 12.9 亿元的定增已获深交所审核通过（上海证券报此前报道原方案为拟募不超 13.54 亿元，后有调整）；东方财富转载的公司 2026-05-18 业绩说明会记录称该事项已获中国证监会批复。<strong>批复后通常需在有效期内完成发行</strong>，具体发行时点公司未披露，库内事件日历也无记录——<strong>列为待定事件，它落地时会同时带来募集资金到位（改善资产负债率）与股本摊薄（摊薄每股收益）两个反向影响</strong>（置信度：中，多源报道但发行时点未知）。</p>
+<h2>J. 逻辑链</h2>
+<p><strong>第 1 环（置信度：高）</strong>：库内财务显示，2026 年上半年营收 18.43 亿元、同比增长 156.43%，净利润 1.37 亿元、同比增长 127.43%，毛利率 34.88%、较 2025 年全年的 21.26% 提升约 13.6 个百分点。 → <strong>这是硬事实，不可辩驳：公司确实在这半年做出了收入与利润的同步高速增长。</strong></p>
+<p><strong>第 2 环（置信度：中）</strong>：这一增长来自算力业务而非原有智慧城市业务。依据是三个独立来源口径一致（中邮证券研报 2026-05-15、腾讯新闻 2026-08-30、财联社 2026-08-28），但<strong>库内财务数据不含分部收入，无法直接验证</strong>。 → 如果这一环错了（增长其实来自智慧城市项目的一次性集中确认），那么&quot;算力赛道成长性&quot;这个估值支撑就不成立。</p>
+<p><strong>第 3 环（置信度：高）</strong>：这一增长是靠加杠杆实现的。资产负债率四期从 72.37% 升到 91.60%，一年抬升约 19 个百分点，且仍在上行；同期公司仍在推进不超过 12.9 亿元的定向增发（来源见 I 节）。 → 收入规模的扩张与负债的扩张是同步的，<strong>规模不是免费的</strong>。</p>
+<p><strong>第 4 环（置信度：中）</strong>：中游集成与算力租赁这个环节，上游（芯片）与下游（大客户、政府）两头议价能力都更强，本身不具备结构性护城河（见 E/G3 节）。 → 因此高毛利率能否持续，取决于外部供需，不取决于公司自身的定价能力。</p>
+<p><strong>推论（置信度：中）</strong>：<strong>&quot;高增长 + 高杠杆 + 无护城河 + 市盈率 364 倍（行业中位 83.85 倍）&quot;这个组合，意味着当前价格已经把未来几个季度的高增长当作既成事实来定价。</strong> 增长兑现只是&quot;符合预期&quot;，不构成上涨理由；增长略微不及，估值就缺乏缓冲。</p>
+<p><strong>如果这个推论成立，应该能观察到什么</strong>：</p>
+<ul>
+<li>好消息出来但股价不涨或冲高回落——<strong>2026-09-17 当天就是这个形态</strong>：最高涨 6.79%、收盘涨 2.54%、最低涨 0.29%，日内把大半涨幅还了回去（置信度：高，库内行情当日数据）。</li>
+<li>大资金在高位减持——近 20 日特大单净流出 2.14 亿元、股东户数两个多月增加 50.3%（置信度：高，H4 节；⚠️ 此为盘面佐证，非本逻辑链的决定性论据）。</li>
+<li>情绪高点已过——最近一次涨停在 2026-08-04，此后 6 周无涨停，且四次涨停全无连板（置信度：高，H3 节）。</li>
+</ul>
+<p><strong>这条链最弱的一环，就是第 2 环</strong>：算力业务的实际收入占比、客户结构、订单交付节奏，<strong>全部来自库外的媒体与券商口径，库内一个字都验证不了</strong>。如果三季度报告披露的分部数据与媒体口径明显不符，本报告的 E、G、J 三节都要重写。</p>
+<p><strong>还有一个独立的削弱因素（置信度：低）</strong>：F 节④提到的收入确认方法由总额法改为净额法，在机制上会让毛利率被动抬高。若 2026 年的毛利率改善中有相当部分来自这个会计口径变化，&quot;盈利质量改善&quot;这个判断就要打折。<strong>本报告无法用库内数据分离这两者，明确标为低置信度。</strong></p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜触发：2026 年三季度报告显示营收同比增速仍高于 100%，且毛利率不低于 2026H1 的 34.88%，同时资产负债率较 2026H1 的 91.6023% 回落｜路径：市场确认算力订单可持续且杠杆得到控制，估值分歧收敛，股价向 8-07 筹码 50% 分位成本一带修复，并跟随人工智能应用与算力方向的板块行情（置信度：中）</li>
+<li><strong>中性（50%）</strong>｜触发：三季度报告营收同比仍为正增长但增速低于上半年的 156.43%，毛利率在 30% 上下，资产负债率维持在 2026H1 的 91.6023% 附近｜路径：基本面既没证伪也没超预期，在 8-07 筹码 15% 分位成本与加权平均成本之间宽幅震荡，跟随板块 beta 波动，成交与换手维持高位（置信度：中）</li>
+<li><strong>悲观（25%）</strong>｜触发：三季度报告出现下列任一情形——毛利率回落到 25% 以下、资产负债率高于 2026H1 的 91.6023%、或披露大额应收账款减值/担保风险｜路径：高估值失去业绩支撑，估值向行业中位数方向收敛，股价跌破 8-07 筹码 15% 分位成本后进一步寻找支撑（置信度：中）</li>
+</ul>
+<p>三个概率合计 100%。<strong>我把中性给到 50%，是因为最关键的证据（三季度分部数据）在 W7 之前拿不到，在此之前任何方向性判断都缺一块</strong>。</p>
+<h2>L. 决策与风控</h2>
+<h3>条件式操作倾向</h3>
+<ol>
+<li><strong>如果</strong> 2026 年三季度报告（预计 W7，上年同期 2025-10-30 披露）披露的资产负债率<strong>高于</strong> 2026H1 的 91.6023%，或毛利率<strong>低于</strong> 25%，<strong>那么回避</strong>——这意味着 J 节推论中&quot;规模靠杠杆换来&quot;的担忧被证实，而估值（市盈率 364.03 倍 vs 行业中位 83.85 倍）没有任何缓冲空间。</li>
+<li><strong>如果</strong> 股价跌破 8-07 筹码 15% 分位成本且当日成交额高于 2026-09-17 的 26.1 亿元，<strong>那么观望</strong>，不在下跌中接——放量跌破该刻度意味着 8 月以来的持仓群体在集中兑现，与 H4 节看到的特大单连续净流出方向一致。</li>
+<li><strong>如果</strong> 三季度报告同时满足&quot;营收同比增速高于 100%&quot;与&quot;毛利率不低于 2026H1 的 34.88%&quot;，<strong>且</strong> 股价站上 8-07 筹码加权平均成本，<strong>那么可以小仓位试仓</strong>——这是业绩与筹码两个独立维度同时给出确认，缺任一条都不算。</li>
+<li><strong>如果</strong> 定向增发（不超过 12.9 亿元，见 I 节待定事件）完成发行，<strong>那么先观望一到两个季度</strong>，等下一期财报确认募集资金到位后资产负债率的实际改善幅度，再重新评估——发行同时带来负债率改善与股本摊薄两个反向影响，不看数据无法判断净效果。</li>
+</ol>
+<h3>这笔判断在什么情况下应当被推翻</h3>
+<ul>
+<li><strong>推翻&quot;震荡&quot;的向上条件</strong>：三季度报告分部数据证实算力业务收入占比与毛利率均高于市场口径，且公司披露了可核验的长约客户或订单明细——此时 J 节第 2 环（最弱的一环）被补强，估值的容忍度会显著提高。</li>
+<li><strong>推翻&quot;震荡&quot;的向下条件</strong>：出现下列任一——(a) 大额应收账款计提减值；(b) 对外担保出现代偿；(c) 会计政策或收入确认方式再次调整；(d) 主要客户变更或流失的公告。任一项出现，本报告的中性假设立即失效。</li>
+<li><strong>本报告的有效期</strong>：到 2026 年三季度报告披露为止（预计 W7）。财报一出，C/J/K 三节必须重跑。</li>
+</ul>
+<h3>仓位思路</h3>
+<p>只讲相对概念：在关键证据（三季度分部数据）到手之前，<strong>这只票适合的参与程度是&quot;轻&quot;或&quot;不参与&quot;</strong>。理由不是看空基本面——上半年数字确实好；而是<strong>估值已把好数字算进去了，而验证要等 W7</strong>。在一个&quot;证据未到、价格已到&quot;的位置上，压重仓属于赌时点而非赌逻辑（置信度：中）。</p>
+<p>⚠️ 本节及全文不给目标价、不给评级、不做交易指令。</p>
+<h2>M. 逻辑自查</h2>
+<h3>这份判断最依赖的假设是哪一条</h3>
+<p><strong>假设：2026 年上半年的营收与利润增长主要来自算力业务，且这块业务的订单可延续到下半年。</strong> 这个假设支撑了 E、G、J、K 四节。</p>
+<p><strong>如果它错了会怎样</strong>：若增长其实来自智慧城市项目的一次性集中确认（这也能解释&quot;为什么二季度单季营收 14.66 亿元、占上半年 79.5%&quot;这种极端的季度分布），那么三季度与四季度会出现收入的大幅回落，届时市盈率 364.03 倍将完全失去支撑，K 节的三个概率要大幅向悲观倾斜。<strong>我没有库内数据可以排除这种可能，这是本报告最大的软肋。</strong></p>
+<h3>有没有为了让逻辑好看而忽略的反面证据</h3>
+<p>有两条，我在这里明确列出：</p>
+<ol>
+<li><strong>我对&quot;毛利率改善&quot;这件事的正面解读可能过头了。</strong> 我在 C 节把它称作&quot;真正的拐点项&quot;，但 F 节④又指出会计口径由总额法改为净额法会机械性抬高毛利率。<strong>这两段在同一份报告里并存，我没有能力裁决</strong>。读者应当把 C 节的毛利率改善看作&quot;待验证的好消息&quot;，而不是已确认的事实。</li>
+<li><strong>2026-09-17 当天股价是上涨的（+2.54%），而我的通篇论述偏谨慎。</strong> 我用了&quot;冲高回落&quot;（最高 +6.79% 收于 +2.54%）来解释，但<strong>单日走势不能证明任何机制</strong>——一天的日内形态既可能是获利兑现，也可能是正常的分歧消化。我不应该、也没有把这一天当作证据的主要支柱。</li>
+</ol>
+<h3>信息缺口清单</h3>
+<ol>
+<li><strong>库内无任何券商研报数据</strong>。库内研报返回空——库内近 90 天没有收录该票的研报（评级分布、每股收益预测、市盈率预测全部没有）。</li>
+</ol>
+<p><strong>影响</strong>：J 节缺少&quot;市场一致预期是多少&quot;这个参照系，无法判断当前价格相对卖方预期是高是低。 <strong>已做的弥补</strong>：按第 3 步规则联网补了一条，见下方〔卖方预期〕。 <strong>补法</strong>：待库内研报收录到 2026 年半年报之后的研报再重跑本调研。</p>
+<p>〔卖方预期〕来源：中邮证券研报（联网，标题《算力业务已具规模，迈向下一成长期》）· 日期：2026-05-15 · 观点：公司已完成从智慧城市向人工智能算力服务转型，算力业务已成第一大主业（该研报口径称 2025 年算力收入 9.04 亿元、占比 76.53%），营收与利润进入集中释放阶段；风险提示为资产负债率较高、算力卡供应偏紧或竞争加剧可能影响盈利 · 置信度：低（卖方预期非事实；且该研报发布于 2026-05-15，早于 2026 年半年报，未包含 C 节的最新数据；网页版未披露具体的三年盈利预测数值，故本报告不引用任何预测数字）</p>
+<ol>
+<li><strong>库内财务数据不含现金流、应收账款、有息负债结构、分部收入</strong>。库内财务只给营收/净利/每股收益/净资产收益率/毛利率/净利率/资产负债率七项。</li>
+</ol>
+<p><strong>影响</strong>：在资产负债率 91.60% 的情况下，无法判断这些负债是有息的还是经营性的、利息负担有多重、回款质量如何——<strong>这是评估这家公司最关键的一组数据，而本报告拿不到</strong>。 <strong>附带说明（不作结论）</strong>：腾讯新闻 2026-08-30 报道称公司上半年经营活动产生的现金流量净额为 17.69 亿元、同比增长超 30 倍。<strong>因属库外财务数字，按调研规则不予采信、不进入任何判断</strong>，仅在此列出供读者自行查证半年报原文。 <strong>补法</strong>：直接读 2026 年半年报原文（巨潮资讯网，2026-08-28 披露，库内新闻 45947 有链接）。</p>
+<ol>
+<li><strong>算力业务的收入占比、客户集中度、订单明细全部是库外信息。</strong></li>
+</ol>
+<p><strong>影响</strong>：J 节第 2 环（最弱的一环）无法用库内数据验证。 <strong>补法</strong>：三季度报告（W7）或年报的分部收入与前五大客户披露。</p>
+<ol>
+<li><strong>综合授信额度的金额口径存在 10 倍冲突。</strong> 公司 2026-03-18 公告原文为&quot;不超过人民币 600,000 万元&quot;（即 60 亿元），而多家媒体标题写作&quot;600 亿&quot;。</li>
+</ol>
+<p><strong>影响</strong>：无法判断公司融资意图的实际规模，进而无法估算资本开支计划的量级。 <strong>本报告的处理</strong>：两个数字都不采信，只记录冲突本身。 <strong>补法</strong>：查公司 2026-03-18 相关公告原文。</p>
+<ol>
+<li><strong>2026-09-04 变更经营范围的具体新增内容不明。</strong> 库内只有公告标题，联网未检索到明确内容。</li>
+</ol>
+<p><strong>影响</strong>：如果新增项目与算力或数据中心运营资质相关，是转型的实质进展信号；如果只是常规工商更新，则无意义。<strong>目前无法判断是哪一种。</strong> <strong>补法</strong>：查 2026-09-04《关于变更经营范围、修订〈公司章程〉并办理工商变更登记的公告》原文。</p>
+<ol>
+<li><strong>筹码数据时点滞后 41 天</strong>。库内资金筹码的筹码分布段交易日为 20260807，而今天是 2026-09-17。</li>
+</ol>
+<p><strong>影响</strong>：87.03% 的获利盘比例、190.67 元的加权平均成本，反映的是 8 月初的状态，<strong>不是今天的状态</strong>。L 节用这些刻度作为触发条件的锚，是因为它们是可复现的客观坐标，不代表它们是当前值。 <strong>补法</strong>：待筹码分布数据更新后重跑。</p>
+<ol>
+<li><strong>股东户数数据截止 2026-08-10</strong>，为季度/阶段性披露，天然滞后。之后一个多月的筹码变化未反映。</li>
+</ol>
+<ol>
+<li><strong>库内 A/H 对照返回空</strong>——该公司非 A+H 两地上市，本项不适用，非数据缺失。</li>
+</ol>
+<ol>
+<li><strong> 的四个方向与公司实际业务驱动力不重合</strong>。系统记录的活跃方向里没有&quot;算力硬件/智算中心&quot;，公司是通过&quot;智慧政务&quot;&quot;智能物流&quot;&quot;新型城镇化&quot;&quot;多模态AI&quot;等标签被挂上去的。</li>
+</ol>
+<p><strong>影响</strong>：G1 节记录的板块热度，<strong>反映的不是它主业所在方向的冷热</strong>，读者不要据此推断算力方向的资金状况。</p>
+<h3>关于本报告措辞的一句自查</h3>
+<p>全文的业绩变化一律用标准说法（由盈转亏、同比增长 X%、毛利率提升 X 个百分点、净流出 X 亿元），未使用比喻动词代替事实。板块阶段一词按系统记录的含义写作&quot;热度回落&quot;。</p>
+<h3>联网来源清单</h3>
+<ul>
+<li><a href="https://www.stdaily.com/web/gdxw/2026-09/13/content_580143.html" target="_blank" rel="noopener">科技日报：我国算力&quot;一张网、一盘棋、一体化&quot;发展格局基本形成（2026-09-13）</a></li>
+<li><a href="https://news.qq.com/rain/a/20260915A0573K00" target="_blank" rel="noopener">腾讯新闻：一张算力网如何炼成——透视&quot;十五五&quot;开局年中国信息通信与算力的顶层设计闭环（2026-09-15）</a></li>
+<li><a href="https://www.nda.gov.cn/sjj/swdt/mtsy/0430/20260430114558848516126_pc.html" target="_blank" rel="noopener">国家数据局：媒体报道 | 国家数据局明确算力基建四大方向（2026-04-30）</a></li>
+<li><a href="https://www.cfi.net.cn/p20260917001022.html" target="_blank" rel="noopener">中财网：宏景科技 2026 年中期权益分派实施公告（2026-09-17）</a></li>
+<li><a href="https://news.qq.com/rain/a/20260830A03PN900" target="_blank" rel="noopener">腾讯新闻：宏景科技 2026 年中报简析（2026-08-30）</a></li>
+<li><a href="https://www.cls.cn/detail/2467812" target="_blank" rel="noopener">财联社：宏景科技——2026 年半年度净利润同比增长 127.43%（2026-08-28）</a></li>
+<li><a href="https://www.ai-gupiao.com/research/summary/34086" target="_blank" rel="noopener">主线罗盘转载中邮证券研报：算力业务已具规模，迈向下一成长期（2026-05-15）</a></li>
+<li><a href="https://finance.sina.com.cn/stock/observe/2026-05-22/doc-inhyumqm7678814.shtml" target="_blank" rel="noopener">新浪财经：宏景科技市值管理新范式？授信申请有无&quot;放卫星&quot;，收入会计差错占比超 30%（2026-05-22）</a></li>
+<li><a href="https://m.jiemian.com/article/12716949.html" target="_blank" rel="noopener">界面新闻：神秘公司带来近 29 亿订单，算力企业宏景科技业绩扭亏，四大隐忧浮现（2025-04）</a></li>
+<li><a href="http://finance.ce.cn/stock/gsgdbd/202604/t20260401_2873846.shtml" target="_blank" rel="noopener">中国经济网：宏景科技不超 12.9 亿元定增获深交所通过（2026-04-01）</a></li>
+<li><a href="https://www.cnstock.com/commonDetail/502360" target="_blank" rel="noopener">上海证券报·中国证券网：宏景科技拟定增募资不超 13.54 亿元</a></li>
+<li><a href="https://emcreative.eastmoney.com/app_fortune/article/index.html?artCode=20260518163210237516480&amp;postId=1709914046" target="_blank" rel="noopener">东方财富：宏景科技 2025 年度暨 2026 年第一季度业绩说明会记录（2026-05-18）</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-17），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>资产负债率已升至91.60%</li>
+      <li>市盈率364倍为行业中位4.3倍</li>
+      <li>股东户数两月增50.3%主力净流出</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>一致预期</dt><dd>多家券商盈利预测的平均值。是别人的观点，不是事实。</dd><dt>A+H</dt><dd>同一家公司同时在 A 股与港股上市，两地股价常年存在折溢价。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.stdaily.com/web/gdxw/2026-09/13/content_580143.html" target="_blank" rel="noopener">科技日报：我国算力&quot;一张网、一盘棋、一体化&quot;发展格局基本形成（2026-09-13）</a> <em>2026-09-13</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260915A0573K00" target="_blank" rel="noopener">腾讯新闻：一张算力网如何炼成——透视&quot;十五五&quot;开局年中国信息通信与算力的顶层设计闭环（2026-09-15）</a> <em>2026-09-15</em></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.nda.gov.cn/sjj/swdt/mtsy/0430/20260430114558848516126_pc.html" target="_blank" rel="noopener">国家数据局：媒体报道 | 国家数据局明确算力基建四大方向（2026-04-30）</a> <em>2026-04-30</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.cfi.net.cn/p20260917001022.html" target="_blank" rel="noopener">中财网：宏景科技 2026 年中期权益分派实施公告（2026-09-17）</a> <em>2026-09-17</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260830A03PN900" target="_blank" rel="noopener">腾讯新闻：宏景科技 2026 年中报简析（2026-08-30）</a> <em>2026-08-30</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2467812" target="_blank" rel="noopener">财联社：宏景科技——2026 年半年度净利润同比增长 127.43%（2026-08-28）</a> <em>2026-08-28</em></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://www.ai-gupiao.com/research/summary/34086" target="_blank" rel="noopener">主线罗盘转载中邮证券研报：算力业务已具规模，迈向下一成长期（2026-05-15）</a> <em>2026-05-15</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/observe/2026-05-22/doc-inhyumqm7678814.shtml" target="_blank" rel="noopener">新浪财经：宏景科技市值管理新范式？授信申请有无&quot;放卫星&quot;，收入会计差错占比超 30%（2026-05-22）</a> <em>2026-05-22</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.jiemian.com/article/12716949.html" target="_blank" rel="noopener">界面新闻：神秘公司带来近 29 亿订单，算力企业宏景科技业绩扭亏，四大隐忧浮现（2025-04）</a> <em>2025-04</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="http://finance.ce.cn/stock/gsgdbd/202604/t20260401_2873846.shtml" target="_blank" rel="noopener">中国经济网：宏景科技不超 12.9 亿元定增获深交所通过（2026-04-01）</a> <em>2026-04-01</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cnstock.com/commonDetail/502360" target="_blank" rel="noopener">上海证券报·中国证券网：宏景科技拟定增募资不超 13.54 亿元</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://emcreative.eastmoney.com/app_fortune/article/index.html?artCode=20260518163210237516480&amp;postId=1709914046" target="_blank" rel="noopener">东方财富：宏景科技 2025 年度暨 2026 年第一季度业绩说明会记录（2026-05-18）</a> <em>2026-05-18</em></li>
+      <li><span class="src-tag src-disc">披露</span> 公司 2026-09-17《2026 年中期权益分派实施公告》 <em>2026-09-17</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 界面新闻，2025-04 发布，非库内数据 <em>2025-04</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 界面新闻，2025-04，单一来源未交叉验证·置信度：低 <em>2025-04</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 最新期 2026 年半年报，2026-08-28 披露 <em>2026-08-28</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> E 节引用的界面新闻 2025-04 数据显示前两大客户曾占订单约 60% <em>2025-04</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2026-08-28 17:25 / 17:53，公告 <em>2026-08-28</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社，2026-08-28 17:02，情感分 0.8 <em>2026-08-28</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2026-09-17 17:21，公告 <em>2026-09-17</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2026-09-01 18:01，公告，情感分 0.3 <em>2026-09-01</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2026-09-04 17:01，公告 <em>2026-09-04</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2026-09-15 20:01，公告 <em>2026-09-15</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2026-08-28，公告 <em>2026-08-28</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2026-09-09，公告 <em>2026-09-09</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-research">研究</span> 中邮证券研报 2026-05-15、腾讯新闻 2026-08-30、财联社 2026-08-28 <em>2026-05-15</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 卖方预期非事实 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-research">研究</span> 且该研报发布于 2026-05-15，早于 2026 年半年报，未包含 C 节的最新数据 <em>2026-05-15</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 网页版未披露具体的三年盈利预测数值，故本报告不引用任何预测数字 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 巨潮资讯网，2026-08-28 披露，库内新闻 45947 有链接 <em>2026-08-28</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-17 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
