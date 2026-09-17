@@ -165,13 +165,17 @@ export function verdictMark(verdict) {
 }
 
 // 纯函数：解析一行结论「裁定（把握度）：一句话真相」→ { verdict, confidence, text }。
-// 容忍全角 / 半角括号与冒号、把握度缺失、前后空白；对不上格式返回 null（调用方按"已完成 + 原文"降级）。
+// 容忍全角 / 半角括号与冒号、把握度缺失、前后空白、括号里把握度后面带附注（真跑时模型写过
+// 「大体属实（高，补证据重查维持不变）：…」，附注并入 text 开头）；对不上格式返回 null
+//（调用方按"已完成 + 原文"降级）。
 export function parseSummary(summary) {
   const s = String(summary == null ? "" : summary).trim();
   if (!s) return null;
-  const m = /^(属实|大体属实|半真|误导|不实|无法证实|解答)\s*(?:[（(]\s*(高|中|低)\s*[）)])?\s*[：:]\s*([\s\S]*)$/.exec(s);
+  const m = /^(属实|大体属实|半真|误导|不实|无法证实|解答)\s*(?:[（(]\s*(高|中|低)?\s*([^）)]*)[）)])?\s*[：:]\s*([\s\S]*)$/.exec(s);
   if (!m) return null;
-  return { verdict: m[1], confidence: m[2] || "", text: m[3].trim() };
+  const extra = (m[3] || "").replace(/^[，,、;；\s]+/, "").trim();
+  const text = m[4].trim();
+  return { verdict: m[1], confidence: m[2] || "", text: extra ? `${extra}。${text}` : text };
 }
 
 // 「核查中」的有效窗口：startedAt 早于此值仍是 pending，多半是上一轮 runner 中途崩了、等下一轮重取，

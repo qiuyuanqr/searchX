@@ -311,6 +311,9 @@ test("parseSummary：标准格式、全半角括号冒号、无把握度都能�
   expect(parseSummary("属实(中): 确有其事")).toEqual({ verdict: "属实", confidence: "中", text: "确有其事" });
   expect(parseSummary("解答：章鱼与乌鸦各擅其长")).toEqual({ verdict: "解答", confidence: "", text: "章鱼与乌鸦各擅其长" });
   expect(parseSummary("  大体属实（低）：主干成立  ")).toEqual({ verdict: "大体属实", confidence: "低", text: "主干成立" });
+  // 真跑时出现过的写法：括号里把握度后面带附注 → 把握度照取，附注并进正文开头
+  expect(parseSummary("大体属实（高，补证据重查维持不变）：官方说明书未列为管制药物")).toEqual({ verdict: "大体属实", confidence: "高", text: "补证据重查维持不变。官方说明书未列为管制药物" });
+  expect(parseSummary("不实（把握度高）：假的")).toEqual({ verdict: "不实", confidence: "", text: "把握度高。假的" });
   expect(parseSummary("连续失败 3 次，已停止重试")).toBeNull();
   expect(parseSummary("")).toBeNull();
   expect(parseSummary(null)).toBeNull();
