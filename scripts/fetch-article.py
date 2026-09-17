@@ -10,16 +10,17 @@ WebFetch 与 jina 阅读代理都拿不到正文；而从本机（住宅网络�
 返回全文（2026-09-17 用一条此前判为「抓取失败」的公众号链接实测成功）。本脚本只依赖 macOS
 自带的 python3 与 curl，MacBook / Mac mini 两端都不用装东西。
 
-退出码：0 成功；2 对方仍返回验证页（换截图 / 贴正文）；3 HTTP 或网络错误；4 参数错误。
+退出码：0 成功；2 对方仍返回验证页（换截图 / 贴正文）；3 HTTP 或网络错误；4 参数错误或 URL 被拒（非 http(s) / 内网地址）。
 输出为纯文本 markdown：抬头几行元信息（标题 / 作者或公众号 / 发布时间 / URL），空行后是正文。
 正文超过 MAX_CHARS 截断并注明——核查读前几万字足够，别把整站倒进上下文。
 """
 import html
-import json
+import ipaddress
 import re
 import subprocess
 import sys
 from datetime import datetime, timezone, timedelta
+from urllib.parse import urlsplit
 
 UA = ("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 "
       "(KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1")
@@ -30,10 +31,33 @@ CST = timezone(timedelta(hours=8))
 BLOCK_MARKERS = ("环境异常", "去验证", "完成验证后即可继续访问", "请完成安全验证", "captcha", "Access Denied")
 
 
+def url_rejected(url):
+    """URL 来自用户提交内容（不可信）：只放行 http(s)，拒绝本机 / 内网 / 链路本地地址，
+    防止被当成内网探测或本地文件读取的跳板（curl 默认连 file:// 都接）。返回拒绝原因或 None。"""
+    try:
+        u = urlsplit(url)
+    except ValueError:
+        return "URL 无法解析"
+    if u.scheme not in ("http", "https"):
+        return f"只支持 http/https（收到 {u.scheme or '无协议'}）"
+    host = (u.hostname or "").strip("[]").lower()
+    if not host:
+        return "URL 没有主机名"
+    if host in ("localhost",) or host.endswith(".local") or host.endswith(".internal"):
+        return f"拒绝本机 / 内网主机名：{host}"
+    try:
+        ip = ipaddress.ip_address(host)
+    except ValueError:
+        return None  # 普通域名：放行（域名解析到内网的情况由 --proto 与超时兜底，不在此脚本职责内）
+    if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast or ip.is_unspecified:
+        return f"拒绝内网 / 本机 IP：{host}"
+    return None
+
+
 def fetch(url):
-    """curl 直抓：跟随跳转、手机 UA、25 秒超时；返回 (http_code, body_bytes)。"""
-    cmd = ["curl", "-sS", "-L", "-m", "25", "--compressed", "-A", UA,
-           "-w", "\n%{http_code}", url]
+    """curl 直抓：只走 http(s)（含跳转）、跟随跳转、手机 UA、25 秒超时；返回 (http_code, body_bytes, err)。"""
+    cmd = ["curl", "-sS", "-L", "-m", "25", "--compressed", "--proto", "=http,https", "--proto-redir", "=http,https",
+           "-A", UA, "-w", "\n%{http_code}", url]
     try:
         out = subprocess.run(cmd, capture_output=True, timeout=40).stdout
     except (subprocess.TimeoutExpired, FileNotFoundError) as e:
@@ -129,6 +153,10 @@ def main(argv):
         print("用法：python3 scripts/fetch-article.py <url> [--html <file>]", file=sys.stderr)
         return 4
     url = argv[1]
+    reason = url_rejected(url)
+    if reason:
+        print(f"拒绝抓取：{reason}", file=sys.stderr)
+        return 4
     html_file = None
     if "--html" in argv:
         i = argv.index("--html")

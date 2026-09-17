@@ -89,6 +89,22 @@ describe("fetch-article.py", () => {
     expect(r.out.length).toBeLessThan(31000);
   });
 
+  it.each([
+    "file:///etc/passwd",
+    "ftp://example.com/x",
+    "http://localhost:8081/check.html",
+    "http://127.0.0.1/",
+    "http://10.0.0.5/admin",
+    "http://192.168.1.1/",
+    "http://169.254.169.254/latest/meta-data/",
+    "http://[::1]/",
+    "http://mac-mini.local/",
+  ])("非 http(s) 或本机 / 内网地址被拒（退出码 4，不发请求）：%s", (url) => {
+    const p = Bun.spawnSync(["python3", SCRIPT, url]);
+    expect(p.exitCode).toBe(4);
+    expect(p.stderr.toString()).toContain("拒绝");
+  });
+
   it("没给 url → 退出码 4", () => {
     const p = Bun.spawnSync(["python3", SCRIPT]);
     expect(p.exitCode).toBe(4);
