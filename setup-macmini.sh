@@ -100,7 +100,7 @@ if command -v bun >/dev/null 2>&1; then
   fi
 else warn "跳过（bun 不可用）"; fi
 
-# ── 3.5 akshare（/stock 与 /factcheck 的 A 股行情核准通道，可降级、装不上不阻塞）──
+# ── 3.5 akshare（/stock 与 /factcheck 的 A 股行情备用通道：第一优先是本机 Stocks 活库直查，akshare 只在库与 curl 接口都取不到时用；可降级、装不上不阻塞）──
 b "3.5/7 检查 akshare（行情数据核准用）"
 if python3 -c "import akshare" >/dev/null 2>&1; then
   ok "akshare 已装：$(python3 -c 'import akshare; print(akshare.__version__)' 2>/dev/null)"
@@ -109,7 +109,7 @@ else
   if python3 -m pip install --user --quiet akshare >/tmp/sx_akshare.log 2>&1 && python3 -c "import akshare" >/dev/null 2>&1; then
     ok "akshare 装好：$(python3 -c 'import akshare; print(akshare.__version__)' 2>/dev/null)"
   else
-    warn "akshare 自动安装失败（看 /tmp/sx_akshare.log）。不阻塞：skill 会自动降级为 WebSearch 多源交叉。"
+    warn "akshare 自动安装失败（看 /tmp/sx_akshare.log）。不阻塞：skill 走 Stocks 活库 → curl 行情接口 → WebSearch 多源交叉，akshare 只是备用。"
     TODO+=("手动装 akshare：python3 -m pip install --user akshare")
   fi
 fi

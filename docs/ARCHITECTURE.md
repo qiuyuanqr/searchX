@@ -21,7 +21,7 @@
 | 站点前端 | `web/src/` | 浏览器 | 信息流首页、提交弹窗（token 授权）、admin 授权管理页、check 私密核查页（含结果详情渲染） |
 | intake-worker | `services/intake-worker/`（Cloudflare Worker） | 前端 fetch / 两个 runner 的 HTTP 调用 | 唯一对外写入口：提交鉴权→初筛→限频→建 GitHub Issue；`/admin/*` 名单管理；`/check/*` 私密核查任务（KV） |
 | research runner | `services/runner/` | Mac mini launchd 每 300s（`com.searchx.runner`），或 `bun run runner:now` | 取 approved Issue → 查重 → spawn `claude -p "/research …"` → 贴 done → 探活 → 发信；附带探活报警、新链接自检 |
-| check-runner | `services/check-runner/` | Mac mini launchd 每 300s（`com.searchx.check-runner`） | 轮询 `/check/pending` → 下载附图 → spawn `claude -p "/factcheck …"` → 读结论/整篇信号文件 → markDone 回传 |
+| check-runner | `services/check-runner/` | Mac mini launchd 每 300s（`com.searchx.check-runner`） | 轮询 `/check/pending` → 下载附图 → spawn `claude -p "/factcheck …"` → 读结果信号文件 result.md（整篇 + frontmatter 的 summary/title） → markDone 回传 |
 | worker 自动部署 | `services/intake-worker/deploy-cron.sh` + plist | Mac mini launchd 每 300s | 检测 HEAD 里 worker 源码变化 → `wrangler deploy`（worker 不随 CI 部署） |
 | Stocks 报告同步 | `services/stocks-import/` | Mac mini launchd 每 5 分钟（`com.searchx.stocks-import`，`StartInterval=300`） | 只读查 Stocks 活库 → 过滤系统参数（取数函数名 / SQL / 主机名 / 运行时故障叙述）→ 产出三件套 + INDEX 行 → 逐篇机器质检（不过就写 `.parked` 搁置）→ 构建自检 → 精准提交推送。轮询不出网、不花配额；导入与提交不原子，故每轮会把磁盘上未提交的导入目录一并拾起 |
 | CI 部署 | `.github/workflows/deploy.yml` | push 动到 `research/**`、`web/**`、`package.json`、`bun.lock` | `bun test` → `bun run build` → Pages 部署 → 冒烟探测 |
@@ -75,10 +75,10 @@
        │ GET /check/recent /check/<id>/result       │ GET /check/pending (每300s)
        │ (手机回看状态/一行结论/整篇详情)             ▼
        │                     Mac mini check-runner: 下载附图到 <tmp>/searchx-check/<id>/
-       │                          → claude -p "/factcheck ≡≡≡内容≡≡≡ + 附图路径 + 信号文件路径"
+       │                          → claude -p "/factcheck ≡≡≡内容≡≡≡ + 附图路径 + 结果文件路径"
        │                          → 笔记落 OBSIDIAN_VAULT/Factcheck/（Obsidian Sync 回手机）
-       │                          → 读 verdict.txt(一行结论)+result.md(整篇)
-       └── POST /check/<id>/done {outcome,summary,result} ── 回传 KV，删图片字节
+       │                          → 读 result.md(整篇；frontmatter summary=一行结论、title=列表标题)
+       └── POST /check/<id>/done {outcome,summary,title,result} ── 回传 KV，删图片字节
 
 【链路 C · 支撑设施】
 
@@ -188,7 +188,7 @@
 
 ### 5.1 skills / prompt 链（research · stock · factcheck）
 
-- **SKILL.md 是生产代码但没有编译器**。它的「函数签名」是：模板 token 集合（`templates/report.html` 顶部注释）、notes.md frontmatter 字段（`web/build/parse-note.js` 消费）、INDEX.md 表列、`.parked.json` 的 JSON 字段（`services/runner/src/index.js` 的 `readParkSignal` 消费）、verdict/result 信号文件格式（check-runner 消费）。改任何「产出格式」段落 = 改接口，必须找齐消费方。
+- **SKILL.md 是生产代码但没有编译器**。它的「函数签名」是：模板 token 集合（`templates/report.html` 顶部注释）、notes.md frontmatter 字段（`web/build/parse-note.js` 消费）、INDEX.md 表列、`.parked.json` 的 JSON 字段（`services/runner/src/index.js` 的 `readParkSignal` 消费）、factcheck 笔记 frontmatter 的 `title` / `summary` 与结果信号文件 result.md（check-runner `result-signals.js` 消费，2026-09-17 起 verdict.txt / title.txt 并入）。改任何「产出格式」段落 = 改接口，必须找齐消费方。
 - **`related` 里的板块名只用于 Obsidian 双链，不再驱动站点展示**：板块筛选与卡片板块标签已于 2026-07-14 随首页改版下线（`web/build/boards.js` 已删除，`parse-note.js` 解析出的 `boards` 字段当前无人消费）；首页筛选 chips 由 `render-index.js` 按 `type` 数据自动生成。写法仍建议与 CLAUDE.md 的五大板块逐字一致（供双链聚合）。YAML 写法必须整体带引号 `["[[算力]]"]`——裸写 `[[算力]]` 被 YAML 解析成嵌套数组（factcheck SKILL 168 行注释）。
 - **`created` 字段驱动同日排序**：缺失或格式坏 → 按 0 处理排到同日最末（`web/build/scan.js` 的 `compareByNewest` 专门处理了 NaN）。日期取自**目录名**而非 frontmatter `date`（`parse-note.js`）——目录名写错日期，frontmatter 救不了。
 - **stock 转交的三个坑**：① 模板固定取 research 目录下那份（stock SKILL 明写「不要用当前 skill 目录变量」）；② Step 5.5 不因转交而省略（曾漏写被审计补上）；③ ETF/指数/可转债/未上市标的**不算**股票，不转交（research SKILL Step 0 边界段——这是修过的真实误判）。
@@ -240,7 +240,7 @@
 
 ### 5.7 check-runner
 
-- **信号文件路径白名单是双向合同**：runner 只在 `<tmpdir>/searchx-check/<id>/` 下准备 verdict.txt / result.md，SKILL 只认这个前缀的路径——两边任何一边改路径布局，结论回显与详情渲染静默断掉（读不到就降级为无结论，**不会报错**，所以断了也没告警）。
+- **信号文件路径白名单是双向合同**：runner 只在 `<tmpdir>/searchx-check/<id>/` 下准备 result.md（2026-09-17 前还有 verdict.txt / title.txt，现已并入 result.md 的 frontmatter，旧文件仍兜底读），SKILL 只认这个前缀的路径——两边任何一边改路径布局，结论回显与详情渲染静默断掉（读不到就降级为无结论，**不会报错**，所以断了也没告警）。
 - **超时返回 124 的细节**：claude 被 TERM 后可能以 0 退出，`runFactcheck` 特意在 timedOut 时强制按失败处理（index.js 注释）——别「简化」成只看退出码。
 - **markDone 失败也计入 attempts**：反复标不上完成的任务最终走退休，而不是每轮重跑整条 /factcheck。改重试逻辑时保持这条，否则又造出毒任务。
 - 图片/信号文件的 cleanup 在 finally 里连目录一起删——在 prompt 里让 skill 往同目录写任何**新增**文件都会被删掉，属正常。
@@ -279,8 +279,8 @@
 | `SEARCHX_IN_RUNNER=1` 哨兵 | `child-env.js` 打 | `git-sync.sh`（跳过 hooks 同步）、research SKILL（无人值守判定） | 改名要三处同步，漏一处 = runner 子会话开始乱推工作树或开始反问 |
 | `research/.parked.json` | research SKILL（仅无人值守 park 时） | runner `readParkSignal`（读完即删）；`.gitignore` 排除 | 字段（topic/reason/unresolved/folder）两边钉死 |
 | `research/<dir>/.parked` 标记（2026-07-07 起） | research SKILL park 时（两种运行方式都写） | `git-sync.sh` 推送闸剔除该目录、`web/build/build.js` 构建跳过该目录 | 三处凭同一文件名约定工作，改名要三处同步；**不得**加进 .gitignore（推送闸会失明） |
-| `<tmpdir>/searchx-check/<id>/`（附图、verdict.txt、result.md） | check-runner 准备 | factcheck SKILL 白名单读写 | 路径或文件名单方面改动 → 回显静默断 |
-| 结论行格式 `裁定（把握度）：一句话真相` | factcheck SKILL 写 | check-runner 读第一行 → Worker `summary` → `check.js`（前端）解析渲染 chips | 改格式要同步 SKILL + 前端解析 |
+| `<tmpdir>/searchx-check/<id>/`（附图、result.md） | check-runner 准备 | factcheck SKILL 白名单读写 | 路径或文件名单方面改动 → 回显静默断 |
+| 结论行格式 `裁定（把握度）：一句话真相`（frontmatter `summary`）与列表标题（frontmatter `title`） | factcheck SKILL 写 | check-runner `signalsFromResult` 从 result.md 的 frontmatter 取 → Worker `summary` / `title` → `check.js`（前端）渲染 | 改格式要同步 SKILL + runner 解析 + 前端 |
 | 整篇 result markdown（六节固定标题 + frontmatter） | factcheck SKILL | Worker `checkresult:<id>` → `check-page.js` 用 `parseFrontmatter` + `md.js` 渲染 | 新语法/新字段要同步 md.js / check.js |
 | `web/src/site.config.json`（WORKER_URL/FALLBACK） | 作者手工 | 构建注入 4 个页面（`inject-config.js`）、`site-probe.sh` 冒烟断言 | 换 Worker 域名：改这里 + 重新部署站点，冒烟会校验一致性 |
 | 密钥对（值必须两端一致） | Cloudflare secret ↔ 根 `.env` | `SUB_READ_SECRET`↔`RUNNER_SUB_SECRET`；`CHECK_RUNNER_SECRET`↔同名；`CHECK_KEY`↔手机页输入 | 轮换任何一把要两端同时换；不一致的症状是**静默 401** |
