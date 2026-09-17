@@ -386,7 +386,7 @@ describe("runOnce", () => {
 
   // ── 结论回显：prepareVerdict 信号文件 → markDone 带 outcome/summary ──
 
-  it("prepareVerdict：verdictPath 传给 buildPrompt，成功后 readVerdict 的结论随 markDone 上报，cleanup 被调", async () => {
+  it("prepareVerdict：成功后 readVerdict 的结论随 markDone 上报，cleanup 被调；旧的 verdictPath 不再透传给 buildPrompt", async () => {
     const tasks = makeTasks(1);
     let promptArg = null, doneArgs = [], cleaned = 0;
     const deps = {
@@ -404,7 +404,7 @@ describe("runOnce", () => {
     };
     const result = await runOnce({}, deps);
     expect(result).toEqual({ processed: 1, done: 1, fail: 0, retired: 0 });
-    expect(promptArg.verdictPath).toBe("/tmp/searchx-check/task-0/verdict.txt");
+    expect(promptArg.verdictPath).toBeUndefined();
     expect(doneArgs).toEqual([["task-0", { outcome: "done", summary: "属实（高）：确有其事" }]]);
     expect(cleaned).toBe(1);
   });
@@ -678,28 +678,7 @@ describe("runOnce", () => {
     ]);
   });
 
-  // ── 内容标题回传：titlePath 进 prompt、readTitle 随 markDone 上报（title 字段）──
-
-  it("titlePath 传给 buildPrompt（prompt 指示 skill 起个标题）", async () => {
-    const tasks = makeTasks(1);
-    let promptArg = null;
-    const deps = {
-      fetchPending: async () => tasks,
-      markDone: async () => {},
-      runFactcheck: async () => 0,
-      prepareVerdict: (t) => ({
-        verdictPath: `/tmp/${t.id}/verdict.txt`,
-        titlePath: `/tmp/${t.id}/title.txt`,
-        readVerdict: () => null,
-        readTitle: () => null,
-        cleanup: () => {},
-      }),
-      buildPrompt: (t) => { promptArg = t; return "/factcheck x"; },
-      notify: null, log: () => {},
-    };
-    await runOnce({}, deps);
-    expect(promptArg.titlePath).toBe("/tmp/task-0/title.txt");
-  });
+  // ── 内容标题回传：readTitle 随 markDone 上报（title 字段）──
 
   it("readTitle 有内容：标题随 markDone 上报（title 字段）", async () => {
     const tasks = makeTasks(1);

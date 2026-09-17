@@ -11,6 +11,7 @@ import { fetchPendingChecks, markCheckDone, fetchCheckImage } from "./poll.js";
 import { buildFactcheckPrompt } from "./factcheck-cmd.js";
 import { createAttemptsStore } from "./attempts.js";
 import { runOnce } from "./runner.js";
+import { signalsFromResult } from "./result-signals.js";
 import { buildChildEnv } from "../../runner/src/child-env.js";
 import { writeFileAtomic } from "../../runner/src/atomic-write.js";
 import { evaluateLock, formatLockFile, parseLockFile } from "../../runner/src/lock-policy.js";
@@ -135,38 +136,39 @@ async function prepareCheckImages(task, { workerUrl, secret }) {
   }
 }
 
-// 结论 + 完整结果 + 内容标题三个信号文件：/factcheck 按 prompt 指令分别写「一行结论」「整篇
-// markdown」「一行简短标题」，runner 读后随 markDone 上报（结论回显手机列表 chip、整篇供详情视图
-// 渲染、标题当手机列表那行标题）。与图片临时文件同目录，任一 cleanup 都会连目录一并清掉。读不到
-// 各自降级（结论→空、整篇→null、标题→null），绝不影响核查主流程。
+// 结果信号文件：/factcheck 按 prompt 指令把整篇笔记（含 frontmatter）原样写到 result.md，runner 读后
+// 随 markDone 上报——整篇供详情视图渲染，frontmatter 的 summary 回显成手机列表的一行结论、title 当
+// 那行标题。2026-09-17 起原先的 verdict.txt / title.txt 并入这一份（结论与标题本就该是笔记的一部分），
+// prompt 少两段指令、少两个"漏写就降级"的口子；旧的两个文件若还被写了（老版本 skill）照旧兜底读。
+// 与图片临时文件同目录，任一 cleanup 都会连目录一并清掉。读不到各自降级（结论→空、整篇→null、
+// 标题→空），绝不影响核查主流程。
 function prepareCheckVerdict(task) {
   const dir = taskTmpDir(task.id);
   mkdirSync(dir, { recursive: true });
-  const verdictPath = join(dir, "verdict.txt");
   const resultPath = join(dir, "result.md");
-  const titlePath = join(dir, "title.txt");
+  const legacyVerdictPath = join(dir, "verdict.txt");
+  const legacyTitlePath = join(dir, "title.txt");
   // 先清掉上一轮的残留：runOnce 的 cleanup 在 async finally 里，裸 kill（launchd bootout / 关机）
-  // 走 process.exit 会跳过它，信号文件整套留在原地。下一轮同一任务重跑时若 claude 没写（或只写了
-  // 一部分），读到的就是上一轮的旧结论/旧标题/旧全文，被当成本轮结果 markDone 上报。
-  for (const p of [verdictPath, resultPath, titlePath]) {
+  // 走 process.exit 会跳过它，信号文件留在原地。下一轮同一任务重跑时若 claude 没写，
+  // 读到的就是上一轮的旧全文，被当成本轮结果 markDone 上报。
+  for (const p of [resultPath, legacyVerdictPath, legacyTitlePath]) {
     try { rmSync(p, { force: true }); } catch {}
   }
+  const readResult = () => {
+    try { return readFileSync(resultPath, "utf8"); } catch { return null; }
+  };
+  // 只取第一行（防模型多写），读不到返回 null
+  const firstLine = (p) => {
+    try { return readFileSync(p, "utf8").split("\n")[0].trim(); } catch { return null; }
+  };
   return {
-    verdictPath,
     resultPath,
-    titlePath,
-    // 只取第一行（防模型多写），读不到返回 null（runOnce 降级为无结论）
-    readVerdict: () => {
-      try { return readFileSync(verdictPath, "utf8").split("\n")[0].trim(); } catch { return null; }
-    },
+    // 一行结论：result.md 的 frontmatter summary 优先；空则兜底读老版本 skill 可能还在写的 verdict.txt
+    readVerdict: () => signalsFromResult(readResult()).summary || firstLine(legacyVerdictPath),
     // 整篇原样读，读不到返回 null（runOnce 降级为不回传 result，详情走兜底）
-    readResult: () => {
-      try { return readFileSync(resultPath, "utf8"); } catch { return null; }
-    },
-    // 只取第一行（防模型多写），读不到返回 null（runOnce 降级为不带标题，前端 fallback 旧摘要）
-    readTitle: () => {
-      try { return readFileSync(titlePath, "utf8").split("\n")[0].trim(); } catch { return null; }
-    },
+    readResult,
+    // 内容标题：frontmatter title 优先，兜底 title.txt；都没有返回 null（前端 fallback 旧摘要）
+    readTitle: () => signalsFromResult(readResult()).title || firstLine(legacyTitlePath),
     cleanup: () => { try { rmSync(dir, { recursive: true, force: true }); } catch {} },
   };
 }

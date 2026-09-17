@@ -32,7 +32,8 @@ Cloudflare KV（check:* 键）
 |---|---|
 | `src/config.js` | `loadCheckRunnerConfig(env)` 读配置、校验必填（两个必填 + 可选 SMTP） |
 | `src/poll.js` | `fetchPendingChecks` / `markCheckDone`（注入 fetch，离线可测） |
-| `src/factcheck-cmd.js` | `buildFactcheckPrompt({text,link,imagePaths,verdictPath,resultPath,titlePath})` 拼 /factcheck 命令（纯函数） |
+| `src/factcheck-cmd.js` | `buildFactcheckPrompt({text,link,imagePaths,resultPath})` 拼 /factcheck 命令（纯函数） |
+| `src/result-signals.js` | `signalsFromResult(md)` 从结果文件的 frontmatter 取 `summary`（一行结论）与 `title`（列表标题），纯函数 |
 | `src/attempts.js` | 任务级失败计数（毒任务封顶用），持久化经注入 load/save，离线可测 |
 | `src/runner.js` | `runOnce(config,deps)` 编排，全部副作用经 deps 注入 |
 | `src/index.js` | 装配入口：抢锁、装配真实依赖（spawn claude / nodemailer / fetch / 计数文件）后跑 `runOnce` |
@@ -69,7 +70,7 @@ CHECK_RUNNER_SMTP_PASS=<Gmail 应用专用密码>
 
 > Worker 侧（intake-worker）须配两把 `/check` 路由密钥才能跑通：`CHECK_KEY`（作者提交核查任务）与 `CHECK_RUNNER_SECRET`（runner 取/标任务，与本机 `.env` 同值）。生成与设置见 [intake-worker README](../intake-worker/README.md) 的部署步骤；漏配则 `/check` 路由静默 401。
 >
-> 另：`/factcheck` 核对 A 股行情类声明时优先用 akshare（SKILL Step 2.6），Mac mini 建议装上：`python3 -m pip install --user akshare`（`setup-macmini.sh` 会自动装）。没装不阻塞——skill 自动降级为 WebSearch 多源交叉。
+> 另：`/factcheck` 核对 A 股行情类声明时优先查本机 Stocks 活库（SKILL Step 2.6，与 `/stock` 同一套通道；Mac mini 上库在本机，只读访问方式写在该机的 `CLAUDE.local.md`），库不可用时降级为行情接口 → WebSearch 多源交叉，不阻塞。链接抓不到正文时 skill 会跑仓库内的 `scripts/fetch-article.py`（只依赖系统自带 python3 与 curl）本机直抓。
 
 ## 运行
 
@@ -81,20 +82,21 @@ bun run check-runner
 
 ## 结论回显 / 内容标题（手机核查页显示）
 
-- runner 为每条任务准备三个信号文件（同在 `<tmpdir>/searchx-check/<id>/` 下），并在 prompt 里让 `/factcheck` 核查完分别写入：
-  - `verdict.txt` — **一行结论**（`裁定（把握度）：一句话真相`），列表那条下方的结论行。
-  - `result.md` — **整篇核查笔记**（含 frontmatter，与 Obsidian 一致），供详情视图渲染。
-  - `title.txt` — **一行 12–20 字中性内容标题**，当手机列表那条的标题，替代提交时自动生成的"N 张图 / 链接域名 / 长文本前 40 字"（纯图 / 长链接标题不再无信息或过长）。
-- 跑完后 runner 读这些文件，随 `POST /check/<id>/done` 的 body `{ outcome, summary, result?, title? }` 上报；手机 check.html 的「最近核查」区凭 `CHECK_KEY` 拉 `GET /check/recent` 显示状态、标题与结论（详情另凭 `GET /check/<id>/result` 懒加载整篇）。
-- **读不到某个信号文件就降级为不带该字段、照常 markDone**——结论 / 标题 / 详情都是增强，不是硬依赖；标题缺失时列表 fallback 回提交时的旧摘要。退休任务上报 `outcome: "failed"` + 一行原因 summary（页面显示"已失败"和"连续失败 N 次，已停止重试，请重新提交一次"）。
-- **注入边界**：prompt 里用户提交的 text / link 包在 `≡≡≡待核查内容 开始/结束≡≡≡` 分隔线之内（内容里伪造的分隔线记号会被压掉）；附图路径与结论 / 结果 / 标题文件路径这些 runner 真实指令放在分隔线之外，且 skill 侧只认系统临时目录 `searchx-check/<id>/` 下的路径。
+- runner 为每条任务准备**一个**信号文件 `<tmpdir>/searchx-check/<id>/result.md`，并在 prompt 里让 `/factcheck` 核查完把**整篇核查笔记（含 frontmatter，与 Obsidian 一致）**原样写进去。runner 读后：
+  - frontmatter `summary` → **一行结论**（`裁定（把握度）：一句话真相`），列表那条下方的结论行；
+  - frontmatter `title` → **12–20 字中性内容标题**，当手机列表那条的标题，替代提交时自动生成的"N 张图 / 链接域名 / 长文本前 40 字"；
+  - 整篇 → 详情视图渲染。
+- 2026-09-17 之前是三个文件（`verdict.txt` / `title.txt` / `result.md`）、prompt 里三段指令；合一后 skill 只写笔记，标题与结论是笔记 frontmatter 的一部分。旧的两个文件若还被写了（老版本 skill）照旧兜底读。
+- 跑完后 runner 随 `POST /check/<id>/done` 的 body `{ outcome, summary, result?, title? }` 上报；手机 check.html 的「最近核查」区凭 `CHECK_KEY` 拉 `GET /check/recent` 显示状态、标题与结论（详情另凭 `GET /check/<id>/result` 懒加载整篇）。
+- **读不到结果文件、或 frontmatter 缺字段就降级为不带该字段、照常 markDone**——结论 / 标题 / 详情都是增强，不是硬依赖；标题缺失时列表 fallback 回提交时的旧摘要。退休任务上报 `outcome: "failed"` + 一行原因 summary（页面显示"已失败"和"连续失败 N 次，已停止重试，请重新提交一次"）。
+- **注入边界**：prompt 里用户提交的 text / link 包在 `≡≡≡待核查内容 开始/结束≡≡≡` 分隔线之内（内容里伪造的分隔线记号会被压掉）；附图路径与结果文件路径这些 runner 真实指令放在分隔线之外，且 skill 侧只认系统临时目录 `searchx-check/<id>/` 下的路径。
 - 结论只在作者自己的私密通道流转（KV 7 天过期、凭密钥），通知邮件照旧不含内容明文。
 
 ## 失败 / 重跑语义
 
 - **退出码≠0**（claude 崩了 / skill 报错）：不标 done，任务留在 KV 里，下轮自动重试，同时该任务的失败计数 +1。
-- **退出码 0 但三个信号文件（结论 / 全文 / 标题）一个都没写**：判为「未产出」，按失败处理（不标 done、计数 +1、留待重跑）。claude 因额度耗尽 / 拒答 / 上下文超限而「正常退出但什么也没干」时退出码同样是 0，若照常标完成，任务会永久出队、还发一封查不到东西的「结果已存进 Obsidian」通知。三个里只要有一个有内容就算产出（单项读失败仍按老规矩降级）。
-- **结论信号文件准备失败**（磁盘满 / 权限 / 任务 id 形态非法）：整条按失败留待重跑，连 claude 都不跑。不能降级继续——那样上面那道「未产出」闸会被跳过，等于用一次准备失败换一封假的完成通知。
+- **退出码 0 但结果文件没写、结论 / 标题也取不到**：判为「未产出」，按失败处理（不标 done、计数 +1、留待重跑）。claude 因额度耗尽 / 拒答 / 上下文超限而「正常退出但什么也没干」时退出码同样是 0，若照常标完成，任务会永久出队、还发一封查不到东西的「结果已存进 Obsidian」通知。结论 / 全文 / 标题三个信号只要有一个有内容就算产出（单项缺失仍按老规矩降级）。
+- **结果信号文件准备失败**（磁盘满 / 权限 / 任务 id 形态非法）：整条按失败留待重跑，连 claude 都不跑。不能降级继续——那样上面那道「未产出」闸会被跳过，等于用一次准备失败换一封假的完成通知。
 - **markDone 回传失败**：核查其实已经跑完（Obsidian 笔记已落地），结果缓存在本机 `pending-done.json`，**下轮只补回传、不重跑核查**——重跑除了白烧额度还会在 Obsidian 里留下重复笔记。
 - **失败达上限（默认 3 次，可用 `CHECK_RUNNER_MAX_ATTEMPTS` 调）**：任务"退休"——不再跑 claude，直接标 done 让它从 pending 消失，并发一封"核查失败、已停止重试"的通知邮件（不含核查内容明文）。这是毒任务封顶：没有它，一条永远跑不成功的任务会在 KV 7 天 TTL 内每轮完整烧一次 claude。
 - **失败计数存本机** `~/Library/Application Support/searchx-check-runner/attempts.json`，条目 8 天自动过期（略长于任务 KV 的 7 天 TTL）；文件丢失只是多重试几次，无碍。

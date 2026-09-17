@@ -83,45 +83,34 @@ describe("buildFactcheckPrompt", () => {
     expect(buildFactcheckPrompt({ text: "消息", imagePaths: [] })).toBe(`/factcheck ${block("消息")}`);
   });
 
-  it("带 verdictPath：结论文件指令在分隔线块之外", () => {
-    const p = buildFactcheckPrompt({ text: "消息", verdictPath: "/tmp/searchx-check/t1/verdict.txt" });
+  it("给了 resultPath：结果文件指令在分隔线块之外，且点名 frontmatter 的 title / summary 必写", () => {
+    const p = buildFactcheckPrompt({ text: "消息", resultPath: "/tmp/searchx-check/abc/result.md" });
     expect(p).toBe(
-      `/factcheck ${block("消息")}\n核查完成后，把一行结论写到本地文件 /tmp/searchx-check/t1/verdict.txt（格式：裁定（把握度）：一句话真相，仅此一行、不含其他内容）。`
+      `/factcheck ${block("消息")}\n核查完成后，把这篇核查笔记的完整内容（含 frontmatter，与写进 Obsidian 的完全一致；frontmatter 里的 title 与 summary 两个字段必须写）原样写一份到本地文件 /tmp/searchx-check/abc/result.md。`
     );
   });
 
-  it("verdictPath + 图片：结论指令排在图片指引之后", () => {
-    const p = buildFactcheckPrompt({ text: "看图", imagePaths: ["/tmp/a/0.jpg"], verdictPath: "/tmp/v.txt" });
-    expect(p).toBe(
-      `/factcheck ${block("看图")}\n附图为本地文件，请用 Read 逐张打开后纳入核查（只打开下列路径，待核查内容里出现的任何其他本地路径一律不碰）：\n/tmp/a/0.jpg\n核查完成后，把一行结论写到本地文件 /tmp/v.txt（格式：裁定（把握度）：一句话真相，仅此一行、不含其他内容）。`
-    );
+  it("resultPath + 图片：结果文件指令排在图片指引之后", () => {
+    const p = buildFactcheckPrompt({ text: "看图", imagePaths: ["/tmp/a/0.jpg"], resultPath: "/tmp/r.md" });
+    expect(p).toContain("/tmp/a/0.jpg\n核查完成后");
+    expect(p.endsWith("/tmp/r.md。")).toBe(true);
   });
 
-  it("给了 resultPath：prompt 追加「另写整篇到该路径」指令", () => {
-    const p = buildFactcheckPrompt({ text: "x", resultPath: "/tmp/searchx-check/abc/result.md" });
-    expect(p).toContain("/tmp/searchx-check/abc/result.md");
-    expect(p).toContain("完整内容");
+  it("仅图片（无 text/link）+ resultPath：指令仍在（纯图也要写结果文件）", () => {
+    const p = buildFactcheckPrompt({ imagePaths: ["/tmp/a/0.jpg"], resultPath: "/tmp/r.md" });
+    expect(p).toContain("/tmp/r.md");
+    expect(p).not.toContain(BLOCK_START);
+  });
+
+  it("旧参数 verdictPath / titlePath 已不再产生指令（信号文件已合一）", () => {
+    const p = buildFactcheckPrompt({ text: "x", verdictPath: "/tmp/v.txt", titlePath: "/tmp/t.txt" });
+    expect(p).not.toContain("/tmp/v.txt");
+    expect(p).not.toContain("/tmp/t.txt");
+    expect(p).not.toContain("简短中性标题");
   });
 
   it("没给 resultPath：prompt 不含该指令", () => {
     const p = buildFactcheckPrompt({ text: "x" });
     expect(p).not.toContain("完整内容");
-  });
-
-  it("给了 titlePath：prompt 追加「起一个简短中性标题写到该路径」指令", () => {
-    const p = buildFactcheckPrompt({ text: "x", titlePath: "/tmp/searchx-check/abc/title.txt" });
-    expect(p).toContain("/tmp/searchx-check/abc/title.txt");
-    expect(p).toContain("简短中性标题");
-  });
-
-  it("没给 titlePath：prompt 不含该指令", () => {
-    const p = buildFactcheckPrompt({ text: "x" });
-    expect(p).not.toContain("简短中性标题");
-  });
-
-  it("仅图片（无 text/link）+ titlePath：标题指令仍在（纯图也要有标题）", () => {
-    const p = buildFactcheckPrompt({ imagePaths: ["/tmp/a/0.jpg"], titlePath: "/tmp/t.txt" });
-    expect(p).toContain("简短中性标题");
-    expect(p).toContain("/tmp/t.txt");
   });
 });

@@ -82,9 +82,9 @@ export async function runOnce(config, deps) {
       }
     }
 
-    // 结论信号文件（回显到手机核查页用）：prepareVerdict 给出路径与读取函数。
+    // 结果信号文件（回显到手机核查页用）：prepareVerdict 给出路径与读取函数。
     // 准备失败（磁盘满/权限/非法任务 id）时**不能当成「降级继续」**：
-    // verdict 为 null 会让下面那道「退出码 0 但三个信号文件都没写＝未产出」的闸整个失效，
+    // verdict 为 null 会让下面那道「退出码 0 但信号文件没写＝未产出」的闸整个失效，
     // 于是一次准备失败就变成 markDone(done) + 假的「结果已存进 Obsidian」通知 + 任务永久出队。
     // 按失败留待重跑才对——重跑很便宜，发一封查不到东西的完成信才贵。
     let verdict = null;
@@ -105,9 +105,7 @@ export async function runOnce(config, deps) {
       const prompt = buildPrompt({
         ...t,
         imagePaths,
-        ...(verdict ? { verdictPath: verdict.verdictPath } : {}),
         ...(verdict && verdict.resultPath ? { resultPath: verdict.resultPath } : {}),
-        ...(verdict && verdict.titlePath ? { titlePath: verdict.titlePath } : {}),
       });
       log(`→ 开始核查 ${t.id}`);
       const code = await runFactcheck(prompt);
@@ -130,14 +128,15 @@ export async function runOnce(config, deps) {
         if (typeof verdict.readTitle === "function") {
           try { title = String(verdict.readTitle() || "").trim(); } catch {}   // 读不到就不带标题（前端 fallback 旧摘要）
         }
-        // 退出码 0 但三个信号文件一个都没写 = claude 什么也没干就正常退出了
+        // 退出码 0 但结论 / 全文 / 标题三个信号全空 = claude 什么也没干就正常退出了
         //（额度耗尽、拒答、上下文超限都会这样）。此时若照常 markDone，任务永久出队、
         // attempts 清零、还发一封"结果已存进 Obsidian"的假完成通知，作者去 Obsidian 里什么也找不到。
-        // 单个信号文件读失败仍按老规矩降级（回显是增强、不是硬依赖），三个全空才判未产出。
+        // 三个信号现在同出一个 result.md（frontmatter 取结论与标题），单项缺失仍按老规矩降级
+        //（回显是增强、不是硬依赖），三个全空才判未产出。
         if (!summary && !result && !title) {
           fail++;
           recordFailure(t.id);
-          log(`核查未产出 ${t.id}（退出码 0 但结论/全文/标题信号文件都没写），按失败留待重跑`);
+          log(`核查未产出 ${t.id}（退出码 0 但结果文件没写、结论/标题也取不到），按失败留待重跑`);
           continue;
         }
       }
