@@ -27,6 +27,13 @@ ts() { date '+%Y-%m-%d %H:%M:%S'; }
 
 cd "$REPO" 2>/dev/null || { echo "[$(ts)] 进不去仓库：$REPO" >> "$LOG"; exit 1; }
 
+# 凭据：wrangler 的 OAuth 登录态会过期（2026-07-31 到期后本脚本静默失败了一个半月才被发现），
+# 无人值守机器该用长期的 API token——放在仓库根未入库的 .env 里（CLOUDFLARE_API_TOKEN=…），这里
+# 原样导出给 wrangler。没有 token 时仍退回 OAuth 登录态（GUI 会话里 `bun x wrangler login` 可续）。
+if [ -f "$REPO/.env" ]; then
+  set -a; . "$REPO/.env" 2>/dev/null; set +a
+fi
+
 # 影响 worker 产物的路径的最新 commit（src + wrangler.toml；dist 是构建产物，不算）
 CUR="$(git log -1 --format=%H -- services/intake-worker/src services/intake-worker/wrangler.toml 2>/dev/null)"
 [ -z "$CUR" ] && { echo "[$(ts)] 取不到 worker commit，跳过本轮" >> "$LOG"; exit 0; }
@@ -41,4 +48,8 @@ if bun x wrangler deploy >> "$LOG" 2>&1; then
   echo "[$(ts)] ✓ 部署成功（$CUR）" >> "$LOG"
 else
   echo "[$(ts)] ✗ 部署失败——不落 stamp，下轮自动重试" >> "$LOG"
+  # 鉴权类失败每轮都会重复，单独点名，别让人翻整段 wrangler 输出才知道是登录态没了
+  if tail -n 15 "$LOG" | grep -q "CLOUDFLARE_API_TOKEN\|not logged in\|Not logged in\|Authentication error"; then
+    echo "[$(ts)] ✗ 原因：wrangler 无有效凭据（OAuth 登录态过期）。修法：在 $REPO/.env 加 CLOUDFLARE_API_TOKEN=<Workers 编辑权限的 API token>，或在 Mac mini 图形会话里 cd services/intake-worker && bun x wrangler login" >> "$LOG"
+  fi
 fi

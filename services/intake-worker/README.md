@@ -131,7 +131,8 @@ Workers & Pages → Create Worker → 编辑器**粘贴刚拷贝的内容**（�
 Worker 不随 CI 自动上线，改完 `src/` 本来得手动 `wrangler deploy`——容易忘、也烦。常驻不关机的 Mac mini 上装了个 LaunchAgent：每 5 分钟检测 `src/`、`wrangler.toml` 自上次部署以来有变化就自动 `wrangler deploy`，没变秒退、不刷无意义 version。配合 Mac mini 的 autopull（每 600s 拉任何来源 push 的新代码），**日常改完 worker 只要 commit + push，约 10 分钟内 Mac mini 自动拉取并上线**（想立刻上线仍可手动 `bun x wrangler deploy`）。
 
 - 两件套：`deploy-cron.sh`（刻意不主动 `git pull`——靠 Mac mini 的 autopull 保 HEAD 最新，各司其职）+ `launchd/com.searchx.worker-deploy.plist`（`StartInterval=300`、`RunAtLoad=false`）。
-- **只在 Mac mini 装**（它常驻、wrangler 已 OAuth 登录）；MacBook 是笔记本、不常驻，同步到脚本但不装 plist、不会跑——与 check-runner 同构。
+- **只在 Mac mini 装**；MacBook 是笔记本、不常驻，同步到脚本但不装 plist、不会跑——与 check-runner 同构。
+- **凭据用长期 API token，别依赖 OAuth 登录态**：wrangler 的 OAuth 会过期（2026-07-31 到期后自动部署静默失败了一个半月，直到 09-17 有新 Worker 改动才发现——日志只在 `~/Library/Logs/searchx-worker-deploy/worker-deploy.log`，没人看就没人知道）。在 Mac mini 仓库根未入库的 `.env` 里放 `CLOUDFLARE_API_TOKEN=<Cloudflare 后台「Edit Cloudflare Workers」模板生成的 token>`，脚本会导出给 wrangler；失败日志会点名是不是凭据问题。
 - 安装（在 Mac mini 上，或从 MacBook `ssh mac-mini` 执行）：
   ```bash
   chmod +x services/intake-worker/deploy-cron.sh
