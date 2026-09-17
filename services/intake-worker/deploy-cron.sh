@@ -39,6 +39,20 @@ CUR="$(git log -1 --format=%H -- services/intake-worker/src services/intake-work
 [ -z "$CUR" ] && { echo "[$(ts)] 取不到 worker commit，跳过本轮" >> "$LOG"; exit 0; }
 
 LAST="$(cat "$STAMP" 2>/dev/null || echo '')"
+
+# OAuth 登录态保活：wrangler 的 refresh token 长期不用会失效（2026-07-31 就是这样过期的），
+# 每天跑一次 whoami 让它轮换刷新；没配 API token 时这是唯一让无人值守部署活下去的办法。
+# 只在没有 token 时做（有 token 用不着），失败只记一行、不影响本轮。
+KEEPALIVE="$LOG_DIR/last-whoami.epoch"
+if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+  NOW_EPOCH="$(date +%s)"; LAST_WHOAMI="$(cat "$KEEPALIVE" 2>/dev/null || echo 0)"
+  if [ $((NOW_EPOCH - LAST_WHOAMI)) -gt 86400 ]; then
+    ( cd services/intake-worker && bun x wrangler whoami >/dev/null 2>&1 ) \
+      && { echo "$NOW_EPOCH" > "$KEEPALIVE"; echo "[$(ts)] OAuth 登录态保活 ok" >> "$LOG"; } \
+      || echo "[$(ts)] ✗ OAuth 登录态保活失败：登录态可能已过期，部署会跟着失败（修法见下方鉴权失败提示）" >> "$LOG"
+  fi
+fi
+
 [ "$CUR" = "$LAST" ] && exit 0          # intake-worker 无变化，秒退
 
 echo "[$(ts)] intake-worker 有变化（${CUR:0:9}），开始 wrangler deploy" >> "$LOG"
