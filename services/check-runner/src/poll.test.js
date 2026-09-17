@@ -1,6 +1,6 @@
 // services/check-runner/src/poll.test.js
 import { describe, it, expect } from "bun:test";
-import { fetchPendingChecks, markCheckDone, fetchCheckImage } from "./poll.js";
+import { fetchPendingChecks, markCheckDone, fetchCheckImage, markCheckStart } from "./poll.js";
 
 const BASE = "https://fake.worker.dev";
 const SECRET = "test-secret";
@@ -142,5 +142,14 @@ describe("fetchCheckImage", () => {
     await expect(
       fetchCheckImage({ workerUrl: BASE, secret: SECRET, id: "x", n: 0 }, fakeFetch)
     ).rejects.toThrow("image 404");
+  });
+});
+
+describe("markCheckStart", () => {
+  it("POST /check/<id>/start 带 runner 密钥；非 2xx 抛", async () => {
+    let seen = null;
+    await markCheckStart({ workerUrl: "https://w", secret: "S", id: "t1" }, async (u, init) => { seen = [u, init.method, init.headers["x-check-runner-secret"], !!init.signal]; return { ok: true }; });
+    expect(seen).toEqual(["https://w/check/t1/start", "POST", "S", true]);
+    await expect(markCheckStart({ workerUrl: "https://w", secret: "S", id: "t1" }, async () => ({ ok: false, status: 404 }))).rejects.toThrow("start 404");
   });
 });

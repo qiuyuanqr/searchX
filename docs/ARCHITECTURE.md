@@ -72,7 +72,8 @@
        ▼
   intake-worker KV (check:<id> 任务 + checkimg: 图片字节 + check:idx 轻量索引, 7天TTL)
        ▲                                            │
-       │ GET /check/recent /check/<id>/result       │ GET /check/pending (每300s)
+       │ GET /check/recent /check/<id>/result       │ GET /check/pending (每300s) → POST /check/<id>/start
+       │ POST /check/<id>/retry|recheck (重试/重查)  │
        │ (手机回看状态/一行结论/整篇详情)             ▼
        │                     Mac mini check-runner: 下载附图到 <tmp>/searchx-check/<id>/
        │                          → claude -p "/factcheck ≡≡≡内容≡≡≡ + 附图路径 + 结果文件路径"
@@ -279,7 +280,7 @@
 | `SEARCHX_IN_RUNNER=1` 哨兵 | `child-env.js` 打 | `git-sync.sh`（跳过 hooks 同步）、research SKILL（无人值守判定） | 改名要三处同步，漏一处 = runner 子会话开始乱推工作树或开始反问 |
 | `research/.parked.json` | research SKILL（仅无人值守 park 时） | runner `readParkSignal`（读完即删）；`.gitignore` 排除 | 字段（topic/reason/unresolved/folder）两边钉死 |
 | `research/<dir>/.parked` 标记（2026-07-07 起） | research SKILL park 时（两种运行方式都写） | `git-sync.sh` 推送闸剔除该目录、`web/build/build.js` 构建跳过该目录 | 三处凭同一文件名约定工作，改名要三处同步；**不得**加进 .gitignore（推送闸会失明） |
-| `<tmpdir>/searchx-check/<id>/`（附图、result.md） | check-runner 准备 | factcheck SKILL 白名单读写 | 路径或文件名单方面改动 → 回显静默断 |
+| `<tmpdir>/searchx-check/<id>/`（附图、result.md；补证据重查时另有 previous.md） | check-runner 准备 | factcheck SKILL 白名单读写 | 路径或文件名单方面改动 → 回显静默断 |
 | 结论行格式 `裁定（把握度）：一句话真相`（frontmatter `summary`）与列表标题（frontmatter `title`） | factcheck SKILL 写 | check-runner `signalsFromResult` 从 result.md 的 frontmatter 取 → Worker `summary` / `title` → `check.js`（前端）渲染 | 改格式要同步 SKILL + runner 解析 + 前端 |
 | 整篇 result markdown（六节固定标题 + frontmatter） | factcheck SKILL | Worker `checkresult:<id>` → `check-page.js` 用 `parseFrontmatter` + `md.js` 渲染 | 新语法/新字段要同步 md.js / check.js |
 | `web/src/site.config.json`（WORKER_URL/FALLBACK） | 作者手工 | 构建注入 4 个页面（`inject-config.js`）、`site-probe.sh` 冒烟断言 | 换 Worker 域名：改这里 + 重新部署站点，冒烟会校验一致性 |

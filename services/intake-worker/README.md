@@ -19,7 +19,7 @@ GitHub Issues → runner 取 approved 自动跑 /research（pending 等作者手
 
 **其它路由：** `GET /verify`（提交前确认 token、回显打码邮箱；token 走 `x-invite-token` 请求头，兼容旧式 `?k=` 查询串；带自定义头需预检，故同时处理 `OPTIONS`）、`GET|POST /admin/*`（授权名单增/查/删/轮换，凭 `ADMIN_KEY`）、`GET /sub/<n>`（runner 取邮箱，凭 `SUB_READ_SECRET`）、`GET /people`（runner 取授权列表做新链接自检：打码邮箱+token+addedAt，凭 `SUB_READ_SECRET`）。
 
-**私密核查路由（/check/\*，凭 `CHECK_KEY`/`CHECK_RUNNER_SECRET`，任务只进 KV、不进公开 Issue）：** `POST /check`（作者提交核查任务）、`GET /check/pending`（check-runner 取待办）、`POST /check/<id>/done`（check-runner 标完成）、`GET /check/<id>/image/<n>`（取任务附带截图）、`GET /check/recent`（作者查最近任务状态）、`GET /check/<id>/result`（作者查单条核查全文，手机页详情视图懒加载用）。
+**私密核查路由（/check/\*，凭 `CHECK_KEY`/`CHECK_RUNNER_SECRET`，任务只进 KV、不进公开 Issue）：** `POST /check`（作者提交核查任务）、`GET /check/pending`（check-runner 取待办）、`POST /check/<id>/done`（check-runner 标完成）、`GET /check/<id>/image/<n>`（取任务附带截图）、`GET /check/recent`（作者查最近任务状态，2026-09-17 起视图带 `startedAt`/`retries`/`parentId`）、`GET /check/<id>/result`（作者查单条核查全文，手机页详情视图懒加载用）、`POST /check/<id>/start`（check-runner 标记开跑，记 `startedAt`，手机页据此显示「核查中 · 已 N 分钟」）、`POST /check/<id>/retry`（作者把失败任务一键重排回 pending；`done` 收到 failed 时为此不再删图片）、`POST /check/<id>/recheck`（作者补证据重查：同 `/check` 载荷、可全空，新建任务挂 `parentId`；`/check/pending` 对这类任务附上 `parentResult` 与 `parentClaim`）。
 
 ## 授权白名单 / 专属链接 / 管理页
 

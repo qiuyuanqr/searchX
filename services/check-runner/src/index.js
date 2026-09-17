@@ -7,7 +7,8 @@ import { mkdirSync, openSync, closeSync, writeSync, writeFileSync, readFileSync,
 import { join } from "path";
 import { homedir, tmpdir } from "os";
 import { loadCheckRunnerConfig } from "./config.js";
-import { fetchPendingChecks, markCheckDone, fetchCheckImage } from "./poll.js";
+import { fetchPendingChecks, markCheckDone, fetchCheckImage, markCheckStart } from "./poll.js";
+import { buildBarkRequest, sendBark } from "./bark.js";
 import { buildFactcheckPrompt } from "./factcheck-cmd.js";
 import { createAttemptsStore } from "./attempts.js";
 import { runOnce } from "./runner.js";
@@ -148,11 +149,19 @@ function prepareCheckVerdict(task) {
   const resultPath = join(dir, "result.md");
   const legacyVerdictPath = join(dir, "verdict.txt");
   const legacyTitlePath = join(dir, "title.txt");
+  const previousPath = join(dir, "previous.md");
   // 先清掉上一轮的残留：runOnce 的 cleanup 在 async finally 里，裸 kill（launchd bootout / 关机）
   // 走 process.exit 会跳过它，信号文件留在原地。下一轮同一任务重跑时若 claude 没写，
   // 读到的就是上一轮的旧全文，被当成本轮结果 markDone 上报。
-  for (const p of [resultPath, legacyVerdictPath, legacyTitlePath]) {
+  for (const p of [resultPath, legacyVerdictPath, legacyTitlePath, previousPath]) {
     try { rmSync(p, { force: true }); } catch {}
+  }
+  // 补证据重查：父任务整篇（Worker 随 pending 下发）落成 previous.md，prompt 让 skill 读它当前作。
+  // 父结果已过期（null）就不写、不给路径——skill 只拿到分隔线内的父任务原始内容。
+  let hasPrevious = false;
+  if (typeof task.parentResult === "string" && task.parentResult.trim()) {
+    writeFileSync(previousPath, task.parentResult);
+    hasPrevious = true;
   }
   const readResult = () => {
     try { return readFileSync(resultPath, "utf8"); } catch { return null; }
@@ -163,6 +172,7 @@ function prepareCheckVerdict(task) {
   };
   return {
     resultPath,
+    ...(hasPrevious ? { previousPath } : {}),
     // 一行结论：result.md 的 frontmatter summary 优先；空则兜底读老版本 skill 可能还在写的 verdict.txt
     readVerdict: () => signalsFromResult(readResult()).summary || firstLine(legacyVerdictPath),
     // 整篇原样读，读不到返回 null（runOnce 降级为不回传 result，详情走兜底）
@@ -198,7 +208,7 @@ function composeCheckFailedNotice({ authorEmail, fromEmail, taskId, maxAttempts 
     text: [
       `有一条私密核查任务连续失败 ${maxAttempts} 次，已停止重试（任务 ${taskId}）。`,
       "",
-      "可在手机核查页重新提交一次；排查原因请看 Mac mini 日志：",
+      "可在手机核查页对这条点「再试一次」；排查原因请看 Mac mini 日志：",
       "~/Library/Logs/searchx-check-runner/check-runner.log",
       "",
       "—— searchX 核查 runner",
@@ -306,6 +316,7 @@ async function main() {
       fetchPendingChecks({ workerUrl: config.workerUrl, secret: config.secret }),
     markDone: (id, info = {}) =>
       markCheckDone({ workerUrl: config.workerUrl, secret: config.secret, id, ...info }),
+    markStart: (id) => markCheckStart({ workerUrl: config.workerUrl, secret: config.secret, id }),
     prepareImages: (task) =>
       prepareCheckImages(task, { workerUrl: config.workerUrl, secret: config.secret }),
     prepareVerdict: prepareCheckVerdict,
@@ -342,22 +353,46 @@ async function main() {
     },
     attempts: makeAttemptsStore(),
     doneCache: makeDoneCache(),
-    notify: transport
-      ? async (_task) => {
-          // 邮件正文绝不含核查内容明文（隐私红线）——只提示"去 Obsidian 看"
-          const msg = composeCheckDoneNotice({ authorEmail: config.authorEmail, fromEmail: config.smtpUser });
-          await sendEmail(msg, { transport });
+    // 通知：邮件（配了 SMTP）+ Bark 推送（配了 CHECK_RUNNER_BARK_URL），各自 best-effort、互不影响。
+    // 邮件正文绝不含核查内容明文（隐私红线）——只提示"去看"；Bark 默认同样不带内容，
+    // 只有 CHECK_RUNNER_BARK_DETAIL=1 才带内容标题与一行结论（见 bark.js 顶部的取舍说明）。
+    notify: transport || config.barkUrl
+      ? async (_task, payload = {}) => {
+          const errs = [];
+          if (transport) {
+            try {
+              const msg = composeCheckDoneNotice({ authorEmail: config.authorEmail, fromEmail: config.smtpUser });
+              await sendEmail(msg, { transport });
+            } catch (e) { errs.push(`邮件：${e.message}`); }
+          }
+          if (config.barkUrl) {
+            try {
+              await sendBark(buildBarkRequest({ barkUrl: config.barkUrl, outcome: "done", title: payload.title, summary: payload.summary, detail: config.barkDetail, checkPageUrl: config.checkPageUrl }));
+            } catch (e) { errs.push(`Bark：${e.message}`); }
+          }
+          if (errs.length) throw new Error(errs.join("；"));
         }
       : null,
-    notifyFailure: transport
-      ? async (task) => {
-          const msg = composeCheckFailedNotice({
-            authorEmail: config.authorEmail,
-            fromEmail: config.smtpUser,
-            taskId: task.id,
-            maxAttempts: config.maxAttempts,
-          });
-          await sendEmail(msg, { transport });
+    notifyFailure: transport || config.barkUrl
+      ? async (task, payload = {}) => {
+          const errs = [];
+          if (transport) {
+            try {
+              const msg = composeCheckFailedNotice({
+                authorEmail: config.authorEmail,
+                fromEmail: config.smtpUser,
+                taskId: task.id,
+                maxAttempts: config.maxAttempts,
+              });
+              await sendEmail(msg, { transport });
+            } catch (e) { errs.push(`邮件：${e.message}`); }
+          }
+          if (config.barkUrl) {
+            try {
+              await sendBark(buildBarkRequest({ barkUrl: config.barkUrl, outcome: "failed", title: payload.title, detail: config.barkDetail, checkPageUrl: config.checkPageUrl }));
+            } catch (e) { errs.push(`Bark：${e.message}`); }
+          }
+          if (errs.length) throw new Error(errs.join("；"));
         }
       : null,
     log: (m) => console.log(m),

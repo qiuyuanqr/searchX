@@ -30,6 +30,12 @@ export function loadCheckRunnerConfig(env) {
     smtpPass,
     smtpEnabled,
     authorEmail: t(env.CHECK_RUNNER_AUTHOR_EMAIL || smtpUser),
+    // Bark 推送（可选）：CHECK_RUNNER_BARK_URL 形如 https://api.day.app/<device_key>，配了才发。
+    // DETAIL=1 才把内容标题与一行结论带进推送（内容会经 Bark 服务器 / APNs 中转，默认不带）；
+    // CHECK_PAGE_URL 配了则点推送直达核查页。
+    barkUrl: trimUrl(env.CHECK_RUNNER_BARK_URL || ""),
+    barkDetail: String(env.CHECK_RUNNER_BARK_DETAIL || "").trim() === "1",
+    checkPageUrl: t(env.CHECK_RUNNER_CHECK_PAGE_URL || ""),
     claudeArgs: (env.CHECK_RUNNER_CLAUDE_ARGS || "--permission-mode bypassPermissions")
       .split(/\s+/)
       .filter(Boolean),

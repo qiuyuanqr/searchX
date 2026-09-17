@@ -1,10 +1,13 @@
-// web/src/assets/check-page.js — 事实核查提交页的 DOM 引导（外置脚本，配合严格 CSP `script-src 'self'`）。
-// 纯逻辑（载荷构造 / 密钥读写 / 状态文案）在 check.js；本文件只做事件绑定与 fetch。
+// web/src/assets/check-page.js — 事实核查页的 DOM 引导（外置脚本，配合严格 CSP `script-src 'self'`）。
+// 纯逻辑（载荷构造 / 密钥读写 / 状态文案 / 结论解析）在 check.js；本文件只做事件绑定与 fetch。
+// 2026-09-17 方向 A 改版：单一输入箱（文字 / 链接 / 粘贴截图）、列表按裁定着色、三段状态、
+// 一键重试、补证据重查、裁定头卡结果页、设置面板（Obsidian 库名 / 退出）。
 import {
   readKey, saveKey, clearKey, keyFromHash, describeCheckResult, describeSubmitError, describeRecentError,
   submitTimeoutMs, fitDimensions, validateCheckSubmission,
-  describeTaskStatus, formatTaskTime, formatClockTime, shouldKeepPolling,
-  parseFrontmatter, resultChips, describeResultError, taskTitle,
+  describeTask, formatTaskTime, formatClockTime, shouldKeepPolling,
+  parseFrontmatter, resultHero, describeResultError, taskTitle,
+  extractLink, isWeixinLink, obsidianUri, readVault, saveVault,
 } from "./check.js";
 import { renderMarkdown } from "./md.js";
 
@@ -23,6 +26,7 @@ function timeoutSignal(ms) {
 const PROBE_TIMEOUT_MS = 10000;   // 密钥探测：失败本就放行，超时只为别让密钥闸卡住
 const RECENT_TIMEOUT_MS = 15000;  // 最近核查列表
 const RESULT_TIMEOUT_MS = 15000;  // 完整结果懒加载
+const ACTION_TIMEOUT_MS = 15000;  // 重试 / 重查这类小请求
 
 const MAX_IMAGES = 9;
 const MAX_EDGE = 2000;     // 长边超此值才缩（保字迹优先）
@@ -30,6 +34,10 @@ const JPEG_QUALITY = 0.9;
 
 // 已选图片：每项 { blob, url }。blob 是重编码后的 JPEG（归一化 HEIC、按需缩小）；url 是预览 object URL。
 let selected = [];
+// 补证据重查目标：{ id, title } 或 null；非空时提交走 /check/<id>/recheck
+let recheckParent = null;
+// 当前打开的结果（供「补充证据 · 重查」用）
+let openTask = null;
 
 // 在 canvas 上把任意可解码图片重编码为 JPEG：归一化格式（含 iOS HEIC）、长边超限才等比缩。
 // 解码失败（如不支持的格式）抛错，调用方据此跳过该张。
@@ -46,9 +54,25 @@ async function processImage(file) {
   return blob;
 }
 
-function renderPreviews() {
-  const box = $("img-preview");
+// 输入箱下方的附件区：链接卡片（从文字里识别）+ 图片缩略图
+function renderAttach() {
+  const box = $("attach");
   box.textContent = "";
+  const { link } = extractLink($("check-text").value);
+  if (link) {
+    const chip = document.createElement("div");
+    chip.className = "linkchip";
+    let host = "", path = link;
+    try { const u = new URL(link); host = u.hostname; path = u.pathname + u.search; } catch {}
+    const h = document.createElement("span"); h.className = "host"; h.textContent = host || "链接";
+    const p = document.createElement("span"); p.className = "path"; p.textContent = path;
+    chip.append("🔗", h, p);
+    if (isWeixinLink(link)) {
+      const n = document.createElement("span"); n.className = "note"; n.textContent = "公众号：会先直抓，抓不到再补截图";
+      chip.append(n);
+    }
+    box.append(chip);
+  }
   for (let i = 0; i < selected.length; i++) {
     const item = selected[i];
     const thumb = document.createElement("div");
@@ -64,28 +88,44 @@ function renderPreviews() {
     thumb.append(img, del);
     box.append(thumb);
   }
-  box.hidden = selected.length === 0;
 }
 
 function removeImage(i) {
   const [gone] = selected.splice(i, 1);
   if (gone) URL.revokeObjectURL(gone.url);
-  renderPreviews();
+  renderAttach();
 }
 
 function clearImages() {
   for (const it of selected) URL.revokeObjectURL(it.url);
   selected = [];
-  renderPreviews();
+  renderAttach();
+}
+
+// 逐张重编码为 JPEG → 加入 selected → 渲染。超 9 张拒收并提示。
+async function addImages(files) {
+  const list = [...(files || [])].filter((f) => f && /^image\//.test(f.type || ""));
+  if (!list.length) return;
+  for (const f of list) {
+    if (selected.length >= MAX_IMAGES) {
+      setStatus(`最多 ${MAX_IMAGES} 张图片，多余的已忽略。`, "error");
+      break;
+    }
+    try {
+      const blob = await processImage(f);
+      selected.push({ blob, url: URL.createObjectURL(blob) });
+    } catch {
+      setStatus("有一张图片无法读取，已跳过。", "error");
+    }
+  }
+  renderAttach();
 }
 
 // 密钥存 localStorage：输一次后此设备持久免登，关标签 / 重开浏览器都不丢。
-// 仅手动点「退出」、清浏览器缓存、或换设备时才需重输；Worker 若改密钥则提交时 401 自动退回密钥闸。
-// 取舍：明文密钥长期留在本机浏览器（不再是关标签即清）。此页为私人提交页 + 严格 CSP（script-src 'self'），
+// 取舍：明文密钥长期留在本机浏览器。此页为私人提交页 + 严格 CSP（script-src 'self'），
 // XSS 面极窄，密钥泄露最坏后果仅是他人能投递核查任务、读不到任何数据，权衡下可接受。
-// 与 feed.js 同款防护：沙箱/隐私模式下访问 localStorage 属性本身就可能抛 SecurityError，
-// 必须 try/catch——否则整个模块加载失败，「进入」按钮等所有交互整页失效且无任何提示。
-// readKey/saveKey/clearKey 已容忍空 storage（内部 try/catch），拿不到就退化为每次重输密钥。
+// 沙箱/隐私模式下访问 localStorage 属性本身就可能抛 SecurityError，必须 try/catch——
+// 否则整个模块加载失败，「进入」按钮等所有交互整页失效且无任何提示。
 function safeStorage(){ try { return window.localStorage; } catch { return null; } }
 const store = safeStorage();
 let key = readKey(store);
@@ -94,17 +134,23 @@ function showGate() {
   $("gate").hidden = false;
   $("form-area").hidden = true;
   $("gate-msg").hidden = true;
+  $("settings-open").hidden = true;
 }
 
 function showForm() {
   $("gate").hidden = true;
   $("form-area").hidden = false;
+  $("settings-open").hidden = false;
   showList();
   loadRecent();
 }
 
+function keyExpired() {
+  clearKey(store); key = ""; showList(); showGate();
+  $("gate-msg").textContent = "密钥已失效，请重新输入。"; $("gate-msg").hidden = false;
+}
+
 // ── 最近核查列表：拉 /check/recent 渲染；有排队中任务时每 50 秒自动刷新，全终态即停 ──
-// （核查一趟通常要几分钟，20 秒轮询太勤；50 秒足够手机端"回来看一眼就有"）
 const POLL_MS = 50000;
 let pollTimer = null;
 
@@ -113,62 +159,129 @@ function renderRecent(tasks) {
   box.textContent = "";
   if (!tasks.length) {
     const p = document.createElement("p");
-    p.className = "field-hint";
+    p.className = "ck-empty";
     p.textContent = "最近 7 天没有核查任务。";
     box.append(p);
     return;
   }
+  const now = Date.now();
   for (const t of tasks) {
+    const d = describeTask(t, now);
     const item = document.createElement("div");
-    item.className = "task-item";
+    item.className = "task";
+    item.dataset.tone = d.tone;
     const head = document.createElement("div");
     head.className = "task-head";
+    const badge = document.createElement("span");
+    badge.className = "badge";
+    badge.dataset.tone = d.tone;
+    badge.textContent = d.label;
     const time = document.createElement("span");
     time.className = "task-time";
     time.textContent = formatTaskTime(t.createdAt);
-    const st = describeTaskStatus(t.status);
-    const chip = document.createElement("span");
-    chip.className = "task-chip";
-    chip.dataset.kind = st.kind;
-    chip.textContent = st.label;
-    head.append(time, chip);
-    const snip = document.createElement("p");
-    snip.className = "task-snippet";
-    snip.textContent = taskTitle(t);   // 完成后回传的内容标题优先，pending/旧任务 fallback 旧摘要
-    item.append(head, snip);
-    if (t.summary) {
+    head.append(badge, time);
+    const title = document.createElement("div");
+    title.className = "task-title";
+    title.textContent = (t.parentId ? "↻ " : "") + taskTitle(t);   // 重查任务前加记号
+    item.append(head, title);
+    if (d.text) {
       const sum = document.createElement("p");
-      sum.className = "task-summary";
-      sum.textContent = t.summary;
+      sum.className = "task-sum";
+      sum.textContent = d.text;
       item.append(sum);
     }
-    // done 的条目可点开看完整结果（懒加载）；pending/failed 不可点（failed 的原因已在 summary 显示）
+    if (d.tone === "running") {
+      const bar = document.createElement("div");
+      bar.className = "task-progress";
+      bar.append(document.createElement("i"));
+      item.append(bar);
+    }
+    // done 的条目可点开看完整结果（懒加载）
     if (t.status === "done") {
       item.classList.add("clickable");
       item.setAttribute("role", "button");
       item.tabIndex = 0;
-      item.addEventListener("click", () => openResult(t.id));
+      item.addEventListener("click", () => openResult(t));
       item.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openResult(t.id); }
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openResult(t); }
       });
+    }
+    // 操作行：失败 → 再试一次；无法证实 → 补截图重查
+    const acts = [];
+    if (t.status === "failed") acts.push(actionButton("再试一次", (btn) => retryTask(t, btn)));
+    if (t.status === "done" && d.tone === "unknown") acts.push(actionButton("补截图重查", () => startRecheck(t)));
+    if (acts.length) {
+      const row = document.createElement("div");
+      row.className = "task-acts";
+      row.append(...acts);
+      item.append(row);
     }
     box.append(item);
   }
 }
 
+function actionButton(label, onClick) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "ghost-btn";
+  b.textContent = label;
+  b.addEventListener("click", (e) => { e.stopPropagation(); onClick(b); });
+  return b;
+}
+
+// 一键重试：POST /check/<id>/retry → 成功后立刻刷新列表（这条会变回排队中）
+async function retryTask(t, btn) {
+  btn.disabled = true;
+  btn.textContent = "重排中…";
+  try {
+    const r = await fetch(`${WORKER}/check/${t.id}/retry`, {
+      method: "POST",
+      headers: { "x-check-key": key },
+      signal: timeoutSignal(ACTION_TIMEOUT_MS),
+    });
+    if (r.status === 401) { keyExpired(); return; }
+    if (r.status === 409) { setStatus("这条已经在排队了。", "pending"); }
+    else if (!r.ok) { setStatus(`重试失败（HTTP ${r.status}），稍后再点一次。`, "error"); btn.disabled = false; btn.textContent = "再试一次"; return; }
+    else setStatus("已重新排队，下一轮会重跑。", "success");
+    loadRecent();
+  } catch {
+    setStatus("连不上核查服务，稍后再点一次。", "error");
+    btn.disabled = false; btn.textContent = "再试一次";
+  }
+}
+
+// 进入「补证据重查」模式：横幅显示父任务标题，输入箱聚焦；提交时走 recheck 接口
+function startRecheck(t) {
+  recheckParent = { id: t.id, title: taskTitle(t) };
+  $("recheck-title").textContent = recheckParent.title;
+  $("recheck-banner").hidden = false;
+  $("check-text").placeholder = "补充新证据、新链接或截图；留空则只按原内容再查一遍";
+  showList();
+  window.scrollTo(0, 0);
+  $("check-text").focus();
+}
+
+function cancelRecheck() {
+  recheckParent = null;
+  $("recheck-banner").hidden = true;
+  $("check-text").placeholder = "贴消息、说法或链接；截图可直接粘贴，或点下面「图片」";
+}
+
 // 列表视图 / 详情视图二选一（同页切换，不刷新、不重输密钥）
-function showList() { $("result-view").hidden = true; $("list-view").hidden = false; }
+function showList() { $("result-view").hidden = true; $("list-view").hidden = false; openTask = null; }
 function showResultView() { $("list-view").hidden = true; $("result-view").hidden = false; window.scrollTo(0, 0); }
 
 // 点开某条 done：进详情视图 → 懒拉完整结果 → 渲染。失败给可见兜底文案，不白屏。
-async function openResult(id) {
-  $("result-chips").textContent = "";
-  $("result-time").textContent = "";
+async function openResult(t) {
+  openTask = t;
+  $("result-title").hidden = true;
+  $("result-hero").hidden = true;
+  $("result-dock").hidden = true;
   $("result-body").textContent = "加载中…";
   showResultView();
   let r;
   try {
-    r = await fetch(`${WORKER}/check/${id}/result`, {
+    r = await fetch(`${WORKER}/check/${t.id}/result`, {
       headers: { "x-check-key": key },
       signal: timeoutSignal(RESULT_TIMEOUT_MS),
     });
@@ -176,76 +289,87 @@ async function openResult(id) {
     $("result-body").textContent = describeResultError(0);
     return;
   }
-  if (r.status === 401) { // 密钥失效：统一走清密钥、退回密钥闸
-    clearKey(store); key = ""; showList(); showGate();
-    $("gate-msg").textContent = "密钥已失效，请重新输入。"; $("gate-msg").hidden = false;
-    return;
-  }
-  if (!r.ok) { $("result-body").textContent = describeResultError(r.status); return; }
+  if (r.status === 401) { keyExpired(); return; }
+  if (!r.ok) { $("result-body").textContent = describeResultError(r.status); showDock(null); return; }
   let data = {};
   try {
     data = await r.json();
   } catch {
-    // 解析失败静默兜底会让详情页一片空白、看不出发生了什么
     $("result-body").textContent = describeResultError(0);
     return;
   }
   const md = typeof (data && data.result) === "string" ? data.result : "";
   if (!md.trim()) {
     $("result-body").textContent = "这条核查没有回传全文（可能是旧任务）。完整结果请在本机 Obsidian 的 Factcheck/ 目录查看。";
+    showDock(null);
     return;
   }
-  renderResult(md);
+  renderResult(md, t);
 }
 
-// 渲染完整结果：frontmatter → 顶部裁定条；正文 → md.js 渲染。
+// 渲染完整结果：frontmatter → 裁定头卡；正文 → md.js 渲染。
 // innerHTML 安全：renderMarkdown 已全程转义、链接仅放行 http(s)，且本页 CSP script-src 'self' 再兜一层。
-function renderResult(md) {
+function renderResult(md, t) {
   const { frontmatter, body } = parseFrontmatter(md);
-  const chipsBox = $("result-chips");
-  chipsBox.textContent = "";
-  for (const c of resultChips(frontmatter)) {
-    const el = document.createElement("span");
-    el.className = "vchip";
-    el.dataset.tone = c.tone;
-    el.textContent = c.label;
-    chipsBox.append(el);
+  const h = resultHero(frontmatter);
+  const hero = $("result-hero");
+  hero.textContent = "";
+  hero.dataset.tone = h.tone;
+  const v = document.createElement("div");
+  v.className = "vh-v";
+  v.textContent = h.verdict ? `${h.mark} ${h.verdict}`.trim() : "核查结果";
+  if (h.confidence) { const s = document.createElement("small"); s.textContent = `把握度 ${h.confidence}`; v.append(s); }
+  hero.append(v);
+  if (h.summaryText) { const one = document.createElement("div"); one.className = "vh-one"; one.textContent = h.summaryText; hero.append(one); }
+  if (h.meta.length) {
+    const m = document.createElement("div");
+    m.className = "vh-meta";
+    for (const it of h.meta) { const sp = document.createElement("span"); const b = document.createElement("b"); b.textContent = it.v; sp.append(`${it.k} `, b); m.append(sp); }
+    hero.append(m);
   }
-  $("result-time").textContent = frontmatter.date ? `核查日期：${frontmatter.date}` : "";
+  hero.hidden = false;
+  const title = frontmatter.title || (t && taskTitle(t)) || "";
+  $("result-title").textContent = title;
+  $("result-title").hidden = !title;
   $("result-body").innerHTML = renderMarkdown(body);
+  showDock(frontmatter);
 }
 
-// 加载失败 → 在列表区给一行可见提示（不再静默——静默过一次"手机连不上 workers.dev"，
-// 页面上完全无从判断是哪环出的问题）。密钥清理仍统一走提交路径。
+// 底部操作：在 Obsidian 打开（设置里填了库名 + 笔记带 note 字段才显示）、补充证据 · 重查
+function showDock(frontmatter) {
+  const a = $("result-obsidian");
+  const note = (frontmatter && frontmatter.note) || "";
+  a.dataset.note = note;   // 设置里改了库名后据此重算深链
+  const uri = obsidianUri(readVault(store), note);
+  a.hidden = !uri;
+  a.href = uri || "#";
+  $("result-dock").hidden = false;
+}
+
 function renderRecentError(text) {
   const box = $("recent-list");
   box.textContent = "";
   const p = document.createElement("p");
-  p.className = "field-hint";
+  p.className = "ck-empty";
   p.textContent = text;
   box.append(p);
 }
 
-// 刷新按钮的即时反馈：点下去立刻禁用 + 文案转「刷新中…」，让「点过了」在 0 延迟内可见
-//（对齐提交按钮 disabled + 「提交中…」的同款范式）。只在手动点击时用，后台轮询不动它免得闪。
+// 刷新按钮的即时反馈：点下去立刻禁用 + 文案转「刷新中…」；成功后盖「已更新 <时刻>」回执。
 function setRefreshing(on) {
   const btn = $("recent-refresh");
   btn.disabled = on;
   btn.textContent = on ? "刷新中…" : "刷新";
 }
-
-// 手动刷新成功后盖「已更新 <时刻>」回执：列表内容即便一字未变，秒级时刻每次都变，
-// 就是「刷新确实发生过」的可见证据。拿不到合法时刻时退化为只显示「已更新」。
 function showSyncedNote(date) {
   const el = $("recent-synced");
-  if (!el) return;
   const t = formatClockTime(date);
   el.textContent = t ? `已更新 ${t}` : "已更新";
   el.hidden = false;
 }
 
 // opts.manual=true 表示用户主动点「刷新」→ 给按钮 loading 态 + 成功后盖「已更新」回执；
-// 后台轮询 / 切回前台 / 提交后自动刷新都不传，保持静默（提交本身已有「提交中…」等反馈）。
+// 后台轮询 / 切回前台 / 提交后自动刷新都不传，保持静默。
 async function loadRecent(opts = {}) {
   const manual = !!(opts && opts.manual);
   if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
@@ -256,25 +380,24 @@ async function loadRecent(opts = {}) {
       headers: { "x-check-key": key },
       signal: timeoutSignal(RECENT_TIMEOUT_MS),
     });
+    if (r.status === 401) { keyExpired(); return; }
     if (!r.ok) { renderRecentError(describeRecentError(r.status)); scheduleRetry(r.status); return; }
     const { tasks } = await r.json();
     const list = Array.isArray(tasks) ? tasks : [];
     renderRecent(list);
-    if (manual) showSyncedNote(new Date());   // 只有真拉到列表才盖时间戳（失败分支已 return，走 finally 恢复按钮）
+    if (manual) showSyncedNote(new Date());
     if (shouldKeepPolling(list) && document.visibilityState === "visible") {
       pollTimer = setTimeout(loadRecent, POLL_MS);
     }
   } catch {
-    renderRecentError(describeRecentError(0)); // 超时/不可达：给出"连不上"提示
+    renderRecentError(describeRecentError(0));
     scheduleRetry(0);
   } finally {
-    if (manual) setRefreshing(false);   // 无论成败都恢复按钮可点，避免卡在「刷新中…」
+    if (manual) setRefreshing(false);
   }
 }
 
-// 拉列表失败后按退避重排一次轮询：一次瞬时失败（弱网、Worker 抖动）就永久停掉自动刷新的话，
-// 页面会一直停在旧列表上，用户不点「刷新」永远不知道任务其实早跑完了。
-// 401（密钥失效）不重排——那条路径已经退回密钥闸，重排只是白打请求。
+// 拉列表失败后按退避重排一次轮询；401 不重排（已退回密钥闸）。
 function scheduleRetry(status) {
   if (status === 401) return;
   if (document.visibilityState !== "visible") return;
@@ -282,7 +405,7 @@ function scheduleRetry(status) {
   pollTimer = setTimeout(loadRecent, POLL_MS * 2);
 }
 
-// 对齐站点约定（feed.js）：状态色靠 CSS `.form-status[data-kind="success"|"error"|"pending"]`。
+// 状态色靠 CSS `.form-status[data-kind="success"|"error"|"pending"]`。
 function setStatus(msg, kind) {
   const el = $("form-status");
   el.textContent = msg;
@@ -298,7 +421,6 @@ async function enter(presetKey) {
     return;
   }
   // 用一次轻量请求探测密钥是否正确：发空载荷 POST /check，期待 400（载荷无效）而非 401（密钥错）
-  // 注：Worker 对空 text 应返回 400；密钥错返回 401。若 Worker 直接返回 401 以外视为密钥通过。
   let probeOk = false;
   try {
     const r = await fetch(WORKER + "/check", {
@@ -307,9 +429,7 @@ async function enter(presetKey) {
       body: JSON.stringify({ text: "" }),
       signal: timeoutSignal(PROBE_TIMEOUT_MS),
     });
-    // 401 = 密钥错；429 = 该 IP 已因连续错密钥被临时锁定（此时无论密钥对错都返回 429，
-    // 当成"密钥没问题"放行的话，错密钥会被写进 localStorage，之后每次提交都失败且看不出原因）。
-    // 其它状态（包括 400 bad request）视为密钥本身是好的。
+    // 401 = 密钥错；429 = 该 IP 已因连续错密钥被临时锁定（此时无论密钥对错都返回 429）。
     if (r.status === 401) {
       $("gate-msg").textContent = "密钥不对，请重输。";
       $("gate-msg").hidden = false;
@@ -322,8 +442,7 @@ async function enter(presetKey) {
     }
     probeOk = true;
   } catch {
-    // 网络错误也允许通过（离线场景），实际提交时再报错
-    probeOk = true;
+    probeOk = true;   // 网络错误也允许通过（离线场景），实际提交时再报错
   }
   if (probeOk) {
     key = candidate;
@@ -335,78 +454,85 @@ async function enter(presetKey) {
 $("enter").addEventListener("click", () => enter());
 $("check-key").addEventListener("keydown", (e) => { if (e.key === "Enter") enter(); });
 
-// 选图：逐张重编码为 JPEG → 加入 selected → 渲染预览。超 9 张拒收并提示。
+// 选图：按钮 → 隐藏的 file input；粘贴 / 拖放也收图
+$("pick-images").addEventListener("click", () => $("check-images").click());
 $("check-images").addEventListener("change", async (e) => {
   const files = [...(e.target.files || [])];
   e.target.value = "";   // 清空，便于移除后重选同一文件
-  if (!files.length) return;
-  for (const f of files) {
-    if (selected.length >= MAX_IMAGES) {
-      setStatus(`最多 ${MAX_IMAGES} 张图片，多余的已忽略。`, "error");
-      break;
-    }
-    try {
-      const blob = await processImage(f);
-      selected.push({ blob, url: URL.createObjectURL(blob) });
-    } catch {
-      setStatus("有一张图片无法读取，已跳过。", "error");
-    }
+  await addImages(files);
+});
+$("check-text").addEventListener("paste", async (e) => {
+  const items = [...((e.clipboardData && e.clipboardData.files) || [])];
+  if (items.some((f) => /^image\//.test(f.type || ""))) {
+    e.preventDefault();   // 有图就只收图；纯文字粘贴照常
+    await addImages(items);
   }
-  renderPreviews();
+});
+const composer = $("check-form");
+composer.addEventListener("dragover", (e) => { e.preventDefault(); composer.classList.add("dragover"); });
+composer.addEventListener("dragleave", () => composer.classList.remove("dragover"));
+composer.addEventListener("drop", async (e) => {
+  e.preventDefault();
+  composer.classList.remove("dragover");
+  await addImages((e.dataTransfer && e.dataTransfer.files) || []);
+});
+// 文字变化 → 链接卡片跟着变（轻量防抖）
+let attachTimer = null;
+$("check-text").addEventListener("input", () => {
+  clearTimeout(attachTimer);
+  attachTimer = setTimeout(renderAttach, 150);
+  // 自适应高度（上限由 CSS max-height 控制）
+  const ta = $("check-text");
+  ta.style.height = "auto";
+  ta.style.height = Math.min(ta.scrollHeight, window.innerHeight * 0.4) + "px";
 });
 
 $("check-form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const text = $("check-text").value;
-  const link = $("check-link").value;
+  const { text, link } = extractLink($("check-text").value);
   const v = validateCheckSubmission({ text, link, imageCount: selected.length });
-  if (!v.ok) { setStatus(v.reason, "error"); return; }
+  // 重查允许全空（只按原内容再查一遍），其余校验（超长 / 超张数）照旧
+  const emptyOk = !!recheckParent && v.reason === "图片、文字、链接至少填一项。";
+  if (!v.ok && !emptyOk) { setStatus(v.reason, "error"); return; }
 
   const btn = $("submit-btn");
   btn.disabled = true;
   setStatus("提交中…", "pending");
+  const target = recheckParent ? `${WORKER}/check/${recheckParent.id}/recheck` : `${WORKER}/check`;
 
   try {
     const fd = new FormData();
     fd.append("text", text.trim());
     fd.append("link", link.trim());
     selected.forEach((it, i) => fd.append("images", it.blob, `img-${i}.jpg`));
-    const r = await fetch(WORKER + "/check", {
+    const r = await fetch(target, {
       method: "POST",
       headers: { "x-check-key": key },   // 不手设 content-type，让浏览器带 multipart 边界
       body: fd,
       signal: timeoutSignal(submitTimeoutMs(selected.length)),
     });
-    if (r.status === 401) {
-      // 密钥失效（可能 Worker 重置）→ 退回密钥闸
-      clearKey(store);
-      key = "";
-      showGate();
-      $("gate-msg").textContent = "密钥已失效，请重新输入。";
-      $("gate-msg").hidden = false;
-      return;
-    }
+    if (r.status === 401) { keyExpired(); return; }
+    if (r.status === 409 && recheckParent) { setStatus("上一次核查还没完成，等它跑完再补证据。", "error"); return; }
     const result = describeCheckResult(r.ok);
     setStatus(result.text, result.kind);
     if (result.kind === "success") {
       $("check-text").value = "";
-      $("check-link").value = "";
+      $("check-text").style.height = "";
       clearImages();
+      renderAttach();
+      cancelRecheck();
       loadRecent(); // 新任务立即出现在列表并开始轮询
     }
   } catch (err) {
-    const e = describeSubmitError(err); // 超时单独给"换网络"指引，其余按一般网络错误
-    setStatus(e.text, e.kind);
+    const e2 = describeSubmitError(err); // 超时单独给"换网络"指引，其余按一般网络错误
+    setStatus(e2.text, e2.kind);
   } finally {
     btn.disabled = false;
   }
 });
 
-$("logout").addEventListener("click", () => {
-  clearKey(store);
-  location.reload();
-});
-
+$("recheck-cancel").addEventListener("click", cancelRecheck);
+$("result-recheck").addEventListener("click", () => { if (openTask) startRecheck(openTask); });
 $("recent-refresh").addEventListener("click", () => loadRecent({ manual: true }));
 $("result-back").addEventListener("click", showList);
 // 切回前台且表单已解锁 → 刷新一次（顺带按需重启轮询）
@@ -414,12 +540,35 @@ document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && !$("form-area").hidden) loadRecent();
 });
 
+// ── 设置面板：Obsidian 库名（本机 localStorage）+ 退出 ──
+function openSettings() {
+  $("vault-name").value = readVault(store);
+  $("settings").hidden = false;
+  $("vault-name").focus();
+}
+function closeSettings() { $("settings").hidden = true; }
+$("settings-open").addEventListener("click", openSettings);
+$("settings-open-foot").addEventListener("click", openSettings);
+$("settings-close").addEventListener("click", closeSettings);
+$("settings").addEventListener("click", (e) => { if (e.target === $("settings")) closeSettings(); });
+$("settings-save").addEventListener("click", () => {
+  saveVault(store, $("vault-name").value);
+  closeSettings();
+  if (!$("result-view").hidden) { /* 结果页开着：Obsidian 按钮随设置刷新 */
+    const a = $("result-obsidian");
+    const uriNow = obsidianUri(readVault(store), a.dataset.note || "");
+    a.hidden = !uriNow;
+    a.href = uriNow || "#";
+  }
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("settings").hidden) closeSettings(); });
+$("logout").addEventListener("click", () => {
+  clearKey(store);
+  location.reload();
+});
+
 // 免密专属链接：check.html#k=<密钥> —— 打开即存密钥、直进表单，换设备也不用手输。
-// 链接里的密钥优先于本机已存值（Worker 重置密钥后发新链接即可覆盖旧的）。
-// 不做在线探测：专属链接在弱网/被墙时也要能进表单；密钥若错，提交时 401 会自动退回密钥闸。
-// 存好后立刻把密钥从地址栏抹掉，避免常驻屏幕被旁人瞥见（收藏的链接本身不受影响）。
-// 收下专属链接 hash 里的密钥（有则覆盖本机已存值——Worker 重置密钥后发新链接即可换钥），
-// 并立刻把密钥从地址栏抹掉，避免常驻屏幕被旁人瞥见（收藏的链接本身不受影响）。返回是否收到。
+// 链接里的密钥优先于本机已存值；存好后立刻把密钥从地址栏抹掉。
 function adoptHashKey() {
   const hashKey = keyFromHash(location.hash);
   if (!hashKey) return false;
@@ -429,7 +578,6 @@ function adoptHashKey() {
   return true;
 }
 adoptHashKey();
-// 页面已开着时在地址栏输专属链接只改 hash、不重载脚本 → 靠 hashchange 补上同样的接收逻辑
 window.addEventListener("hashchange", () => { if (adoptHashKey()) showForm(); });
 
 // 已有密钥（本机存过或专属链接刚带来）→ 直接显示表单（不用重输）

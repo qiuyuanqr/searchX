@@ -44,6 +44,17 @@ export async function markCheckDone({ workerUrl, secret, id, outcome = "done", s
   if (!r.ok) throw new Error(`done ${r.status}`);
 }
 
+// 标记「已取走、即将开跑」：Worker 记 startedAt，手机页据此显示「核查中 · 已 N 分钟」。
+// best-effort：调用方 catch 后只记日志，调不通不影响核查。
+export async function markCheckStart({ workerUrl, secret, id }, fetchImpl = fetch) {
+  const r = await fetchImpl(`${workerUrl}/check/${id}/start`, {
+    method: "POST",
+    headers: { "x-check-runner-secret": secret },
+    signal: timeoutSignal(REQUEST_TIMEOUT_MS),
+  });
+  if (!r.ok) throw new Error(`start ${r.status}`);
+}
+
 // 取某条任务的第 n 张图片字节（runner 密钥鉴权）。返回 { bytes:Uint8Array, mime }。
 export async function fetchCheckImage({ workerUrl, secret, id, n }, fetchImpl = fetch) {
   const r = await fetchImpl(`${workerUrl}/check/${id}/image/${n}`, {

@@ -2,100 +2,96 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1b1a18" media="(prefers-color-scheme: dark)">
 <!-- 严格 CSP：脚本只许同源（无 'unsafe-inline'，故脚本外置）；外联只许同源 + Worker。
      即使页面被注入标记也无法执行新脚本、无法把密钥外发到攻击者域名。 -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' {{WORKER_URL}}; base-uri 'none'; form-action 'none'">
 <title>searchX · 事实核查</title>
 <link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/feed.css">
-<style>
-  /* 选图预览网格（style-src 允许 unsafe-inline；只服务本页，不进公开站 feed.css） */
-  .img-preview { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin: .25rem 0 .75rem; }
-  .img-preview .thumb { position: relative; aspect-ratio: 1 / 1; border: 1px solid currentColor; border-radius: 4px; overflow: hidden; opacity: .9; }
-  .img-preview .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .img-preview .thumb button { position: absolute; top: 2px; right: 2px; width: 22px; height: 22px; line-height: 20px; padding: 0; border: none; border-radius: 50%; background: rgba(0,0,0,.6); color: #fff; font-size: 15px; cursor: pointer; }
-  .field-hint { font-size: .85em; opacity: .65; margin: .25rem 0 0; }
-  /* 最近核查列表（复用 .form-status 的三色 data-kind 约定） */
-  .recent { margin-top: 1.5rem; }
-  .recent-head { display: flex; justify-content: space-between; align-items: baseline; gap: .6rem; margin-bottom: .5rem; }
-  .recent-tools { display: flex; align-items: baseline; gap: .6rem; }
-  .recent-synced { font-size: .78em; opacity: .6; white-space: nowrap; }
-  .task-item { border-top: 1px solid rgba(0,0,0,.12); padding: .6rem 0; }
-  .task-head { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; }
-  .task-time { font-size: .8em; opacity: .6; }
-  .task-chip { font-size: .78em; padding: .1rem .5rem; border-radius: 999px; white-space: nowrap; }
-  .task-chip[data-kind="success"] { color: var(--seal); background: rgba(180,84,58,.1); }
-  .task-chip[data-kind="error"] { color: #b3402c; background: rgba(179,64,44,.1); }
-  .task-chip[data-kind="pending"] { color: var(--ink-soft); background: var(--paper-2); }
-  .task-snippet { margin: .25rem 0 0; font-size: .9em; opacity: .85; overflow-wrap: anywhere; }
-  .task-summary { margin: .3rem 0 0; font-size: .9em; line-height: 1.5; }
-</style>
+<link rel="stylesheet" href="assets/check.css">
 </head>
 <body data-pagefind-ignore data-worker="{{WORKER_URL}}">
   <div class="wrap">
-    <header>
-      <div class="kicker"><span class="seal">查</span> 事实核查 · FACTCHECK</div>
-      <h1 class="brand">事实核查</h1>
+    <header class="ck-top">
+      <div class="ck-brand">事实核查<small>FACTCHECK</small></div>
+      <button type="button" class="ck-gear" id="settings-open" aria-label="设置" title="设置" hidden>⚙︎</button>
     </header>
 
     <!-- 密钥闸：输对 CHECK_KEY 之前只显示这个，表单不加载 -->
-    <div id="gate">
+    <div id="gate" class="ck-gate">
       <p class="modal-lead">输入密钥进入。只有持密钥的你能提交核查。</p>
-      <label class="field">
-        <span class="field-label">密钥</span>
-        <input id="check-key" class="search" type="password" autocomplete="off" placeholder="CHECK_KEY">
-      </label>
-      <button id="enter" class="submit-btn" type="button">进入</button>
+      <input id="check-key" class="ck-input" type="password" autocomplete="off" placeholder="密钥" aria-label="密钥">
+      <p style="margin-top:.7rem"><button id="enter" class="ck-submit" type="button">进入</button></p>
       <p id="gate-msg" class="form-status" role="status" aria-live="polite" hidden></p>
     </div>
 
-    <!-- 核查表单：密钥正确后显示 -->
+    <!-- 密钥正确后显示 -->
     <div id="form-area" hidden>
-      <!-- 列表视图：提交表单 + 最近核查 + 退出（点某条 done 切到 result-view） -->
+      <!-- 列表视图：输入箱 + 最近核查（点某条已完成切到 result-view） -->
       <div id="list-view">
-      <form id="check-form" class="submit-form">
-        <label class="field">
-          <span class="field-label">核查内容（选填）</span>
-          <textarea id="check-text" class="search" rows="5" placeholder="把要核查的消息、说法、截图描述等粘进来……"></textarea>
-        </label>
-        <label class="field">
-          <span class="field-label">链接（选填）</span>
-          <input id="check-link" class="search" type="url" autocomplete="off" placeholder="https://…">
-        </label>
-        <label class="field">
-          <span class="field-label">图片（选填，最多 9 张）</span>
-          <input id="check-images" class="search" type="file" accept="image/*" multiple>
-        </label>
-        <div id="img-preview" class="img-preview" hidden></div>
-        <p class="field-hint">图片 / 文字 / 链接至少填一项。</p>
-        <button id="submit-btn" class="submit-btn" type="submit">提交核查</button>
-        <p id="form-status" class="form-status" role="status" aria-live="polite" hidden></p>
-      </form>
+        <div id="recheck-banner" class="recheck-banner" hidden>
+          <span>补充证据重查：</span><b id="recheck-title"></b><button type="button" id="recheck-cancel">取消</button>
+        </div>
+        <form id="check-form" class="composer" novalidate>
+          <textarea id="check-text" rows="3" placeholder="贴消息、说法或链接；截图可直接粘贴，或点下面「图片」" aria-label="核查内容"></textarea>
+          <div id="attach" class="attach" aria-live="polite"></div>
+          <div class="composer-bar">
+            <div class="composer-tools">
+              <button type="button" class="tool-btn" id="pick-images">🖼 图片</button>
+              <input id="check-images" type="file" accept="image/*" multiple hidden>
+            </div>
+            <button id="submit-btn" class="ck-submit" type="submit">提交核查</button>
+          </div>
+        </form>
+        <p class="ck-hint" id="composer-hint">文字、链接、截图至少一样。通常 5–10 分钟出结果，下方「最近核查」会显示进度。</p>
+        <p id="form-status" class="form-status ck-status" role="status" aria-live="polite" hidden></p>
 
-      <!-- 最近核查：提交后在这里看状态（排队中/已完成/已失败）与一行结论，不用等邮件+Obsidian -->
-      <div class="recent">
-        <div class="recent-head">
-          <span class="field-label">最近核查</span>
-          <span class="recent-tools">
-            <span id="recent-synced" class="recent-synced" role="status" aria-live="polite" hidden></span>
+        <div class="ck-sec">
+          <b>最近核查</b>
+          <span class="ck-sec-tools">
+            <span id="recent-synced" role="status" aria-live="polite" hidden></span>
             <button type="button" class="linklike" id="recent-refresh">刷新</button>
           </span>
         </div>
-        <div id="recent-list" aria-live="polite"></div>
-      </div>
-
-      <p class="modal-hint"><button type="button" class="linklike" id="logout">退出（清除本机密钥）</button></p>
+        <div id="recent-list" class="task-list" aria-live="polite"></div>
+        <p class="ck-foot"><button type="button" class="linklike" id="settings-open-foot">设置 · 退出</button></p>
       </div><!-- /list-view -->
 
-      <!-- 结果详情：点某条 done 后同页展开完整结果（纸感阅读视图），返回即回列表 -->
+      <!-- 结果详情：裁定头卡 + 正文 + 底部操作 -->
       <div id="result-view" hidden>
-        <p><button type="button" class="linklike" id="result-back">← 返回列表</button></p>
-        <div id="result-chips" class="result-chips"></div>
-        <p id="result-time" class="result-time"></p>
+        <button type="button" class="linklike ck-back" id="result-back">← 返回</button>
+        <p id="result-title" class="vh-title" hidden></p>
+        <div id="result-hero" class="verdict-hero" hidden></div>
         <article id="result-body" class="prose"></article>
+        <div class="result-dock" id="result-dock" hidden>
+          <a id="result-obsidian" class="ghost-btn" href="#" hidden>在 Obsidian 打开</a>
+          <button type="button" id="result-recheck" class="ck-submit">补充证据 · 重查</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 设置面板 -->
+  <div id="settings" class="ck-sheet-backdrop" hidden>
+    <div class="ck-sheet" role="dialog" aria-modal="true" aria-labelledby="settings-h">
+      <h2 id="settings-h">设置</h2>
+      <label class="field">
+        <span class="field-label">Obsidian 库名</span>
+        <input id="vault-name" class="ck-input" type="text" autocomplete="off" placeholder="例如：饺子的旷野">
+      </label>
+      <p class="ck-fine">填了才会在结果页显示「在 Obsidian 打开」（用 obsidian:// 深链打开这台设备上同名库里的那篇笔记）。只存在本机浏览器。</p>
+      <div class="ck-sheet-acts">
+        <button type="button" class="ck-danger" id="logout">退出并清除本机密钥</button>
+        <span>
+          <button type="button" class="ghost-btn" id="settings-close">关闭</button>
+          <button type="button" class="ck-submit" id="settings-save">保存</button>
+        </span>
       </div>
     </div>
   </div>

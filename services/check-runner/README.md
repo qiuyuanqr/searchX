@@ -7,11 +7,12 @@ Cloudflare KV（check:* 键）
    │  GET /check/pending（x-check-runner-secret 头）
    ▼
 对每条 pending 核查任务：
-   ├─ buildFactcheckPrompt     拼 /factcheck 命令（text + link）
+   ├─ POST /check/<id>/start   标记开跑（best-effort；手机页据此显示「核查中 · 已 N 分钟」）
+   ├─ buildFactcheckPrompt     拼 /factcheck 命令（text + link；补证据重查时另附 previous.md 路径与父任务原文）
    ├─ Bun.spawn claude -p …   跑核查，结果落本机 Obsidian（/factcheck skill 负责写文件）
    │     └─ 退出码≠0 → 不 markDone，留待下轮重跑（fail 计数 +1）
    ├─ POST /check/<id>/done   标记完成（x-check-runner-secret 头）
-   └─ 可选 notify             发邮件提示"去 Obsidian 查看"（绝不含核查内容细节）
+   └─ 可选 notify             邮件（不含内容）+ Bark 推送（默认不含内容，DETAIL=1 才带标题与结论）
 ```
 
 ## 与 research runner 的区别
@@ -34,6 +35,7 @@ Cloudflare KV（check:* 键）
 | `src/poll.js` | `fetchPendingChecks` / `markCheckDone`（注入 fetch，离线可测） |
 | `src/factcheck-cmd.js` | `buildFactcheckPrompt({text,link,imagePaths,resultPath})` 拼 /factcheck 命令（纯函数） |
 | `src/result-signals.js` | `signalsFromResult(md)` 从结果文件的 frontmatter 取 `summary`（一行结论）与 `title`（列表标题），纯函数 |
+| `src/bark.js` | `buildBarkRequest` / `sendBark` Bark 推送（纯函数拼请求，注入 fetch 可测） |
 | `src/attempts.js` | 任务级失败计数（毒任务封顶用），持久化经注入 load/save，离线可测 |
 | `src/runner.js` | `runOnce(config,deps)` 编排，全部副作用经 deps 注入 |
 | `src/index.js` | 装配入口：抢锁、装配真实依赖（spawn claude / nodemailer / fetch / 计数文件）后跑 `runOnce` |
@@ -57,6 +59,9 @@ bun test                          # 跑全部测试
 | `CHECK_RUNNER_CLAUDE_ARGS` | — | 传给 `claude -p` 的额外参数，默认 `--permission-mode bypassPermissions` |
 | `CHECK_RUNNER_MAX_ATTEMPTS` | — | 同一任务失败达此次数后停止重试（退休），默认 `3` |
 | `CHECK_RUNNER_TIMEOUT_MINUTES` | — | claude 子进程硬超时（分钟），默认 `30`。到点先 TERM、宽限 10 秒再 KILL，按失败计入重试计数。没有它，一次挂死的 claude 会一直持有单实例锁、让整条管道停摆 |
+| `CHECK_RUNNER_BARK_URL` | — | Bark（iOS 推送）地址，形如 `https://api.day.app/<device_key>`；配了才在核查完成 / 失败时推送。默认正文只说"有一条核查完成"，不带内容 |
+| `CHECK_RUNNER_BARK_DETAIL` | — | 设 `1` 才把内容标题与一行结论带进推送（内容会经 Bark 服务器与 APNs 中转，默认不带；用户原文任何模式都不进推送） |
+| `CHECK_RUNNER_CHECK_PAGE_URL` | — | 核查页地址（如 `https://qiuyuanqr.github.io/check.html`），配了则点推送直达该页 |
 
 写到仓库根的 `.env`（已 gitignore，bun 自动加载）：
 
@@ -88,9 +93,14 @@ bun run check-runner
   - 整篇 → 详情视图渲染。
 - 2026-09-17 之前是三个文件（`verdict.txt` / `title.txt` / `result.md`）、prompt 里三段指令；合一后 skill 只写笔记，标题与结论是笔记 frontmatter 的一部分。旧的两个文件若还被写了（老版本 skill）照旧兜底读。
 - 跑完后 runner 随 `POST /check/<id>/done` 的 body `{ outcome, summary, result?, title? }` 上报；手机 check.html 的「最近核查」区凭 `CHECK_KEY` 拉 `GET /check/recent` 显示状态、标题与结论（详情另凭 `GET /check/<id>/result` 懒加载整篇）。
-- **读不到结果文件、或 frontmatter 缺字段就降级为不带该字段、照常 markDone**——结论 / 标题 / 详情都是增强，不是硬依赖；标题缺失时列表 fallback 回提交时的旧摘要。退休任务上报 `outcome: "failed"` + 一行原因 summary（页面显示"已失败"和"连续失败 N 次，已停止重试，请重新提交一次"）。
+- **读不到结果文件、或 frontmatter 缺字段就降级为不带该字段、照常 markDone**——结论 / 标题 / 详情都是增强，不是硬依赖；标题缺失时列表 fallback 回提交时的旧摘要。退休任务上报 `outcome: "failed"` + 一行原因 summary（页面显示"失败 · 已停止重试"、原因行"连续失败 N 次，已停止重试，可点「再试一次」重排"和一个「再试一次」按钮）。
 - **注入边界**：prompt 里用户提交的 text / link 包在 `≡≡≡待核查内容 开始/结束≡≡≡` 分隔线之内（内容里伪造的分隔线记号会被压掉）；附图路径与结果文件路径这些 runner 真实指令放在分隔线之外，且 skill 侧只认系统临时目录 `searchx-check/<id>/` 下的路径。
 - 结论只在作者自己的私密通道流转（KV 7 天过期、凭密钥），通知邮件照旧不含内容明文。
+
+## 补证据重查 / 一键重试（2026-09-17）
+
+- **一键重试**：手机页对「失败」任务点「再试一次」→ Worker `POST /check/<id>/retry` 把它重排回 pending（清旧结论、`retries+1`），下一轮照常取到。为此 Worker 在 `done` 收到 `failed` 时**不再删图片**（图片仍受 7 天 TTL）。runner 侧退休时已清过 attempts 计数，重试从零计。
+- **补证据重查**：手机页对已完成任务点「补充证据 · 重查」→ Worker `POST /check/<id>/recheck` 新建一条挂 `parentId` 的任务。`/check/pending` 对这类任务附上 `parentResult`（父任务整篇笔记，可能已过期为 null）与 `parentClaim`（父任务原始 text/link）；runner 把整篇写成同目录的 `previous.md`、路径放进 prompt（同临时目录白名单），父任务原文放进分隔线内标「上次核查的原始内容」。skill 读 previous.md 当自己的前作、按新证据重查，新笔记开头写明上次裁定与本次是否变化。
 
 ## 失败 / 重跑语义
 

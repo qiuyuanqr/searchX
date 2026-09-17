@@ -6,7 +6,7 @@
 // 全部副作用经 deps 注入，离线可测。
 
 export async function runOnce(config, deps) {
-  const { fetchPending, markDone, runFactcheck, buildPrompt, prepareImages, prepareVerdict, attempts, notify, notifyFailure, doneCache, log } = deps;
+  const { fetchPending, markDone, markStart, runFactcheck, buildPrompt, prepareImages, prepareVerdict, attempts, notify, notifyFailure, doneCache, log } = deps;
   const maxAttempts = config.maxAttempts || 3;
 
   const tasks = await fetchPending();
@@ -25,7 +25,7 @@ export async function runOnce(config, deps) {
       log(`任务 ${t.id} 已失败 ${attempts.get(t.id)} 次（上限 ${maxAttempts}），退休不再重试`);
       try {
         // summary 会回显到手机核查页——让"已失败"章旁边有原因和下一步，不用翻邮件/日志
-        await markDone(t.id, { outcome: "failed", summary: `连续失败 ${maxAttempts} 次，已停止重试，请重新提交一次` });
+        await markDone(t.id, { outcome: "failed", summary: `连续失败 ${maxAttempts} 次，已停止重试，可点「再试一次」重排` });
       } catch (err) {
         log(`退休标记失败 ${t.id}（${err.message}），下轮再试退休`);
         continue;
@@ -34,7 +34,7 @@ export async function runOnce(config, deps) {
       if (doneCache) { try { doneCache.clear(t.id); } catch {} }
       if (notifyFailure) {
         try {
-          await notifyFailure(t);
+          await notifyFailure(t, { outcome: "failed", title: t.title || "" });
         } catch (err) {
           log(`失败通知发送失败 ${t.id}（${err.message}），不影响主流程`);
         }
@@ -61,7 +61,7 @@ export async function runOnce(config, deps) {
       if (attempts) attempts.clear(t.id);
       log(`核查完成 ${t.id}（补回传）`);
       if (notify) {
-        try { await notify(t); } catch (err) { log(`通知发送失败 ${t.id}（${err.message}），不影响主流程`); }
+        try { await notify(t, cached); } catch (err) { log(`通知发送失败 ${t.id}（${err.message}），不影响主流程`); }
       }
       continue;
     }
@@ -106,7 +106,14 @@ export async function runOnce(config, deps) {
         ...t,
         imagePaths,
         ...(verdict && verdict.resultPath ? { resultPath: verdict.resultPath } : {}),
+        // 补证据重查：prepareVerdict 把父任务整篇写成 previous.md 后给出路径（父结果过期则无）
+        ...(verdict && verdict.previousPath ? { previousPath: verdict.previousPath } : {}),
       });
+      // 标记开跑（best-effort）：手机页据 startedAt 显示「核查中 · 已 N 分钟」而非一直「排队中」。
+      // 调不通只记日志——它是回显增强，不是核查前置。
+      if (markStart) {
+        try { await markStart(t.id); } catch (err) { log(`标记开跑失败 ${t.id}（${err.message}），继续核查`); }
+      }
       log(`→ 开始核查 ${t.id}`);
       const code = await runFactcheck(prompt);
       if (code !== 0) {
@@ -158,7 +165,7 @@ export async function runOnce(config, deps) {
       log(`核查完成 ${t.id}`);
       if (notify) {
         try {
-          await notify(t);
+          await notify(t, payload);   // 通知拿到 title / summary（Bark 开细节模式时用；邮件照旧不含内容）
         } catch (err) {
           log(`通知发送失败 ${t.id}（${err.message}），不影响主流程`);
         }

@@ -42,10 +42,14 @@ function isTableSep(line) {
   return !!line && /^\s*\|?[\s:|-]*-[\s:|-]*\|?\s*$/.test(line) && line.includes("-");
 }
 
+// td 带 data-label=表头文字：窄屏 CSS 把多列表格堆成卡片时用它当每格的小标题
+//（factcheck「逐条核查」5 列表在手机上横向滚动、每格只容三四个字，见 check.css）。
+// 属性值只转义、不走行内格式（表头里的 **加粗** 之类到属性里就是纯文字）。
 function renderTable(header, rows) {
   const th = header.map((c) => `<th>${renderInline(c)}</th>`).join("");
-  const trs = rows.map((r) => `<tr>${r.map((c) => `<td>${renderInline(c)}</td>`).join("")}</tr>`).join("");
-  return `<table><thead><tr>${th}</tr></thead><tbody>${trs}</tbody></table>`;
+  const labels = header.map((c) => escapeHtml(c.replace(/\*\*|`/g, "")));
+  const trs = rows.map((r) => `<tr>${r.map((c, i) => `<td data-label="${labels[i] || ""}">${renderInline(c)}</td>`).join("")}</tr>`).join("");
+  return `<table data-cols="${header.length}"><thead><tr>${th}</tr></thead><tbody>${trs}</tbody></table>`;
 }
 
 function isBlockStart(line, next) {

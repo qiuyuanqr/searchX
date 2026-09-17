@@ -67,14 +67,23 @@ function toIndexEntry(id, t, nowMs = Date.now()) {
   const e = { id, createdAt: t.createdAt || "", status: t.status || "pending", snippet: taskSnippet(t), updatedAt: nowMs };
   if (t.summary) e.summary = t.summary;
   if (t.title) e.title = t.title;   // 核查完成回传的内容标题；未完成/旧任务无此字段，前端 fallback snippet
+  if (t.startedAt) e.startedAt = t.startedAt;   // runner 已取走开跑（手机页据此显示「核查中 · 已 N 分钟」）
+  if (t.parentId) e.parentId = t.parentId;      // 补证据重查：父任务 id
+  if (t.retries) e.retries = t.retries;         // 一键重试次数
   return e;
 }
 
 // upsert：已存在则就地更新（去重 + 状态同步），否则追加。
+// 可选字段（summary / title / startedAt …）任务里没有了就要从条目里删掉：retry 把失败任务重排回
+// pending 时会删掉旧结论与开跑时间，只 Object.assign 的话旧值会留在索引里，手机页上一条刚重排的
+// 任务会顶着上次的失败原因和「核查中 · 已 N 分钟」。
+const OPTIONAL_ENTRY_KEYS = ["summary", "title", "startedAt", "parentId", "retries"];
 function upsertIndexEntry(items, id, t, nowMs = Date.now()) {
+  const fresh = toIndexEntry(id, t, nowMs);
   const e = items.find((x) => x && x.id === id);
-  if (e) Object.assign(e, toIndexEntry(id, t, nowMs));
-  else items.push(toIndexEntry(id, t, nowMs));
+  if (!e) { items.push(fresh); return; }
+  Object.assign(e, fresh);
+  for (const k of OPTIONAL_ENTRY_KEYS) if (!(k in fresh)) delete e[k];
 }
 
 // 从全表 list 重建索引——唯一还用 list 的地方，仅索引缺失/不完整时走一次；成功即落
@@ -214,6 +223,15 @@ export async function handleCheckSubmit(request, env, { now }) {
     return corsJson({ ok: false, error: "unauthorized" }, 401);
   }
 
+  const created = await createTaskFromRequest(request, env, { now });
+  if (created.error) return corsJson({ ok: false, error: created.error }, created.status);
+  return corsJson({ ok: true, id: created.id }, 201);
+}
+
+// 提交 / 补证据重查共用：解析载荷（multipart 带图 或 JSON）→ 校验 → 图片与任务落 KV → 维护索引。
+// 返回 { id } 或 { error, status }。extra 合并进任务 JSON（重查用它挂 parentId）；
+// allowEmpty=true 时允许文字 / 链接 / 图片全空（重查可以只是"再查一遍"，内容来自父任务）。
+async function createTaskFromRequest(request, env, { now, extra = {}, allowEmpty = false } = {}) {
   // multipart（带图片）走 formData；其余按 JSON（纯文本/链接，向后兼容）。
   const ct = request.headers.get("content-type") || "";
   let text = "", link = "", imageFiles = [];
@@ -223,7 +241,7 @@ export async function handleCheckSubmit(request, env, { now }) {
     try {
       form = await request.formData();
     } catch {
-      return corsJson({ ok: false, error: "bad form" }, 400);
+      return { error: "bad form", status: 400 };
     }
     text = String(form.get("text") || "").trim();
     link = String(form.get("link") || "").trim();
@@ -234,22 +252,22 @@ export async function handleCheckSubmit(request, env, { now }) {
     try {
       body = await request.json();
     } catch {
-      return corsJson({ ok: false, error: "bad json" }, 400);
+      return { error: "bad json", status: 400 };
     }
     if (!body || typeof body !== "object") body = {};
     text = String(body.text || "").trim();
     link = String(body.link || "").trim();
   }
 
-  if (text.length > 4000 || link.length > 1000) return corsJson({ ok: false, error: "too long" }, 400);
-  if (imageFiles.length > IMG_MAX_COUNT) return corsJson({ ok: false, error: "too many" }, 400);
+  if (text.length > 4000 || link.length > 1000) return { error: "too long", status: 400 };
+  if (imageFiles.length > IMG_MAX_COUNT) return { error: "too many", status: 400 };
   // 先整体校验所有图，再落库——避免部分写入后才发现某张不合法。
   for (const f of imageFiles) {
     if (f.size > IMG_MAX_BYTES || !IMG_MIME_ALLOW.has(f.type)) {
-      return corsJson({ ok: false, error: "bad image" }, 400);
+      return { error: "bad image", status: 400 };
     }
   }
-  if (!text && !link && imageFiles.length === 0) return corsJson({ ok: false, error: "empty" }, 400);
+  if (!allowEmpty && !text && !link && imageFiles.length === 0) return { error: "empty", status: 400 };
 
   const id = crypto.randomUUID();
   const images = [];
@@ -269,15 +287,15 @@ export async function handleCheckSubmit(request, env, { now }) {
     for (let n = 0; n < images.length; n++) {
       try { await env.INTAKE_KV.delete(`checkimg:${id}:${n}`); } catch {}
     }
-    return corsJson({ ok: false, error: "image_store_failed" }, 502);
+    return { error: "image_store_failed", status: 502 };
   }
-  const task = { text, link, status: "pending", createdAt: now(), images };
+  const task = { text, link, status: "pending", createdAt: now(), images, ...extra };
   await env.INTAKE_KV.put(`check:${id}`, JSON.stringify(task), { expirationTtl: TTL });
   // 维护 check:idx 索引（best-effort，失败不影响提交成功——全文已落库，索引可由后续惰性重建补上）。
   try {
     await upsertIndexMerged(env, id, task, nowMsOf({ now }));
   } catch {}
-  return corsJson({ ok: true, id }, 201);
+  return { id };
 }
 
 // GET /check/recent —— 作者凭 CHECK_KEY 查最近任务（手机核查页状态区用）。
@@ -316,6 +334,9 @@ export async function handleCheckRecent(request, env, opts = {}) {
       };
       if (e.summary) view.summary = e.summary;
       if (e.title) view.title = e.title;   // 有内容标题就带上，前端优先用它当那行标题
+      if (e.startedAt) view.startedAt = e.startedAt;
+      if (e.parentId) view.parentId = e.parentId;
+      if (e.retries) view.retries = e.retries;
       return view;
     });
   tasks.sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0));
@@ -348,9 +369,95 @@ export async function handleCheckPending(request, env, opts = {}) {
     if (!raw) continue;
     const t = parseTask(raw);
     if (!t) continue; // 跳过损坏条目，不拖垮整列表
-    if (t.status === "pending") tasks.push({ id: e.id, ...t });
+    if (t.status !== "pending") continue;
+    const task = { id: e.id, ...t };
+    // 补证据重查：把父任务的整篇笔记与原始内容一并下发，runner 写成 previous.md 给 skill 当前作。
+    // 父结果可能已过 7 天 TTL（null）——runner 照常跑，只是没有前作可参照。
+    if (t.parentId) {
+      task.parentResult = await env.INTAKE_KV.get(`checkresult:${t.parentId}`);
+      const praw = await env.INTAKE_KV.get(`check:${t.parentId}`);
+      const p = praw ? parseTask(praw) : null;
+      task.parentClaim = p ? { text: String(p.text || ""), link: String(p.link || "") } : null;
+    }
+    tasks.push(task);
   }
   return json({ ok: true, tasks });
+}
+
+// POST /check/<id>/start —— runner 取到任务、即将 spawn claude 时调用：只记 startedAt，状态仍是
+// pending（队列语义不变：runner 中途崩了下一轮照常重取并覆盖 startedAt）。手机页据 startedAt 显示
+// 「核查中 · 已 N 分钟」而不是一直「排队中」。best-effort 语义，runner 调不通也不影响核查。
+export async function handleCheckStart(request, env, id, opts = {}) {
+  if (!runnerAuthed(request, env)) return json({ ok: false, error: "unauthorized" }, 401);
+  const raw = await env.INTAKE_KV.get(`check:${id}`);
+  const t = raw ? parseTask(raw) : null;
+  if (!t) return json({ ok: false, error: "not found" }, 404);
+  const nowIso = typeof opts.now === "function" ? opts.now() : new Date().toISOString();
+  t.startedAt = nowIso;
+  await env.INTAKE_KV.put(`check:${id}`, JSON.stringify(t), { expirationTtl: TTL });
+  try { await upsertIndexMerged(env, id, t, nowMsOf(opts)); } catch {}
+  return json({ ok: true });
+}
+
+// 作者端（CHECK_KEY）接口共用的 CORS + 鉴权前置。返回 Response 表示已拦截，返回 null 放行。
+async function authorGate(request, env, methods) {
+  const cors = {
+    "access-control-allow-origin": env.ALLOWED_ORIGIN,
+    "access-control-allow-methods": `${methods}, OPTIONS`,
+    "access-control-allow-headers": "content-type, x-check-key",
+    vary: "origin",
+  };
+  const corsJson = (obj, status = 200) =>
+    new Response(JSON.stringify(obj), { status, headers: { "content-type": "application/json", ...cors } });
+  if (request.method === "OPTIONS") return { blocked: new Response(null, { status: 204, headers: cors }), corsJson };
+  const ip = request.headers.get("cf-connecting-ip") || "0.0.0.0";
+  if (await authFailuresExceeded(env, ip)) return { blocked: corsJson({ ok: false, error: "rate_limited" }, 429), corsJson };
+  const key = request.headers.get("x-check-key") || "";
+  if (!env.CHECK_KEY || !safeEqual(key, env.CHECK_KEY)) {
+    await recordAuthFailure(env, ip);
+    return { blocked: corsJson({ ok: false, error: "unauthorized" }, 401), corsJson };
+  }
+  return { blocked: null, corsJson };
+}
+
+// POST /check/<id>/retry —— 作者凭 CHECK_KEY 把失败（退休）任务一键重排：状态回 pending、清掉上次的
+// 结论 / 标题 / 开跑时间、retries+1。文字 / 链接 / 图片都还在 KV（done 的 failed 分支不删图），
+// 不用重新贴。仍在排队的任务 409（别重复入队）；已完成的任务走 recheck 而不是 retry。
+export async function handleCheckRetry(request, env, id, opts = {}) {
+  const { blocked, corsJson } = await authorGate(request, env, "POST");
+  if (blocked) return blocked;
+  const raw = await env.INTAKE_KV.get(`check:${id}`);
+  const t = raw ? parseTask(raw) : null;
+  if (!t) return corsJson({ ok: false, error: "not found" }, 404);
+  if (t.status === "pending") return corsJson({ ok: false, error: "already_pending" }, 409);
+  if (t.status !== "failed") return corsJson({ ok: false, error: "not_failed" }, 409);
+  t.status = "pending";
+  delete t.summary;
+  delete t.title;
+  delete t.startedAt;
+  t.retries = (Number(t.retries) || 0) + 1;
+  await env.INTAKE_KV.put(`check:${id}`, JSON.stringify(t), { expirationTtl: TTL });
+  try { await upsertIndexMerged(env, id, t, nowMsOf(opts)); } catch {}
+  return corsJson({ ok: true });
+}
+
+// POST /check/<id>/recheck —— 补证据重查：与 /check 同样的载荷（可全空），新建一条任务并挂
+// parentId。父任务须存在且已完成（pending 409、failed 也 409——失败的该走 retry）。
+// 新任务照常进 pending 队列；runner 取时 /check/pending 会附上父任务整篇与原始内容。
+export async function handleCheckRecheck(request, env, id, { now }) {
+  const { blocked, corsJson } = await authorGate(request, env, "POST");
+  if (blocked) return blocked;
+  const raw = await env.INTAKE_KV.get(`check:${id}`);
+  const parent = raw ? parseTask(raw) : null;
+  if (!parent) return corsJson({ ok: false, error: "not found" }, 404);
+  if (parent.status !== "done") return corsJson({ ok: false, error: "parent_not_done" }, 409);
+  const created = await createTaskFromRequest(request, env, {
+    now,
+    allowEmpty: true,
+    extra: { parentId: id, ...(parent.title ? { parentTitle: String(parent.title).slice(0, TITLE_MAX) } : {}) },
+  });
+  if (created.error) return corsJson({ ok: false, error: created.error }, created.status);
+  return corsJson({ ok: true, id: created.id }, 201);
 }
 
 // GET /check/<id>/image/<n> —— runner 凭 CHECK_RUNNER_SECRET 取某张图片字节
@@ -387,6 +494,7 @@ export async function handleCheckDone(request, env, id, opts = {}) {
     }
   } catch {}
   t.status = outcome === "failed" ? "failed" : "done";
+  delete t.startedAt;           // 终态不再显示「核查中」
   if (summary) t.summary = summary;
   if (title) t.title = title;   // 手机列表那行标题；空则不存（保留旧任务/pending 的 snippet fallback）
   await env.INTAKE_KV.put(`check:${id}`, JSON.stringify(t), { expirationTtl: TTL });
@@ -403,9 +511,12 @@ export async function handleCheckDone(request, env, id, opts = {}) {
   } catch {}
   // 隐私加固：任务跑完即清图片字节（云端只停留到处理完）。best-effort——
   // 删失败不该影响 done 的 200（任务已标完成，图片随 7 天 TTL 兜底过期）。
-  const imgs = Array.isArray(t.images) ? t.images : [];
-  for (let n = 0; n < imgs.length; n++) {
-    try { await env.INTAKE_KV.delete(`checkimg:${id}:${n}`); } catch {}
+  // failed（退休）不删：留给作者一键重试用（/check/<id>/retry），图片本就 7 天 TTL 兜底过期。
+  if (t.status === "done") {
+    const imgs = Array.isArray(t.images) ? t.images : [];
+    for (let n = 0; n < imgs.length; n++) {
+      try { await env.INTAKE_KV.delete(`checkimg:${id}:${n}`); } catch {}
+    }
   }
   return json({ ok: true });
 }

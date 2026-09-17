@@ -29,7 +29,7 @@ export function keyFromHash(hash) {
 // 纯函数：把服务端状态码映射成给用户看的中文。
 // 注：401（密钥失效）在 check-page.js 提前专门处理（清密钥、退回密钥闸），不会走到这里。
 export function describeCheckResult(ok) {
-  if (ok) return { kind: "success", text: "已提交，可在下方「最近核查」跟踪进度与结论。" };
+  if (ok) return { kind: "success", text: "已提交。通常 5–10 分钟出结果，下方「最近核查」会显示进度。" };
   return { kind: "error", text: "提交失败，请稍后重试。" };
 }
 
@@ -81,14 +81,6 @@ export function taskTitle(t) {
   const snip = (x.textSnippet == null ? "" : String(x.textSnippet)).trim();
   if (snip) return snip;
   return "（无摘要）";
-}
-
-// 纯函数：最近核查列表的状态章文案与配色（kind 对齐 .form-status 的三色约定）。
-export function describeTaskStatus(status) {
-  if (status === "pending") return { label: "排队中", kind: "pending" };
-  if (status === "done") return { label: "已完成", kind: "success" };
-  if (status === "failed") return { label: "已失败", kind: "error" };
-  return { label: status || "未知", kind: "pending" };
 }
 
 // 纯函数：ISO 时间 → 北京时间 "MM-DD HH:mm" 显示；非法输入返回空串。
@@ -152,28 +144,121 @@ export function parseFrontmatter(md) {
   return { frontmatter, body: s.slice(m[0].length) };
 }
 
-// 纯函数：六档裁定 → 裁定条着色键（true 属实系 / mixed 半真误导 / false 不实 / unknown 无法证实）。
+// 七档裁定（六档真假 + 解答型）。顺序无意义，只做识别。
+export const VERDICTS = ["属实", "大体属实", "半真", "误导", "不实", "无法证实", "解答"];
+
+// 纯函数：裁定 → 着色键（true 属实系 / mixed 半真误导 / false 不实 / unknown 无法证实 / answer 解答）。
+// 未知字样一律 unknown（灰），绝不猜。
 export function verdictTone(verdict) {
   const v = String(verdict || "").trim();
   if (v === "属实" || v === "大体属实") return "true";
   if (v === "半真" || v === "误导") return "mixed";
   if (v === "不实") return "false";
+  if (v === "解答") return "answer";
   return "unknown";
 }
 
-// 纯函数：从 frontmatter 组装顶部裁定条 chip 列表。裁定按 verdictTone 着色，其余中性。
-// 缺字段就不产出对应 chip（老笔记 / 字段不全也不报错）。
-export function resultChips(fm) {
-  const f = fm || {};
-  const chips = [];
-  if (f.verdict) {
-    const conf = f.confidence ? `（${f.confidence}）` : "";
-    chips.push({ label: `裁定：${f.verdict}${conf}`, tone: verdictTone(f.verdict) });
+// 纯函数：裁定 → 徽章前的记号（与 SKILL 六档表一致；解答用 💬）。未知 → 空串。
+export function verdictMark(verdict) {
+  const v = String(verdict || "").trim();
+  return { "属实": "✅", "大体属实": "🟢", "半真": "🟡", "误导": "🟠", "不实": "🔴", "无法证实": "⚫", "解答": "💬" }[v] || "";
+}
+
+// 纯函数：解析一行结论「裁定（把握度）：一句话真相」→ { verdict, confidence, text }。
+// 容忍全角 / 半角括号与冒号、把握度缺失、前后空白；对不上格式返回 null（调用方按"已完成 + 原文"降级）。
+export function parseSummary(summary) {
+  const s = String(summary == null ? "" : summary).trim();
+  if (!s) return null;
+  const m = /^(属实|大体属实|半真|误导|不实|无法证实|解答)\s*(?:[（(]\s*(高|中|低)\s*[）)])?\s*[：:]\s*([\s\S]*)$/.exec(s);
+  if (!m) return null;
+  return { verdict: m[1], confidence: m[2] || "", text: m[3].trim() };
+}
+
+// 「核查中」的有效窗口：startedAt 早于此值仍是 pending，多半是上一轮 runner 中途崩了、等下一轮重取，
+// 显示成「核查中 · 已 90 分钟」会误导，退回「排队中」。claude 硬超时 30 分钟，45 分钟留足余量。
+export const RUNNING_STALE_MS = 45 * 60 * 1000;
+
+// 纯函数：一条任务 → 列表徽章与结论行。
+// 返回 { label, tone, text }：label 徽章文字；tone 着色键（pending / running / failed / true / mixed /
+// false / unknown / answer / done）；text 徽章下那行（结论去掉「裁定（把握度）：」前缀，或失败原因）。
+export function describeTask(t, nowMs = Date.now()) {
+  const x = t || {};
+  if (x.status === "pending") {
+    const started = Date.parse(x.startedAt || "");
+    if (!isNaN(started) && nowMs - started >= 0 && nowMs - started < RUNNING_STALE_MS) {
+      const min = Math.floor((nowMs - started) / 60000);
+      return { label: min < 1 ? "核查中 · 刚开始" : `核查中 · 已 ${min} 分钟`, tone: "running", text: "" };
+    }
+    return { label: x.retries ? "重试排队中" : "排队中", tone: "pending", text: "" };
   }
-  if (f.source_credibility) chips.push({ label: `来源可信度：${f.source_credibility}`, tone: "neutral" });
-  if (f.input_type) chips.push({ label: String(f.input_type), tone: "neutral" });
-  if (f.source_count) chips.push({ label: `${f.source_count} 个来源`, tone: "neutral" });
-  return chips;
+  if (x.status === "failed") {
+    return { label: "失败 · 已停止重试", tone: "failed", text: String(x.summary || "").trim() };
+  }
+  if (x.status === "done") {
+    const p = parseSummary(x.summary);
+    if (p) {
+      const conf = p.confidence ? ` · ${p.confidence}` : "";
+      return { label: `${verdictMark(p.verdict)} ${p.verdict}${conf}`.trim(), tone: verdictTone(p.verdict), text: p.text };
+    }
+    return { label: "已完成", tone: "done", text: String(x.summary || "").trim() };
+  }
+  return { label: String(x.status || "未知"), tone: "pending", text: "" };
+}
+
+// 纯函数：从输入框文本里识别链接。整段就是一个 URL → text 清空、link 取它；URL 混在文字里 →
+// text 原样保留、link 取第一个。没有 URL → link 空。
+export function extractLink(input) {
+  const text = String(input == null ? "" : input).trim();
+  const m = /https?:\/\/[^\s<>"'）)】\]]+/i.exec(text);
+  if (!m) return { text, link: "" };
+  const link = m[0];
+  return { text: text === link ? "" : text, link };
+}
+
+// 纯函数：是不是微信公众号文章链接（提交前提示"会先尝试直抓，抓不到再补截图"）。
+export function isWeixinLink(url) {
+  try { return /(^|\.)mp\.weixin\.qq\.com$/i.test(new URL(String(url || "")).hostname); } catch { return false; }
+}
+
+// 纯函数：Obsidian 深链。vault 为空或 note 为空 → 空串（页面据此隐藏按钮）。
+// file 参数不带 .md（Obsidian URI 约定）；vault / file 都做 URL 编码。
+export function obsidianUri(vault, note) {
+  const v = String(vault == null ? "" : vault).trim();
+  const n = String(note == null ? "" : note).trim().replace(/\.md$/i, "");
+  if (!v || !n) return "";
+  return `obsidian://open?vault=${encodeURIComponent(v)}&file=${encodeURIComponent(n)}`;
+}
+
+// 纯函数：结果页裁定头卡的数据。缺 verdict 时 verdict 为空串、tone unknown（老笔记 / 字段不全也不报错）。
+// summaryText 是一行结论去掉前缀的那句话（没有 summary 就空）。meta 是头卡下方的小字项。
+export function resultHero(fm) {
+  const f = fm || {};
+  const verdict = String(f.verdict || "").trim();
+  const p = parseSummary(f.summary);
+  const meta = [];
+  if (f.source_credibility) meta.push({ k: "来源可信度", v: String(f.source_credibility) });
+  if (f.input_type) meta.push({ k: "输入", v: String(f.input_type) });
+  if (f.source_count) meta.push({ k: "来源", v: `${f.source_count} 个` });
+  if (f.date) meta.push({ k: "核查于", v: String(f.date) });
+  return {
+    verdict,
+    confidence: String(f.confidence || (p ? p.confidence : "") || "").trim(),
+    tone: verdictTone(verdict),
+    mark: verdictMark(verdict),
+    summaryText: p ? p.text : String(f.summary || "").trim(),
+    meta,
+  };
+}
+
+// Obsidian 库名（设置项）存 localStorage：与密钥同一套容错读写。
+export function readVault(storage) {
+  try { return storage.getItem("searchx_check_vault") || ""; } catch { return ""; }
+}
+export function saveVault(storage, vault) {
+  try {
+    const v = String(vault == null ? "" : vault).trim();
+    if (v) storage.setItem("searchx_check_vault", v); else storage.removeItem("searchx_check_vault");
+  } catch {}
 }
 
 // 纯函数：详情结果加载失败 → 给用户看的一行提示（对齐 describeRecentError 的语气）。

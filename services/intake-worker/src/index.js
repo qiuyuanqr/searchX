@@ -4,7 +4,7 @@ import { handleSubRead } from "./sub-read.js";
 import { handlePeople } from "./people.js";
 import { handleAdmin } from "./admin.js";
 import { handleVerify } from "./verify.js";
-import { handleCheckSubmit, handleCheckPending, handleCheckDone, handleCheckImage, handleCheckRecent, handleCheckResult } from "./check.js";
+import { handleCheckSubmit, handleCheckPending, handleCheckDone, handleCheckImage, handleCheckRecent, handleCheckResult, handleCheckStart, handleCheckRetry, handleCheckRecheck } from "./check.js";
 
 // 兜底 500：各 handler 自身已尽量兜错，但鉴权前的 KV 读（如 admin.js 的失败限流计数、
 // verify.js/check.js 的 emailForToken / authFailuresExceeded）都在各自的 try 之外——KV 抖动
@@ -61,6 +61,32 @@ export default {
           return new Response(JSON.stringify({ ok: false, error: "not found" }), { status: 404, headers: { "content-type": "application/json" } });
         if (request.method === "POST")
           return await handleCheckDone(request, env, doneMatch[1], { now: () => new Date().toISOString() });
+        return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers: { "content-type": "application/json" } });
+      }
+      // runner 标记开跑（共享密钥）
+      const startMatch = pathname.match(/^\/check\/([^/]+)\/start$/);
+      if (startMatch) {
+        if (startMatch[1] === "pending" || startMatch[1] === "recent")
+          return new Response(JSON.stringify({ ok: false, error: "not found" }), { status: 404, headers: { "content-type": "application/json" } });
+        if (request.method === "POST")
+          return await handleCheckStart(request, env, startMatch[1], { now: () => new Date().toISOString() });
+        return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers: { "content-type": "application/json" } });
+      }
+      // 作者一键重试 / 补证据重查（CHECK_KEY）；OPTIONS 预检由各自处理
+      const retryMatch = pathname.match(/^\/check\/([^/]+)\/retry$/);
+      if (retryMatch) {
+        if (retryMatch[1] === "pending" || retryMatch[1] === "recent")
+          return new Response(JSON.stringify({ ok: false, error: "not found" }), { status: 404, headers: { "content-type": "application/json" } });
+        if (request.method === "POST" || request.method === "OPTIONS")
+          return await handleCheckRetry(request, env, retryMatch[1], { now: () => new Date().toISOString() });
+        return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers: { "content-type": "application/json" } });
+      }
+      const recheckMatch = pathname.match(/^\/check\/([^/]+)\/recheck$/);
+      if (recheckMatch) {
+        if (recheckMatch[1] === "pending" || recheckMatch[1] === "recent")
+          return new Response(JSON.stringify({ ok: false, error: "not found" }), { status: 404, headers: { "content-type": "application/json" } });
+        if (request.method === "POST" || request.method === "OPTIONS")
+          return await handleCheckRecheck(request, env, recheckMatch[1], { now: () => new Date().toISOString() });
         return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers: { "content-type": "application/json" } });
       }
       const imgMatch = pathname.match(/^\/check\/([^/]+)\/image\/(\d+)$/);

@@ -594,7 +594,7 @@ describe("runOnce", () => {
     const result = await runOnce({}, deps);
     expect(result).toEqual({ processed: 1, done: 0, fail: 0, retired: 1 });
     expect(doneArgs).toEqual([
-      ["task-0", { outcome: "failed", summary: "连续失败 3 次，已停止重试，请重新提交一次" }],
+      ["task-0", { outcome: "failed", summary: "连续失败 3 次，已停止重试，可点「再试一次」重排" }],
     ]);
   });
 
@@ -727,6 +727,71 @@ describe("runOnce", () => {
       ["task-0", { outcome: "done", summary: "s" }],
       ["task-1", { outcome: "done", summary: "s" }],
       ["task-2", { outcome: "done", summary: "s" }],
+    ]);
+  });
+
+  // ── 2026-09-17 第二批：markStart / previousPath / 通知带 payload ──
+
+  it("markStart 在 runFactcheck 之前被调；失败只记日志、核查照跑", async () => {
+    const tasks = makeTasks(2);
+    const order = [];
+    const deps = {
+      fetchPending: async () => tasks,
+      markStart: async (id) => { order.push(`start:${id}`); if (id === "task-1") throw new Error("网络"); },
+      markDone: async (id) => { order.push(`done:${id}`); },
+      runFactcheck: async () => { order.push("run"); return 0; },
+      prepareVerdict: (t) => ({ resultPath: "/tmp/r", readVerdict: () => "属实（高）：真", readResult: () => null, cleanup: () => {} }),
+      buildPrompt: () => "/factcheck x",
+      notify: null, log: (m) => order.push(`log:${m}`),
+    };
+    const r = await runOnce({}, deps);
+    expect(r).toEqual({ processed: 2, done: 2, fail: 0, retired: 0 });
+    expect(order.filter((x) => !x.startsWith("log:"))).toEqual(["start:task-0", "run", "done:task-0", "start:task-1", "run", "done:task-1"]);
+    expect(order.some((x) => x.includes("标记开跑失败 task-1"))).toBe(true);
+  });
+
+  it("prepareVerdict 给了 previousPath → 透传给 buildPrompt；没给则不带", async () => {
+    const tasks = makeTasks(2);
+    const prompts = [];
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async () => {},
+      runFactcheck: async () => 0,
+      prepareVerdict: (t) => ({
+        resultPath: `/tmp/${t.id}/result.md`,
+        ...(t.id === "task-0" ? { previousPath: `/tmp/${t.id}/previous.md` } : {}),
+        readVerdict: () => "s", readResult: () => null, cleanup: () => {},
+      }),
+      buildPrompt: (a) => { prompts.push(a); return "/factcheck x"; },
+      notify: null, log: () => {},
+    };
+    await runOnce({}, deps);
+    expect(prompts[0].previousPath).toBe("/tmp/task-0/previous.md");
+    expect(prompts[1].previousPath).toBeUndefined();
+  });
+
+  it("notify 收到 (task, payload)：payload 含 outcome/summary/title；补回传路径也带缓存的 payload；退休通知带 outcome:failed", async () => {
+    const tasks = makeTasks(3);
+    const seen = [];
+    const cache = { "task-1": { outcome: "done", summary: "缓存结论", title: "缓存标题" } };
+    const attemptsMap = { "task-2": 3 };
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async () => {},
+      runFactcheck: async () => 0,
+      prepareVerdict: () => ({ resultPath: "/tmp/r", readVerdict: () => "属实（高）：真", readResult: () => null, readTitle: () => "标题甲", cleanup: () => {} }),
+      buildPrompt: () => "/factcheck x",
+      doneCache: { get: (id) => cache[id] || null, set: () => {}, clear: (id) => { delete cache[id]; } },
+      attempts: { get: (id) => attemptsMap[id] || 0, increment: () => {}, clear: () => {} },
+      notify: async (t, payload) => { seen.push(["done", t.id, payload]); },
+      notifyFailure: async (t, payload) => { seen.push(["failed", t.id, payload]); },
+      log: () => {},
+    };
+    await runOnce({ maxAttempts: 3 }, deps);
+    expect(seen).toEqual([
+      ["done", "task-0", { outcome: "done", summary: "属实（高）：真", title: "标题甲" }],
+      ["done", "task-1", { outcome: "done", summary: "缓存结论", title: "缓存标题" }],
+      ["failed", "task-2", { outcome: "failed", title: "" }],
     ]);
   });
 });

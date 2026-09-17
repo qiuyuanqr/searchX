@@ -35,10 +35,17 @@ test("有序列表", () => {
 test("管道表格渲染为 <table> 含表头与单元格", () => {
   const md = "| # | 说法 | 裁定 |\n|---|---|---|\n| 1 | 天是蓝的 | ✅ 属实 |";
   const h = renderMarkdown(md);
-  expect(h).toContain("<table>");
+  expect(h).toContain('<table data-cols="3">');
   expect(h).toContain("<th>#</th>");
-  expect(h).toContain("<td>天是蓝的</td>");
-  expect(h).toContain("<td>✅ 属实</td>");
+  // td 带 data-label=表头文字（窄屏堆成卡片时当小标题）
+  expect(h).toContain('<td data-label="说法">天是蓝的</td>');
+  expect(h).toContain('<td data-label="裁定">✅ 属实</td>');
+});
+test("表格 data-label：表头里的加粗记号剥掉、HTML 转义；多出的单元格 label 为空", () => {
+  const h = renderMarkdown('| **裁定** | a<b |\n|---|---|\n| x | y | z |');
+  expect(h).toContain('<td data-label="裁定">x</td>');
+  expect(h).toContain('<td data-label="a&lt;b">y</td>');
+  expect(h).toContain('<td data-label="">z</td>');
 });
 test("段落合并连续文本行、空行分段", () => {
   const h = renderMarkdown("第一行\n第二行\n\n第三段");

@@ -669,7 +669,7 @@ test("done：body {outcome:'failed'} → status=failed（退休任务）", async
   expect(JSON.parse(kv.store.get("check:t1")).status).toBe("failed");
 });
 
-test("done：failed 同样清图（隐私加固不因失败而免）", async () => {
+test("done：failed 不清图——留给作者一键重试（/retry），图片仍受 7 天 TTL 兜底", async () => {
   const kv = fakeKV({
     "check:t1": pendingTask({ images: [{ mime: "image/jpeg", size: 3 }] }),
     "checkimg:t1:0": new Uint8Array([1, 2, 3]).buffer,
@@ -677,7 +677,7 @@ test("done：failed 同样清图（隐私加固不因失败而免）", async () 
   const env = ENV({ INTAKE_KV: kv });
   const res = await postDoneBody(env, "t1", { outcome: "failed" });
   expect(res.status).toBe(200);
-  expect(kv.store.has("checkimg:t1:0")).toBe(false);
+  expect(kv.store.has("checkimg:t1:0")).toBe(true);
 });
 
 test("done：无 body → 行为同旧版（status=done，无 summary）", async () => {
