@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>紫金矿业（601899.SH） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>紫金矿业（601899.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-17（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 贵金属</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 金属钴 · 金属铅 · 金属锌 · 盐湖提锂 · 黄金概念 · 金属铜 · 福建自贸区 · 小金属概念</span>
+      <span><b>来源</b> 39 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    紫金矿业（601899）主要做的是以黄金为主导产业的矿产资源的勘探、采矿、选矿、冶炼及矿产品销售。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——中报净利同比增 68%，加息压制贵金属情绪。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：中报净利同比增 68%，加息压制贵金属情绪。支撑在于中报净利391.7亿同比增68%；PE12.1倍为铜行业18只最低；LME铜9月7日创历史新高。主要风险是美联储三年来首次加息压制金价；二季度单季净利环比下降4.9%；20日特大单净流出13.49亿元。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>中报净利391.7亿同比增68%</li>
+      <li>PE12.1倍为铜行业18只最低</li>
+      <li>LME铜9月7日创历史新高</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据时点：2026-09-17 收盘（行情数据时点 15:34）｜库内估值日 20260917｜最新财报 2026 年中报（公告日 2026-08-22）</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：中报净利同比增 68%，加息压制贵金属情绪。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>业绩是硬数字，不是预期</strong>：2026 年中报营收 1941.78 亿元、同比增长 15.78%；归母净利润 391.70 亿元、同比增长 68.17%；毛利率 37.75%，比 2025 年全年的 27.73% 提升 10.02 个百分点。资产负债率从 2025Q3 的 53.01% 连续四期降至 49.55%。（置信度：高——全部来自库内财务）</li>
+<li><strong>在同行业里估值最低</strong>：PE(TTM) 12.14 倍，在库内「铜」行业 18 只票中排第 1 便宜，行业 PE 中位数 29.35 倍。同时净利润体量是三家对比同行合计的 2.4 倍。（置信度：高）</li>
+<li><strong>铜的产业面仍在上行</strong>：LME 三个月铜 2026-09-07 一度涨至 14,533 美元/吨，超过今年 1 月 14,527.50 美元的历史高点，创历史新高；年初至今涨 17%、过去 12 个月涨 47%。（置信度：中——联网双源，见 F 节）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>美联储 2026-09-16 加息 25 个基点至 3.75%–4.00%，为 2023 年 7 月以来首次加息，点阵图显示 16 位官员认为年内还应再加至少一次</strong>。加息落地当日国际现货黄金下跌 0.69%、报 4263.53 美元/盎司，美元指数突破 100。这是直接压制公司矿产金售价的宏观变量。（置信度：高——多源交叉，见 F 节）</li>
+<li><strong>库内热点判断已把公司所在的「黄金与有色金属」方向标记为不活跃</strong>（状态词「退潮」）：9-17 有色金属、黄金概念、小金属均未到活跃门槛；金属锌净流出 30.4 亿元、比大盘少涨 2.3 个百分点，金属铅净流出 30.2 亿元、少涨 2.4 个百分点。（置信度：高——库内）</li>
+<li><strong>二季度单季归母净利润环比下降 4.9%</strong>：中报 391.70 亿元减一季报 200.79 亿元，得二季度单季 190.91 亿元（据两期财报推算），低于一季度的 200.79 亿元。在金铜价格同期上行的背景下出现单季环比下降，说明成本端或产量端有压力。（置信度：中——派生数字，非库内直接字段）</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ol>
+<li><strong>三季报单季归母净利润能否回到 200 亿元以上</strong>（对照二季度单季 190.91 亿元）。核验时点：预计 2026 年 10 月中旬（公司 2025 年三季报于 2025-10-17 披露，来源：同花顺财经 2025-10-17）。</li>
+<li><strong>库内「黄金与有色金属」方向的状态能否重新转为活跃 + 20 日特大单净流出是否收窄</strong>（对照 9-17 的 -13.49 亿元）。核验时点：每个交易日收盘后。</li>
+</ol>
+<p><strong>这份判断最可能错在哪</strong>：我把「金」和「铜」当成一条逻辑打包判断了。加息对黄金是直接压制，对铜的影响要绕经工业需求才传导，两者完全可能走出相反路径。而<strong>公司利润里金与铜各占多少，库内财务不提供分品种拆分</strong>——所以&quot;到底谁主导股价&quot;这一环，我靠的是推理不是数据。如果三季报显示铜板块利润占比远超金，那么本报告对加息风险的权重给高了。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>名称 / 代码</strong>：紫金矿业（601899）· 上市状态（正常上市）</li>
+<li><strong>行业</strong>：铜（库内分类）· 板块：主板 · 上市日期：2008-04-25（至今 18 年 4 个多月）</li>
+<li><strong>主营业务</strong>：以黄金为主导产业的矿产资源的勘探、采矿、选矿、冶炼及矿产品销售（库内主营业务原文）</li>
+<li><strong>员工人数</strong>：66,708 人 · 注册资本：265,907.1462 万元</li>
+</ul>
+<p><strong>公司自述定位</strong>（库内公司档案原文要点，属公司披露口径）：上海 A 股（601899.SH）与香港 H 股（2899.HK）两地整体上市的跨国矿业集团；2024 年归母净利润 321 亿元；2025 年前三季度归母净利润 379 亿元、同比增长 55%；《福布斯》2025 全球上市企业 2000 强中位居全球上榜黄金企业第 1 位、全球金属矿企第 4 位；在国内 17 个省（区）和海外 18 个国家拥有超过 30 个重要矿业基地，<strong>海外资源储量、产量、利润和员工人数均超过国内</strong>；矿产铜、金、锌产量中国第 1，分别位居全球第 4、第 6、第 4 位。（置信度：中——公司自述，库内如实记录，未独立交叉验证排名）</p>
+<p><strong>当前行情与估值</strong>（库内行情 / 库内估值，估值日 20260917）</p>
+<ul>
+<li>收盘价 30.90 元 · 当日涨跌 -3.95% · 成交额 95.2 亿元 · 换手率 1.493%</li>
+<li>当日最高相对前收 -0.53%、最低 -5.16%——<strong>全天在前收盘之下运行，收盘接近当日低位</strong>（置信度：高）</li>
+<li>总市值 8216.53 亿元 · PE(TTM) 12.1447 倍 · PB 4.0682 倍 · 股息率 1.6143%</li>
+<li>行业「铜」共 18 只，行业 PE 中位数 29.3536 倍，<strong>本股 PE 在行业内排第 1（最便宜）</strong></li>
+</ul>
+<p><strong>交叉验证（推算）</strong>：据总市值 8216.53 亿元与收盘价 30.90 元，反推总股本约 265.9 亿股；中报 EPS 1.473 元 × 该股本 ≈ 391.7 亿元，与库内归母净利润 391.70 亿元完全吻合——库内三组数据内部自洽。（置信度：高）</p>
+<p><strong>A/H 溢价</strong>（库内 A/H 对照，20260917）：H 股「紫金矿业」（02899.HK）收 33.86 港元、当日 -1.63%；A 股收 30.90 元、当日 -3.95%；<strong>A 股对 H 股溢价 6.73%</strong>。当日 A 股跌幅明显大于 H 股，说明本轮下跌由 A 股这一侧主导。（置信度：高）</p>
+<p><strong>派生观察</strong>：股息率 1.6143% × PE 12.1447 ≈ 19.6%，即对应的现金分红比例约两成（据两个库内字段推算，置信度：中——该算法是近似，实际分红率以年报为准）。</p>
+<h2>C. 财务健康</h2>
+<p>近四期数据（库内财务，新→旧，金额单位亿元）：</p>
+<ul>
+<li><strong>2026 年中报</strong>（公告 2026-08-22）· 营收 1941.78（同比 +15.78%）· 归母净利 391.70（同比 +68.17%）· ROE 20.01% · 毛利率 37.75% · 净利率 25.65% · EPS 1.473 元 · 资产负债率 49.55%</li>
+<li><strong>2026 年一季报</strong>（公告 2026-04-22）· 营收 984.98（同比 +24.79%）· 归母净利 200.79（同比 +97.50%）· ROE 10.40% · 毛利率 36.33% · 净利率 25.55% · EPS 0.755 元 · 资产负债率 51.37%</li>
+<li><strong>2025 年年报</strong>（公告 2026-03-21）· 营收 3490.79（同比 +14.96%）· 归母净利 517.77（同比 +61.55%）· ROE 31.83% · 毛利率 27.73% · 净利率 18.28% · EPS 1.95 元 · 资产负债率 51.56%</li>
+<li><strong>2025 年三季报</strong>（公告 2025-10-18）· 营收 2542.00（同比 +10.33%）· 归母净利 378.64（同比 +55.45%）· ROE 24.50% · 毛利率 24.93% · 净利率 17.98% · EPS 1.425 元 · 资产负债率 53.01%</li>
+</ul>
+<p><strong>趋势判断（哪一项在变好、哪一项是拐点）</strong></p>
+<ol>
+<li><strong>毛利率是最明确的改善项，也是本轮业绩的发动机</strong>：24.93%（2025 前三季累计）→ 27.73%（2025 全年）→ 36.33%（2026Q1）→ 37.75%（2026H1），连续四期抬升，累计提升 12.82 个百分点。矿业公司毛利率这样抬升，主因是产品售价上涨而单位成本涨幅更小。（置信度：高）</li>
+<li><strong>资产负债率连续四期下降</strong>：53.01% → 51.56% → 51.37% → 49.55%，已降到 50% 以下。对一家重资产、持续在建大型矿山的公司，这是财务结构改善的信号。（置信度：高）</li>
+<li><strong>净利润增速在放缓，但绝对增速仍很高</strong>：同比增速 +55.45% → +61.55% → +97.50% → +68.17%。2026Q1 的 +97.50% 是高点，中报回落到 +68.17%——<strong>是增速放缓，不是由增转降</strong>。（置信度：高）</li>
+<li><strong>拐点信号：二季度单季归母净利润环比下降 4.9%</strong>。中报 391.70 亿元 − 一季报 200.79 亿元 = 二季度单季 190.91 亿元；对照一季度单季 200.79 亿元，环比下降 4.92%（据两期财报推算，置信度：中）。营收侧同期为：二季度单季 956.80 亿元 vs 一季度 984.98 亿元，同样环比下降。在铜价创历史新高的二季度出现收入与利润双双环比下降，<strong>这是这份财报里最需要三季报来解释的一处</strong>。（置信度：中）</li>
+</ol>
+<p><strong>一处口径说明</strong>：库内净利率字段中报为 25.653%，而用营收 1941.78 亿元与归母净利 391.70 亿元直接相除得 20.17%（推算）。两者口径不同——前者应为含少数股东损益的全部净利润口径，差额约对应少数股东损益（置信度：中，库内未提供少数股东损益字段，此为推断）。<strong>下文 D 节的同行横向对比统一使用「归母净利 ÷ 营收」这一口径，四只票同标准。</strong></p>
+<p><strong>信息缺口</strong>：库内近四期中缺 2025 年中报（库内财务（近 4 期）返回的四期为 2026H1 / 2026Q1 / 2025 年报 / 2025Q3）。影响：ROE 是累计口径，2026H1 的 20.01% 无法与同口径的 2025H1 直接对比，只能与 2025 全年 31.83% 做粗略参照。补法：如需精确同比 ROE，扩大库内财务的 n 值重取。</p>
+<p><strong>估值口径结论（仅估值口径，不等于好坏判断）</strong>：PE(TTM) 12.14 倍处于所在行业 18 只票的最低位，行业中位数 29.35 倍。PB 4.07 倍则明显高于三家对比同行中的两家（见 D 节）——<strong>低 PE 与高 PB 并存，是高 ROE 公司的典型形态</strong>，不是矛盾。（置信度：高）</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比返回三家同行（财报期均为 20260630，金额单位亿元）：</p>
+<ul>
+<li><strong>紫金矿业（601899）</strong>· 市值 8216.53 · PE 12.14 · PB 4.07 · 营收 1941.78 · 归母净利 391.70 · ROE 20.01% · 归母净利率 20.17%（推算）</li>
+<li><strong>江西铜业（600362）</strong>· 市值 1497.98 · PE 12.93 · PB 1.71 · 营收 3071.55 · 归母净利 86.32 · ROE 10.22% · 归母净利率 2.81%（推算）</li>
+<li><strong>西部矿业（601168）</strong>· 市值 844.77 · PE 14.22 · PB 3.77 · 营收 394.43 · 归母净利 41.69 · ROE 20.41% · 归母净利率 10.57%（推算）</li>
+<li><strong>铜陵有色（000630）</strong>· 市值 807.25 · PE 20.34 · PB 2.12 · 营收 1217.70 · 归母净利 29.93 · ROE 7.98% · 归母净利率 2.46%（推算）</li>
+</ul>
+<p><strong>这家在同行里处于什么位置</strong></p>
+<ol>
+<li><strong>规模上不是一个量级</strong>：紫金市值 8216.53 亿元，是另外三家合计（3149.99 亿元）的 2.6 倍；归母净利 391.70 亿元是三家合计（157.94 亿元）的 2.5 倍。（置信度：高）</li>
+<li><strong>营收不是最大，利润却遥遥领先</strong>：江西铜业营收 3071.55 亿元比紫金的 1941.78 亿元高出 58%，但归母净利只有 86.32 亿元，不到紫金的四分之一。归母净利率 2.81% vs 紫金 20.17%（均为推算）。<strong>这个差距直接说明两家的生意不一样</strong>——江西铜业、铜陵有色的收入大头来自铜冶炼加工（赚加工费，利润率天然薄），紫金的利润来自自有矿山（赚的是矿石与金属价差）。（置信度：中——推断基于两者净利率的数量级差异与库内主营描述，未取得分部营收数据佐证）</li>
+<li><strong>贵在哪、便宜在哪</strong>：PE 看，紫金 12.14 是四只里最低；PB 看，紫金 4.07 是四只里最高。同时 ROE 20.01% 与西部矿业的 20.41% 基本持平，远高于江西铜业 10.22% 与铜陵有色 7.98%。结论是：<strong>市场愿意为紫金的高净资产回报率付更高的账面净资产倍数，同时又给了最低的盈利倍数</strong>——这两件事同时成立，通常意味着市场认为当前盈利水平里含有较大的周期成分（金铜高价带来的），不认为它能长期维持。（置信度：中）</li>
+<li><strong>相对优劣</strong>：优势在资源自给率与利润率，劣势在——一旦金铜价格下行，紫金的利润弹性也是四只里最大的（高毛利率意味着价格下跌时利润下滑更快）。这是同一枚硬币的两面。（置信度：中）</li>
+</ol>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>：自有矿山的勘探→采矿→选矿→冶炼→销售全链条（库内主营业务 / 库内经营范围），赚的是&quot;从地下挖出来的成本&quot;与&quot;市场金属价格&quot;之间的差额。它不是加工制造业，没有订单和客户结构可言——<strong>产品是标准化大宗商品，价格完全由外部市场决定，公司无定价权</strong>。这是理解这家公司的第一性起点。（置信度：高）</p>
+<p><strong>护城河分级</strong></p>
+<ul>
+<li><strong>结构性护城河：有，且属于矿业里最硬的那一类（置信度：中高）</strong></li>
+</ul>
+<p>资源储量本身不可复制。库内介绍称公司在国内 17 个省（区）和海外 18 个国家拥有超 30 个重要矿业基地，矿产铜、金、锌产量中国第 1、全球分别第 4/6/4 位。大型矿山从勘探到投产通常需要 5–10 年并跨越多国审批，新进入者无法在短周期内复制。这一条有库内主营与介绍佐证，但<strong>具体储量数字库内未提供</strong>（见 M 节信息缺口）。</p>
+<ul>
+<li><strong>结构性护城河：规模成本优势（置信度：中）</strong></li>
+</ul>
+<p>归母净利率 20.17% 对照江西铜业 2.81%、铜陵有色 2.46%（均为推算），差距超过一个数量级。这不是经营效率能解释的差距，而是&quot;有矿 vs 没矿&quot;的结构差。</p>
+<ul>
+<li><strong>阶段性优势：项目建设的执行力（置信度：中——单源为公司自身披露）</strong></li>
+</ul>
+<p>2026 年中报经营数据显示：巨龙铜矿改扩建工程建成投产；马诺诺锂矿 2026 年 5 月提前实现重介质选矿投产；3Q 盐湖锂矿、拉果措盐湖锂矿及湘源硬岩锂矿产能稳步爬坡。（来源：紫金矿业官网《紫金矿业主营金属产量稳中有进价值创造能力持续提升》，2026-08-21）这属于阶段性优势——它反映当下的管理能力，不构成别人无法复制的壁垒。</p>
+<ul>
+<li><strong>明确的短板：地缘与资源国政策风险（置信度：高）</strong></li>
+</ul>
+<p>公司自述&quot;海外资源储量、产量、利润和员工人数均超过国内&quot;。<strong>海外占比越高，护城河越依赖别国政府的政策稳定性</strong>——这一条在 F 节展开。这是这家公司护城河上最大的一处缺口，且是结构性的、无法通过经营改善消除。</p>
+<h2>F. 政策与监管</h2>
+<p>本节以联网信息为主（库内不含政策数据），每条带来源与日期。</p>
+<h3>F1. 货币政策：美联储三年来首次加息（对矿产金板块直接利空）</h3>
+<p><strong>事实</strong>：美东时间 2026-09-16，美联储将联邦基金利率目标区间上调 25 个基点至 <strong>3.75%–4.00%</strong>，为 2023 年 7 月以来首次加息，决议以 12 票赞成、0 票反对全票通过。利率点阵图显示，除已落地的 25 个基点外，仍有 16 位官员认为 2026 年还应再加息至少一次，其中 4 人认为还需再加 50 个基点。新任主席凯文·沃什主持了就任后首场议息新闻发布会。（来源：<a href="https://www.fx168news.com/article/1093447" target="_blank" rel="noopener">FX168 财经，2026-09-16</a>；<a href="https://www.epochtimes.com/gb/26/9/16/n14850778.htm" target="_blank" rel="noopener">大纪元，2026-09-16</a>；<a href="https://www.bannedbook.org/bnews/headline/20260917/2360405.html" target="_blank" rel="noopener">RFI 法广转载，2026-09-17</a>。三个独立来源交叉验证，置信度：高）</p>
+<div class="callout">⚠️ <strong>来源冲突记录</strong>：另有一个来源（readmarkets 宏观页面）标注目标区间为 3.50%–3.75%，与上述三源不一致。本报告采用三源一致的 3.75%–4.00%，并把冲突记入 M 节信息缺口。</div>
+<p><strong>市场反应</strong>：加息落地当日国际现货黄金下跌 0.69%、报 4263.53 美元/盎司（来源：<a href="https://news.ifeng.com/c/8wU25kku0kM" target="_blank" rel="noopener">凤凰网，2026-09-17</a>）；盘中一度重挫超 100 美元跌破 4250 美元/盎司，美元指数飙升突破 100 关口（来源：<a href="https://www.mitrade.com/cn/insights/more-analysis/central-banks/20260917A01C" target="_blank" rel="noopener">Mitrade，2026-09-17</a>）。</p>
+<p><strong>与库内数据对照</strong>：库内记录的新闻显示，北京时间 2026-09-16 19:01（即加息公布前）现货黄金还在上涨 1.35%、报 4351.84 美元/盎司，白银涨 1.76%、报 64.77 美元/盎司（来源：财联社，库内新闻同期条目）。<strong>两个数字拼起来就是完整的时间线：加息前 4351.84 → 加息后 4263.53，单日回落约 88 美元。</strong>（置信度：高）</p>
+<p><strong>传导链条</strong>：加息 → 实际利率上行 + 美元走强 → 以美元计价的黄金承压 → 公司矿产金销售单价承压 → 影响占中报利润相当比重的黄金板块（具体比重库内无分品种数据，见 M 节）。<strong>传导方向：利空。</strong>（置信度：中高）</p>
+<h3>F2. 资源国政策收紧（对海外矿山直接利空）</h3>
+<p><strong>事实</strong>：刚果（金）自 2025 年起全面叫停钴原矿出口，2026 年转为出口配额制（全球最大钴生产商洛阳钼业 2026 年获得 31,200 吨钴出口配额）；2007–2026 年刚果（金）政府已先后六次对铜精矿出口采取限制措施，政策取向从&quot;涨价诉求&quot;转向&quot;控链诉求&quot;、推动就地加工。中资企业在刚果（金）铜钴矿区占据约 72% 的矿山份额，中资管控铜年产量约 200–230 万吨，占该国总产量 60%–65%。（来源：<a href="https://m.jiemian.com/article/14891472.html" target="_blank" rel="noopener">界面新闻《刚果（金）资源政策收紧，中资矿企影响几何？》，2026-08-07</a>；<a href="https://finance.sina.com.cn/jjxw/2026-08-07/doc-inimnvki0000850.shtml" target="_blank" rel="noopener">新浪财经同题转载，2026-08-07</a>）</p>
+<p>印尼方面：2026 年初削减镍矿出口配额，核心矿区配额缩减超七成；2026-04-10 印尼能矿部签署第 144 号部长令，将镍矿基准价修正系数从 17% 提升至 30%；2026 年 5 月成立国有企业 DSI（Danantara Sumberdaya Indonesia）统一管理战略资源出口。（来源：<a href="https://meritsandtree.com/Content/2026/07-21/1750082958.html" target="_blank" rel="noopener">植德律师事务所《印尼矿业政策调整的国际投资法审视》，2026-07-21</a>；<a href="https://www.guancha.cn/industry-science/2026_07_02_822336.shtml" target="_blank" rel="noopener">观察者网，2026-07-02</a>）</p>
+<p><strong>与公司的直接关联</strong>：公司在刚果（金）持有卡莫阿-卡库拉铜矿权益（该项目在公司 2026 年中报经营数据中被单独提及，见 G 节）。<strong>传导链条</strong>：资源国出口/税收政策收紧 → 海外矿山运营成本上升或产量外运受限 → 影响铜板块营收与毛利率。<strong>传导方向：利空，但强度取决于具体国别与具体项目，库内无法量化。</strong>（置信度：中——政策事实为双源交叉验证，对本公司的影响幅度为推断）</p>
+<h3>F3. 铜的需求侧政策与产业驱动（中性偏多）</h3>
+<p><strong>事实</strong>：2026 年全球 AI 数据中心铜需求约 74 万吨、同比增长 48%，单台 AI 服务器用铜量约 1.3 吨；2026 至 2030 年全球数据中心用铜量将从 59.4 万吨升至 140 万吨、年复合增长率 23.2%。（来源：<a href="https://m.thepaper.cn/newsDetail_forward_32210359" target="_blank" rel="noopener">澎湃新闻《AI 基建热，正在制造&quot;铜荒&quot;》</a>；<a href="https://www.cls.cn/detail/2142030" target="_blank" rel="noopener">财联社《AI 算力+战场火力：铜的&quot;超级需求周期&quot;才刚刚开始？》</a>。双源，置信度：中）</p>
+<p><strong>传导方向：利多</strong>，但这是慢变量（按年计），对 13 周周期内的股价影响弱于 F1 的利率变量。（置信度：中）</p>
+<h2>G. 题材与产业链关联</h2>
+<h3>G1. 所在板块正在活跃的方向（库内交易日 20260917）</h3>
+<p>库内当日为这只票匹配到两个方向，<strong>两个的相关度完全不同，必须分开看</strong>：</p>
+<p><strong>方向一：黄金与有色金属</strong>（ 550）——<strong>这是与公司主营直接对应的方向</strong></p>
+<ul>
+<li>库内别名：有色金属 / 黄金概念 / 小金属概念 / 金属锌 / 金属铅。公司挂了其中的「黄金概念」「小金属概念」「金属锌」「金属铅」四个标签，对应关系成立。</li>
+<li><strong>当前状态：库内标注为「退潮」</strong>（意思是：资金在往外走、这个方向不再活跃）。与均为空，即库内没有为当前状态记起始日。</li>
+<li>库内记的原因（原文照抄）：「有色金属、黄金概念、小金属今天都没到门槛；金属锌净流出 30.4 亿元、比大盘少涨 2.3 个百分点，金属铅净流出 30.2 亿元、少涨 2.4 个百分点。美国联邦储备委员会 3 年来首次加息，对金价是压力。」</li>
+<li>库内记的风险（原文照抄）：「隔夜现货黄金还涨了 1.35%、白银涨 1.76%，海外金价在涨、国内板块的钱却在走，两边对不上。」</li>
+<li>相关事件：美联储三年来首次加息。</li>
+<li><strong>我的解读</strong>：库内点出的这个&quot;两边对不上&quot;，正是本报告 A 节把方向定为震荡的核心依据之一——海外商品价格与国内板块资金流向出现背离时，往往意味着定价权在两个市场之间摇摆，短期方向不明。（置信度：中）</li>
+</ul>
+<p><strong>方向二：航运与交通运输</strong>（ 625）——<strong>与公司主营无关，仅通过属地标签匹配进来</strong></p>
+<ul>
+<li>库内别名：航运概念 / 交通运输 / 福建自贸区。公司只命中其中的「福建自贸区」，而这是注册地属地标签，<strong>不是航运业务</strong>。</li>
+<li>库内状态：延续 · 第 11 天 · 起始日 20260903。原因（原文照抄）：「也门武装控制了曼德海峡并夺取海峡关键岛屿，红海航线风险上升、船舶绕行会推高运价：航运概念净流入 11.1 亿元、比大盘多涨 0.5 个百分点、近 10 天合计多涨 2.2 个百分点；交通运输和福建自贸区今天都没到门槛。」</li>
+<li><strong>结论：这个方向对本公司没有业务传导，本报告不把它计入驱动或风险。</strong>唯一有间接关联的是它背后的中东地缘事件（沙特减产油价大涨、沙特输油管道遭袭关闭）——油价上涨会抬高矿山的柴油与运输成本，属于成本端的负面因素，但库内无法量化。（置信度：低——传导路径长，无数据支撑）</li>
+</ul>
+<h3>G2. 概念标签逐个分级（库内概念标签，共 23 个）</h3>
+<p><strong>真有业务（有库内主营描述或财务数据佐证）</strong></p>
+<ul>
+<li><strong>黄金概念</strong>（885530）：主营明确写「以黄金为主导产业」——真有业务，且是核心主业。（置信度：高）</li>
+<li><strong>金属铜</strong>（885973）：库内行业分类即为「铜」，经营范围含铜矿采选、铜冶炼——真有业务。（置信度：高）</li>
+<li><strong>金属锌</strong>（885970）、<strong>金属铅</strong>（885971）：公司介绍称矿产锌产量中国第 1、全球第 4——真有业务。（置信度：中——公司自述口径）</li>
+<li><strong>小金属概念</strong>（885552）：与上述锌铅品种对应——真有业务。（置信度：中）</li>
+<li><strong>一带一路</strong>（885494）：公司介绍称在海外 18 个国家拥有矿业基地——<strong>海外布局属实，但&quot;一带一路&quot;是政策概念不是业务分部</strong>，库内无法给出对应营收。定性为「有海外业务佐证，但该标签本身无营收口径」。（置信度：中）</li>
+<li><strong>2025 年报预增</strong>（886107）、<strong>2026 中报预增</strong>（886110）：库内财务佐证，2025 年报归母净利同比 +61.55%、2026 中报同比 +68.17%——数据属实。（置信度：高）</li>
+</ul>
+<p><strong>有外部产量佐证、但库内无营收拆分</strong></p>
+<ul>
+<li><strong>盐湖提锂</strong>（885922）、<strong>锂电池概念</strong>（885710）：公司 2026 年中报经营数据披露当量碳酸锂产量 4.4 万吨、同比增长 496%，在产/爬坡项目含 3Q 盐湖锂矿、拉果措盐湖锂矿、马诺诺锂矿、湘源硬岩锂矿（来源：紫金矿业官网，2026-08-21）。<strong>锂业务确实存在且增长很快，但库内财报不提供分品种营收，无法判断它占总营收多少——从 4.4 万吨的体量看，对 1941.78 亿元营收的贡献应当有限（置信度：中，为推断）。</strong></li>
+</ul>
+<p><strong>仅概念标签，未见营收佐证</strong></p>
+<ul>
+<li><strong>氢能源</strong>（885823）：库内主营、经营范围、公司介绍中均无任何氢能源相关表述——<strong>仅概念标签，未见营收佐证</strong>。（置信度：高）</li>
+<li><strong>金属钴</strong>（885865）：公司介绍列举的产量排名只含铜、金、锌，未提钴；虽然刚果（金）铜矿常伴生钴，但<strong>库内无任何佐证——仅概念标签</strong>。（置信度：高）</li>
+<li><strong>国企改革</strong>（886021）：库内公司档案不提供股权结构数据，<strong>无法判断该标签的业务含义——仅概念标签</strong>。（置信度：高）</li>
+<li><strong>福建自贸区</strong>（885617）：属地标签，库内无自贸区相关业务佐证——<strong>仅概念标签</strong>（但它是 G1 方向二被误匹配进来的原因，见上）。（置信度：高）</li>
+</ul>
+<p><strong>指数成分与交易属性标签，不是业务</strong></p>
+<p>上证 50 样本股（883301）、沪深 300 样本股（883300）、上证 180 成份股（883302）、同花顺漂亮 100（885916）、同花顺中特估 100（886045）、同花顺出海 50（886075）、沪股通（885520）、融资融券（885338）、证金持股（885663）——这九个反映的是指数纳入状态、资金可达性与交易机制，<strong>不代表任何业务</strong>。对判断的意义只有一条：纳入主要宽基指数意味着被动资金天然持有，股价与大盘的联动性会强于小票。（置信度：高）</p>
+<h3>G3. 产业链位置</h3>
+<ul>
+<li><strong>上游</strong>：矿山本身就是产业链最上游（矿产资源）。真正的&quot;上游投入&quot;是采矿设备、选冶药剂、柴油与电力。库内新闻有一条侧面佐证：森合高科 2026-09-14 公告称&quot;公司产品已进入中国黄金、招金集团、紫金矿业、山东黄金等国内龙头矿企供应链&quot;——<strong>公司是选冶药剂供应商的客户，处在议价强势的一端</strong>。（置信度：中）</li>
+<li><strong>下游</strong>：铜材加工、电线电缆、电网、新能源车；黄金则流向央行储备、首饰加工与投资需求。</li>
+<li><strong>议价能力在哪端</strong>：<strong>都不在公司这一端</strong>。金和铜都是全球定价的标准化商品，公司是价格接受者。它能控制的只有产量与单位成本，<strong>这正是为什么 C 节里毛利率的变化几乎完全由外部价格决定</strong>。（置信度：高）</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<h3>H1. 近 60 天新闻（库内新闻，共取回 20 条）</h3>
+<p><strong>值得注意的第一件事：这 20 条里，库内情绪分类全部标为「噪音其他」，没有一条被判定为重大基本面事件。</strong> 也就是说，近期这只票的消息面本身是平淡的，股价波动主要来自板块与宏观，不是来自公司自身。（置信度：高）</p>
+<p>按重要性挑选：</p>
+<ol>
+<li><strong>2026-09-16 至 09-17 · 一组四份董事会公告同时披露</strong>（来源：巨潮资讯库内公告）：第九届董事会临时会议决议、关于向参股公司提供财务资助的公告、关于为参股公司提供担保的公告、关于全资子公司与关联人共同投资的公告，另有第九届董事会独立董事专门会议第一次会议决议。<strong>对基本面的实质影响：中性偏关注</strong>——财务资助与担保是公司资金外溢给参股公司，本身不增加营收，但会占用资金并带来或有负债；&quot;与关联人共同投资&quot;属关联交易，需看具体金额。库内只有标题与 PDF 链接、无金额，<strong>无法判断规模</strong>（见 M 节）。（置信度：中）</li>
+<li><strong>2026-09-16 22:05 / 2026-09-17 08:41 · 全资子公司拟 10 亿元参投基金，投资人工智能、具身智能等领域</strong>（来源：财联社、东方财富）。<strong>对基本面的实质影响：小</strong>——10 亿元相对 8216.53 亿元市值与 391.70 亿元半年利润是很小的比例（约占半年归母净利的 2.6%，推算）。它的意义更多在信号层面：一家矿业公司把资金投向 AI 方向。库内该条情绪分 +0.4，是这批新闻里最正面的一条。<strong>不应把它当成业绩驱动来看。</strong>（置信度：中）</li>
+<li><strong>2026-09-11 12:01–12:02 · 董事长邹来昌两条公开表态</strong>（来源：财联社、东方财富）：「金、铜、锂将是市场长期关注的焦点」「矿业公司的价值正被资本市场重新评估」。<strong>对基本面的实质影响：无</strong>——这是管理层观点，不是经营数据。但它印证了 G2 里&quot;金铜锂三条线&quot;的业务结构。（置信度：高——事件属实；观点本身置信度低）</li>
+<li><strong>2026-09-11 16:11 · 「恒生指数收跌 0.6% 铜、黄金等有色金属股大跌」</strong>（来源：财联社）；同日 10:25 「贵金属板块持续走低兴业银锡逼近跌停」（来源：东方财富）。⚠️ <strong>这两条标题里的涨跌描述是 2026-09-11 发稿时点的旧快照</strong>，反映的是当时的板块状况；本报告的当前行情一律以库内行情为准（9-17 收盘 30.90 元、-3.95%）。它们的价值在于说明：<strong>9 月 11 日板块就已出现过一次集中下跌，9 月 17 日的 -3.95% 不是孤立事件，而是一个持续了至少一周的板块过程。</strong>（置信度：中）</li>
+<li><strong>2026-09-10 13:35 · 紫金矿业等成立铜研科技公司，注册资本 1 亿元</strong>（来源：东方财富）。<strong>实质影响：小</strong>，属研发布局，金额相对公司体量可忽略。（置信度：高）</li>
+<li><strong>2026-09-14 22:31 · 森合高科称产品已进入紫金矿业等龙头矿企供应链</strong>（来源：东方财富）。这是<strong>别家公司的公告提到紫金</strong>，对紫金本身无实质影响，仅作 G3 节产业链位置的侧面佐证。（置信度：高）</li>
+<li><strong>2026-09-17 14:21 / 09-11 10:54 · 两条主力资金监控快讯</strong>（电子板块净流出超 110 亿；洛阳钼业净卖出超 10 亿）。与本公司无直接关系，属市场环境背景。<strong>其中「洛阳钼业净卖出超 10 亿」值得一提——同为大型铜矿企业，9 月 11 日当天被大额净卖出，与 H2 节本公司的特大单净流出方向一致。</strong>（置信度：中）</li>
+</ol>
+<p><strong>信息缺口</strong>：库内新闻（近 60 日）名义窗口自 2026-07-19 起，但返回的 20 条最早只到 2026-09-10，<strong>说明返回条数被上限截断，8 月 22 日中报披露前后的新闻没有取到</strong>。影响：无法从新闻侧交叉验证中报发布当时的市场反应。补法：缩短 days 参数分段取，或直接调大返回条数上限重取。</p>
+<h3>H2. 涨停史（库内涨停记录，180 天）</h3>
+<p><strong>近 180 日无涨停记录。</strong> 这本身是有信息量的：这只票总市值 8216.53 亿元，是大盘权重股，<strong>不是情绪题材票</strong>，历史上不靠涨停驱动，也不应该用打板逻辑去理解它。它的波动更多来自商品价格与指数资金。（置信度：高）</p>
+<h3>H3. 资金与筹码（库内资金筹码）</h3>
+<div class="callout">⚠️ <strong>本节全部是盘面现象，不是基本面证据。</strong>它只用来佐证情绪，不进入 J 节的逻辑链，也不单独用来下任何操作结论。</div>
+<p><strong>主力资金流</strong>（近 20 个交易日，20260821–20260917）</p>
+<ul>
+<li>全体资金净流入合计 <strong>+6.18 亿元</strong>；净流入为正的天数 9 天、为负 11 天。</li>
+<li><strong>但特大单（主力）净流出 -13.49 亿元。</strong></li>
+<li><strong>两个数字方向相反，这是最值得注意的一处</strong>：总盘子是净流入的，主力大单却在净流出——意味着这 20 天里大资金在减持，中小资金在接。（置信度：中——资金流分类本身是交易所口径的估算）</li>
+</ul>
+<p><strong>筹码分布</strong>（截止 <strong>2026-08-07</strong>，⚠️ <strong>该数据已滞后一个多月</strong>）</p>
+<ul>
+<li>获利盘比例 <strong>92.89%</strong>，加权平均成本 30.68 元，15% 分位成本 27.20 元，50% 分位成本 30.80 元，85% 分位成本 34.00 元。</li>
+<li><strong>两面都要说</strong>：92.89% 的高获利盘意味着上方套牢盘很少、反弹时阻力小；但同时意味着短线获利抛压大，一旦出现下跌，绝大部分持仓者都处于&quot;还有得赚&quot;的状态，止盈动机强。</li>
+<li><strong>关键推算</strong>：当前收盘价 30.90 元，几乎正好落在 8-07 的加权均本 30.68 元与 50% 分位成本 30.80 元之间。这说明按 8-07 的筹码结构，<strong>当前价位上约一半持仓处于浮盈、一半处于浮亏，实际获利盘比例应已远低于 92.89%</strong>（推算，置信度：中——未取得 8-07 之后的筹码数据，此为基于成本分布的静态推断）。</li>
+<li><strong>数据边界提醒</strong>：筹码分布数据库内仅覆盖关注票，且最新一期为 2026-08-07，8-07 至 9-17 期间的筹码迁移无数据。</li>
+</ul>
+<p><strong>股东户数</strong>（季度披露，天然滞后）</p>
+<ul>
+<li>截止 2026-06-30：<strong>131.84 万户</strong>；对照 2026-03-31 的 125.20 万户，<strong>环比增加 5.3%</strong>。</li>
+<li>户数增加 = 筹码趋于分散（同样的股本被更多人分持，人均持股下降）。（置信度：高，但截止期为 6 月 30 日，已滞后近三个月，不反映 7–9 月的变化）</li>
+</ul>
+<p><strong>H 节小结</strong>：三项情绪指标——特大单净流出、股东户数增加、所在方向被库内标为不活跃——<strong>方向是一致的偏弱</strong>。但要强调：这三项都是结果不是原因，且都滞后。（置信度：中）</p>
+<h2>I. 未来 13 周事件日历</h2>
+<div class="callout">来源标注：库＝库内事件日历库内事件；网＝联网检索；推＝按历史规律推断（未经公告确认，置信度低）</div>
+<ul>
+<li><strong>W1（2026-09-14 起，至 09-20）</strong>
+<ul>
+<li>09-16（美东）· 美联储加息 25 个基点至 3.75%–4.00% · 宏观 · 重要性 <strong>高</strong> · <strong>已发生</strong> · 影响：验证 F1 的金价压制链条，已在 9-17 股价上体现（-3.95%）·（网，三源交叉）</li>
+<li>09-17 · 第 23 届中国-东盟博览会在南宁开幕（09-17 至 09-21）· 行业会议 · 库内重要性 6 · 影响：经「一带一路」概念标签匹配进来，对公司金铜主营无直接传导 ·（库）</li>
+<li>09-16 至 09-17 · 公司四份董事会相关公告披露（财务资助 / 担保 / 与关联人共同投资 / 董事会临时会议决议）· 公司 · 重要性 <strong>中</strong> · 影响：需查 PDF 确认金额规模 ·（库）</li>
+</ul></li>
+<li><strong>W2（2026-09-21 起）</strong>
+<ul>
+<li>09-22 · 2026 世界新能源汽车大会（WNEVC）在海口开幕（09-22 至 09-24）· 行业会议 · 库内重要性 7 · 影响：经「锂电池概念」匹配，间接关联公司锂板块（当量碳酸锂 4.4 万吨），传导弱 ·（库）</li>
+</ul></li>
+<li><strong>W3（2026-09-28 起）</strong>
+<ul>
+<li>本周无库内已知公司事件。09-30 为分拆子公司紫金黄金国际（02899.HK 母公司分拆、港股代码 2259）于 2025-09-30 挂牌满一年之日；是否涉及首发前股东限售安排到期，库内与本次检索均无明确信息 · 公司 · 重要性 <strong>待核</strong> ·（推，置信度低，见 M 节）</li>
+<li>国庆假期按惯例自 10-01 起休市 ·（推，未经交易所公告确认）</li>
+</ul></li>
+<li><strong>W4（2026-10-05 起）</strong>：本周无已知事件（国庆假期后段）</li>
+<li><strong>W5（2026-10-12 起）</strong> ⭐ <strong>本季度最关键的一周</strong>
+<ul>
+<li><strong>三季报预计披露窗口</strong> · 财报 · 重要性 <strong>高</strong> · 影响：<strong>直接验证 K 节三情景的核心触发条件（单季归母净利润）与 C 节二季度单季环比下降是否延续</strong> · 依据：公司 2025 年三季报于 2025-10-17 披露（来源：<a href="https://m.10jqka.com.cn/20251017/c671831924.shtml" target="_blank" rel="noopener">同花顺财经，2025-10-17</a>；<a href="https://www.21jingji.com/article/20251020/herald/9124bc265a2e3370988bcd7c41b723a0.html" target="_blank" rel="noopener">21 经济网，2025-10-20</a>）·（网 + 推，具体日期以公司预约披露公告为准）</li>
+<li>10-12 · 中国 9 月新能源汽车产销及动力电池装机数据（中汽协/乘联会）· 数据 · 库内重要性 6 · 影响：锂板块景气度月度成绩单，对公司影响弱 ·（库）</li>
+</ul></li>
+<li><strong>W6（2026-10-19 起）</strong>：三季报若未在 W5 披露则顺延至本周 · 财报 · 重要性 <strong>高</strong>（推）</li>
+<li><strong>W7（2026-10-26 起）</strong>：本周无已知事件。10 月底 LME 铜库存与国内社会库存月度数据为常规跟踪项 · 数据 · 重要性中</li>
+<li><strong>W8（2026-11-02 起）</strong>：<strong>美联储议息会议</strong> · 宏观 · 重要性 <strong>高</strong> · 影响：点阵图指引的&quot;2026 年内再加息至少一次&quot;是否兑现，是 K 节悲观情景的核心触发条件之一 ·（推——按 FOMC 一年八次的常规节奏，10 月底至 11 月初应有一次会议，<strong>具体日期本次未经来源确认，置信度低</strong>）</li>
+<li><strong>W9（2026-11-09 起）</strong>：中国 10 月经济数据与有色金属进出口数据发布 · 数据 · 重要性中 · 影响：铜的国内需求侧月度验证（推，常规月度节奏）</li>
+<li><strong>W10（2026-11-16 起）</strong>：本周无已知事件</li>
+<li><strong>W11（2026-11-23 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-11-30 起）</strong>：本周无已知公司事件。11 月制造业 PMI 于月初公布，是铜下游需求的常规月度跟踪项 · 数据 · 重要性中（推）</li>
+<li><strong>W13（2026-12-07 起）</strong>：中央经济工作会议按历年惯例在 12 月中旬前后召开 · 政策 · 重要性中 · 影响：次年基建与电网投资基调，经需求端传导至铜价（推，具体日期未公告，置信度低）</li>
+</ul>
+<p><strong>日历的信息缺口</strong>：库内事件日历只返回 3 条，且<strong>全部是通过概念标签匹配到的行业会议与数据发布，没有一条是公司自身事件</strong>（无三季报预约披露日、无股东大会、无限售解禁、无分红派息日）。影响：W3 至 W13 的公司侧事件基本靠推断填充，可靠性明显低于 W1–W2。补法：查上交所&quot;定期报告预约披露时间表&quot;与公司投资者关系页面（www.zjky.cn）补齐确定日期。</p>
+<h2>J. 逻辑链</h2>
+<p><strong>主链（可证伪）</strong></p>
+<div class="callout"><strong>因为</strong> 金铜价格在 2025–2026 年持续上行（LME 铜 2026-09-07 创 14,533 美元/吨历史新高、年内涨 17%，联网双源）， <strong>且</strong> 公司是价格接受者但拥有自有矿山（归母净利率 20.17% vs 江西铜业 2.81%，均为推算）， <strong>所以</strong> 价格上涨会被高杠杆地放大成利润—— <strong>观察到的现象</strong>：毛利率从 2025 前三季 24.93% 连续抬升至 2026 中报 37.75%（+12.82 个百分点），归母净利同比 +68.17%。 ✅ <strong>这一环已被库内财务数据验证。（置信度：高）</strong></div>
+<div class="callout"><strong>因为</strong> 上述利润是价格驱动而非量驱动为主， <strong>且</strong> 美联储 2026-09-16 加息 25 个基点、点阵图指向年内还有至少一次（三源交叉）， <strong>所以</strong> 市场会对&quot;这个利润能维持多久&quot;打折—— <strong>观察到的现象</strong>：PE(TTM) 12.14 倍在行业 18 只里最低（行业中位数 29.35 倍），同时 PB 4.07 倍在对比同行里最高。 ✅ <strong>这一环也被库内估值数据验证。低 PE 就是市场给周期利润打的折。（置信度：中高）</strong></div>
+<div class="callout"><strong>因为</strong> 打折已经反映在估值里， <strong>所以</strong> 后续股价的方向取决于&quot;利润到底能不能维持&quot;—— <strong>可观察的验证点</strong>：三季报单季归母净利润（对照二季度单季 190.91 亿元），以及三家券商 2026 全年预测 805.81–829.31 亿元所隐含的下半年 414.11–437.61 亿元能否兑现（据中报归母净利 391.70 亿元推算）。 ⚠️ <strong>这一环尚未验证，是整条链的当前焦点。（置信度：中）</strong></div>
+<p><strong>最弱的一环（整条链的命门）</strong></p>
+<p><strong>是&quot;金铜谁主导&quot;这一环。</strong> 公司同时经营黄金与铜，而 2026-09-16 之后这两个品种的宏观驱动是<strong>相反方向</strong>的：加息直接压制黄金（当日现货金已跌 0.69%），却不直接压制铜（铜的驱动在 AI 数据中心与电网需求，且刚创历史新高）。<strong>而库内财务不提供分品种营收与毛利拆分</strong>——我无法量化金与铜各占多少利润，因此无法判断加息对公司整体的净影响是多大。</p>
+<p>这也解释了为什么 A 节方向定为震荡而不是偏跌：<strong>两股力量方向相反、强度都无法量化，任何单边判断都是在没有数据的地方下重注。</strong>（置信度：高——这是对自身不确定性的判断，有明确依据）</p>
+<p><strong>次弱的一环</strong>：公司自述&quot;海外资源储量、产量、利润均超过国内&quot;，而 F2 显示刚果（金）与印尼等资源国政策正在系统性收紧。<strong>这个风险是长期的、结构性的、且无法用当期财报衡量</strong>——它不会在三季报里体现，但会在某一次突发政策中一次性体现。（置信度：中）</p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜<strong>触发</strong>：三季报单季归母净利润超过 220 亿元（对照二季度单季 190.91 亿元、一季度 200.79 亿元，均据财报推算；也对照三家券商 2026 全年预测隐含的下半年 414.11–437.61 亿元），<strong>且</strong> LME 三个月铜价站稳 2026-09-07 创下的历史新高一线，<strong>且</strong> 库内「黄金与有色金属」方向状态由不活跃转回活跃｜<strong>路径</strong>：二季度单季环比下降被证明是一次性扰动，市场对&quot;周期利润能维持&quot;的折价收窄，估值向所在行业 PE 中位数方向修复，股价在 8-07 筹码 85% 分位成本上方运行</li>
+</ul>
+<ul>
+<li><strong>中性（50%）</strong>｜<strong>触发</strong>：三季报单季归母净利润落在 190 亿元至 220 亿元区间，<strong>且</strong> 美联储年内第二次加息尚未落地或仅落地 25 个基点｜<strong>路径</strong>：金与铜的相反驱动互相抵消，股价在 8-07 筹码加权均本与 85% 分位成本之间宽幅震荡，跟随铜金商品价格与大盘 beta 波动，估值维持在行业最低分位不修复也不进一步下探</li>
+</ul>
+<ul>
+<li><strong>悲观（25%）</strong>｜<strong>触发</strong>：美联储 2026 年内再加息至少一次落地（点阵图 16 位官员支持，见 F1），<strong>且</strong> 三季报单季归母净利润低于 190 亿元（即二季度的环比下降延续为连续两个季度），<strong>或</strong> 公司海外主要资源国出台针对铜精矿出口的新限制措施（参照 F2 刚果（金）六次限制的政策取向）｜<strong>路径</strong>：市场从&quot;给周期利润打折&quot;转为&quot;下修利润本身&quot;，前期高获利盘的止盈动机被触发，股价跌破 8-07 筹码加权均本后向 15% 分位成本方向下探</li>
+</ul>
+<p>（三者合计 100%。三个触发条件均可用公开财报数字、美联储决议公告与库内热点状态直接核对。）</p>
+<h2>L. 决策与风控</h2>
+<h3>条件式操作倾向</h3>
+<ol>
+<li><strong>如果</strong> 三季报（预计 2026 年 10 月中旬，见 I 节 W5）单季归母净利润回到 200 亿元以上（对照二季度单季 190.91 亿元、一季度单季 200.79 亿元，据财报推算），<strong>且</strong> 股价站上 8-07 筹码 50% 分位成本，<strong>那么</strong> 可以考虑试仓——这两条同时成立意味着 C 节指出的二季度环比下降是一次性的，且筹码结构上方压力被消化。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> 库内「黄金与有色金属」方向连续 5 个交易日仍处于不活跃状态，<strong>且</strong> 20 日特大单净流出继续扩大（对照 9-17 的 -13.49 亿元），<strong>那么</strong> 观望，不加仓——在资金持续流出且方向不活跃时介入，是在跟情绪对抗，而 H3 节已说明这三项情绪指标当前方向一致偏弱。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> 股价跌破 8-07 筹码 15% 分位成本，<strong>那么</strong> 减仓——该位置以下，按 8-07 的筹码分布几乎全部持仓者处于浮亏，本报告 H3 节赖以判断&quot;上方阻力小&quot;的筹码结构假设即告失效。</li>
+</ol>
+<ol>
+<li><strong>如果</strong> 美联储年内第二次加息落地（见 I 节 W8）<strong>且</strong> 同期 LME 铜价跌破 2026-09-07 历史新高对应的前期平台，<strong>那么</strong> 回避——这意味着 J 节主链中&quot;金被压制、铜仍强&quot;的对冲结构消失，两个品种同向走弱，此时公司的高毛利率会反向放大利润下滑速度（见 D 节第 4 点）。</li>
+</ol>
+<h3>这笔判断在什么情况下应当被推翻</h3>
+<ul>
+<li><strong>推翻条件一</strong>：三季报披露分品种营收或毛利拆分，显示黄金板块利润占比超过六成。<strong>此时 J 节&quot;最弱一环&quot;就有答案了，方向判断应由&quot;震荡&quot;改为明确偏跌</strong>——因为加息是对黄金的直接、持续压制。</li>
+<li><strong>推翻条件二</strong>：公司发布公告披露海外主要铜矿（如刚果（金）项目）遭遇出口限制或税收政策调整。此时 F2 的结构性风险从潜在变为现实，B–D 节的所有估值比较都需要重做。</li>
+<li><strong>推翻条件三</strong>：库内筹码分布更新出 8-07 之后的筹码数据，且显示获利盘比例与成本分布与本报告 H3 节的静态推断明显不符。本报告 L 节三条操作倾向的价位锚全部依赖那一期数据，锚错了条件就全错。</li>
+</ul>
+<h3>仓位思路</h3>
+<p><strong>轻仓或不参与，直到三季报落地。</strong> 理由：J 节最弱的一环（金铜利润占比）在 10 月中旬三季报之前<strong>没有任何数据能填补</strong>，而这段时间恰好覆盖 F1 加息影响的传导期。在一个关键变量既无法量化又即将被公布的窗口里重仓，赌的是运气不是逻辑。（置信度：中）</p>
+<p><strong>不给目标价、不给评级、不给具体金额与股数。</strong></p>
+<h2>J-附. 机构观点（卖方预期单列，非事实）</h2>
+<div class="callout">库内研报近 90 天收录 <strong>10 篇研报、来自 10 家机构</strong>。 <strong>注：本报告按写作规范不转述券商评级的最高档原词，统一以「最高档」代替。</strong></div>
+<p><strong>评级分布</strong>：最高档 3 家 · 跑赢行业 2 家 · 增持 2 家 · 优于大市 1 家 · 推荐 2 家。<strong>10 家全部为正面评级，无一家给出中性或负面评级。</strong>（置信度：低——评级是卖方观点，且全体一致本身就应该降低而不是提高你对它的信任）</p>
+<p><strong>研报标题（库内收录 3 条）</strong></p>
+<ul>
+<li>华龙证券 · 2026-08-28 ·《2026 半年报点评报告：主要金属价格上涨业绩高增，增量项目有望逐步落地》</li>
+<li>中邮证券 · 2026-08-25 ·《金铜锂主导，重要增量项目建设展示&quot;紫金速度&quot;》</li>
+<li>国信证券 · 2026-08-24 ·《半年报点评：二季度扣非利润表现亮眼，内增外拓强化多元化布局》</li>
+</ul>
+<div class="callout">⚠️ <strong>注意国信证券这条标题与 C 节的冲突</strong>：标题称&quot;二季度扣非利润表现亮眼&quot;，而本报告据中报与一季报推算的二季度单季归母净利润为 190.91 亿元、环比下降 4.92%。<strong>两者不必然矛盾</strong>——扣非口径与归母口径不同，且&quot;亮眼&quot;可能指同比而非环比。但这正说明：读研报标题与读财报数字会得到不同印象，本报告一律以库内财报数字为准。（置信度：高）</div>
+<p><strong>盈利预测（库内研报，8 条）</strong></p>
+<ul>
+<li>〔卖方预期〕来源：西部证券研报（库内）· 日期：2026-08-31 · 观点：预计 2026 年 EPS 3.12 元、归母净利 829.31 亿元（评级最高档）；2027 年 EPS 4.02 元、归母净利 1069.36 亿元；2028 年 EPS 4.83 元、归母净利 1284.77 亿元 · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：中金公司研报（库内）· 日期：2026-08-29 · 观点：预计 2026 年 EPS 3.10 元、归母净利 825.24 亿元（评级跑赢行业）；2027 年 EPS 3.76 元、归母净利 999.91 亿元 · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：华安证券研报（库内）· 日期：2026-08-27 · 观点：预计 2026 年 EPS 3.03 元、归母净利 805.81 亿元（评级最高档）；2027 年 EPS 3.61 元、归母净利 960.96 亿元；2028 年 EPS 4.32 元、归母净利 1148.42 亿元 · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：花旗（联网）· 日期：未取得确切日期 · 观点：预测公司 2026–2028 年产量持续增长，维持最高档评级 · 置信度：<strong>低（单源未交叉验证，且未取得原文日期与具体数字）</strong>（来源：<a href="https://www.huxiu.com/moment/1220009.html" target="_blank" rel="noopener">虎嗅转载</a>）</li>
+</ul>
+<p><strong>把卖方预期与库内事实对照（这是本节最有用的部分）</strong></p>
+<ul>
+<li>三家机构 2026 全年归母净利预测区间 805.81–829.31 亿元。库内中报归母净利已实现 391.70 亿元，<strong>占预测下限的 48.6%、占上限的 47.2%（推算）</strong>。也就是说，<strong>这三家机构都隐含假设下半年利润略高于上半年</strong>（隐含 H2 为 414.11–437.61 亿元，推算）。</li>
+<li><strong>而 C 节的事实是：二季度单季归母净利润已经比一季度环比下降 4.92%。</strong> 券商的下半年预测要成立，必须发生下半年重新环比增长。<strong>这就是当前最清晰的一处预期差，也是 K 节三情景全部围绕三季报单季利润设计触发条件的原因。</strong>（置信度：中高）</li>
+<li>库内盈利预测里的 pe 字段（11.1 / 11.1 / 11.37）是研报发布日（8 月底）股价对应的倍数。以当前收盘价 30.90 元对同一批 EPS 预测重算，PE 为 9.90–10.20 倍（推算）——<strong>说明 8 月底至今股价已有回落</strong>。（置信度：中）</li>
+</ul>
+<h2>M. 逻辑自查</h2>
+<h3>这份判断最依赖的假设是哪一条？错了会怎样？</h3>
+<p><strong>最依赖的假设：三季报单季归母净利润是股价在未来 13 周的主导变量。</strong></p>
+<p>K 节三个情景的触发条件、L 节四条操作倾向里的三条、I 节把 W5 标为&quot;本季度最关键的一周&quot;——全都建立在这一条上。</p>
+<p><strong>如果它错了会怎样</strong>：最可能的出错方式是<strong>宏观压倒微观</strong>。如果美联储在 W8 再加息一次，且美元指数在 100 上方继续走强，那么即使三季报数字很好，股价也可能跟随整个贵金属与有色板块下行——因为这是一只总市值 8216.53 亿元、被上证 50 / 沪深 300 / 上证 180 同时纳入的权重股（见 G2），它的被动资金持仓使它与板块和大盘的联动性天然很强，个股基本面的解释力会被稀释。<strong>一旦出现&quot;三季报超预期但股价不涨&quot;，说明主导变量已切换到宏观，本报告 K 节的情景概率分配需要整体重做。</strong>（置信度：中）</p>
+<h3>有没有我为了让逻辑好看而忽略的反面证据？</h3>
+<p><strong>有三处，我把它们明确列出来：</strong></p>
+<ol>
+<li><strong>我在 A 节把&quot;估值最便宜&quot;写进了核心驱动，但便宜本身从来不是上涨的理由。</strong> PE 12.14 倍在行业里排第 1，但这个位置它可能已经待了很久——库内没有历史 PE 序列，我<strong>无法判断 12.14 倍是异常低位还是这只票的常态</strong>。如果它常年就是这个估值，那&quot;便宜&quot;这条驱动的分量应该大幅下调。这是我论证里最薄弱的一处。（对此的置信度：低）</li>
+<li><strong>我把二季度单季环比下降当作风险写了，但它也可能只是季节性的。</strong> 矿业公司的产量与检修有季节分布，单季环比波动 5% 并不罕见。我选择把它列为风险，是因为它与券商&quot;下半年重新增长&quot;的预测形成明显预期差——但这可能是我在挑一个能支撑&quot;震荡&quot;结论的证据。<strong>诚实地说：仅凭两个季度的数据判断趋势，方法上是不够的</strong>（应至少对照 2025 年的季度节奏，而库内四期数据里缺 2025H1，做不到）。（对此的置信度：低）</li>
+<li><strong>我对 F3 铜需求利多的权重给得偏低。</strong> AI 数据中心用铜 2026 年同比 +48%、2026–2030 年复合增长 23.2%——这是很强的结构性需求。我以&quot;慢变量、13 周内影响弱&quot;为由降低了它的权重，但如果市场提前定价这个长期趋势（这在 2026 年的 AI 相关资产上反复发生过），铜板块可能不等需求兑现就先走出行情。（对此的置信度：中）</li>
+</ol>
+<h3>信息缺口清单</h3>
+<ol>
+<li><strong>分品种营收与毛利拆分（金 / 铜 / 锂 / 锌）</strong>——<strong>这是最要命的缺口</strong>。库内财务只给合并数。影响：J 节最弱的一环无法闭合，A 节的方向判断因此只能给&quot;震荡·中&quot;而不能更确定。补法：读公司 2026 年中报原文的分部报告章节（巨潮资讯网可下载），或等三季报。</li>
+<li><strong>资源储量数据</strong>——库内无储量字段。影响：E 节的结构性护城河只能引用公司自述的产量排名，无法用储量-产量比（矿山可采年限）这个矿业最核心的指标来验证。补法：查公司年报&quot;资源储量&quot;章节。</li>
+<li><strong>历史估值分位</strong>——库内估值只给当前值与行业横向分位，无纵向历史分位。影响：见上文&quot;反面证据&quot;第 1 条，&quot;便宜&quot;这个判断缺一半依据。补法：用库内行情库表自行计算 PE 历史序列。</li>
+<li><strong>筹码数据滞后一个多月</strong>——筹码分布最新为 2026-08-07。影响：<strong>L 节三条操作倾向的价位锚全部来自这一期</strong>，8-07 至 9-17 期间股价已明显变化，锚的有效性在衰减。补法：等库内筹码数据更新后重算，或改用均线类锚。</li>
+<li><strong>近 60 天新闻被条数上限截断</strong>——实际只取回到 2026-09-10。影响：无法从新闻侧验证 8 月 22 日中报披露当时的市场反应。补法：分段调小 days 参数重取。</li>
+<li><strong>库内事件日历无一条公司自身事件</strong>——无三季报预约披露日、无股东大会、无解禁、无分红日。影响：I 节 W3–W13 的公司侧事件靠推断，可靠性低。补法：查上交所定期报告预约披露时间表。</li>
+<li><strong>美联储加息后的利率区间存在来源冲突</strong>——三个来源为 3.75%–4.00%，一个来源标 3.50%–3.75%。本报告采用三源一致值。影响：若采用值有误，F1 的传导判断方向不变但强度描述需修正。补法：以美联储官网 FOMC 声明原文核对。</li>
+<li><strong>紫金黄金国际（港股 2259）2025-09-30 上市满一年是否涉及限售安排到期</strong>——库内与本次联网检索均未取得明确信息。影响：I 节 W3 只能标&quot;待核&quot;。补法：查港交所披露易该公司的股权变动公告。</li>
+<li><strong>公司 2026-09-16/17 四份公告（财务资助、担保、关联人共同投资）的具体金额</strong>——库内只有标题与 PDF 链接。影响：H1 节无法判断这批关联交易与或有负债的规模。补法：打开库内已给出的巨潮 PDF 链接直接读金额。</li>
+<li><strong>三年产量规划中锂 / 锌铅 / 银 / 钼的目标数字未采用</strong>——联网检索到的英文摘要在单位换算上存在明显数量级错误（如把&quot;万吨&quot;处理成&quot;million tons&quot;），本报告<strong>只采用了单位合理且被 21 财经与新浪财经两源共同印证的两组</strong>：2026 年矿产金 105 吨、矿产铜 120 万吨；2028 年矿产金 130–140 吨、矿产铜 150–160 万吨；2025–2028 年矿产金、矿产铜年复合增长率分别为 13%–16%、11%–14%（来源：<a href="https://m.21jingji.com/article/20260210/b82701d215f42911c15d7e686c715714.html" target="_blank" rel="noopener">21 财经，2026-02-10</a>；<a href="https://finance.sina.com.cn/roll/2026-02-10/doc-inhmheyu4970696.shtml" target="_blank" rel="noopener">新浪财经，2026-02-10</a>；公告原文见 <a href="https://www.zjky.cn/upload/file/2026/02/09/55bed523c12f4bf19b5d2d58738f5528.pdf" target="_blank" rel="noopener">公司官网 PDF</a>）。<strong>其余品种数字因单位存疑，一律未写入正文。</strong> 补法：直接读公司 2026-02-09 公告原文 PDF。</li>
+<li><strong>2026 年中报产量数据存在两个口径</strong>——公司官网正式中报口径为矿产金 47 吨同比 +13%、当量碳酸锂 4.4 万吨同比 +496%；而 7 月业绩预增阶段的报道口径为黄金 +15%、当量碳酸锂 +514%。本报告采用正式中报口径。影响：两者差异不大，不改变结论。（来源：<a href="https://www.zjky.cn/news/news-detail-122910.htm" target="_blank" rel="noopener">紫金矿业官网，2026-08-21</a>；<a href="https://stock.stockstar.com/RB2026070900042037.shtml" target="_blank" rel="noopener">证券之星，2026-07-09</a>）</li>
+</ol>
+<p><strong>本报告数据来源汇总</strong>：库内函数库内公司档案 / 库内财务 / 库内估值 / 库内行情 / 库内概念标签 / 库内涨停记录 / 库内新闻 / 库内同业对比 / 库内事件日历 / 库内研报 / 库内 A/H 对照 / 库内资金筹码 / （13 项全部调用并在正文引用）；联网来源已逐条在正文标注机构与日期。</p>
+<p><strong>Sources（联网部分）</strong>：</p>
+<ul>
+<li><a href="https://www.fx168news.com/article/1093447" target="_blank" rel="noopener">FX168《9 月美联储决议：时隔三年重启加息周期》，2026-09-16</a></li>
+<li><a href="https://www.epochtimes.com/gb/26/9/16/n14850778.htm" target="_blank" rel="noopener">大纪元《3 年来首次美联储一致决议升息一码》，2026-09-16</a></li>
+<li><a href="https://www.bannedbook.org/bnews/headline/20260917/2360405.html" target="_blank" rel="noopener">RFI 转载《美联储三年来首次加息暗示将继续收紧政策》，2026-09-17</a></li>
+<li><a href="https://news.ifeng.com/c/8wU25kku0kM" target="_blank" rel="noopener">凤凰网《美联储加息日国际金价收跌，现货黄金跌 0.69%》，2026-09-17</a></li>
+<li><a href="https://www.mitrade.com/cn/insights/more-analysis/central-banks/20260917A01C" target="_blank" rel="noopener">Mitrade《美联储加息落地！美元指数飙升突破 100 关口》，2026-09-17</a></li>
+<li><a href="https://m.cngold.org/futures/xw10743556.html" target="_blank" rel="noopener">金投网《伦铜价格创下历史新高》，2026-09-07</a></li>
+<li><a href="https://news.qq.com/rain/a/20260912A04AWS00" target="_blank" rel="noopener">腾讯新闻《被扰动的铜价》，2026-09-12</a></li>
+<li><a href="https://m.thepaper.cn/newsDetail_forward_32210359" target="_blank" rel="noopener">澎湃新闻《AI 基建热，正在制造&quot;铜荒&quot;》</a></li>
+<li><a href="https://www.cls.cn/detail/2142030" target="_blank" rel="noopener">财联社《AI 算力+战场火力：铜的&quot;超级需求周期&quot;才刚刚开始？》</a></li>
+<li><a href="https://m.jiemian.com/article/14891472.html" target="_blank" rel="noopener">界面新闻《刚果（金）资源政策收紧，中资矿企影响几何？》，2026-08-07</a></li>
+<li><a href="https://meritsandtree.com/Content/2026/07-21/1750082958.html" target="_blank" rel="noopener">植德律师事务所《印尼矿业政策调整的国际投资法审视》，2026-07-21</a></li>
+<li><a href="https://www.guancha.cn/industry-science/2026_07_02_822336.shtml" target="_blank" rel="noopener">观察者网《镍矿新政，为什么印尼突然开始对中资&quot;翻脸&quot;》，2026-07-02</a></li>
+<li><a href="https://www.zjky.cn/news/news-detail-122910.htm" target="_blank" rel="noopener">紫金矿业官网《紫金矿业主营金属产量稳中有进》，2026-08-21</a></li>
+<li><a href="https://m.21jingji.com/article/20260210/b82701d215f42911c15d7e686c715714.html" target="_blank" rel="noopener">21 财经《紫金矿业三年蓝图出炉》，2026-02-10</a></li>
+<li><a href="https://finance.sina.com.cn/roll/2026-02-10/doc-inhmheyu4970696.shtml" target="_blank" rel="noopener">新浪财经《关于三年（2026-2028 年）主要矿产品产量规划公告》，2026-02-10</a></li>
+<li><a href="https://m.caixin.com/m/2025-07-01/102336959.html" target="_blank" rel="noopener">财新《紫金矿业分拆国际黄金业务上市已向港交所递表》，2025-07-01</a></li>
+<li><a href="https://m.10jqka.com.cn/20251017/c671831924.shtml" target="_blank" rel="noopener">同花顺财经《紫金矿业前三季归母净利同比增超 55%》，2025-10-17</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-17），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>美联储三年来首次加息压制金价</li>
+      <li>二季度单季净利环比下降4.9%</li>
+      <li>20日特大单净流出13.49亿元</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PE(TTM)</dt><dd>市盈率（滚动十二个月）。股价 ÷ 每股盈利，衡量「买一元利润要付多少钱」；亏损公司此项无意义。</dd><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>限售解禁</dt><dd>首发或定增取得的股份锁定期届满、可以上市流通。解禁本身不等于减持，但增加了潜在供给。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.fx168news.com/article/1093447" target="_blank" rel="noopener">FX168 财经，2026-09-16</a> <em>2026-09-16</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.epochtimes.com/gb/26/9/16/n14850778.htm" target="_blank" rel="noopener">大纪元，2026-09-16</a> <em>2026-09-16</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.bannedbook.org/bnews/headline/20260917/2360405.html" target="_blank" rel="noopener">RFI 法广转载，2026-09-17</a> <em>2026-09-17</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.ifeng.com/c/8wU25kku0kM" target="_blank" rel="noopener">凤凰网，2026-09-17</a> <em>2026-09-17</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.mitrade.com/cn/insights/more-analysis/central-banks/20260917A01C" target="_blank" rel="noopener">Mitrade，2026-09-17</a> <em>2026-09-17</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.jiemian.com/article/14891472.html" target="_blank" rel="noopener">界面新闻《刚果（金）资源政策收紧，中资矿企影响几何？》，2026-08-07</a> <em>2026-08-07</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/jjxw/2026-08-07/doc-inimnvki0000850.shtml" target="_blank" rel="noopener">新浪财经同题转载，2026-08-07</a> <em>2026-08-07</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://meritsandtree.com/Content/2026/07-21/1750082958.html" target="_blank" rel="noopener">植德律师事务所《印尼矿业政策调整的国际投资法审视》，2026-07-21</a> <em>2026-07-21</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.guancha.cn/industry-science/2026_07_02_822336.shtml" target="_blank" rel="noopener">观察者网，2026-07-02</a> <em>2026-07-02</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.thepaper.cn/newsDetail_forward_32210359" target="_blank" rel="noopener">澎湃新闻《AI 基建热，正在制造&quot;铜荒&quot;》</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2142030" target="_blank" rel="noopener">财联社《AI 算力+战场火力：铜的&quot;超级需求周期&quot;才刚刚开始？》</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.10jqka.com.cn/20251017/c671831924.shtml" target="_blank" rel="noopener">同花顺财经，2025-10-17</a> <em>2025-10-17</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.21jingji.com/article/20251020/herald/9124bc265a2e3370988bcd7c41b723a0.html" target="_blank" rel="noopener">21 经济网，2025-10-20</a> <em>2025-10-20</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.huxiu.com/moment/1220009.html" target="_blank" rel="noopener">虎嗅转载</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.21jingji.com/article/20260210/b82701d215f42911c15d7e686c715714.html" target="_blank" rel="noopener">21 财经，2026-02-10</a> <em>2026-02-10</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/roll/2026-02-10/doc-inhmheyu4970696.shtml" target="_blank" rel="noopener">新浪财经，2026-02-10</a> <em>2026-02-10</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.zjky.cn/upload/file/2026/02/09/55bed523c12f4bf19b5d2d58738f5528.pdf" target="_blank" rel="noopener">公司官网 PDF</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.zjky.cn/news/news-detail-122910.htm" target="_blank" rel="noopener">紫金矿业官网，2026-08-21</a> <em>2026-08-21</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://stock.stockstar.com/RB2026070900042037.shtml" target="_blank" rel="noopener">证券之星，2026-07-09</a> <em>2026-07-09</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.cngold.org/futures/xw10743556.html" target="_blank" rel="noopener">金投网《伦铜价格创下历史新高》，2026-09-07</a> <em>2026-09-07</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260912A04AWS00" target="_blank" rel="noopener">腾讯新闻《被扰动的铜价》，2026-09-12</a> <em>2026-09-12</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.caixin.com/m/2025-07-01/102336959.html" target="_blank" rel="noopener">财新《紫金矿业分拆国际黄金业务上市已向港交所递表》，2025-07-01</a> <em>2025-07-01</em></li>
+      <li><span class="src-tag src-media">媒体</span> 紫金矿业官网《紫金矿业主营金属产量稳中有进价值创造能力持续提升》，2026-08-21 <em>2026-08-21</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [FX168 财经，2026-09-16](https://www.fx168news.com/article/1093447 <em>2026-09-16</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [凤凰网，2026-09-17](https://news.ifeng.com/c/8wU25kku0kM <em>2026-09-17</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社，库内新闻同期条目 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [界面新闻《刚果（金 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [澎湃新闻《AI 基建热，正在制造&quot;铜荒&quot;》](https://m.thepaper.cn/newsDetail_forward_32210359 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 巨潮资讯库内公告 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社、东方财富 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 东方财富 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [同花顺财经，2025-10-17](https://m.10jqka.com.cn/20251017/c671831924.shtml <em>2025-10-17</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [虎嗅转载](https://www.huxiu.com/moment/1220009.html — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [紫金矿业官网，2026-08-21](https://www.zjky.cn/news/news-detail-122910.htm <em>2026-08-21</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公告日 2026-08-22 <em>2026-08-22</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公告 2026-08-22 <em>2026-08-22</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公告 2026-04-22 <em>2026-04-22</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公告 2026-03-21 <em>2026-03-21</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公告 2025-10-18 <em>2025-10-18</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-17 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
