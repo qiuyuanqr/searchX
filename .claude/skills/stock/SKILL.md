@@ -84,6 +84,7 @@ disable-model-invocation: false
 **访问方式（命令模板与路径见 `CLAUDE.local.md` 的 `STOCKS_DB` 段——绝对路径与主机别名不入公开仓库）**：
 
 > **只读一律靠 `PRAGMA query_only=1`，别用 `?mode=ro`。** 库是 WAL 模式，`mode=ro` 在没有其他连接持有库时（即平时）无法创建 `-shm`，真实查询常态报 `unable to open database file (14)`；`SELECT 1` 不碰数据页却会成功，用它试连会误判成"库能用"。也别改用 `immutable=1`——它会忽略 `-wal`、可能静默读到旧数据。
+- **每次连库先 `PRAGMA busy_timeout=30000;` 再 `PRAGMA query_only=1;`，顺序不能反**（与 CLAUDE.md 2026-08-19 那条一致）。`sqlite3` CLI 默认等锁 0 秒，Stocks 一整天都有定时任务在写库，不设就会当场 `database is locked (5)`；等 30 秒仍失败照常抛、按降级链走，别把真故障吞掉。
 - 活库在常驻机上，每交易日 17:45 后更新当日数据（库内口径 = 最近收盘日，盘中查到的最新交易日是上一交易日）
 - 每次取数前先 `SELECT MAX(trade_date) FROM daily_kline;` 拿数据截止日；凡取自库的数据一律标注「**Stocks 库 · 数据截至 YYYYMMDD**」
 
@@ -100,14 +101,26 @@ disable-model-invocation: false
 | 同花顺概念板块 | `theme` + `theme_stock` | `theme_stock` 的 ts_code **带后缀** |
 | 涨停记录 | `zt_pool` | |
 | 指数日线 | `index_daily` | ts_code **带后缀**（`000300.SH`） |
-| 新闻 | `news_feed` | 全文检索用 `news_fts` |
+| 指数估值（PE / PB / 市值 / 换手） | `index_valuation` | ts_code 带后缀 |
+| 申万行业指数日线 | `sw_daily_kline` | ts_code 带 `.SI` 后缀（`801010.SI`）；行业相对强弱用 |
+| 主力资金（小 / 中 / 大 / 特大单买卖额、净流入） | `moneyflow_daily` | B 节必含的「主力资金」直接查这里，不必抓接口；**北向仍无**，走接口 |
+| 股东增减持公告 | `holder_trade` | `ann_date` 8 位串；I 节「减持 / 增持」事件从这里排 |
+| 股东户数 | `holder_number` | |
+| 卖方预测（目标价 / EPS / 评级 / 机构 / 日期） | `broker_forecast` | 只能按 §2.2 模板「卖方预期 · 来源 · 日期 · 置信度」引用，**目标价字段绝不进报告** |
+| 涨跌停价 / 总股本流通股本（盘前） | `stk_premarket` | |
+| 港股日线 / 基础信息 | `hk_daily_kline` · `hk_stock_basic` | ts_code **带 `.HK`**（`00700.HK`）；港股财务表极少（`hk_financials` 仅 24 行），财务走降级链 |
+| 美股日线 / 基础信息 | `us_daily_kline` · `us_stock_basic` | ts_code 纯 ticker（`NVDA`）；个别票更新有滞后，取数前照常查 `MAX(trade_date)`；财务走降级链 |
+| 新闻 | `news_feed` | **`news_fts` 是 trigram 分词，检索词少于 3 个字一律 0 条**（实测「海光」MATCH 0 条、同库 `LIKE '%海光%'` 132 条）；两字简称一律用 `news_feed` 的 `LIKE`，三字以上才用 MATCH，且新闻写的多是品牌名（长鑫存储）不是注册名 |
 
-**三个查空陷阱（写错 = 查空，会被误判成「无数据」甚至「这公司没上市」）**：
+> 白名单之外两张要特别点名：`margin_ledger` 是私人负债台账（不是融资融券数据，**融资余额仍走接口**）；`events_calendar` 是模型生成的事件表（带 `llm_source` / `is_degraded` 字段），只能当线索、不能当来源。
+
+**四个查空陷阱（写错 = 查空，会被误判成「无数据」甚至「这公司没上市」）**：
 1. `ts_code` 两格式：多数表存 **6 位裸码**（`600519`）；`theme_stock` / `stock_industry` / `index_daily` 存**带后缀**（`600519.SH`）——查询 / join 前先对准格式
 2. 日期一律 **8 位串**（`20260729`），不是 ISO
-3. **按注册名查，不是业务品牌名**：`stock_basic.name` 存的是注册简称。查「长鑫存储」是空的，注册名「长鑫科技」（688825）才查得到；「韦尔股份」现名「豪威集团」、「华虹」在库里是「华虹宏力」。**一次查空绝不等于未上市**——换名称、换代码、`LIKE` 模糊匹配、按行业列全表，都试过再下结论
+3. **按注册名查，不是业务品牌名**：`stock_basic.name` 存的是注册简称。查「长鑫存储」是空的，注册名「长鑫科技」（688825）才查得到；「韦尔股份」现名「豪威集团」、「华虹」在库里是「华虹宏力」。**一次查空绝不等于未上市**——先查别名表 `stock_alias`（`SELECT ts_code FROM stock_alias WHERE alias LIKE '%长鑫%'`，收注册名与简称），再换名称、换代码、`LIKE` 模糊匹配、按行业列全表，都试过再下结论
+4. **两字简称在 `news_fts` 里永远 0 条**（trigram 分词，见上表新闻行）：查新闻先用 `news_feed` 的 `LIKE`，MATCH 得 0 不是没新闻
 
-**库覆盖不到的，走接口渠道**：盘中实时价与当日盘口、资金流向（主力 / 北向）、融资融券、限售解禁、龙虎榜 / 大宗——curl 抓 eastmoney / sina 同源 API（akshare 可用时亦可；接口对照：实时快照 `stock_zh_a_spot_em`、资金流 `stock_individual_fund_flow` / `stock_hsgt_*`、两融 `stock_margin_detail_sse/szse`、解禁 `stock_restricted_release_queue_sina`、龙虎榜 / 大宗 `stock_lhb_*` / `stock_dzjy_*`）。**港股 / 美股标的库无覆盖**，直接走本段降级链。
+**库覆盖不到的，走接口渠道**：盘中实时价与当日盘口、北向资金、融资融券、限售解禁、龙虎榜 / 大宗——curl 抓 eastmoney / sina 同源 API（akshare 可用时亦可；接口对照：实时快照 `stock_zh_a_spot_em`、北向 `stock_hsgt_*`、两融 `stock_margin_detail_sse/szse`、解禁 `stock_restricted_release_queue_sina`、龙虎榜 / 大宗 `stock_lhb_*` / `stock_dzjy_*`）。主力资金与股东增减持已在库里（`moneyflow_daily` / `holder_trade`），别再去抓。**港股 / 美股：日线与基础信息库有覆盖（上表）**，财务、估值分位、资金面仍走本段降级链。
 
 **取数一律存档进 `data/`（Step 5.4 机器质检的事实源 · 强制 · 与来自哪条通道无关）**：无论数据来自 Stocks 库、行情接口还是 WebSearch，只要它支撑了正文里的数字，就把**取到的原始结果**写进本次主题文件夹的 `data/` 下，文件名带上通道（`stocks-db.json` / `sina-quote.txt` / `tencent-quote.txt` / `em-datacenter-*.json` / `websearch-*.md`）。`data/` 已 gitignore，不进公开仓库，只在本机供质检对账。三条硬要求：
 
@@ -129,9 +142,9 @@ disable-model-invocation: false
 | `push2.eastmoney.com` | 行情快照 | **不通（连接层失败 http=000）** |
 
 - **探活必须走到真实数据**：拿一只已知票查一个真值（如收盘价）并核对量级，别用「主站能打开」「HTTP 200」当通道可用的判据——2026-08-15 实测 `quote.eastmoney.com` 与 `datacenter-web` 都 200，而 `push2` 完全连不上，只看主站会误判整个 eastmoney 可用。
-- **一条通道查空不等于数据不存在**：换通道、换代码格式、换名称再试（同 §2.3 三个查空陷阱），都试过才允许写「信息缺口」。
+- **一条通道查空不等于数据不存在**：换通道、换代码格式、换名称再试（同 §2.3 四个查空陷阱），都试过才允许写「信息缺口」。
 - **核准不许只靠一条通道**：基准日**收盘价 / 换手率**这类必含项，尽量用**两条独立通道互证**（如 Stocks 库 13.23 ＝ 腾讯 13.23 ＝ sina 13.23）；只拿到一条时，就地标「单通道未交叉」并下调置信度。两条对不上 → 以一手披露为准并写明差异，不许随手挑一个顺眼的。
-- **基准日「收盘价、换手率、主力资金、融资余额」为必含项，先核准再展开分析**；A 股收盘价 / 换手率首选 Stocks 库，资金 / 两融走接口渠道，取不到就**显著标信息缺口**（诚实留缺，绝不用二手数据猜价）。
+- **基准日「收盘价、换手率、主力资金、融资余额」为必含项，先核准再展开分析**；A 股收盘价 / 换手率 / 主力资金首选 Stocks 库（`daily_kline` / `daily_basic` / `moneyflow_daily`），两融走接口渠道，取不到就**显著标信息缺口**（诚实留缺，绝不用二手数据猜价）。
 
 ---
 
