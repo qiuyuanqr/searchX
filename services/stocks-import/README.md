@@ -163,7 +163,18 @@ launchctl kickstart gui/$(id -u)/com.searchx.stocks-import   # 立刻跑一次
 
 ```bash
 bun run scripts/research-qc.js --dir <归档目录名>    # 看具体是哪条红线
+bun run check:anchors                               # 价位类红线：为什么没被自动剥掉
 ```
+
+**先看原文分清是真违规还是判据误报**（处理规则见 research SKILL Step 5.4a）。
+价位类的那条红线，`check:anchors`（`scripts/anchor-candidates.js`）会直接告诉你属于哪一类：
+
+- **候选锚名**——写作者写的锚合规，只是 `price-anchor.js` 的 `ANCHOR` 词表不认得这个名字。
+  照它给的原文补词表，**并同步 Stocks 侧 SKILL 第 3 条的锚清单**（只改一边等于承诺「认得」却仍认不出）。
+  这类已经漏过三次（`MA20` / `当日最低` / `8-31 收盘` / `转股价`），这个命令就是为了不必再等报警。
+- **裸价位**——`跌破 54.00 元`，改写器故意不猜，要回 Stocks 侧改写法。
+- **存量残留**——词表后来补上了、正文是补词之前导入的（补词表不回溯已入库的正文），重跑改写器或人工删数值。
+- **改写器够不着**——有锚也剥不掉（如括号里的推算价位），只能在写作端规避。
 
 改完正文（或往 `PRICE_REDLINE_FIXES` 里补一条改写）后删掉 `research/<目录>/.parked`，
 下次构建就会收录。
