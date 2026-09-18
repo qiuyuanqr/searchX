@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>光迅科技（002281.SZ） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>光迅科技（002281.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-18（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 通信设备</span>
+      <span style="flex-basis:100%"><b>概念标签</b> F5G概念 · 6G概念 · 光纤概念 · 量子科技 · 先进封装 · 共封装光学(CPO) · 抖音概念(字节概念) · 液冷服务器</span>
+      <span><b>来源</b> 21 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    光迅科技（002281）主要做的是光通信领域内光电子器件的研究、开发、制造和技术服务。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——业绩高增长遇上高估值与板块资金流出。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：业绩高增长遇上高估值与板块资金流出。支撑在于中报营收+26.07%净利+56.34%；光模块需求预期被上修；定增34.99亿落地负债率降6.11点。主要风险是市盈率136.92倍高于行业中位；光通信板块资金单日流出94.1亿；净利率8.67%远低于同行推算值。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>中报营收+26.07%净利+56.34%</li>
+      <li>光模块需求预期被上修</li>
+      <li>定增34.99亿落地负债率降6.11点</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">生成日期：2026-09-18 ｜数据来源：项目本地行情与财务库（库内取数只读查询）+ 标注来源的公开检索 行情为 <strong>2026-09-18 盘中 14:22 数据，非当日收盘值</strong>；估值指标为 2026-09-17 收盘口径</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中）</p>
+<p><strong>一句话逻辑</strong>：业绩高增长遇上高估值与板块资金流出。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li>2026 年中报营收 66.10 亿元、同比增长 26.07%，净利润 5.82 亿元、同比增长 56.34%，增收又增利，净利率从 2025 年全年的 7.81% 抬升到 8.67%（置信度：高，来自库内财报数据）</li>
+<li>下游高速光模块需求预期被外资机构大幅上修，2026–2028 年市场空间预测分别上调 33%、81%、115%（来源：界面新闻 2026-09-16、腾讯新闻 2026-09-16；置信度：中，双源同源于同一份机构报告）</li>
+<li>定增 34.99 亿元已落地，募资投向算力中心光连接与高速光传输产品产能，资产负债率从 2026Q1 的 43.13% 降到中报的 37.02%（置信度：中，负债率为库内数据，定增细节为联网来源新浪财经 2026-06-02）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li>估值处在高位：市盈率（TTM）136.92 倍、市净率 10.95 倍，高于通信设备行业市盈率中位数 104.69 倍（置信度：高，库内估值数据）</li>
+<li>所在热点方向「共封装光学与光通信」被系统记录为<strong>热度回落阶段</strong>（第 43 天，自 2026-07-21 起），2026-09-17 单日资金净流出 94.1 亿元、比大盘少涨 0.8 个百分点（置信度：高，库内热点记录）</li>
+<li>盈利能力与同行差距明显：中报净利率 8.67%，而同行业的中际旭创、新易盛按中报数据推算分别约 32.7%、36.0%（置信度：中，同行净利率为据库内营收与净利推算）</li>
+</ol>
+<p><strong>最该盯的信号</strong></p>
+<ul>
+<li>三季报（预计 2026 年 10 月下旬，见 I 节 W5–W6）：单季营收同比能否维持在中报的 26.07% 之上，毛利率能否从中报的 25.53% 环比回升</li>
+<li>近 20 日主力资金（特大单）净流入能否维持正值——当前口径为净流入 30.50 亿元，而全口径合计为净流出 5.38 亿元（2026-08-21 至 2026-09-17）</li>
+</ul>
+<p><strong>这份判断最可能错在哪</strong>：本报告把「行业需求上修」当成了偏正面的驱动，但这条信息的两个来源指向同一份外资机构报告，本质是<strong>单一信源的双次转载</strong>；如果该预测被后续产业数据证伪，A 节的驱动 2 会整条失效，方向判断会从「震荡」偏向更弱一侧。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>公司</strong>：光迅科技（002281），所属行业 <strong>通信设备</strong>，深交所<strong>主板</strong>，上市日 2009-08-21（至今满 17 年），当前状态（正常上市）</li>
+<li><strong>主营</strong>：光通信领域内光电子器件的研究、开发、制造和技术服务</li>
+<li><strong>规模</strong>：员工 4,945 人，注册资本 82,756.50 万元</li>
+<li><strong>历史沿革（库内公司简介原文要点）</strong>：前身为 1976 年成立的邮电部固体器件研究所；2012 年与武汉电信器件有限公司（WTD）重组合并；2013 年收购丹麦 IPX 公司切入核心芯片技术；2016 年增资大连藏龙光电子。简介称形成了半导体材料生长、半导体工艺与平面光波导、光学设计与高密封装、热分析与机械设计、高频仿真与设计、软件控制与子系统开发六大技术平台，具备从芯片到器件、模块、子系统的垂直整合能力</li>
+</ul>
+<p><strong>当前行情</strong>（库内行情，数据时点 <strong>14:22 盘中</strong>，来源 realtime）</p>
+<ul>
+<li>价格 194.69 元｜涨跌幅 +1.81% ｜成交额 74.60 亿元｜当日最高 +4.07% ｜当日最低 -0.96%</li>
+<li>注意：该时点尚未收盘，盘中数值与当日收盘可能不同（置信度：高）</li>
+</ul>
+<p><strong>估值</strong>（库内估值，口径日 2026-09-17 收盘）</p>
+<ul>
+<li>总市值 1,583.01 亿元｜市盈率（TTM）136.92 倍｜市净率 10.95 倍｜股息率 0.1325% ｜换手率 7.5393%</li>
+<li>行业对照：通信设备行业在市股票共 137 只，行业市盈率中位数 104.69 倍；本股在<strong>有正市盈率的同行</strong>中由低到高排第 48 位。需说明：137 只里含亏损股（无市盈率），因此第 48 位的分母小于 137，不能读成「137 只里第 48 便宜」（置信度：高）</li>
+<li><strong>仅估值口径的判断</strong>：市盈率高于行业中位数、市净率 10.95 倍在重资产制造属性的公司里偏高，属于「已把较高增长预期计入价格」的状态（置信度：中）。这只说明价格贵，不等于公司好坏结论</li>
+<li>A/H 溢价：库内 A/H 对照返回空，该股非两地上市，本节不展开</li>
+</ul>
+<h2>C. 财务健康</h2>
+<p>近 4 期数据（库内财务，均为<strong>累计口径</strong>，金额单位亿元）：</p>
+<ul>
+<li><strong>2026 中报（截止 2026-06-30，披露 2026-08-20）</strong>：营收 66.10 ｜净利润 5.82 ｜同比 +26.07% / +56.34% ｜净资产收益率 4.75% ｜毛利率 25.53% ｜净利率 8.67% ｜每股收益 0.73 元｜资产负债率 37.02%</li>
+<li><strong>2026 一季报（截止 2026-03-31，披露 2026-04-23）</strong>：营收 27.73 ｜净利润 2.40 ｜同比 +24.79% / +59.76% ｜净资产收益率 2.35% ｜毛利率 26.83% ｜净利率 8.38% ｜每股收益 0.30 元｜资产负债率 43.13%</li>
+<li><strong>2025 年报（截止 2025-12-31，披露 2026-04-23）</strong>：营收 119.29 ｜净利润 9.46 ｜同比 +44.20% / +43.10% ｜净资产收益率 9.86% ｜毛利率 23.43% ｜净利率 7.81% ｜每股收益 1.21 元｜资产负债率 37.92%</li>
+<li><strong>2025 三季报（截止 2025-09-30，披露 2025-10-25）</strong>：营收 85.32 ｜净利润 7.19 ｜同比 +58.65% / +54.95% ｜净资产收益率 7.61% ｜毛利率 23.14% ｜净利率 8.17% ｜每股收益 0.92 元｜资产负债率 39.94%</li>
+</ul>
+<p><strong>趋势判断（不是罗列，说哪一项在变好、哪一项要盯）</strong></p>
+<ol>
+<li><strong>营收增速放缓，但利润增速仍高于营收增速</strong>：营收同比从 2025 年前三季的 58.65%、2025 全年的 44.20%，回落到 2026Q1 的 24.79%、中报的 26.07%；同期净利润同比维持在 54.95%→43.10%→59.76%→56.34%。也就是说增长还在，只是不如 2025 年那么快，同时盈利质量在改善（置信度：高）</li>
+<li><strong>毛利率是本轮最明显的正向变化，但已有回落</strong>：从 2025 前三季的 23.14%、2025 全年的 23.43%，抬升到 2026Q1 的 26.83%，中报回到 25.53%——中报比一季报<strong>低 1.31 个百分点</strong>（据两期毛利率推算）。毛利率是否见顶，是三季报最该核的一项（置信度：中）</li>
+<li><strong>净利率连续抬升</strong>：7.81%（2025 全年）→ 8.38%（2026Q1）→ 8.67%（中报），说明费用端没有吃掉毛利率的改善（置信度：高）</li>
+<li><strong>二季度单季仍在环比增长</strong>：据中报与一季报累计数推算，2026Q2 单季营收约 38.36 亿元、单季净利润约 3.42 亿元，分别较一季度环比增长约 38.3%、42.6%（置信度：中，为推算值，非库内直接披露）</li>
+<li><strong>资产负债率下降 6.11 个百分点</strong>（2026Q1 的 43.13% → 中报的 37.02%），时点与 2026 年 6 月定增资金到账吻合，属于股权融资摊薄杠杆的正常结果（置信度：中，因果为推断）</li>
+<li><strong>净资产收益率的读法</strong>：中报 4.75% 是半年数，与 2025 全年 9.86% 不可直接比较；若下半年维持上半年节奏，全年有望高于 2025 年（置信度：低，属外推）</li>
+</ol>
+<p><strong>信息缺口</strong>：库内财务表只给到利润表与少数比率，<strong>没有经营活动现金流、应收账款、存货、分产品收入拆分</strong>。影响：无法验证「高增长有没有被应收和存货占用」，也无法把营收拆到 800G/1.6T 光模块等具体产品。补法：三季报披露后从公司公告原文补齐，或在库内财务表扩列后重跑本调研。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比给出的同行业三家（均为 2026 中报口径，市值与估值为库内最新）：</p>
+<ul>
+<li><strong>工业富联（601138）</strong> ｜总市值 12,158.48 亿元｜市盈率 25.92 倍｜市净率 6.92 倍｜营收 5,578.61 亿元｜净利润 237.40 亿元｜净资产收益率 13.86%</li>
+<li><strong>中际旭创（300308）</strong> ｜总市值 10,554.07 亿元｜市盈率 51.60 倍｜市净率 26.48 倍｜营收 417.78 亿元｜净利润 136.51 亿元｜净资产收益率 39.21%</li>
+<li><strong>新易盛（300502）</strong> ｜总市值 5,918.43 亿元｜市盈率 45.11 倍｜市净率 24.36 倍｜营收 209.10 亿元｜净利润 75.29 亿元｜净资产收益率 35.67%</li>
+<li><strong>光迅科技（002281·本股）</strong> ｜总市值 1,583.01 亿元｜市盈率 136.92 倍｜市净率 10.95 倍｜营收 66.10 亿元｜净利润 5.82 亿元｜净资产收益率 4.75%</li>
+</ul>
+<p><strong>这家在同行里处于什么位置</strong></p>
+<ol>
+<li><strong>体量最小</strong>：中报营收 66.10 亿元，只有中际旭创的约六分之一、新易盛的约三分之一（据库内营收推算）（置信度：高）</li>
+<li><strong>盈利能力差距最大</strong>：据库内中报营收与净利推算，中际旭创净利率约 32.7%、新易盛约 36.0%、工业富联约 4.26%，本股 8.67%（库内直接给出）。也就是说，本股的净利率明显低于两家光模块同行，接近代工属性的工业富联（置信度：中，同行净利率为推算值）</li>
+<li><strong>贵在市盈率、不贵在市净率</strong>：本股市盈率 136.92 倍是四家里最高的，但市净率 10.95 倍反而低于中际旭创的 26.48 倍与新易盛的 24.36 倍。这组反差指向同一件事——<strong>本股的净资产厚（有芯片与制造资产、且刚完成定增），但当期利润薄</strong>，所以按利润算贵、按净资产算不贵（置信度：中）</li>
+<li><strong>相对优劣</strong>：库内公司简介写明其具备「从芯片到器件、模块、子系统」的垂直整合能力，这是同行对比中最可能的差异点；但库内没有分产品营收，<strong>无法用财务数据证明这条能力已经转化成更高的盈利能力</strong>——从上面第 2 条看，目前还没有（置信度：中）</li>
+</ol>
+<h2>E. 护城河与商业模式</h2>
+<p>按「结构性 / 阶段性 / 无明显」三级诚实分档：</p>
+<p><strong>偏结构性的部分（置信度：中）</strong></p>
+<ul>
+<li><strong>垂直整合</strong>：库内公司简介载明公司具备从芯片到器件、模块、子系统的全系列产品能力，2013 年通过收购丹麦 IPX 切入核心芯片技术。在上游高端光芯片全球紧缺的背景下（见 F 节），自有芯片能力是真实的供给保障。但库内没有自供比例数据，<strong>无法量化这条护城河有多深</strong></li>
+<li><strong>技术与标准积累</strong>：库内简介称公司承担国家级项目一百余项，起草国家标准和通信行业标准一百五十项，申请国内外专利一千余件。标准参与度是通信器件行业的准入壁垒之一（置信度：中，来自公司自述的简介文本，非第三方核验）</li>
+</ul>
+<p><strong>偏阶段性的部分（置信度：中）</strong></p>
+<ul>
+<li><strong>客户与市场份额</strong>：库内简介引用第三方机构统计称 2016 年市场份额保持全球前五——这是<strong>十年前的数据</strong>，不能代表当前格局，本报告不据此下结论（置信度：低）</li>
+<li><strong>产能卡位</strong>：定增募资投向算力中心光连接产能（见 F 节），属于「跟上行业扩产节奏」的阶段性动作，同行同期也在扩产</li>
+</ul>
+<p><strong>明确的短板</strong></p>
+<ul>
+<li>中报净利率 8.67%，低于两家光模块同行的推算值（约 32.7%、36.0%）。<strong>如果垂直整合真的构成结构性护城河，它应该体现为更高而不是更低的净利率</strong>——目前的财务证据不支持「已形成定价权」这一说法（置信度：中）。这是本报告对护城河最保守的一处判断</li>
+</ul>
+<h2>F. 政策与监管</h2>
+<p>库内没有政策数据，本节全部为联网信息，每条带来源与日期。</p>
+<ol>
+<li><strong>上游高端光芯片供给紧张，构成行业级的供给约束</strong>（利好有自有芯片能力的厂商 / 利空纯模块组装厂）
+<ul>
+<li>2026 年全球 200G EML 芯片需求约 1.5 亿颗，可稳定交付的有效产能仅 5,000–8,000 万颗，供需缺口约 60%–70%；交期从 2025 年初的 12–16 周拉长到 2026 年中的 36–40 周（来源：虎嗅网行业分析、睿信咨询产业研究，均为 2026 年）</li>
+<li>扩产周期长：核心设备 MOCVD 交付周期 12–13 个月，从决定扩产到有效产能释放至少 18 个月（来源：睿信咨询产业研究 2026 年）</li>
+<li>传导链条：上游芯片紧缺 → 有芯片自供能力的厂商交付确定性更高 → 有利于本公司拿到订单，但也意味着<strong>没自供的部分同样要排队</strong>（置信度：中，为双源但均属行业研究类报道，非官方数据）</li>
+</ul></li>
+<li><strong>国产光芯片被列为产业政策支持方向</strong>
+<ul>
+<li>福建省工信厅 2026-06-15 转载的行业动态称「中国光芯片迎来迈向高端黄金窗口期」（来源：福建省工信厅网站 2026-06-15）</li>
+<li>传导方向：偏正面，但该文为行业动态转载、非具体扶持政策文件，<strong>不能据此推断有直接补贴或订单</strong>（置信度：低，单源未交叉验证）</li>
+</ul></li>
+<li><strong>出口管制</strong>：本次检索<strong>未找到</strong> 2026 年针对光模块或光芯片的具体出口管制措施信息（来源：本次公开检索结果，2026-09-18）。这是一个应当持续跟踪的变量，不是「确认没有风险」（置信度：低）</li>
+</ol>
+<p><strong>信息缺口</strong>：本节缺少工信部、发改委层面直接点名光电子器件的政策文件。影响：F 节的政策判断目前建立在行业研究报道上，权威性弱于官方文件。补法：跟踪 9 月 22–24 日 PT 展的官方论坛（见 I 节 W1），该论坛通常有主管部门参与并释放政策口径。</p>
+<h2>G. 题材与产业链关联</h2>
+<h3>G-1 这只票所在的热点方向（系统记录，2026-09-17 口径）</h3>
+<p>返回 5 个与该股概念标签相关的活跃方向，按与主营的相关度排列：</p>
+<p><strong>① 共封装光学与光通信（direction_id 570）——与主营直接对应，是本股的主线方向</strong></p>
+<ul>
+<li>阶段：系统记录为<strong>热度回落阶段</strong>，第 43 天，起始 2026-07-21</li>
+<li>为什么热 / 现在什么状况（系统记录原文要点）：共封装光学当天 4 家涨停、少于平时的 4.3 家，资金净流出 94.1 亿元、比大盘少涨 0.8 个百分点；光纤概念和 F5G 概念一家涨停都没有，分别净流出 9.6 亿元和 18.3 亿元；通信当天没到门槛</li>
+<li>相关的具体事情：华为超节点首次使用 NPO（近封装光学）、昇腾 960 提前发布带动超节点放量</li>
+<li>系统记录的风险：隔夜华为超节点用上了光电共封装技术、外资机构还上调了高速光模块需求预测，消息很好，钱却一天流出 94.1 亿元</li>
+<li>系统参考的新闻：2026-09-16「高盛大幅上调高速光模块需求预测，通信 ETF 广发（159507）标的指数大涨近 5%」；2026-09-16「AI 算力租赁商推出多机架英伟达 Vera Rubin NVL72 集群，机构称 NPO/CPO 光网络等成为核心增量赛道」</li>
+<li><strong>本报告的读法</strong>：消息面与资金面方向相反——利好在出，资金在走。这是典型的「消息兑现后资金先撤」状态，也是 A 节把方向定为震荡而不是偏涨的主要依据（置信度：中）</li>
+</ul>
+<p><strong>② PCB 与先进封装（direction_id 549）</strong>——热度回落阶段（起始日期系统未记录）。电路板概念当天只有 3 家涨停、少于平时的 4.8 家，净流出 91.1 亿元；先进封装只有 1 家涨停、平时 2.5 家；只有玻璃基板还净流入 9.8 亿元、已连续 4 天比大盘多涨。本股仅挂「先进封装」标签，见 G-2 分级。</p>
+<p><strong>③ 液冷服务器与人工智能算力（direction_id 637）</strong>——热度回落阶段，第 2 天，起始 2026-09-16。液冷服务器只有 1 家涨停、平时 4.0 家，净流出 43.6 亿元；英伟达概念净流出 18.6 亿元，前一天的启动只维持了 1 天。系统记录的风险：已经有连着 2 天涨停的公司公告提示液冷概念撑不起业绩。</p>
+<p><strong>④ AI 应用（direction_id 619）</strong>——延续阶段，第 15 天，起始 2026-08-28。国产大模型公司智谱说协同办公产品商业化快于预期、行业订单已超 10 亿元，写代码的用户两周增长超 100 万；智谱 AI 净流入 22.9 亿元、比大盘多涨 0.3 个百分点。系统记录的风险：智谱 AI 当天一家涨停都没有。<strong>本股只通过百度 / 腾讯 / 抖音等客户类标签沾边，无营收佐证</strong>。</p>
+<p><strong>⑤ 量子科技（direction_id 603）</strong>——热度回落阶段，第 2 天，起始 2026-09-16。当天一家涨停都没有，净流出 11.7 亿元、比大盘少涨 0.9 个百分点。<strong>本股只有标签，公司简介未提量子业务</strong>。</p>
+<h3>G-2 概念标签逐个分级（库内概念标签，同花顺口径，共 23 个）</h3>
+<p><strong>A 类：有库内证据支撑（真有业务或有财务佐证）</strong></p>
+<ul>
+<li><strong>光纤概念</strong>——主营即「光通信领域内光电子器件的研究、开发、制造和技术服务」，标签与主营一致（置信度：高）</li>
+<li><strong>2026 中报预增</strong>——库内中报净利润同比 +56.34%，与标签一致（置信度：高）</li>
+</ul>
+<p><strong>B 类：产业方向相关，但库内无营收拆分佐证</strong></p>
+<ul>
+<li><strong>共封装光学（CPO）</strong>——公开信息显示公司 1.6T 光模块已具备批量交付能力、3.2T 硅光单模 NPO 模块在国内头部云厂商完成系统验证（来源：OFweek 光通讯网 2026-05、股百科行业分析），但<strong>库内财报无 CPO 相关营收拆分</strong>，无法核实收入贡献（置信度：中）</li>
+<li><strong>5G / 6G 概念 / F5G 概念</strong>——均为公司所处通信设备行业的技术代际标签，与主营方向一致，但库内无分产品收入（置信度：中）</li>
+<li><strong>芯片概念</strong>——库内简介载明 2013 年收购丹麦 IPX 切入核心芯片技术，有业务基础，但无营收拆分（置信度：中）</li>
+<li><strong>先进封装</strong>——库内简介提到「高密封装技术」平台，但那指光器件封装；同花顺「先进封装」概念通常指半导体封装环节，<strong>两者口径不同</strong>，未见半导体先进封装营收佐证（置信度：低）</li>
+<li><strong>东数西算（算力）/ 数据中心（AIDC）</strong>——属下游需求侧标签，公司产品用于数据中心互联属合理推断，但库内无客户或应用场景收入拆分（置信度：低）</li>
+</ul>
+<p><strong>C 类：仅概念标签，未见营收佐证</strong></p>
+<ul>
+<li><strong>华为概念 / 百度概念 / 腾讯概念 / 阿里巴巴概念 / 抖音概念（字节概念）</strong>——均为客户类标签，库内<strong>没有任何客户结构或大客户收入占比数据</strong>，无法证实（置信度：低）</li>
+<li><strong>液冷服务器</strong>——公司主营为光电子器件，与液冷散热不是同一环节，未见营收佐证（置信度：低）</li>
+<li><strong>量子科技</strong>——库内公司简介、主营、经营范围均未提及量子相关业务（置信度：低）</li>
+<li><strong>国企改革 / 央企国企改革</strong>——库内简介写明前身为 1976 年成立的邮电部固体器件研究所，科研院所出身与标签方向一致，但<strong>库内没有股权结构数据</strong>，无法确认实际控制人性质（置信度：低）</li>
+<li><strong>股权转让（并购重组）</strong>——库内无佐证（置信度：低）</li>
+</ul>
+<p><strong>D 类：交易属性标签，不代表业务</strong></p>
+<ul>
+<li><strong>中证 500 成份股 / 深股通 / 融资融券</strong>——指数成份与交易通道属性，与基本面无关（置信度：高，指其性质判断）</li>
+</ul>
+<h3>G-3 产业链位置</h3>
+<ul>
+<li><strong>上游</strong>：光芯片（EML、硅光芯片）、磷化铟衬底、光学元件。公司通过 2013 年收购 IPX 具备部分芯片自供能力（库内简介），但自供比例不明。上游目前是<strong>卖方市场</strong>——200G EML 供需缺口约 60%–70%、交期 36–40 周（来源：虎嗅网、睿信咨询，2026 年），议价能力在上游</li>
+<li><strong>本环节</strong>：光电子器件与光模块制造，行业内厂商众多、同质化压力大，从本股 8.67% 的净利率与同行推算的 32.7%、36.0% 的差距看，<strong>本环节内部分化极大</strong>（置信度：中）</li>
+<li><strong>下游</strong>：电信运营商、互联网云厂商、AI 算力中心。下游集中度高（少数几家云厂商与运营商），议价能力在下游</li>
+</ul>
+<p><strong>一句话</strong>：两头受挤——上游芯片紧缺抬成本、下游客户集中压价格，这是本股净利率低于同行的最可能结构性原因（置信度：中，为推断，库内无成本结构数据可验证）</p>
+<h2>H. 消息面与市场情绪</h2>
+<h3>H-1 个股新闻</h3>
+<p><strong>信息缺口</strong>：库内新闻（近 60 日）返回<strong>空列表</strong>——近 60 天内，新闻库的已打标事件表里没有把本股列入命中清单的记录。这不等于市场上没有关于这家公司的新闻（G-1 引用的板块新闻里就出现过「光迅科技涨停」的标题，来源：腾讯新闻 2026-09-16），而是<strong>本项目新闻打标链路对这只票的覆盖为零</strong>。影响：H 节缺少个股层面的公告与事件线索，本节只能靠板块热点、涨停记录与资金数据支撑。补法：在新闻打标环节补入该股别名，或人工核对公司公告披露页。</p>
+<h3>H-2 涨停记录（库内涨停记录，近 180 日）</h3>
+<p>近 180 日共 <strong>12 个涨停日</strong>，说明这只票在这一轮里持续有情绪面关注（置信度：高）。最近三次：</p>
+<ul>
+<li><strong>2026-09-16</strong>：10:35 封板，全天 <strong>0 次开板</strong>，封单 3.40 亿元，当日板数 1 板（行业内当日涨停统计 1/1）</li>
+<li><strong>2026-09-07</strong>：13:18 首次封板、14:10 最后封板，<strong>1 次开板</strong>，封单 2.46 亿元</li>
+<li><strong>2026-08-07</strong>：10:07 首次封板、14:54 最后封板，<strong>4 次开板</strong>，封单 0.86 亿元（行业内当日涨停统计 2/4）</li>
+</ul>
+<p>更早的涨停日：2026-08-04、2026-07-09、2026-06-18、2026-06-15、2026-05-19、2026-05-11、2026-05-08、2026-04-17、2026-04-09（其中 2026-04-09 当日开板 8 次，封板质量最差）。</p>
+<p><strong>读法</strong>：12 次里只有 2026-05-11 一次是 2 连板，其余全是单日涨停。也就是说，这只票在这一轮里<strong>反复被资金关注，但没有形成连续涨停的强势形态</strong>，属于「跟随板块脉冲、次日不延续」的节奏（置信度：中）。最近一次 2026-09-16 封板早、零开板、封单 3.40 亿元，是近期封板质量最好的一次（置信度：高）。</p>
+<h3>H-3 资金与筹码（库内资金筹码）</h3>
+<ul>
+<li><strong>主力资金</strong>（近 20 个交易日，2026-08-21 至 2026-09-17）：特大单净流入 <strong>30.50 亿元</strong>；全口径净流入合计 <strong>-5.38 亿元</strong>（即净流出 5.38 亿元）；净流入为正的天数 9 天、为负 11 天</li>
+<li><strong>怎么读这组反向数据</strong>：特大单在净买入而全口径在净卖出，意味着<strong>大单进、中小单出</strong>，筹码从散户端向大单端转移。这是现象描述，不是买卖依据（置信度：中）</li>
+<li><strong>获利盘比例</strong>：筹码分布返回空——筹码数据库内仅覆盖关注票，该票暂无。因此无法给出获利盘比例，也就无法判断上方套牢盘密集程度与短线获利抛压大小</li>
+<li><strong>股东户数</strong>：截止 2026-06-30 为 <strong>306,550 户</strong>。库内<strong>没有上一期数据</strong>，无法计算环比变化，因此不能判断筹码是在集中还是在分散。股东户数为季度披露，天然滞后近 3 个月</li>
+</ul>
+<div class="callout"><strong>纪律声明</strong>：本节的资金流与筹码数据属于盘面现象，不是基本面证据。它们只在这里作为情绪面佐证，不进入 J 节逻辑链，也不单独支撑任何操作结论。</div>
+<h2>I. 未来 13 周事件日历</h2>
+<p>（库内事件日历（近 120 日）为主，联网补充的条目单独标注来源）</p>
+<ul>
+<li><strong>W1（2026-09-21 起）</strong>：2026 中国国际信息通信展览会（PT 展）9 月 22–24 日北京国家会议中心 · 行业会议 · 重要性高 · 影响：通信与算力方向的大展会，官方论坛「ICT 中国·高层论坛」有主管部门参与，可能释放政策口径，是 F 节政策缺口的补法（来源：库内事件日历 + PT 展官网、优展网，双源确认）</li>
+<li><strong>W1（同周）</strong>：华为 Mate 90 系列发布会 9 月 23 日深圳，首发新一代麒麟芯片 · 公司事件 · 重要性高 · 影响：本股挂华为概念标签，但该标签属 G-2 的 C 类（仅标签、无营收佐证），对基本面无实质影响（来源：库内事件日历）</li>
+<li><strong>W2（2026-09-28 起）</strong>：英伟达 Vera Rubin AI 计算平台预计 10 月 1 日开始交付 · 公司事件 · 重要性高 · 影响：直接关系高速光模块的下游需求节奏，是验证 A 节驱动 2 的第一个外部锚点（来源：库内事件日历）</li>
+<li><strong>W3（2026-10-05 起）</strong>：国庆假期及节后首个交易周（具体休市安排以交易所公告为准）· 本周无个股层面已知事件</li>
+<li><strong>W4（2026-10-12 起）</strong>：阿斯麦（ASML）10 月 14 日公布 2026 年第三季度财报 · 行业风向 · 重要性中 · 影响：半导体设备景气度风向标，间接影响算力硬件板块情绪；台积电 10 月 15 日公布第三季度财报并召开法说会 · 行业风向 · 重要性高 · 影响：AI 芯片需求最权威的印证，其资本开支指引直接影响光模块需求预期（来源：库内事件日历）</li>
+<li><strong>W5（2026-10-19 起）</strong>：<strong>公司 2026 年三季报披露窗口（推算）</strong> · 财报 · 重要性高 · 影响：本报告最关键的验证节点，核 C 节的营收增速与毛利率两条线。推算依据：2025 年三季报披露日为 2025-10-25（库内财务的公告日）（置信度：低，为按上年同期推算，实际日期以公司预约披露公告为准）</li>
+<li><strong>W6（2026-10-26 起）</strong>：三季报法定披露截止（深交所规定第三季度报告最晚 10 月 31 日披露）· 财报 · 重要性高 · 影响：无论 W5 是否披露，本周结束前必有结果（置信度：中，为交易所规则，非库内数据）</li>
+<li><strong>W7（2026-11-02 起）</strong>：本周无已知事件</li>
+<li><strong>W8（2026-11-09 起）</strong>：本周无已知事件</li>
+<li><strong>W9（2026-11-16 起）</strong>：本周无已知事件</li>
+<li><strong>W10（2026-11-23 起）</strong>：<strong>2026-11-27 限售股解禁</strong>，合计 14 万股、占流通盘约 0.0%（1 名股东，交易所官方解禁计划）· 公司事件 · 重要性低 · 影响：规模极小，实质冲击可忽略（来源：库内事件日历）</li>
+<li><strong>W11（2026-11-30 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-12-07 起）</strong>：本周无已知事件</li>
+<li><strong>W13（2026-12-14 起）</strong>：<strong>2026-12-16 限售股解禁</strong>，合计 1,295 万股、占流通盘约 1.6%（7 名股东，交易所官方解禁计划）· 公司事件 · 重要性中 · 影响：本窗口内规模最大的一次解禁，需注意时点前后的筹码压力（来源：库内事件日历）</li>
+</ul>
+<p><strong>关于定增的补充</strong>：公开报道称公司定增于 2026 年 6 月落地，最终发行 2,088.93 万股、募集资金总额 34.99 亿元、发行对象 8 名，发行价格较发行底价溢价逾四成（来源：新浪财经 2026-06-02）。库内事件日历中 W13 的 1,295 万股解禁与该次定增股数不完全一致，<strong>本报告不擅自把两者对应</strong>，以库内官方解禁计划为准（置信度：中）。</p>
+<h2>J. 逻辑链</h2>
+<p><strong>第 1 环（置信度：高）</strong> 因为库内中报显示营收 66.10 亿元、同比 +26.07%，净利润 5.82 亿元、同比 +56.34%，且净利率从 2025 年全年的 7.81% 抬升到 8.67% → 所以公司当前处在<strong>增收又增利、盈利质量改善</strong>的阶段。 可观察的验证：三季报（I 节 W5–W6）若净利率仍在 8.5% 以上，本环成立。</p>
+<p><strong>第 2 环（置信度：中）</strong> 因为外资机构将 2026–2028 年光模块市场空间预测分别上调 33%、81%、115%（界面新闻 / 腾讯新闻，2026-09-16），且上游 200G EML 芯片供需缺口约 60%–70%、交期拉长到 36–40 周（虎嗅网 / 睿信咨询，2026 年） → 所以行业处在<strong>需求预期上修 + 供给受限</strong>的组合里，具备芯片自供能力的厂商交付确定性相对更高。 可观察的验证：台积电 10 月 15 日法说会（I 节 W4）的 AI 资本开支指引；英伟达 Vera Rubin 平台 10 月 1 日起的交付节奏（I 节 W2）。</p>
+<p><strong>第 3 环（置信度：中）</strong> 因为公司具备从芯片到模块的垂直整合能力（库内简介），且定增 34.99 亿元投向算力中心光连接产能（新浪财经 2026-06-02），资产负债率已从 43.13% 降到 37.02% → 所以公司有<strong>承接下一轮扩产的资金与产能条件</strong>。 可观察的验证：三季报的在建工程与固定资产变化（库内无该字段，需查公告原文）。</p>
+<p><strong>第 4 环 —— 这是整条链最弱的一环（置信度：低）</strong> 第 1–3 环全部成立，也<strong>推不出「股价应该涨」</strong>。因为：当前市盈率（TTM）136.92 倍已高于行业中位数 104.69 倍，价格已经把较高增长预期计入；而中报净利率 8.67% 明显低于两家光模块同行的推算值（约 32.7%、36.0%），说明<strong>公司在产业链里拿到的利润份额并不占优</strong>。 如果这一环是对的，应该能观察到：即便三季报增速不差，股价也可能不创新高，而是围绕均线区间反复。</p>
+<p><strong>命门一句话</strong>：这条链的强度取决于「行业需求上修」这一条外部信息的真假，而它的两个来源指向同一份机构报告，属于单一信源的双次转载——<strong>这是全文最脆弱的支点</strong>（置信度：低）。</p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜触发：2026 年三季报单季营收同比高于中报的 26.07%，且毛利率环比中报的 25.53% 回升；同时台积电 10 月 15 日法说会上调 AI 资本开支指引｜路径：业绩与行业指引双重确认，估值高位得到盈利端支撑，股价在 MA20 上方逐级抬升，向前高方向修复</li>
+<li><strong>中性（50%）</strong>｜触发：三季报单季营收同比落在 15%–26% 区间，毛利率与中报持平或小幅回落；行业指引无明显变化｜路径：基本面不提供新增驱动，股价以 MA20 为中枢宽幅震荡，跟随光通信板块整体节奏波动</li>
+<li><strong>悲观（25%）</strong>｜触发：三季报单季营收同比低于 15%，或毛利率较中报的 25.53% 下降 2 个百分点以上；或所在热点方向的资金流出状态延续、板块热度继续回落｜路径：高估值失去盈利端支撑，股价跌破 MA20 并向前低方向回落，12 月中旬解禁前后筹码压力叠加</li>
+</ul>
+<p>（三情景概率合计 100%。触发条件全部可用三季报数字、机构指引与库内热点记录核对。）</p>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong></p>
+<ol>
+<li><strong>如果</strong> 2026 年三季报（见 I 节 W5–W6）单季营收同比维持在中报口径的 26.07% 之上，<strong>且</strong>毛利率较中报的 25.53% 环比回升，<strong>那么</strong>可按原逻辑试仓或继续持有观察。</li>
+<li><strong>如果</strong>股价跌破 MA20 并连续 3 个交易日收在其下方，<strong>同时</strong>近 20 日主力资金（特大单）由当前的净流入 30.50 亿元转为净流出，<strong>那么</strong>减仓或观望。</li>
+<li><strong>如果</strong>在 2026-12-16 解禁（1,295 万股、约占流通盘 1.6%，见 I 节 W13）落地之前，股价已跌破 2026-09-16 涨停日收盘，<strong>那么</strong>回避在解禁时点前追高，等解禁落地后重新评估。</li>
+<li><strong>如果</strong>三季报显示净利率低于 8.0%（即低于 2026Q1 的 8.38% 与中报的 8.67%），<strong>那么</strong>视为 J 节第 1 环被证伪，回避。</li>
+</ol>
+<p><strong>风控要点（什么情况下这份判断应当被推翻）</strong></p>
+<ul>
+<li><strong>被推翻条件 A</strong>：三季报出现营收同比转负，或毛利率较中报的 25.53% 下降 2 个百分点以上 → C 节的盈利改善趋势不成立，A 节驱动 1 失效</li>
+<li><strong>被推翻条件 B</strong>：光模块行业需求预期被后续产业数据下修（可核验方式：台积电法说会资本开支指引、英伟达 Vera Rubin 交付进度）→ A 节驱动 2 与 J 节第 2 环同时失效</li>
+<li><strong>被推翻条件 C</strong>：公司披露大客户流失、订单取消或重大减值 → 整条逻辑链重估</li>
+<li><strong>被推翻条件 D（反向）</strong>：若三季报净利率跃升到两家同行的推算水平附近（30% 以上），则 J 节第 4 环（本报告最保守的一环）被证伪，本报告对估值的负面判断需要整体上修</li>
+</ul>
+<p><strong>仓位思路</strong></p>
+<ul>
+<li>当前状态下<strong>不宜重仓</strong>：估值处在高位（市盈率 136.92 倍高于行业中位 104.69 倍）、所在热点方向处在热度回落阶段、个股新闻覆盖为零导致消息面盲区大（置信度：中）</li>
+<li>若上述条件 1 成立，仓位可从「不参与 / 轻」向「轻至中」调整；若条件 2 或 4 成立，应向「轻 / 不参与」回退</li>
+<li>本节不给目标价、不给评级、不给具体金额与股数</li>
+</ul>
+<h2>M. 逻辑自查</h2>
+<p><strong>这份判断最依赖的假设是哪一条</strong></p>
+<p>最依赖的是「公司当前的高增长能延续到三季报」这一条（J 节第 1 环）。它建立在中报的两个同比数字（营收 +26.07%、净利润 +56.34%）上，而中报披露于 2026-08-20，距今已近一个月。<strong>如果三季报出现增速明显放缓，本报告的 A 节驱动 1、J 节第 1 环、K 节的乐观与中性情景会同时失效</strong>，方向判断会从「震荡」直接转向偏弱一侧。</p>
+<p><strong>有没有为了让逻辑好看而忽略的反面证据</strong></p>
+<p>有三处，此处明确列出：</p>
+<ol>
+<li><strong>毛利率已经在回落</strong>：从 2026Q1 的 26.83% 降到中报的 25.53%（下降 1.31 个百分点，据两期数据推算）。本报告在 C 节把毛利率写成「本轮最明显的正向变化」，但它其实已经出现拐点迹象，只是幅度还小（置信度：中）</li>
+<li><strong>营收增速的下降是连续的</strong>：58.65%（2025 前三季）→ 44.20%（2025 全年）→ 24.79%（2026Q1）→ 26.07%（中报）。虽然中报较一季报略有回升，但相比 2025 年的水平已接近腰斩。本报告用「增速放缓」描述它，是准确的，但 A 节把它列为「核心驱动」时，这一层下降趋势的权重被压低了</li>
+<li><strong>资金面与消息面方向相反</strong>：板块利好频出（华为超节点用 NPO、机构上调需求预测），而 2026-09-17 共封装光学方向单日净流出 94.1 亿元。本报告在 A 节风险 2 里写了，但在情景概率分配上给了乐观 25%，可能仍偏乐观（置信度：中）</li>
+</ol>
+<p><strong>信息缺口清单</strong></p>
+<ol>
+<li><strong>个股新闻覆盖为零</strong>：库内新闻（近 60 日）返回空列表。影响：无法获知公司近两个月的公告、订单、投资者关系活动等一手信息，H 节完全依赖板块数据支撑，这是本报告最大的单一缺口。补法：在新闻打标链路补入该股别名；或人工核对交易所公告披露页</li>
+<li><strong>筹码数据缺失</strong>：库内资金筹码的筹码分布为空——筹码数据库内仅覆盖关注票，该票暂无。影响：无法判断获利盘比例，因此说不出上方套牢盘是密集还是稀疏、短线获利抛压有多大</li>
+<li><strong>股东户数无环比</strong>：库内只有 2026-06-30 的 306,550 户，无上一期数据。影响：无法判断筹码在集中还是分散</li>
+<li><strong>财务表字段有限</strong>：库内无现金流、应收账款、存货、分产品收入。影响：无法验证高增长的现金质量，也无法把营收拆到 800G / 1.6T 光模块等具体产品，E 节的护城河判断因此只能停在定性层面</li>
+<li><strong>无股权结构数据</strong>：无法确认实际控制人性质，G-2 中「国企改革」「央企国企改革」两个标签只能归入未证实档</li>
+<li><strong>政策来源权威性不足</strong>：F 节的政策判断建立在行业研究报道与省级工信厅转载的行业动态上，缺少部委层面直接点名光电子器件的政策文件</li>
+<li><strong>库内 A/H 对照返回空</strong>：该股非两地上市，按规程本报告未展开 A/H 溢价分析，这是数据属性而非缺失</li>
+<li><strong>库内基础资料未调用</strong>：本次调研的股票代码由调用方直接给定（002281），无需按名称反查，故未使用该函数</li>
+</ol>
+<p><strong>联网与库内是否有冲突</strong>：本次未出现联网数据与库内数字相冲突的情况。G-1 引用的板块新闻标题「光迅科技涨停」（腾讯新闻 2026-09-16）与库内涨停记录记录的 2026-09-16 涨停日互相印证。</p>
+<p><strong>关于券商观点的说明</strong>：见下方独立段落，不与上述库内事实混在一起陈述。</p>
+<h2>附：卖方预期（独立列出，非事实）</h2>
+<p>库内研报收录近 90 天研报 <strong>7 篇、来自 6 家机构</strong>。评级分布：跑赢行业 1 篇、强烈推荐 1 篇、推荐类（正面）4 篇、增持 1 篇。</p>
+<div class="callout">按本报告纪律，此处不复述券商评级的具体用语，正面评级统一表述为「推荐类」。</div>
+<p>〔卖方预期〕来源：中金公司研报（库内）· 日期：2026-08-22 · 观点：预计 2026 年每股收益 2.02 元、净利润 16.74 亿元，对应当时股价市盈率 88.3 倍；2027 年每股收益 4.78 元、净利润 39.56 亿元，对应市盈率 37.4 倍 · 评级：跑赢行业 · 置信度：低（卖方预期非事实，未经交叉验证）</p>
+<p>〔卖方预期〕来源：招商证券研报（库内）· 日期：2026-08-20 · 观点：预计 2026 年每股收益 2.08 元、净利润 17.20 亿元，对应当时股价市盈率 85.6 倍；2027 年每股收益 5.02 元、净利润 41.59 亿元；2028 年每股收益 6.65 元、净利润 55.03 亿元 · 评级：强烈推荐 · 置信度：低（卖方预期非事实，未经交叉验证）</p>
+<p>〔卖方预期〕来源：太平洋证券研报（库内）· 日期：2026-07-27 · 观点：预计 2026 年每股收益 2.07 元、净利润 17.15 亿元，对应当时股价市盈率 93.09 倍；2027 年每股收益 3.50 元、净利润 28.94 亿元；2028 年每股收益 5.10 元、净利润 42.24 亿元 · 评级：推荐类 · 置信度：低（卖方预期非事实，未经交叉验证）</p>
+<p>〔卖方预期〕来源：西南证券研报（库内）· 日期：2026-09-03 · 观点：研报标题为「2026 年中报点评：AI 高速光互联需求提速，垂直整合打开成长空间」，库内未收录该篇的具体预测数字 · 置信度：低</p>
+<p>〔卖方预期〕来源：太平洋证券研报（库内）· 日期：2026-07-29 · 观点：研报标题为「受益国产算力投入加速，AI 算力业绩高增」，库内未收录该篇的具体预测数字 · 置信度：低</p>
+<p><strong>读这段的三个提醒</strong>（置信度：高）</p>
+<ol>
+<li>三家机构对 2026 年净利润的预测集中在 16.74 亿至 17.20 亿元之间，而库内中报净利润为 5.82 亿元——<strong>要达到预测值，下半年需实现约 11 亿元净利润，接近上半年的两倍</strong>（据库内中报与卖方预测值推算）。这个跨度有多大，读者需自行判断</li>
+<li>各家 2027 年预测分歧明显：净利润从太平洋证券的 28.94 亿元到招商证券的 41.59 亿元，<strong>最高比最低高出约 44%</strong>（据卖方预测值推算），说明行业本身的能见度有限</li>
+<li>研报中的市盈率是<strong>发布当日股价</strong>对应的值，与本报告 B 节的 136.92 倍（2026-09-17 收盘口径）不是同一时点，不可直接比较</li>
+</ol>
+<p><strong>来源列表（联网部分）</strong></p>
+<ul>
+<li><a href="https://www.jiemian.com/article/15102488.html" target="_blank" rel="noopener">高盛大幅上修光模块出货预期，2026-2028年TAM分别上调33%、81%、115%｜界面新闻 2026-09-16</a></li>
+<li><a href="https://news.qq.com/rain/a/20260916A06NPQ00" target="_blank" rel="noopener">高盛大幅上调高速光模块需求预测，通信ETF华夏快速走强，光迅科技涨停｜腾讯新闻 2026-09-16</a></li>
+<li><a href="https://www.huxiu.com/article/4878967.html" target="_blank" rel="noopener">光模块行业冰火两重天：低端产能过剩严重，高端200G EML芯片缺口达60%｜虎嗅网 2026</a></li>
+<li><a href="https://www.acgmc.com/?hangyedongtai%2F1556.html=" target="_blank" rel="noopener">高端高速光芯片全年供给缺口超30%，国产化窗口期开启｜睿信咨询 2026</a></li>
+<li><a href="https://gxt.fujian.gov.cn/zwgk/xw/hydt/xydt/202606/t20260615_7163218.htm" target="_blank" rel="noopener">中国光芯片迎来&quot;迈向高端&quot;黄金窗口期｜福建省工信厅 2026-06-15</a></li>
+<li><a href="https://fiber.ofweek.com/2026-05/ART-8100-2100-30687932.html" target="_blank" rel="noopener">1.6T已就位！光迅科技驶入光模块&quot;切换期&quot;｜OFweek光通讯网 2026-05</a></li>
+<li><a href="https://finance.sina.com.cn/roll/2026-06-02/doc-inhzyhit7962267.shtml" target="_blank" rel="noopener">光迅科技35亿元定增落地加码布局高速光模块业务｜新浪财经 2026-06-02</a></li>
+<li><a href="https://www.ptexpo.com.cn/zhxwn.html" target="_blank" rel="noopener">2026中国国际信息通信展览会（PT展）9月22-24日北京国家会议中心｜PT展官网</a></li>
+<li><a href="https://www.goodexpos.com/article/2775" target="_blank" rel="noopener">9月22-24日·北京｜2026中国国际信息通信展：展商名录全景解析｜优展网</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-18），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>市盈率136.92倍高于行业中位</li>
+      <li>光通信板块资金单日流出94.1亿</li>
+      <li>净利率8.67%远低于同行推算值</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.jiemian.com/article/15102488.html" target="_blank" rel="noopener">高盛大幅上修光模块出货预期，2026-2028年TAM分别上调33%、81%、115%｜界面新闻 2026-09-16</a> <em>2026-20</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260916A06NPQ00" target="_blank" rel="noopener">高盛大幅上调高速光模块需求预测，通信ETF华夏快速走强，光迅科技涨停｜腾讯新闻 2026-09-16</a> <em>2026-09-16</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.huxiu.com/article/4878967.html" target="_blank" rel="noopener">光模块行业冰火两重天：低端产能过剩严重，高端200G EML芯片缺口达60%｜虎嗅网 2026</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.acgmc.com/?hangyedongtai%2F1556.html=" target="_blank" rel="noopener">高端高速光芯片全年供给缺口超30%，国产化窗口期开启｜睿信咨询 2026</a></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://gxt.fujian.gov.cn/zwgk/xw/hydt/xydt/202606/t20260615_7163218.htm" target="_blank" rel="noopener">中国光芯片迎来&quot;迈向高端&quot;黄金窗口期｜福建省工信厅 2026-06-15</a> <em>2026-06-15</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://fiber.ofweek.com/2026-05/ART-8100-2100-30687932.html" target="_blank" rel="noopener">1.6T已就位！光迅科技驶入光模块&quot;切换期&quot;｜OFweek光通讯网 2026-05</a> <em>2026-05</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/roll/2026-06-02/doc-inhzyhit7962267.shtml" target="_blank" rel="noopener">光迅科技35亿元定增落地加码布局高速光模块业务｜新浪财经 2026-06-02</a> <em>2026-06-02</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.ptexpo.com.cn/zhxwn.html" target="_blank" rel="noopener">2026中国国际信息通信展览会（PT展）9月22-24日北京国家会议中心｜PT展官网</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.goodexpos.com/article/2775" target="_blank" rel="noopener">9月22-24日·北京｜2026中国国际信息通信展：展商名录全景解析｜优展网</a></li>
+      <li><span class="src-tag src-media">媒体</span> 界面新闻 2026-09-16、腾讯新闻 2026-09-16 <em>2026-09-16</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 置信度：中，双源同源于同一份机构报告 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 虎嗅网行业分析、睿信咨询产业研究，均为 2026 年 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 睿信咨询产业研究 2026 年 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 福建省工信厅网站 2026-06-15 <em>2026-06-15</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 本次公开检索结果，2026-09-18 <em>2026-09-18</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> OFweek 光通讯网 2026-05、股百科行业分析 <em>2026-05</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 虎嗅网、睿信咨询，2026 年 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内事件日历 + PT 展官网、优展网，双源确认 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内事件日历 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 置信度：中，负债率为库内数据，定增细节为联网来源新浪财经 2026-06-02 <em>2026-06-02</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 界面新闻 / 腾讯新闻，2026-09-16 <em>2026-09-16</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-18 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
