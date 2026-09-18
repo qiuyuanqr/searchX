@@ -147,3 +147,24 @@ test("无触发词的客观行情陈述一个字不动", () => {
   const ma = "截至 2026-08-31：MA5 30.19 元、MA20 29.24 元、MA60 34.65 元（据日 K 收盘价推算）";
   expect(stripAnchoredPrice(ma).text).toBe(ma);
 });
+
+// 可转债那一族的锚（2026-09-18 茂莱光学 688502 真实原文）：转股价、有条件赎回触发线都是
+// 公告里的客观刻度，写法完全合规，只是词表里没有，于是有锚也被当成裸价位、整篇搁置。
+test("转债刻度是合法锚：转股价 / 赎回触发线 剥数值后过闸", () => {
+  const cases = [
+    "如果股价跌破茂莱转债转股价 364.15 元（2026-06-22 起生效的当期转股价），那么观望",
+    "如果股价重新站上茂莱转债有条件赎回触发线＝转股价 364.15 元的 130%，那么倾向减仓",
+  ];
+  for (const s of cases) {
+    const out = stripAnchoredPrice(s).text;
+    expect(out).not.toContain("364.15");
+    expect(out).toContain("转股价");
+    expect(blocking(out)).toEqual([]);
+  }
+});
+
+// 反向守卫：H 节公告披露里的转股价是客观事实（读者要靠它知道锚是多少），无触发词不许动。
+test("公告披露的转股价一个字不动", () => {
+  const objective = "转股价 2026-06-22 起由 364.43 元/股调整为 364.15 元/股（公告原文）";
+  expect(stripAnchoredPrice(objective).text).toBe(objective);
+});
