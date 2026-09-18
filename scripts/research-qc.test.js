@@ -323,6 +323,22 @@ test("否定式隐私免责不是泄露（每篇都写，误报会让清单失�
   expect(r.blocking).toEqual([]);
 });
 
+test("枚举式免责里的裸「无」也是声明没有（全文无目标价、无评级、无用户持仓）", () => {
+  const r = checkFormat({
+    reportHtml: stockHtml("全文无目标价、无评级、无用户持仓与账户信息；操作倾向全部为条件式"),
+    type: "股票",
+  });
+  expect(r.blocking).toEqual([]);
+});
+
+test("守卫：裸「无」只认零间隔，隔着字就不豁免", () => {
+  const r = checkFormat({
+    reportHtml: stockHtml("这只票无亮点，按我的持仓成本价计算仍浮亏"),
+    type: "股票",
+  });
+  expect(r.blocking.join()).toContain("私人信息");
+});
+
 test("否定守卫不越界：真的写了个人持仓照样报", () => {
   const r = checkFormat({ reportHtml: stockHtml("这只票没有大涨，按我的持仓成本价计算仍浮亏"), type: "股票" });
   expect(r.blocking.join()).toContain("私人信息");
@@ -523,10 +539,22 @@ test("守卫：套牢带一旦当触发条件用 / 同段的情景区间，照�
 test("H 节事件表与正文引述库内新闻里的价位 → 不报（同属引用别人的报道）", () => {
   for (const s of [
     "2026-08-24｜茅台股价再次站上 1300 元（东方财富，情感 +0.7）→ 无基本面增量",
+    // 正分**不带「+」**是真实产出里的多数写法（存量实测无号 25 处）。第一版词表只收
+    // 「情感 +/-」，2026-09-17 茅台那篇就栽在这一个字符上、被整篇搁置。
+    "2026-08-24「茅台股价再次站上 1300 元」（情感 0.7）与 2026-09-03「新消费走到台前」",
+    "2026-09-15「股价跌破 1000 元关口」（情感 -0.1667）",
     "而库内新闻里 8-20 有“股价跌破 1000 元关口”（H 节第 3 条）",
   ]) {
     expect(checkFormat({ reportHtml: stockHtml(s), type: "股票" }).blocking).toEqual([]);
   }
+});
+
+test("守卫：带情感分不豁免同段的真触发条件", () => {
+  const r = checkFormat({
+    reportHtml: stockHtml("库内新闻情感 0.7 偏正面；若收盘价站上 1400 元则加仓"),
+    type: "股票",
+  });
+  expect(r.blocking.join()).toContain("1400");
 });
 
 test("守卫：提到新闻不豁免同段的真触发条件", () => {
