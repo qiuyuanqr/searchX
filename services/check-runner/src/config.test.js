@@ -95,4 +95,9 @@ describe("loadCheckRunnerConfig", () => {
     expect(loadCheckRunnerConfig({ ...BASE, CHECK_RUNNER_TIMEOUT_MINUTES: "abc" }).claudeTimeoutMs).toBe(30 * 60_000);
     expect(loadCheckRunnerConfig({ ...BASE, CHECK_RUNNER_TIMEOUT_MINUTES: "0" }).claudeTimeoutMs).toBe(30 * 60_000);
   });
+
+  it("obsidianVault 可选：缺省空串，配了去首尾空白", () => {
+    expect(loadCheckRunnerConfig(BASE).obsidianVault).toBe("");
+    expect(loadCheckRunnerConfig({ ...BASE, CHECK_RUNNER_OBSIDIAN_VAULT: " /Volumes/SS_SSD/obsidian " }).obsidianVault).toBe("/Volumes/SS_SSD/obsidian");
+  });
 });

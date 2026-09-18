@@ -123,6 +123,41 @@ describe("buildFactcheckPrompt", () => {
     expect(/≡{2,}/.test(p.split(BLOCK_START)[2].replace(BLOCK_END, ""))).toBe(false);
   });
 
+  // 回归（2026-09-18）：父任务是纯截图、本次空提交时，原本分隔线内外都没有原始内容，
+  // skill 只能凭上一篇笔记自己的描述再查一遍、还不知道自己缺了什么。
+  it("补证据重查：父任务为纯截图且图已取到 → 分隔线内点明有附图，分隔线外列出父任务附图路径", () => {
+    const p = buildFactcheckPrompt({
+      parentClaim: { text: "", link: "", imageCount: 2 },
+      parentImagePaths: ["/tmp/searchx-check/n1/prev-0.jpg", "/tmp/searchx-check/n1/prev-1.jpg"],
+      previousPath: "/tmp/searchx-check/n1/previous.md",
+    });
+    expect(p).toContain(`${BLOCK_START}\n〔上次核查的原始内容〕\n（上次核查另附 2 张截图，见分隔线外「上次核查的原始附图」）\n${BLOCK_END}`);
+    const i = p.indexOf("上次核查的原始附图（本地文件");
+    expect(i).toBeGreaterThan(p.indexOf(BLOCK_END));
+    expect(p).toContain("/tmp/searchx-check/n1/prev-0.jpg\n/tmp/searchx-check/n1/prev-1.jpg");
+  });
+
+  it("补证据重查：父任务有截图但已过期取不到 → 分隔线内写明「已过期不可用」，不列附图段", () => {
+    const p = buildFactcheckPrompt({ parentClaim: { text: "", link: "", imageCount: 1 }, previousPath: "/tmp/p.md" });
+    expect(p).toContain("〔上次核查的原始内容〕\n（上次核查的原始内容含 1 张截图，现已过期不可用；截图内容以上次笔记里的转述为准）");
+    expect(p).not.toContain("上次核查的原始附图（本地文件");
+  });
+
+  it("补证据重查：本次新附图与父任务附图分两段列出，互不混淆", () => {
+    const p = buildFactcheckPrompt({
+      imagePaths: ["/tmp/searchx-check/n1/0.jpg"],
+      parentClaim: { text: "说法", link: "", imageCount: 1 },
+      parentImagePaths: ["/tmp/searchx-check/n1/prev-0.jpg"],
+    });
+    expect(p.indexOf("附图为本地文件")).toBeLessThan(p.indexOf("上次核查的原始附图（本地文件"));
+    expect(p).toContain("〔上次核查的原始内容〕\n说法\n（上次核查另附 1 张截图");
+  });
+
+  it("parentClaim.imageCount 为 0 / 缺失：与旧格式完全一样", () => {
+    expect(buildFactcheckPrompt({ text: "x", parentClaim: { text: "a", link: "", imageCount: 0 } }))
+      .toBe(buildFactcheckPrompt({ text: "x", parentClaim: { text: "a", link: "" } }));
+  });
+
   it("parentClaim 为空对象 / 无 previousPath：与普通任务完全一样", () => {
     expect(buildFactcheckPrompt({ text: "x", parentClaim: {} })).toBe(buildFactcheckPrompt({ text: "x" }));
     expect(buildFactcheckPrompt({ text: "x", parentClaim: null })).toBe(buildFactcheckPrompt({ text: "x" }));

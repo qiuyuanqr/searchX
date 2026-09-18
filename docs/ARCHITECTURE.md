@@ -14,7 +14,7 @@
 |---|---|---|---|
 | research skill | `.claude/skills/research/SKILL.md` | 交互式 `/research`，或 runner spawn `claude -p` | 六步调研：分类→校正前提→检索→产出三件套→Obsidian→独立核验→push 上线 |
 | stock skill | `.claude/skills/stock/SKILL.md` | 交互式 `/stock`，或 research Step 0 判定「股票」自动转交 | A–M 框架单票投研；检索/产出/核验/上线全部复用 research |
-| factcheck skill | `.claude/skills/factcheck/SKILL.md` | 交互式 `/factcheck`，或 check-runner spawn | 真假+原委+可信度；产出仅落 Obsidian `Factcheck/`，**不进仓库不上线** |
+| factcheck skill | `.claude/skills/factcheck/SKILL.md` | 交互式 `/factcheck`，或 check-runner spawn | 真假+原委+可信度；产出落 Obsidian `Factcheck/`、整篇经私密 KV 回显手机页，**不进仓库不上公开站** |
 | 报告模板 | `.claude/skills/research/templates/report.html` | 被 research / stock 填充 `{{TOKEN}}` | 离线自包含的纸感报告页 |
 | 调研资产库 | `research/`（= `ARCHIVE_ROOT`） | skill 写入 | 每主题一文件夹（report.html / sources.md / notes.md [+data/]）+ `INDEX.md`；**同时是站点唯一数据源** |
 | 站点构建 | `web/build/`（入口 `cli.js`） | `bun run build`（本地）/ CI | 扫 `research/` → 渲染首页卡片 + 报告副本 + 4 个页面；构建期校验 + CSP 注入 + 缓存指纹 |
@@ -79,7 +79,7 @@
        │                          → claude -p "/factcheck ≡≡≡内容≡≡≡ + 附图路径 + 结果文件路径"
        │                          → 笔记落 OBSIDIAN_VAULT/Factcheck/（Obsidian Sync 回手机）
        │                          → 读 result.md(整篇；frontmatter summary=一行结论、title=列表标题)
-       └── POST /check/<id>/done {outcome,summary,title,result} ── 回传 KV，删图片字节
+       └── POST /check/<id>/done {outcome,summary,title,result} ── 回传 KV（图片字节保留到 7 天 TTL，供补证据重查取父任务截图）
 
 【链路 C · 支撑设施】
 

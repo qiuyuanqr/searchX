@@ -35,6 +35,7 @@ Cloudflare KV（check:* 键）
 | `src/poll.js` | `fetchPendingChecks` / `markCheckDone`（注入 fetch，离线可测） |
 | `src/factcheck-cmd.js` | `buildFactcheckPrompt({text,link,imagePaths,resultPath})` 拼 /factcheck 命令（纯函数） |
 | `src/result-signals.js` | `signalsFromResult(md)` 从结果文件的 frontmatter 取 `summary`（一行结论）与 `title`（列表标题），纯函数 |
+| `src/result-qc.js` | `qcResult(md)` 结果文件轻量质检（必填字段 / summary 格式 / 六节 / 来源条数对账），只出问题清单进日志，纯函数 |
 | `src/bark.js` | `buildBarkRequest` / `sendBark` Bark 推送（纯函数拼请求，注入 fetch 可测） |
 | `src/attempts.js` | 任务级失败计数（毒任务封顶用），持久化经注入 load/save，离线可测 |
 | `src/runner.js` | `runOnce(config,deps)` 编排，全部副作用经 deps 注入 |
@@ -62,6 +63,7 @@ bun test                          # 跑全部测试
 | `CHECK_RUNNER_BARK_URL` | — | Bark（iOS 推送）地址，形如 `https://api.day.app/<device_key>`；配了才在核查完成 / 失败时推送。默认正文只说"有一条核查完成"，不带内容 |
 | `CHECK_RUNNER_BARK_DETAIL` | — | 设 `1` 才把内容标题与一行结论带进推送（内容会经 Bark 服务器与 APNs 中转，默认不带；用户原文任何模式都不进推送） |
 | `CHECK_RUNNER_CHECK_PAGE_URL` | — | 核查页地址（如 `https://qiuyuanqr.github.io/check.html`），配了则点推送直达该页 |
+| `CHECK_RUNNER_OBSIDIAN_VAULT` | — | Obsidian 库根（与该机 `CLAUDE.local.md` 的 `OBSIDIAN_VAULT` 同值，如 `/Volumes/SS_SSD/obsidian`）。配了就在每轮开跑前探一下目录在不在：不在则 exit 1、任务留在队列、不跑 claude——否则外置盘没挂时 claude 会「退出码 0 无产出」，同一任务重试 3 次退休、只留一封看不出原因的失败邮件 |
 
 写到仓库根的 `.env`（已 gitignore，bun 自动加载）：
 
@@ -100,17 +102,18 @@ bun run check-runner
 ## 补证据重查 / 一键重试（2026-09-17）
 
 - **一键重试**：手机页对「失败」任务点「再试一次」→ Worker `POST /check/<id>/retry` 把它重排回 pending（清旧结论、`retries+1`），下一轮照常取到。为此 Worker 在 `done` 收到 `failed` 时**不再删图片**（图片仍受 7 天 TTL）。runner 侧退休时已清过 attempts 计数，重试从零计。
-- **补证据重查**：手机页对已完成任务点「补充证据 · 重查」→ Worker `POST /check/<id>/recheck` 新建一条挂 `parentId` 的任务。`/check/pending` 对这类任务附上 `parentResult`（父任务整篇笔记，可能已过期为 null）与 `parentClaim`（父任务原始 text/link）；runner 把整篇写成同目录的 `previous.md`、路径放进 prompt（同临时目录白名单），父任务原文放进分隔线内标「上次核查的原始内容」。skill 读 previous.md 当自己的前作、按新证据重查，新笔记开头写明上次裁定与本次是否变化。
+- **补证据重查**：手机页对已完成任务点「补充证据 · 重查」→ Worker `POST /check/<id>/recheck` 新建一条挂 `parentId` 的任务。`/check/pending` 对这类任务附上 `parentResult`（父任务整篇笔记，可能已过期为 null）与 `parentClaim`（父任务原始 text/link + `imageCount` 截图张数）；runner 把整篇写成同目录的 `previous.md`、路径放进 prompt（同临时目录白名单），父任务原文放进分隔线内标「上次核查的原始内容」，父任务截图逐张取到同目录 `prev-<n>.jpg` 列在分隔线外「上次核查的原始附图」（取不到即已过 7 天 TTL → 分隔线内写明「已过期不可用」，不算失败）。skill 读 previous.md 当自己的前作、按新证据重查，新笔记开头写明上次裁定与本次是否变化。**为此 Worker 在 done 时不再清图片字节**（2026-09-18 起；此前跑完即清）——父任务是纯截图时，图就是它唯一的原始内容；代价是图片在作者私密 KV 里多停留到 7 天 TTL。
 
 ## 失败 / 重跑语义
 
 - **退出码≠0**（claude 崩了 / skill 报错）：不标 done，任务留在 KV 里，下轮自动重试，同时该任务的失败计数 +1。
 - **退出码 0 但结果文件没写、结论 / 标题也取不到**：判为「未产出」，按失败处理（不标 done、计数 +1、留待重跑）。claude 因额度耗尽 / 拒答 / 上下文超限而「正常退出但什么也没干」时退出码同样是 0，若照常标完成，任务会永久出队、还发一封查不到东西的「结果已存进 Obsidian」通知。结论 / 全文 / 标题三个信号只要有一个有内容就算产出（单项缺失仍按老规矩降级）。
 - **结果信号文件准备失败**（磁盘满 / 权限 / 任务 id 形态非法）：整条按失败留待重跑，连 claude 都不跑。不能降级继续——那样上面那道「未产出」闸会被跳过，等于用一次准备失败换一封假的完成通知。
-- **markDone 回传失败**：核查其实已经跑完（Obsidian 笔记已落地），结果缓存在本机 `pending-done.json`，**下轮只补回传、不重跑核查**——重跑除了白烧额度还会在 Obsidian 里留下重复笔记。
+- **markDone 回传失败**：核查其实已经跑完（Obsidian 笔记已落地），结果缓存在本机 `pending-done.json`，**下轮只补回传、不重跑核查**——重跑除了白烧额度还会在 Obsidian 里留下重复笔记。有缓存的任务**不进退休**：补回传连败再多次也只是留到下轮（2026-09-18 修；此前退休判定排在补回传之前，连败 3 次会把一条已成功的核查标成「失败」）。
 - **失败达上限（默认 3 次，可用 `CHECK_RUNNER_MAX_ATTEMPTS` 调）**：任务"退休"——不再跑 claude，直接标 done 让它从 pending 消失，并发一封"核查失败、已停止重试"的通知邮件（不含核查内容明文）。这是毒任务封顶：没有它，一条永远跑不成功的任务会在 KV 7 天 TTL 内每轮完整烧一次 claude。
 - **失败计数存本机** `~/Library/Application Support/searchx-check-runner/attempts.json`，条目 8 天自动过期（略长于任务 KV 的 7 天 TTL）；文件丢失只是多重试几次，无碍。
 - **标 done 之后**：任务从 `/check/pending` 消失，不会重复处理。
+- **结果质检**：跑完读到 result.md 后过一遍 `result-qc.js`（必填字段、summary 是否可解析、六节是否齐、来源条数与 `source_count` 对账），不合格项只写进日志（`结果质检 <id>：N 项不合格 → …`），不拦截、不改判。
 - **notify 失败**（SMTP 出错）：记日志、不影响 markDone 和任务计数。
 
 ## 定时无人值守（Mac mini LaunchAgent）
@@ -149,4 +152,5 @@ rm ~/Library/LaunchAgents/com.searchx.check-runner.plist
 
 - **通知邮件不含核查内容明文**：正文只说"有一条核查已完成，请在 Obsidian 查看"，不回显核查的文本或链接。
 - **子进程剥掉 CHECK_RUNNER_\* 机密**：claude 子进程拿不到 Worker 凭据，缩小提示注入爆炸半径。
+- **整篇笔记会经 KV 回显到手机页**（凭 CHECK_KEY，7 天 TTL）：不上公开站、不进仓库，但严格说不再是「仅存本机」——README / CLAUDE.md 的「不上线」指的是不进公开站。
 - **单实例锁**：锁文件 `~/Library/Application Support/searchx-check-runner/check-runner.lock`，与 research runner 的锁路径不同，两个 runner 可以同时运行、互不影响。

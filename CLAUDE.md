@@ -1,6 +1,6 @@
 # searchX — 项目约定
 
-通用深度调研引擎，并自动发布为公开信息流站。三个能力：`/research`（通用调研，`.claude/skills/research/SKILL.md`）、`/stock`（单只股票深度投研，`.claude/skills/stock/SKILL.md`；research 判定为股票类时自动转交给它）——这两者发布到公开站；以及 `/factcheck`（事实核查，`.claude/skills/factcheck/SKILL.md`——核实真假 + 讲清原委 + 判断可信度，支持文本 / 图片 / 链接），**产出仅存本机 Obsidian、不上线**。围绕前两者有一条半自动流水线（站内提交 → 审核 → runner 自动跑 → 发布上线 → 邮件），代码在 `services/` 与 `web/`。完整地图见 `README.md`。
+通用深度调研引擎，并自动发布为公开信息流站。三个能力：`/research`（通用调研，`.claude/skills/research/SKILL.md`）、`/stock`（单只股票深度投研，`.claude/skills/stock/SKILL.md`；research 判定为股票类时自动转交给它）——这两者发布到公开站；以及 `/factcheck`（事实核查，`.claude/skills/factcheck/SKILL.md`——核实真假 + 讲清原委 + 判断可信度，支持文本 / 图片 / 链接），**产出存本机 Obsidian、整篇经私密通道（Worker KV，凭密钥、7 天过期）回显到手机核查页，不进仓库、不上公开站**。围绕前两者有一条半自动流水线（站内提交 → 审核 → runner 自动跑 → 发布上线 → 邮件），代码在 `services/` 与 `web/`。完整地图见 `README.md`。
 
 ## 路径变量（SKILL 引用）
 

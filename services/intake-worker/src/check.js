@@ -380,7 +380,11 @@ export async function handleCheckPending(request, env, opts = {}) {
       task.parentResult = await env.INTAKE_KV.get(`checkresult:${t.parentId}`);
       const praw = await env.INTAKE_KV.get(`check:${t.parentId}`);
       const p = praw ? parseTask(praw) : null;
-      task.parentClaim = p ? { text: String(p.text || ""), link: String(p.link || "") } : null;
+      // imageCount：父任务原始截图张数。runner 据此去 /check/<parentId>/image/<n> 取父任务的图给 skill
+      // （父任务是纯截图时，这是它唯一的原始内容）；图已过期取不到时，prompt 里写明「已不可用」。
+      task.parentClaim = p
+        ? { text: String(p.text || ""), link: String(p.link || ""), imageCount: Array.isArray(p.images) ? p.images.length : 0 }
+        : null;
     }
     tasks.push(task);
   }
@@ -512,15 +516,10 @@ export async function handleCheckDone(request, env, id, opts = {}) {
   try {
     await upsertIndexMerged(env, id, t, nowMsOf(opts));
   } catch {}
-  // 隐私加固：任务跑完即清图片字节（云端只停留到处理完）。best-effort——
-  // 删失败不该影响 done 的 200（任务已标完成，图片随 7 天 TTL 兜底过期）。
-  // failed（退休）不删：留给作者一键重试用（/check/<id>/retry），图片本就 7 天 TTL 兜底过期。
-  if (t.status === "done") {
-    const imgs = Array.isArray(t.images) ? t.images : [];
-    for (let n = 0; n < imgs.length; n++) {
-      try { await env.INTAKE_KV.delete(`checkimg:${id}:${n}`); } catch {}
-    }
-  }
+  // 图片字节不再在 done 时清掉（2026-09-18 改）：补证据重查要把父任务的原始截图再给 skill 一次，
+  // 纯截图任务被清了图就等于原始内容全没了，重查只能靠上一篇笔记自己的描述。代价要认：图片在
+  // 作者自己的私密 KV 里多停留到 7 天 TTL 到期（此前是跑完即清），凭 CHECK_RUNNER_SECRET 才能取。
+  // failed（退休）同样不删：留给作者一键重试用（/check/<id>/retry）。
   return json({ ok: true });
 }
 

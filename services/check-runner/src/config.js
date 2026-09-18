@@ -36,6 +36,11 @@ export function loadCheckRunnerConfig(env) {
     barkUrl: trimUrl(env.CHECK_RUNNER_BARK_URL || ""),
     barkDetail: String(env.CHECK_RUNNER_BARK_DETAIL || "").trim() === "1",
     checkPageUrl: t(env.CHECK_RUNNER_CHECK_PAGE_URL || ""),
+    // Obsidian 库根（可选）：配了就在每轮开跑前探一下目录在不在。Mac mini 的库在外置 SSD 上，盘没挂时
+    // claude 会「退出码 0 且无产出」→ 重试 3 次退休、只留一封看不出原因的失败邮件；探活让这种情况
+    // 在跑 claude 之前就以明确原因退出（exit 1 → scheduled-run 连败报警会带上原因）。
+    // 与 CLAUDE.local.md 里的 OBSIDIAN_VAULT 同值（那份是给 claude 读的，runner 只认环境变量）。
+    obsidianVault: t(env.CHECK_RUNNER_OBSIDIAN_VAULT || ""),
     claudeArgs: (env.CHECK_RUNNER_CLAUDE_ARGS || "--permission-mode bypassPermissions")
       .split(/\s+/)
       .filter(Boolean),

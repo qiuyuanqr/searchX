@@ -13,7 +13,7 @@ searchX/
 ├── .claude/skills/          ← 三个能力（skill）
 │   ├── research/            通用深度调研：SKILL.md + templates/report.html（报告模板）
 │   ├── stock/               单只股票深度投研（13 周情景 + 条件触发）；research 判定为股票时自动转交，也可直接 /stock
-│   └── factcheck/           事实核查：核实真假 + 讲清原委 + 判断可信度（文本 / 图片 / 链接）；产出仅存本机 Obsidian，不上线
+│   └── factcheck/           事实核查：核实真假 + 讲清原委 + 判断可信度（文本 / 图片 / 链接）；产出存本机 Obsidian（整篇另经私密 KV 回显到手机核查页），不进仓库、不上公开站
 ├── research/                ← 调研资产库（ARCHIVE_ROOT，也是站点数据源）
 │   ├── INDEX.md             总索引（按日期倒序 + 板块标签，可检索）
 │   └── <YYYY-MM-DD>_<主题>/  每次调研一个文件夹：report.html / sources.md / notes.md [+ data/]
@@ -51,7 +51,7 @@ searchX/
 /research <对象>
 /research <对象> | <侧重点>
 /stock <名称或代码>          # 单只股票；research 判定为股票类时也会自动转交给它
-/factcheck <待核实内容>       # 事实核查：真假 + 原委 + 可信度（支持文本 / 图片 / 链接）；结果存本机 Obsidian，不上线
+/factcheck <待核实内容>       # 事实核查：真假 + 原委 + 可信度（支持文本 / 图片 / 链接）；结果存本机 Obsidian、经私密通道回显到手机核查页，不上公开站
 ```
 
 例：
@@ -74,7 +74,7 @@ research/<日期>_<主题>/
 
 同时把报告全文转成 Markdown、在 Obsidian `<OBSIDIAN_VAULT>/Research/<中文名>.md` 保存一份带 `[[双链]]` 的**完整**笔记（转换器 `scripts/report-to-obsidian.js`，中文文件名取自 INDEX「对象」列），并自动 `git push` 触发 Pages 部署、发布到公开站（`git push` 只推送已入库文件，`data/` 因 gitignore 不含在内；Obsidian 库在仓库外、不入 git）。
 
-> `/factcheck` 的产出不同：只在本机 Obsidian `<OBSIDIAN_VAULT>/Factcheck/` 存一份核查笔记（真假裁定 + 原委 + 可信度），**不进仓库、不上线**——它是仅供自己看的私人核查档。
+> `/factcheck` 的产出不同：在本机 Obsidian `<OBSIDIAN_VAULT>/Factcheck/` 存一份核查笔记（真假裁定 + 原委 + 可信度），整篇另经 Worker KV（凭密钥、7 天过期）回显到手机核查页，**不进仓库、不上公开站**——它是仅供自己看的私人核查档。
 
 ## 半自动流水线（朋友提交 → 自动上线）
 

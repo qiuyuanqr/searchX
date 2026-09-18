@@ -234,8 +234,6 @@ describe("runOnce", () => {
     expect(result).toEqual({ processed: 1, done: 1, fail: 0, retired: 0 });
   });
 
-  // ── 毒任务封顶：attempts 计数 + 达上限退休 ───────────────────
-
   // 内存版 attempts store，接口同 createAttemptsStore
   function memoryAttempts(initial = {}) {
     const map = { ...initial };
@@ -246,6 +244,94 @@ describe("runOnce", () => {
       dump: () => ({ ...map }),
     };
   }
+
+  // 回归（2026-09-18）：退休判定原本排在补回传之前——核查其实已成功、只是 /done 连续失败达上限，
+  // 第 4 轮会被标成「失败」，手机显示失败、发失败邮件，作者点重试又整条重跑、Obsidian 多一篇重复笔记。
+  it("有缓存结果的任务即使失败计数达上限也只补回传、不退休，回传成功即按 done 收尾", async () => {
+    const tasks = makeTasks(1);
+    const cache = { "task-0": { outcome: "done", summary: "属实（高）：确有其事", title: "某说法" } };
+    const doneArgs = [], failNotified = [], notified = [];
+    const attempts = memoryAttempts({ "task-0": 3 });
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id, info) => { doneArgs.push([id, info]); },
+      runFactcheck: async () => { throw new Error("不该重跑 claude"); },
+      buildPrompt: () => "/factcheck x",
+      attempts,
+      doneCache: { get: (id) => cache[id] || null, set: () => {}, clear: (id) => { delete cache[id]; } },
+      notify: async (t, p) => { notified.push(p); },
+      notifyFailure: async () => { failNotified.push(1); },
+      log: () => {},
+    };
+    const r = await runOnce({ maxAttempts: 3 }, deps);
+    expect(r).toEqual({ processed: 1, done: 1, fail: 0, retired: 0 });
+    expect(doneArgs).toEqual([["task-0", { outcome: "done", summary: "属实（高）：确有其事", title: "某说法" }]]);
+    expect(failNotified).toEqual([]);
+    expect(notified.length).toBe(1);
+    expect(attempts.dump()["task-0"]).toBeUndefined();   // 计数已清
+    expect(cache["task-0"]).toBeUndefined();              // 缓存已清
+  });
+
+  it("有缓存结果的任务补回传再次失败：计数继续加、仍不退休、不发失败通知", async () => {
+    const tasks = makeTasks(1);
+    const cache = { "task-0": { outcome: "done", summary: "属实（高）：x" } };
+    const doneArgs = [], failNotified = [];
+    const attempts = memoryAttempts({ "task-0": 3 });
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id, info) => { doneArgs.push(info.outcome); throw new Error("Worker 502"); },
+      runFactcheck: async () => { throw new Error("不该重跑 claude"); },
+      buildPrompt: () => "/factcheck x",
+      attempts,
+      doneCache: { get: (id) => cache[id] || null, set: () => {}, clear: (id) => { delete cache[id]; } },
+      notifyFailure: async () => { failNotified.push(1); },
+      log: () => {},
+    };
+    const r = await runOnce({ maxAttempts: 3 }, deps);
+    expect(r).toEqual({ processed: 1, done: 0, fail: 1, retired: 0 });
+    expect(doneArgs).toEqual(["done"]);   // 只试过补回传，从未尝试标 failed
+    expect(failNotified).toEqual([]);
+    expect(attempts.dump()["task-0"]).toBe(4);
+    expect(cache["task-0"]).toBeDefined();
+  });
+
+  // ── 结果质检：只写日志，不影响 markDone / 计数 ───────────────
+  it("qcResult 有问题只进日志，任务照常 markDone；qc 自身抛错也不影响主流程", async () => {
+    const tasks = makeTasks(2);
+    const logs = [], marked = [];
+    let qcCalls = 0;
+    const deps = {
+      fetchPending: async () => tasks,
+      markDone: async (id) => { marked.push(id); },
+      runFactcheck: async () => 0,
+      buildPrompt: () => "/factcheck x",
+      prepareVerdict: () => ({ resultPath: "/tmp/r.md", readVerdict: () => "属实（高）：x", readResult: () => "---\ntitle: t\n---\n## 真相直述", cleanup: () => {} }),
+      qcResult: (md) => { if (qcCalls++ > 0) throw new Error("boom"); return ["frontmatter 缺 note", "缺「## 来源」节"]; },
+      log: (m) => logs.push(m),
+    };
+    const r = await runOnce({}, deps);
+    expect(r).toEqual({ processed: 2, done: 2, fail: 0, retired: 0 });
+    expect(marked).toEqual(["task-0", "task-1"]);
+    expect(logs.some((m) => m.includes("结果质检 task-0：2 项不合格 → frontmatter 缺 note；缺「## 来源」节"))).toBe(true);
+    expect(logs.some((m) => m.includes("结果质检自身出错 task-1"))).toBe(true);
+  });
+
+  it("没回传全文（result 空）时不跑质检", async () => {
+    let calls = 0;
+    const deps = {
+      fetchPending: async () => makeTasks(1),
+      markDone: async () => {},
+      runFactcheck: async () => 0,
+      buildPrompt: () => "/factcheck x",
+      prepareVerdict: () => ({ resultPath: "/tmp/r.md", readVerdict: () => "属实（高）：x", readResult: () => null, cleanup: () => {} }),
+      qcResult: () => { calls++; return []; },
+      log: () => {},
+    };
+    await runOnce({}, deps);
+    expect(calls).toBe(0);
+  });
+
+  // ── 毒任务封顶：attempts 计数 + 达上限退休 ───────────────────
 
   it("runFactcheck 失败 → attempts.increment；成功 → attempts.clear", async () => {
     const tasks = makeTasks(2); // task-0 成功、task-1 失败

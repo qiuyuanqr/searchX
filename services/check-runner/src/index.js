@@ -3,7 +3,7 @@
 // 副作用集中在此（spawn claude / nodemailer / 文件锁 / 网络），不单测——逻辑都在被注入的纯函数里。
 
 import nodemailer from "nodemailer";
-import { mkdirSync, openSync, closeSync, writeSync, writeFileSync, readFileSync, rmSync, statSync, utimesSync } from "fs";
+import { mkdirSync, openSync, closeSync, writeSync, writeFileSync, readFileSync, rmSync, statSync, utimesSync, existsSync } from "fs";
 import { join } from "path";
 import { homedir, tmpdir } from "os";
 import { loadCheckRunnerConfig } from "./config.js";
@@ -13,6 +13,7 @@ import { buildFactcheckPrompt } from "./factcheck-cmd.js";
 import { createAttemptsStore } from "./attempts.js";
 import { runOnce } from "./runner.js";
 import { signalsFromResult } from "./result-signals.js";
+import { qcResult } from "./result-qc.js";
 import { buildChildEnv } from "../../runner/src/child-env.js";
 import { writeFileAtomic } from "../../runner/src/atomic-write.js";
 import { evaluateLock, formatLockFile, parseLockFile } from "../../runner/src/lock-policy.js";
@@ -114,11 +115,17 @@ function extFromMime(mime) {
   return "bin";
 }
 
-// 把一条任务的图片逐张下载、落成本机临时文件，返回 { imagePaths, cleanup }。
-// 无图返回空、空 cleanup。下载中途出错：先清半成品临时文件，再抛错（runOnce 据此把该条按失败重跑）。
+// 把一条任务的图片逐张下载、落成本机临时文件，返回 { imagePaths, parentImagePaths, cleanup }。
+// 无图返回空、空 cleanup。本任务的图下载中途出错：先清半成品临时文件，再抛错（runOnce 据此把该条按失败重跑）。
+// 补证据重查（task.parentId + parentClaim.imageCount>0）时顺带取父任务的截图落成 prev-<n>.<ext>——
+// 父任务是纯截图时这是它唯一的原始内容。父图 404（已过 7 天 TTL）**不算失败**：跳过、返回空的
+// parentImagePaths，prompt 会写明「已过期不可用」——按失败重跑只会在同一个 404 上撞 3 次退休；
+// 404 之外的错误（超时、5xx）照常抛，任务按失败留待重跑，别把网络抖动写成「已过期」。
 async function prepareCheckImages(task, { workerUrl, secret }) {
   const imgs = Array.isArray(task.images) ? task.images : [];
-  if (!imgs.length) return { imagePaths: [], cleanup: () => {} };
+  const pc = task.parentClaim && typeof task.parentClaim === "object" ? task.parentClaim : null;
+  const parentCount = task.parentId && pc && Number.isInteger(pc.imageCount) && pc.imageCount > 0 ? pc.imageCount : 0;
+  if (!imgs.length && !parentCount) return { imagePaths: [], parentImagePaths: [], cleanup: () => {} };
   const dir = taskTmpDir(task.id);
   const cleanup = () => { try { rmSync(dir, { recursive: true, force: true }); } catch {} };
   try {
@@ -130,7 +137,26 @@ async function prepareCheckImages(task, { workerUrl, secret }) {
       writeFileSync(p, bytes);
       imagePaths.push(p);
     }
-    return { imagePaths, cleanup };
+    const parentImagePaths = [];
+    if (parentCount) {
+      const parentId = assertSafeTaskId(task.parentId);
+      for (let n = 0; n < parentCount; n++) {
+        let got;
+        try {
+          got = await fetchCheckImage({ workerUrl, secret, id: parentId, n });
+        } catch (err) {
+          if (err && err.message === "image 404") {
+            console.log(`父任务附图已过期（${parentId} 第 ${n} 张 404），prompt 里写明不可用`);
+            continue;
+          }
+          throw err;
+        }
+        const p = join(dir, `prev-${n}.${extFromMime(got.mime)}`);
+        writeFileSync(p, got.bytes);
+        parentImagePaths.push(p);
+      }
+    }
+    return { imagePaths, parentImagePaths, cleanup };
   } catch (err) {
     cleanup();
     throw err;
@@ -271,6 +297,20 @@ async function main() {
     process.exit(1);
   }
 
+  // Obsidian 库目录探活（配了 CHECK_RUNNER_OBSIDIAN_VAULT 才探）。Mac mini 的库在外置 SSD 上，盘没挂时
+  // claude 会「退出码 0 且无产出」→ 同一任务重试 3 次退休、只留一封看不出原因的失败邮件。这里在
+  // 抢锁、跑 claude 之前就以明确原因 exit 1：任务原地留在 pending、不计失败次数，scheduled-run 的
+  // 连败报警（3 tick）会把这行原因带进邮件；盘挂回来下一 tick 自动恢复。
+  // 只探库根、不探 Factcheck/ 子目录——SKILL 规定子目录缺了 mkdir -p 即可，不是故障。
+  if (config.obsidianVault) {
+    let isDir = false;
+    try { isDir = existsSync(config.obsidianVault) && statSync(config.obsidianVault).isDirectory(); } catch {}
+    if (!isDir) {
+      console.error(`✗ Obsidian 库目录不存在或不是目录：${config.obsidianVault}（外置盘没挂？）→ 本轮不跑核查，任务留在队列`);
+      process.exit(1);
+    }
+  }
+
   // 超龄上限给足余量（claude 超时 + kill 宽限 + 网络缓冲），远高于任何一次合法核查任务的真实
   // 耗时，只用来兜断电残留锁被复用 pid 判活的死锁——不会误杀正在跑的长任务。
   const release = acquireLock(config.claudeTimeoutMs + 30 * 60_000);
@@ -353,6 +393,7 @@ async function main() {
     },
     attempts: makeAttemptsStore(),
     doneCache: makeDoneCache(),
+    qcResult,   // 结果文件轻量质检：问题只进日志（见 runner.js）
     // 通知：邮件（配了 SMTP）+ Bark 推送（配了 CHECK_RUNNER_BARK_URL），各自 best-effort、互不影响。
     // 邮件正文绝不含核查内容明文（隐私红线）——只提示"去看"；Bark 默认同样不带内容，
     // 只有 CHECK_RUNNER_BARK_DETAIL=1 才带内容标题与一行结论（见 bark.js 顶部的取舍说明）。

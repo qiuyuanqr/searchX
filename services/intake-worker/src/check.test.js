@@ -593,9 +593,9 @@ test("image：无 mime metadata → content-type 兜底 octet-stream", async () 
   expect(res.headers.get("content-type")).toBe("application/octet-stream");
 });
 
-// ── done 清图（隐私加固）───────────────────────────────────────
+// ── done 不清图（2026-09-18 起：补证据重查要用父任务的原始截图；图片随 7 天 TTL 过期）──
 
-test("done：标完成同时清掉 checkimg:<id>:* 图片字节", async () => {
+test("done：标完成后 checkimg:<id>:* 图片字节保留（供补证据重查取父任务截图）", async () => {
   const kv = fakeKV({
     "check:t1": JSON.stringify({ text: "", link: "", status: "pending", createdAt: NOW(), images: [{ mime: "image/jpeg", size: 3 }, { mime: "image/jpeg", size: 4 }] }),
     "checkimg:t1:0": new Uint8Array([1, 2, 3]).buffer,
@@ -605,9 +605,9 @@ test("done：标完成同时清掉 checkimg:<id>:* 图片字节", async () => {
   const res = await postDone(env, "t1", { "x-check-runner-secret": "RS_GOOD" });
   expect(res.status).toBe(200);
   expect(JSON.parse(kv.store.get("check:t1")).status).toBe("done");
-  // 图片字节已清
-  expect(kv.store.has("checkimg:t1:0")).toBe(false);
-  expect(kv.store.has("checkimg:t1:1")).toBe(false);
+  // 图片字节保留
+  expect(kv.store.has("checkimg:t1:0")).toBe(true);
+  expect(kv.store.has("checkimg:t1:1")).toBe(true);
 });
 
 test("done：无图任务照常标完成（images 缺失不报错）", async () => {

@@ -129,7 +129,7 @@ test("recheck：父任务 done → 新建任务挂 parentId/parentTitle，载荷
   const p = await (await pending(env)).json();
   const mine = p.tasks.find((x) => x.id === id);
   expect(mine.parentResult).toContain("上次的笔记");
-  expect(mine.parentClaim).toEqual({ text: "原始说法", link: "https://e.com/a" });
+  expect(mine.parentClaim).toEqual({ text: "原始说法", link: "https://e.com/a", imageCount: 0 });
   // 无父任务的普通任务不带这两个字段
   const plain = p.tasks.find((x) => x.id === "plain");
   expect(plain.parentResult).toBeUndefined();
@@ -143,7 +143,7 @@ test("recheck：父结果已过期 → parentResult 为 null 但任务照常下�
   const p = await (await pending(env)).json();
   const mine = p.tasks.find((x) => x.id === id);
   expect(mine.parentResult).toBeNull();
-  expect(mine.parentClaim).toEqual({ text: "某说法", link: "" });
+  expect(mine.parentClaim).toEqual({ text: "某说法", link: "", imageCount: 0 });
 });
 
 test("recheck：父任务 pending / failed → 409；不存在 404；错密钥 401；超长 400", async () => {
