@@ -7,7 +7,7 @@ import { test, expect } from "bun:test";
 import {
   stripTags, blocksWithLinks, citedNumbers, numberVariants, containsNumber,
   normalizePage, looksUnrendered, matchNumberInPages, planChecks, classify,
-  renderReport, renderChallenge, pageNumbers, scaledCandidates, matchPower,
+  renderReport, renderChallenge, pageNumbers, scaledCandidates, matchPower, resolveBin,
 } from "./check-web-numbers.js";
 
 // ========== HTML → 带链接的块 ==========
@@ -339,4 +339,19 @@ test("守卫：单字母缩写 m/b 不许在「13 months」「4 bytes」这类�
   expect(hit("deal worth $4B, closed", "40", "亿美元")).toBe(true);            // $ 前缀
   expect(hit("volume 13M, up 5%", "1300", "万颗")).toBe(true);                 // 后接非字母
   expect(hit("13 million HBM stacks", "1300", "万颗")).toBe(true);             // 全词后面接字母也认（空白已删）
+});
+
+// ========== 外部程序定位 ==========
+// launchd 拉起的 runner 只有系统 PATH，/opt/homebrew/bin 不在里面：poppler 装了、pdftotext 照样找不到，
+// 所有 PDF 来源静默「未测」（2026-09-18 Mac mini 实测）。
+
+test("resolveBin：PATH 找不到时退到 Homebrew 固定路径；环境变量可强制指定；都没有返回 null", () => {
+  const none = () => null;
+  expect(resolveBin("pdftotext", { env: {}, which: none, exists: (p) => p === "/opt/homebrew/bin/pdftotext" }))
+    .toBe("/opt/homebrew/bin/pdftotext");
+  expect(resolveBin("pdftotext", { env: {}, which: () => "/usr/local/bin/pdftotext", exists: () => true }))
+    .toBe("/usr/local/bin/pdftotext");                       // PATH 里有就用 PATH 的
+  expect(resolveBin("pdftotext", { env: { SEARCHX_PDFTOTEXT: "/x/pdftotext" }, which: none, exists: () => false }))
+    .toBe("/x/pdftotext");                                   // 环境变量优先于一切
+  expect(resolveBin("pdftotext", { env: {}, which: none, exists: () => false })).toBe(null);
 });

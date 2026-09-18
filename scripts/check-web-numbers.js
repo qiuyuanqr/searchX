@@ -336,6 +336,24 @@ export function looksUnrendered(text) {
   return normalizePage(text).length < MIN_RENDERED_CHARS;
 }
 
+// 外部程序的定位：先按 PATH 找，找不到再试 Homebrew / MacPorts 的固定安装位。
+// 非交互 ssh、裸 launchd 这类环境只有系统 PATH（实测 Mac mini 上 `ssh mac-mini` 里是
+// /usr/bin:/bin:/usr/sbin:/sbin，连 brew 都找不到），装了 poppler 也会静默「未测」。
+// runner 自己的 scheduled-run.sh 已经补了 /opt/homebrew/bin，这里是给其它启动方式兜底。
+// 同 CLAUDE.md「路径用固定值 + 环境变量可覆盖」：SEARCHX_PDFTOTEXT / SEARCHX_ICONV 可强制指定。
+const BIN_FALLBACKS = {
+  pdftotext: ["/opt/homebrew/bin/pdftotext", "/usr/local/bin/pdftotext", "/opt/local/bin/pdftotext"],
+  iconv: ["/usr/bin/iconv", "/opt/homebrew/bin/iconv"],
+};
+export function resolveBin(name, { env = process.env, which = (n) => Bun.which(n), exists = (p) => existsSync(p) } = {}) {
+  const forced = env[`SEARCHX_${name.toUpperCase()}`];
+  if (forced) return forced;
+  const onPath = which(name);
+  if (onPath) return onPath;
+  for (const p of BIN_FALLBACKS[name] || []) if (exists(p)) return p;
+  return null;
+}
+
 // 从 HTTP 响应体解码出文本。绝大多数来源是 UTF-8；GBK 系（老财经站）用 iconv 兜底——
 // bun 的 TextDecoder 不认 "gbk"（实测抛 Unsupported encoding label）。
 async function decodeBody(buf, contentType) {
@@ -347,7 +365,9 @@ async function decodeBody(buf, contentType) {
   )[1];
   if (declared && /gb(2312|k|18030)/i.test(declared)) {
     try {
-      const p = Bun.spawn(["iconv", "-f", "gb18030", "-t", "utf-8"], {
+      const bin = resolveBin("iconv");
+      if (!bin) throw new Error("iconv 不可用");
+      const p = Bun.spawn([bin, "-f", "gb18030", "-t", "utf-8"], {
         stdin: new Uint8Array(buf),
         stdout: "pipe",
         stderr: "ignore",
@@ -365,7 +385,9 @@ async function decodeBody(buf, contentType) {
 // 智谱那篇 20 条来源是 pdf.dfcfw.com，把它们误报成「数字不在页内」等于毁掉整份清单。
 async function pdfToText(buf) {
   try {
-    const p = Bun.spawn(["pdftotext", "-q", "-", "-"], {
+    const bin = resolveBin("pdftotext");
+    if (!bin) return null;
+    const p = Bun.spawn([bin, "-q", "-", "-"], {
       stdin: new Uint8Array(buf),
       stdout: "pipe",
       stderr: "ignore",
