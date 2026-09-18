@@ -178,10 +178,54 @@ export function containsNumber(pageText, needle) {
   return new RegExp(`(?<![\\d.])(?<!\\d,)${esc}(?![\\d])(?!,\\d)`).test(pageText);
 }
 
-// 页面文本归一：删掉全部空白。网页里「61.7 %」「108.96 亿元」中间常夹空格或换行，
-// 不归一会把本来在页内的数字判成不在。
+// 页面文本归一：删空白，但**两个数字之间要留一个分隔**。网页里「61.7 %」「108.96 亿元」中间常夹
+// 空格或换行，不归一会把本来在页内的数字判成不在；可 PDF 与英文表格里相邻数字往往**只隔空白**
+// （pdftotext 把「3,016,714,649.18 / 2,573,139,460.90」吐成两行），一律删光就粘成
+// 「3,016,714,649.182,573,139,460.90」——containsNumber 的数字边界当然卡不住、pageNumbers 也抽成一个
+// 怪数。2026-09-18 对英维克半年报 PDF 实测：1826 个独立成行的小数里 87% 原样搜不到、全部退成
+// 弱档「换算命中」；英文页面「2024 2025 108.96 61.7」则直接漏判。
+// 规则：前一个字符是数字、后一个是数字（或负号接数字）时保留一个空格，其余空白全删。
 export function normalizePage(text) {
-  return String(text || "").replace(/\s+/g, "");
+  return String(text || "")
+    .replace(/\s+/g, " ")
+    .replace(/(?<=\d) (?=\d|-\d)/g, "\u0000")
+    .replace(/ /g, "")
+    .replace(/\u0000/g, " ");
+}
+
+// 亿 / 万 对英文页面的写法：报告写「200 亿美元」，CNBC 写「$20 billion」；「1300 万颗」对应
+// 「13 million」。SKILL 明写科技类优先英文一手来源，缺这一档等于把英文来源整批报成假嫌疑
+// （2026-09-18 对 nvidia 那篇实跑：14 条「搜不到」里近半是这个形态）。
+// ⚠️ **必须带单位词**，不能把 200亿→「20」当裸数字候选：日期、章节号里的 20 满篇都是，裸数字候选
+// 会让「已找到」这档恒命中。归一后数字与字母之间的空白已删（「20 billion」→「20billion」），
+// 所以直接匹配「数字+单位词」；量级比对那一档**不加**这些倍数（它不读单位，加了就是同一个坑）。
+export function unitWordPatterns({ raw, value, tail }) {
+  const u = (String(tail || "").match(/^\s*(亿|万)/) || [])[1];
+  if (!u) return [];
+  const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // 归一后字母之间的空白也没了（「13 million HBM」→「13millionHBM」），所以**不能**在单位词后面
+  // 加「不许接字母」的守卫——全词 billion/million/thousand 与两字母 bn/mn 本身够独特，直接认；
+  // 单字母 B/M/K 太短（「13m」会在「13 months」→「13months」里命中），只在紧跟 $ 前缀
+  // （「$55.05B」）或后面不是字母时才认。
+  const mk = (n, full, short, label) => {
+    const s = fmtNum(n);
+    if (!s) return null;
+    const N = esc(s);
+    const re = new RegExp(
+      `(?:(?<![\\d.])${N}[-–]?(?:${full})|\\$${N}[-–]?${short}|(?<![\\d.])${N}[-–]?${short}(?![a-z]))`,
+      "i"
+    );
+    return { re, label };
+  };
+  const out = [];
+  if (u === "亿") {
+    out.push(mk(value / 10, "billion|bn", "b", "billion"));
+    out.push(mk(value * 100, "million|mn", "m", "million"));
+  } else {
+    out.push(mk(value / 100, "million|mn", "m", "million"));
+    out.push(mk(value * 10, "thousand", "k", "thousand"));
+  }
+  return out.filter(Boolean);
 }
 
 // ========== 量级比对（字符串搜不到时的第二档） ==========
@@ -241,6 +285,13 @@ export function matchNumberInPages(num, pages) {
   for (const p of pages) {
     for (const v of variants) {
       if (containsNumber(p.text, v)) return { hit: true, url: p.url, form: `原样「${v}」` };
+    }
+  }
+  // 英文单位词（billion / million）：带单位词的精确串，与「原样」同属强证据档。
+  for (const p of pages) {
+    for (const { re, label } of unitWordPatterns(num)) {
+      const m = p.text.match(re);
+      if (m) return { hit: true, url: p.url, form: `按英文 ${label} 口径原样搜到「${m[0]}」` };
     }
   }
   for (const p of pages) {

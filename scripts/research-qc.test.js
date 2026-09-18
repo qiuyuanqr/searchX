@@ -10,7 +10,7 @@ import { tmpdir } from "os";
 import {
   htmlToText, headings, reportNumbers, truthValues, candidates, reconciliationPower,
   checkNumbers, checkCoverage, checkFormat, runQc, renderReport, renderChallenge,
-  hasBlocking, STOCK_SECTIONS, FORBIDDEN_WORDS,
+  hasBlocking, strictShouldFail, STOCK_SECTIONS, FORBIDDEN_WORDS,
 } from "./research-qc.js";
 
 // 齐全的股票报告骨架：章节名取自 STOCK_SECTIONS 的 key（**不抄字面量**——
@@ -607,4 +607,23 @@ test("守卫：目录里什么都没有，仍报「未跑完」（别把没测�
   const r = runQc("2026-08-24_stock-000002", root);
   expect(r.ok).toBe(false);
   expect(r.error).toBeTruthy();
+});
+
+// ========== --strict 闸：质检没跑成不许当通过 ==========
+// 2026-09-18 审查：`--dir 不存在 --strict` 退出码 0。Step 6 拿它当 push 前的闸，等于检查器炸了也放行。
+// fail-open 只该用于「渲染清单」这类不致命路径；闸这一处，「没测」必须和「有红线」一样拦下。
+
+test("strictShouldFail：有硬红线 → 拦；质检未跑成（ok=false）→ 也拦；已丢弃 / 干净 → 放行", () => {
+  expect(strictShouldFail([{ ok: true, blocking: ["x"], review: [] }])).toBe(true);
+  expect(strictShouldFail([{ ok: false, blocking: [], review: [], error: "report.html 不存在" }])).toBe(true);
+  expect(strictShouldFail([{ ok: true, dropped: true, blocking: [], review: [] }])).toBe(false);
+  expect(strictShouldFail([{ ok: true, blocking: [], review: [] }])).toBe(false);
+  expect(strictShouldFail([])).toBe(false);
+});
+
+test("runQc 对不存在的目录返回 ok=false，且 strictShouldFail 据此拦下", () => {
+  const qc = runQc("1999-01-01_nonexistent", mkdtempSync(join(tmpdir(), "qc-strict-")));
+  expect(qc.ok).toBe(false);
+  expect(hasBlocking(qc)).toBe(false);           // 老口径：不算硬红线（所以老 --strict 放行了）
+  expect(strictShouldFail([qc])).toBe(true);     // 新口径：闸要拦
 });

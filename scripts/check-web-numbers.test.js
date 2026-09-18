@@ -271,3 +271,72 @@ test("质证清单只出 notFound 一档，且措辞是「质证」不是「判�
   expect(c).toContain("质证");
   expect(c).not.toContain("超时"); // untested 不进质证清单
 });
+
+// ========== 归一化不许把相邻数字粘成一串 ==========
+// 2026-09-18 审查：老 normalizePage 删掉**全部**空白，PDF 与英文表格里只隔空白的相邻数字会连成
+// 「3,016,714,649.182,573,139,460.90」。对英维克半年报 PDF 实测，1826 个独立成行的小数里 87%
+// 原样搜不到、全部退成弱档「换算命中」；英文页面「2024 2025 108.96 61.7」则直接漏判。
+
+test("normalizePage：数字之间保留一个分隔，数字与单位/中文之间的空白照删", () => {
+  expect(normalizePage("美国区收入占比 61.7 %\n，同比提升")).toBe("美国区收入占比61.7%，同比提升");
+  expect(normalizePage("净利润 136.51 亿元")).toBe("净利润136.51亿元");
+  expect(normalizePage("3,016,714,649.18\n\n2,573,139,460.90\n\n17.24%")).toBe("3,016,714,649.18 2,573,139,460.90 17.24%");
+  expect(normalizePage("Revenue 2024 2025 108.96 61.7")).toBe("Revenue2024 2025 108.96 61.7");
+  expect(normalizePage("123.45 -67.8")).toBe("123.45 -67.8"); // 负数也是数字，不能粘
+});
+
+test("PDF 表格式排布（数字只隔换行）：每个数字都能原样搜到", () => {
+  const page = normalizePage("营业收入（元）\n3,016,714,649.18\n\n2,573,139,460.90\n\n17.24%\n归母净利润\n249,027,196.66\n");
+  const mk = (raw, tail = " 元") => ({ raw, value: Number(raw.replace(/,/g, "")), tail });
+  const pages = [{ url: "https://a.com/1", text: page }];
+  for (const raw of ["3,016,714,649.18", "2,573,139,460.90", "249,027,196.66"]) {
+    const r = matchNumberInPages(mk(raw), pages);
+    expect(r.hit).toBe(true);
+    expect(r.form).toBe(`原样「${raw}」`);   // 强证据档，不是退化成「换算命中」
+    expect(Boolean(r.scaled)).toBe(false);
+  }
+  expect(matchNumberInPages(mk("17.24", "%"), pages).form).toBe("原样「17.24」");
+});
+
+test("英文表格（数字只隔空格）：不再被粘成一串而漏判", () => {
+  const page = normalizePage("Revenue 2024 2025 108.96 61.7 % of total");
+  expect(containsNumber(page, "61.7")).toBe(true);
+  expect(containsNumber(page, "108.96")).toBe(true);
+  expect([...pageNumbers(page)]).toContain(61.7);
+});
+
+// ========== 亿 / 万 ↔ billion / million ==========
+// 2026-09-18 审查：SKILL 明写科技类优先英文一手来源，而候选只有 万元/千元/元。对 nvidia 那篇实跑，
+// 14 条「搜不到」里 200 亿美元（$20 billion）/ 32 亿 / 40 亿 / 1300 万颗 都是这一形态，近半是假嫌疑。
+
+test("亿/万 能对上英文页面的 billion / million 写法（带单位词，强证据档）", () => {
+  const page = normalizePage("Nvidia is buying Groq for about $20 billion. Corning deal up to $3.2 billion; China stockpiled 13 million HBM stacks; revenue $55.05B, capex 1.2bn.");
+  const pages = [{ url: "https://a.com/1", text: page }];
+  const hit = (raw, tail) => matchNumberInPages({ raw, value: Number(raw), tail }, pages);
+  expect(hit("200", "亿美元").hit).toBe(true);
+  expect(hit("200", "亿美元").form).toContain("billion");
+  expect(Boolean(hit("200", "亿美元").scaled)).toBe(false);
+  expect(hit("32", "亿美元").hit).toBe(true);
+  expect(hit("1300", "万颗").hit).toBe(true);
+  expect(hit("1300", "万颗").form).toContain("million");
+  expect(hit("550.5", "亿").hit).toBe(true);   // 55.05B
+  expect(hit("12", "亿").hit).toBe(true);      // 1.2bn
+});
+
+test("守卫：billion/million 换算必须带单位词——页面里一个裸「20」不能证明「200 亿美元」", () => {
+  // 日期里的 20、章节号 20 满篇都是，若把 200亿→20 作为裸数字候选，等于把「已找到」这档变成恒命中。
+  const page = normalizePage("Published 2026-03-20. Section 20 covers pricing. The deal was worth 20 million dollars.");
+  const pages = [{ url: "https://a.com/1", text: page, nums: pageNumbers(page) }];
+  const r = matchNumberInPages({ raw: "200", value: 200, tail: "亿美元" }, pages);
+  expect(r.hit).toBe(false); // 20 million ≠ 200 亿，裸 20 也不算
+});
+
+test("守卫：单字母缩写 m/b 不许在「13 months」「4 bytes」这类词里命中，$ 前缀或后接非字母才算", () => {
+  const hit = (page, raw, tail) =>
+    matchNumberInPages({ raw, value: Number(raw), tail }, [{ url: "u", text: normalizePage(page), nums: new Set() }]).hit;
+  expect(hit("waited 13 months for delivery", "1300", "万颗")).toBe(false);   // 13m…onths：单字母后接字母
+  expect(hit("needs 4 bytes per entry", "40", "亿美元")).toBe(false);          // 4b…ytes
+  expect(hit("deal worth $4B, closed", "40", "亿美元")).toBe(true);            // $ 前缀
+  expect(hit("volume 13M, up 5%", "1300", "万颗")).toBe(true);                 // 后接非字母
+  expect(hit("13 million HBM stacks", "1300", "万颗")).toBe(true);             // 全词后面接字母也认（空白已删）
+});

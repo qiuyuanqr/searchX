@@ -678,6 +678,14 @@ export function hasBlocking(qc) {
   return Boolean(qc && qc.ok && qc.blocking && qc.blocking.length);
 }
 
+// --strict 闸的判定：有硬红线要拦，**质检本身没跑成也要拦**。
+// fail-open（出错当「没测」）只该用于渲染清单这类不致命的路径；闸这一处，「没测」和「有红线」
+// 必须同样挡下——否则 `--dir 不存在 --strict` 退出码 0（2026-09-18 实测），检查器炸了也放行。
+// 已丢弃（.dropped）的报告 runQc 返回 ok=true，本就不上线，不拦。
+export function strictShouldFail(qcs) {
+  return (qcs || []).some((qc) => !qc || !qc.ok || hasBlocking(qc));
+}
+
 // 终端清单。质检没跑成 → 明说「未跑完」，不写「一切正常」。
 export function renderReport(qc) {
   const L = [];
@@ -768,8 +776,11 @@ function main() {
   }
 
   let blocked = 0;
+  let notRun = 0;
+  const qcs = [];
   for (const d of dirs) {
     const qc = runQc(d);
+    qcs.push(qc);
     if (challenge) {
       const c = renderChallenge(qc);
       if (c) console.log(`\n===== ${d} =====\n${c}`);
@@ -778,9 +789,13 @@ function main() {
       console.log("");
     }
     if (hasBlocking(qc)) blocked += 1;
+    if (!qc.ok) notRun += 1;
   }
-  if (dirs.length > 1) console.log(`—— 共 ${dirs.length} 篇，${blocked} 篇有硬红线`);
-  if (strict && blocked) process.exit(1);
+  if (dirs.length > 1) console.log(`—— 共 ${dirs.length} 篇，${blocked} 篇有硬红线，${notRun} 篇质检未跑成`);
+  if (strict && strictShouldFail(qcs)) {
+    console.error(`\n✗ --strict：${blocked} 篇有硬红线、${notRun} 篇质检未跑成（未跑成不算通过）`);
+    process.exit(1);
+  }
 }
 
 if (import.meta.main) main();

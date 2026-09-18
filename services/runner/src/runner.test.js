@@ -942,3 +942,50 @@ test("待确认队列落盘失败：置 stateUnwritable，不再完全静默", a
   });
   expect(summary.stateUnwritable).toBe(true);
 });
+
+// ── 产出目录存在但 scanResearch 收不到、又不是 frontmatter 语法错：不能崩 ────────────
+// 2026-09-18 审查复现：这两种情形下 `after.find(...)` 为空，老代码直接在 `entry.href` 抛
+// TypeError——整轮中止、exit 1 报警、Issue 不贴 done、失败计数也不加，下一 tick 全额重跑，
+// 每 5 分钟烧一次直到人工干预。
+
+test("产出目录缺 notes.md（半成品）→ 按「研究未产出」计失败留待重跑，不抛错、不贴 done", async () => {
+  const fetchImpl = makeFetch();
+  const sent = [];
+  const summary = await runOnce(CONFIG, {
+    fetchImpl,
+    scanDirs: () => [],                                       // 缺 notes.md 的目录 scanResearch 不收
+    listOutputDirs: () => [{ dir: "2026-06-03_stablecoin", mtimeMs: 5000, hasNotes: false, parked: false }],
+    runResearch: async () => true,                            // claude 退出码 0
+    now: () => 3000,
+    sendEmail: async (m) => { sent.push(m); },
+    log: () => {},
+  });
+  expect(summary.failed).toBe(1);
+  expect(summary.published).toBe(0);
+  expect(summary.parked).toBe(0);
+  expect(sent).toEqual([]);
+  expect(fetchImpl.calls.some((c) => /\/issues\/7\/labels$/.test(c.url))).toBe(false); // 不贴 done，留待重跑
+});
+
+test("目录带 .parked 标记但没写 .parked.json 信号 → 仍按搁置处理（贴 done + 通知作者），不抛错", async () => {
+  const fetchImpl = makeFetch();
+  const sent = [];
+  const summary = await runOnce(CONFIG, {
+    fetchImpl,
+    scanDirs: () => [],                                       // scanDirs 已滤掉 .parked 目录
+    listOutputDirs: () => [{ dir: "2026-06-03_stablecoin", mtimeMs: 5000, hasNotes: true, parked: true }],
+    runResearch: async () => true,
+    readParkSignal: async () => null,                         // skill 漏写了信号文件
+    now: () => 3000,
+    sendEmail: async (m) => { sent.push(m); },
+    log: () => {},
+  });
+  expect(summary.parked).toBe(1);
+  expect(summary.failed).toBe(0);
+  expect(summary.published).toBe(0);
+  expect(fetchImpl.calls.some((c) =>
+    /\/issues\/7\/labels$/.test(c.url) && JSON.parse(c.opts.body).labels.includes("done")
+  )).toBe(true);
+  expect(sent.length).toBe(1);                                // 搁置通知发给作者
+  expect(sent[0].to).toBe("me@g.com");
+});

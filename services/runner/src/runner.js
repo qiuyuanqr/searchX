@@ -320,9 +320,25 @@ export async function runOnce(config, deps) {
     // research/.parked.json、不 push；这里读到就由持凭据的 runner 发邮件通知作者 + 评论 + 贴 done。
     // 必须在"无新文件夹"失败分支之前判定：park 也可能没产出可发布文件夹，但它不是失败、不该被重跑
     //（重跑大概率还 park、白费额度），且不能误判成"研究未产出留待重跑"。
-    const park = await readParkSignal();
+    // 本次产出目录的文件系统信息（缺不缺 notes.md、带不带 .parked），下面几个分支都要用。
+    const producedInfo = rawAfter.filter((d) => producedDirs.includes(d.dir));
+    let park = await readParkSignal();
     if (park) {
       await clearParkSignal(); // 先清信号：杜绝泄漏到本批后续 Issue（即便下面步骤抛错，信号也已清）
+    } else if (ok && producedInfo.some((d) => d.parked) && !after.some((e) => producedDirs.includes(e.dir))) {
+      // 目录带 .parked 搁置标记、却没写 research/.parked.json 信号（skill 把运行方式判成了交互式，
+      // 或写信号前被中断）。这仍然是一次搁置，不是失败：老代码走到下面 `entry.href` 直接抛
+      // TypeError，整轮中止、exit 1 报警、Issue 不贴 done、失败计数也不加，下一 tick 全额重跑，
+      // 每 5 分钟烧一次直到人工干预（2026-09-18 审查复现）。按搁置处理：贴 done 停重试 + 通知作者。
+      const folder = producedInfo.find((d) => d.parked).dir;
+      park = {
+        topic,
+        reason: `目录 ${folder} 带 .parked 搁置标记，但未写 research/.parked.json 信号（skill 漏写，按搁置处理）`,
+        unresolved: [],
+        folder,
+      };
+    }
+    if (park) {
       summary.parked++;
       log(`#${issue.number} 上线前核验未过，已搁置不发：${park.reason || topic}`);
       // 发邮件通知作者（尽力而为，失败不影响后续贴 done / 评论）
@@ -359,7 +375,6 @@ export async function runOnce(config, deps) {
     // scanResearch 收不到这些目录有三种原因，必须分开处理：缺 notes.md（半成品，重跑就能好）、
     // 被 park（另有分支）、以及 frontmatter 语法错（重跑修不好，只能人工订正）。
     // 只有第三种才该停跑——把前两种也一并停掉，等于第一次失败就永久放弃一条本可自愈的调研。
-    const producedInfo = rawAfter.filter((d) => producedDirs.includes(d.dir));
     const unparsable = producedInfo.filter((d) => d.hasNotes !== false && !d.parked);
     if (ok && producedDirs.length && !after.some((e) => producedDirs.includes(e.dir)) && unparsable.length) {
       summary.parked++;
@@ -392,7 +407,12 @@ export async function runOnce(config, deps) {
       continue;
     }
 
-    if (!ok || producedDirs.length === 0) {
+    // 正常每次 /research 只产出 1 个文件夹（SKILL Step 4），故取首个本次产出的目录即可。
+    // 产出了目录但 scanResearch 收不到、又不属于上面两个分支（典型：claude 退出码 0 却只写了
+    // report.html、没写 notes.md 的半成品）→ 按「研究未产出」计失败留待重跑，重跑就能好。
+    // 绝不能让 entry 为空继续往下走：老代码在这里对 undefined 取 .href 抛 TypeError 崩掉整轮。
+    const entry = after.find((e) => producedDirs.includes(e.dir));
+    if (!ok || !entry) {
       summary.failed++;
       const count = prevFails + 1;
       failures[issue.number] = count;
@@ -410,15 +430,13 @@ export async function runOnce(config, deps) {
         log(`#${issue.number} 失败计数无法持久化，本轮提前收工（不再开跑新研究，Issue 保持可重试）`);
         break;
       } else {
-        log(`#${issue.number} 研究未产出（claude 退出码非 0 或无新文件夹），连续第 ${count}/${maxFailures} 次，不贴 done，留待重跑`);
+        log(`#${issue.number} 研究未产出（claude 退出码非 0、无新文件夹、或产出目录缺 notes.md），连续第 ${count}/${maxFailures} 次，不贴 done，留待重跑`);
       }
       continue;
     }
     delete failures[issue.number]; // 研究成功即清零：只有「连续」失败才累计停跑
     await persistFailures();
 
-    // 正常每次 /research 只产出 1 个文件夹（SKILL Step 4），故取首个本次产出的目录即可。
-    const entry = after.find((e) => producedDirs.includes(e.dir));
     const url = `${config.siteBase}/${entry.href}`;
 
     // 研究已完成并 push：先贴 done，杜绝下个 tick 重复跑 /research（重研既费额度又再造文件夹）。
