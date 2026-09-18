@@ -401,16 +401,28 @@ async function pdfToText(buf) {
 
 // 抓一个 URL → {ok, text} 或 {ok:false, note}。**任何异常都吞掉**（同 research-qc：
 // 质检绝不能弄死一份跑了几十分钟的报告）。
-export async function fetchPage(url, { timeout = 12000 } = {}) {
+// https 被拒就换 http 再试一次：巨潮 static.cninfo.com.cn 对部分主机的 https 回 403、http 正常
+// （2026-09-18 Mac mini 实测：https 403 / http 200，MacBook 两者都通），而它是最主要的披露级来源。
+// 只在「https 且 403」这一种情形降级，且只降一次；结果里 note 写明走了 http，别让人以为原链接通。
+// 代价要认：http 抓回来的内容没有传输层完整性保证。本模块只是核验辅助、不是闸，而且比对的是
+// 「报告数字在不在页内」，被篡改成恰好等于报告数字的概率可以忽略。
+export async function fetchPage(url, { timeout = 12000, fetchImpl = fetch, _retried = false } = {}) {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), timeout);
   try {
-    const res = await fetch(url, {
+    const res = await fetchImpl(url, {
       signal: ctl.signal,
       redirect: "follow",
       headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml,application/pdf,*/*" },
     });
-    if (!res.ok) return { ok: false, note: `HTTP ${res.status}` };
+    if (!res.ok) {
+      if (res.status === 403 && !_retried && /^https:/i.test(url)) {
+        clearTimeout(timer);
+        const r = await fetchPage(url.replace(/^https:/i, "http:"), { timeout, fetchImpl, _retried: true });
+        return r.ok ? { ...r, note: "https 403，改走 http 抓到" } : { ok: false, note: `HTTP 403（换 http 再试：${r.note}）` };
+      }
+      return { ok: false, note: `HTTP ${res.status}` };
+    }
     const ct = res.headers.get("content-type") || "";
     const buf = await res.arrayBuffer();
     if (/pdf/i.test(ct) || /\.pdf$/i.test(new URL(url).pathname)) {

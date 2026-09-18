@@ -7,7 +7,7 @@ import { test, expect } from "bun:test";
 import {
   stripTags, blocksWithLinks, citedNumbers, numberVariants, containsNumber,
   normalizePage, looksUnrendered, matchNumberInPages, planChecks, classify,
-  renderReport, renderChallenge, pageNumbers, scaledCandidates, matchPower, resolveBin,
+  renderReport, renderChallenge, pageNumbers, scaledCandidates, matchPower, resolveBin, fetchPage,
 } from "./check-web-numbers.js";
 
 // ========== HTML → 带链接的块 ==========
@@ -354,4 +354,50 @@ test("resolveBin：PATH 找不到时退到 Homebrew 固定路径；环境变量�
   expect(resolveBin("pdftotext", { env: { SEARCHX_PDFTOTEXT: "/x/pdftotext" }, which: none, exists: () => false }))
     .toBe("/x/pdftotext");                                   // 环境变量优先于一切
   expect(resolveBin("pdftotext", { env: {}, which: none, exists: () => false })).toBe(null);
+});
+
+// ========== https 403 → http 兜底 ==========
+// 巨潮 static.cninfo.com.cn 对 Mac mini 的 https 回 403、http 正常（2026-09-18 实测），它是最主要的披露级来源。
+
+function fakeFetch(routes) {
+  const calls = [];
+  const fn = async (url) => {
+    calls.push(String(url));
+    const r = routes[String(url)] || { status: 404 };
+    const body = r.body || "";
+    return {
+      ok: r.status === 200, status: r.status,
+      headers: { get: () => r.ct || "text/html; charset=utf-8" },
+      arrayBuffer: async () => new TextEncoder().encode(body).buffer,
+    };
+  };
+  fn.calls = calls;
+  return fn;
+}
+const LONG = "营业收入 3,016,714,649.18 元。" + "正文填充。".repeat(400);
+
+test("https 回 403 → 换 http 再抓一次，成功时 note 写明走了 http", async () => {
+  const fetchImpl = fakeFetch({
+    "https://static.cninfo.com.cn/a.html": { status: 403 },
+    "http://static.cninfo.com.cn/a.html": { status: 200, body: LONG },
+  });
+  const r = await fetchPage("https://static.cninfo.com.cn/a.html", { fetchImpl });
+  expect(r.ok).toBe(true);
+  expect(r.note).toContain("http");
+  expect(r.text).toContain("3,016,714,649.18");
+  expect(fetchImpl.calls).toEqual(["https://static.cninfo.com.cn/a.html", "http://static.cninfo.com.cn/a.html"]);
+});
+
+test("http 也失败 → 仍报「未测」，且只降级一次；非 403 / 本就是 http 的不降级", async () => {
+  const both = fakeFetch({ "https://x.com/a": { status: 403 }, "http://x.com/a": { status: 403 } });
+  const r1 = await fetchPage("https://x.com/a", { fetchImpl: both });
+  expect(r1.ok).toBe(false);
+  expect(r1.note).toContain("403");
+  expect(both.calls.length).toBe(2);                       // 不会无限互试
+  const f500 = fakeFetch({ "https://x.com/b": { status: 500 } });
+  expect((await fetchPage("https://x.com/b", { fetchImpl: f500 })).note).toBe("HTTP 500");
+  expect(f500.calls.length).toBe(1);                       // 500 不降级
+  const fhttp = fakeFetch({ "http://x.com/c": { status: 403 } });
+  expect((await fetchPage("http://x.com/c", { fetchImpl: fhttp })).note).toBe("HTTP 403");
+  expect(fhttp.calls.length).toBe(1);                      // 本就是 http，没得降
 });
