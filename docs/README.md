@@ -44,6 +44,7 @@
 - [2026-06-09 股票查重（不重复调研）+ 提交侧安全加固](progress/2026-06-09-dedup-and-intake-hardening.md)
 - [2026-08-16 机器质检补第二条腿：联网数字回链核验](progress/2026-08-16-web-number-verification.md) — 挂了外链的数字回到那页搜一遍；不是闸，只出待质证清单喂给 Step 5.5
 - [2026-09-18 research skill 审查：核查路径修 4 处 + PDF 抓取兜底](progress/2026-09-18-research-skill-audit.md) — runner 半成品崩溃 / 数字粘连 / billion 口径 / --strict 闸；Mac mini 装 poppler、cninfo https 403 改走 http
+- [2026-09-23 质检补「位置式触发价位」+ 09-18 数字核查修复实效核对](progress/2026-09-23-position-price-redline.md) — 「股价回到成本 X 元上方」类漏网写法入质检与导入改写器，存量 10 篇真违规已改；09-18 修复实测生效但带出 3 条假命中（待修）
 
 **待办（backlog）**
 - [2026-07-04 全项目审查 · 优化建议待办](backlog/2026-07-04-audit-suggestions.md) — 31 条建议 + 3 UI 实测，三档分级，已全部完成，存档
