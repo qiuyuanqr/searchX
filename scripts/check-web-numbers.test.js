@@ -545,3 +545,37 @@ test("判据是内容本身：文件头 %PDF- 在前 1024 字节内就当 PDF（
   expect(r.note).toContain("PDF 未能提取文本");
   expect(r.note).not.toContain("网页");
 });
+
+// ========== 千以内整数：完整命中也要紧跟同单位（2026-09-23） ==========
+// 这类数只因带了 亿/万/% 才进清单，数值本身毫无辨识度。22 篇存量里 161 条这类原样命中，31 条页内
+// 找不到任何紧跟同单位的写法，逐条看几乎全是撞上别的东西（片段摘自真跑时抓到的原文）。
+
+test("千以内整数：撞上年限、链接编码、坐标轴、时刻的都不算找到", () => {
+  // 变异验证：matchNumberInPages 不传 requireUnit（恢复只卡数字边界），这四条会红
+  expect(hitOn("20", " 亿美元", "we are proud to expand our 20-year relationship with the team").hit).toBe(false);
+  expect(hitOn("88", "% 份额", "https://x.com/qf2qSlWWfnzt7r88HJVuoARa3b").hit).toBe(false);
+  expect(hitOn("40", "%， 客", "拓普集团100 80 60 40 20 0 -20 主营构成").hit).toBe(false);
+  expect(hitOn("30", "%，但目", "2025年08月26日10:30科创板日报头条号").hit).toBe(false);
+});
+
+test("千以内整数：紧跟同单位的照认；英文 percent 照认；撞掉假写法后轮到 billion 那档", () => {
+  expect(hitOn("57", "%。", "同比增长37.27%，占公司总营业收入57%，标志着").hit).toBe(true);
+  expect(hitOn("20", " 亿元、", "模型即服务平台拟投入20亿元").hit).toBe(true);
+  expect(hitOn("70", "% 份额", "capturing a record 70 percent share of the market").hit).toBe(true);
+  expect(hitOn("70", "% 份额", "a record 70 per cent share").hit).toBe(true);
+  const r = hitOn("20", " 亿美元", "our 20-year relationship; each company will receive $2 billion from the chip giant");
+  expect(r.hit).toBe(true);
+  expect(r.form).toContain("billion");   // 不是撞上「20-year」那个 20
+  // 千以上的整数、带小数的数不受这条管（辨识度够）
+  expect(hitOn("75,641", " 吨 +", "累计销售75,641.42吨，同比增长").hit).toBe(true);
+  expect(containsNumber("营收 3,016,714,649.18 元", "3,016,714,649.18", { unit: "元", requireUnit: false })).toBe(true);
+});
+
+test("「万亿」是一个单位：对得上 trillion / tn / $33t，对不上裸 t", () => {
+  expect(reportUnit(" 万亿美元")).toBe("万亿");
+  // 变异验证：去掉万亿↔trillion 等价，前两条会红（crypto 那篇「33 万亿美元」←「$33t」就是这么误伤的）
+  expect(hitOn("33", " 万亿美元", "Stablecoins processed $33t in 2025, topping Visa").hit).toBe(true);
+  expect(hitOn("33", " 万亿美元", "processed 33 trillion dollars").hit).toBe(true);
+  expect(hitOn("33", " 万亿美元", "shipped 33 tons in 2025").hit).toBe(false);
+  expect(hitOn("33", " 万亿美元", "全年稳定币结算额约33万亿美元").hit).toBe(true);
+});

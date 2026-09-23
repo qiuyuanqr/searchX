@@ -188,18 +188,40 @@ export function numberVariants({ raw, value, tail }) {
 //      全部挡掉，而上面那几条合理四舍五入全都紧跟同单位，照样命中。
 // 小数部分全是 0（「21.0%」「15,000,000.00」）就是同一个数，与裸数字命中同等对待。
 // 不传 `unit` 时（换算来的写法、或报告那个数本身没带单位），「N.xx」一律不认。
-export function containsNumber(pageText, needle, { unit = null } = {}) {
+//
+// `requireUnit`：连完整命中也要紧跟同单位才认。给**千以内的整数**用（matchNumberInPages 决定）——
+// 这类数只因为带了 亿/万/% 才进待核清单（citedNumbers），数值本身毫无辨识度。2026-09-23 对 22 篇
+// 存量实测：这类原样命中 161 条里有 31 条，页内找不到任何一处紧跟同单位的写法，逐条看几乎全是
+// 撞上了别的东西——「20 亿美元」←「20-year」「20 weeks」、「88%」← 链接里的「…7r88HJVuo…」、
+// 「40%」← 图表坐标轴「100 80 60 40 20 0」、「30%」←「10:30」、「90 亿美元」←「90% of」、
+// 「200 亿美元」←「$200 million」。而且它排在英文 billion 那档前面，撞上了就轮不到真写法去对。
+// 英文页面把 % 写成 percent / per cent 的，照认。
+export function containsNumber(pageText, needle, { unit = null, requireUnit = false } = {}) {
   const text = String(pageText || "");
   const s = String(needle);
   const esc = s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const re = new RegExp(`(?<![\\d.])(?<!\\d,)${esc}(?![\\d])(?!,\\d)`, "g");
+  let start = 0;
+  const unitOk = (i) => unitMatchesAt(text, i, unit, text[start - 1]);
+  const whole = (i) => !requireUnit || unitOk(i);
   for (const m of text.matchAll(re)) {
-    if (s.includes(".")) return true;
+    start = m.index;
     const end = m.index + m[0].length;
+    if (s.includes(".")) {
+      if (whole(end)) return true;
+      continue;
+    }
     const frac = text.slice(end).match(/^\.(\d+)/);
-    if (!frac) return true;
-    if (/^0+$/.test(frac[1])) return true;
-    if (unit && Number(`0.${frac[1]}`) < 0.5 && unitCharAt(text, end + frac[0].length) === unit) return true;
+    if (!frac) {
+      if (whole(end)) return true;
+      continue;
+    }
+    const after = end + frac[0].length;
+    if (/^0+$/.test(frac[1])) {
+      if (whole(after)) return true;
+      continue;
+    }
+    if (Number(`0.${frac[1]}`) < 0.5 && unitOk(after)) return true;
   }
   return false;
 }
@@ -218,8 +240,25 @@ export function unitCharAt(text, i) {
 }
 // 报告那个数自己的单位：数字后面第一个非空白字符（「 亿港元」→ 亿、「%）」→ %、「 吨 +」→ 吨）。
 // 「）」「，」这类标点不是单位，返回 null。
+// 「万亿」是一个单位（10^12），单拿「万」会把「33 万亿美元」读成 33 万——单独认出来。
 export function reportUnit(tail) {
-  return foldUnit(String(tail || "").replace(/^\s+/, "")[0]);
+  const t = String(tail || "").replace(/^\s+/, "");
+  if (/^(?:万亿|萬億)/.test(t)) return "万亿";
+  return foldUnit(t[0]);
+}
+
+// 页面第 i 个字符起，是不是报告那个单位。除了同一个字，还认英文页面的两种等价写法：
+// % ↔ percent / per cent；万亿 ↔ trillion / tn，或紧跟 $ 的单字母 t（「$33t」，同 billion 那档的
+// 单字母规矩——没有 $ 前缀的 t 不认，「33tons」「33times」满篇都是）。`prev` 是数字前一个字符。
+export function unitMatchesAt(text, i, unit, prev) {
+  if (!unit) return false;
+  const t = String(text || "");
+  if (unit === "万亿") {
+    if (/^(?:万亿|萬億)/.test(t.slice(i, i + 2))) return true;
+    return /^(?:trillion|tn)/i.test(t.slice(i, i + 8)) || (prev === "$" && /^t/i.test(t[i] || ""));
+  }
+  if (unitCharAt(t, i) === unit) return true;
+  return unit === "%" && /^per ?cent/i.test(t.slice(i, i + 8));
 }
 
 // 页面文本归一：删空白，但**两个数字之间要留一个分隔**。网页里「61.7 %」「108.96 亿元」中间常夹
@@ -381,7 +420,7 @@ function magnitudeEvidence(label, tok, idx, num) {
   switch (label) {
     case "原值": {
       const pu = unitCharAt(tok.next, 0);
-      if (pu) return pu === reportUnit(num.tail);
+      if (pu) return unitMatchesAt(tok.next, 0, reportUnit(num.tail));
       return String(num.raw).includes(".");
     }
     case "万元":
@@ -428,9 +467,13 @@ export function matchNumberInPages(num, pages) {
     if (ru === "亿" && same(x, num.value * 1e4)) return "万";
     return null;
   };
+  // 千以内的整数（只因带 亿/万/% 才进清单）连完整命中也要紧跟同单位（理由见 containsNumber）
+  const small = !String(num.raw).includes(".") && Math.abs(num.value) < 1000;
   for (const p of pages) {
     for (const v of variants) {
-      if (containsNumber(p.text, v, { unit: unitOf(v) })) return { hit: true, url: p.url, form: `原样「${v}」` };
+      const unit = unitOf(v);
+      const requireUnit = small && unit != null && unit === ru;
+      if (containsNumber(p.text, v, { unit, requireUnit })) return { hit: true, url: p.url, form: `原样「${v}」` };
     }
   }
   // 英文单位词（billion / million）：带单位词的精确串，与「原样」同属强证据档。
