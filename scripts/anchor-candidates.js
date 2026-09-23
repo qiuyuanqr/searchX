@@ -33,18 +33,22 @@
 
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { runQc } from "./research-qc.js";
+import { runQc, POSITION_VERB } from "./research-qc.js";
 import { TRIGGER, ANCHOR, stripAnchoredPrice } from "../services/stocks-import/src/price-anchor.js";
 
 const ARCHIVE = "research";
 const DIR_RE = /^\d{4}-\d{2}-\d{2}_.+$/;
 
-// 质检把命中原文放在「具体触发价位「…」」里。只取这一类，别把预测性价格区间、
-// 私人信息那些也拖进来——它们与锚词表无关。
-const BLOCKING_RE = /具体触发价位「([^」]+)」/;
+// 质检把命中原文放在「具体触发价位「…」」与「位置式触发价位「…」」里。只取这两类，
+// 别把预测性价格区间、私人信息那些也拖进来——它们与锚词表无关。
+// ⚠️ 2026-09-23 加位置式规则时这里只认「具体」一种，于是 11 篇被拦、本脚本却报
+// 「✅ 当前没有被拦下的价位」——质检加了新的拦截类别，这里要跟着认，否则就是假绿。
+const BLOCKING_RE = /(?:具体|位置式)触发价位「([^」]+)」/;
 
-const TRIGGER_HEAD_RE = new RegExp(`^(?:${TRIGGER})`);
-const NUM_TAIL_RE = /\d[\d,]*(?:\.\d+)?\s*(?:元|港元|美元|港币)\s*$/;
+// 位置式的「触发词」是 处于 / 在 / 回到 … 那张动词表，数值后面还跟着方位词。
+const TRIGGER_HEAD_RE = new RegExp(`^(?:${TRIGGER}|${POSITION_VERB})`);
+const INNER_VERB_RE = new RegExp(`^\\s*[^\\s\\d]{0,2}?(?:${TRIGGER}|${POSITION_VERB})`);
+const NUM_TAIL_RE = /\d[\d,]*(?:\.\d+)?\s*(?:元|港元|美元|港币)\s*(?:\*{1,2}|_{1,2})?\s*(?:上方|下方|之上|之下|以上|以下)?\s*$/;
 const ANCHOR_RE = new RegExp(ANCHOR);
 
 // 锚名候选里要滤掉的通用词：它们在几乎每句里都出现，收进词表等于把词表废掉
@@ -68,7 +72,12 @@ export function classify(quoted) {
   const head = TRIGGER_HEAD_RE.exec(raw);
   // 拿不到触发词说明质检那边的形态变了，宁可如实报「解析不了」也不猜。
   if (!head) return { kind: "unparsed", anchorText: raw };
-  const middle = raw.slice(head[0].length).replace(NUM_TAIL_RE, "").trim();
+  // 位置式的匹配从**最左边**那个动词起，「→ 偏跌至 40 元下方」拿到的头是「→」，中间段会剩下
+  // 「偏跌至」——那是第二个动词不是锚名。只在头是「→」时再剥一层：别的头后面紧跟的「向」
+  // 可能是锚名的一部分（「跌破向上缺口」剥了就成「上缺口」）。
+  let middle = raw.slice(head[0].length).replace(NUM_TAIL_RE, "");
+  if (head[0] === "→") middle = middle.replace(INNER_VERB_RE, "");
+  middle = middle.trim();
   if (ANCHOR_RE.test(middle)) {
     const stripped = stripAnchoredPrice(raw).text;
     return { kind: stripped === raw ? "unreachable" : "stale", anchorText: middle };

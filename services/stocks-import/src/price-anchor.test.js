@@ -168,3 +168,54 @@ test("公告披露的转股价一个字不动", () => {
   const objective = "转股价 2026-06-22 起由 364.43 元/股调整为 364.15 元/股（公告原文）";
   expect(stripAnchoredPrice(objective).text).toBe(objective);
 });
+
+// ---- 形态三：位置式（2026-09-23）。判定直接用 research-qc 的 positionTriggers，同面靠构造保证 ----
+
+// 真实存量原文（Stocks 导入的 688111 / 300377 / 300308 / 002837 / 300803），改写后必须过 QC。
+const REAL_POSITION = [
+  "路径：市场分离投资收益与主业，估值修复，股价回到筹码加权成本253元上方",
+  "如果 已持有且股价回到 8-07 筹码 85% 分位成本 14.60 元之上，而 三季报尚未披露",
+  "如果股价在 8-07 筹码 15% 分位成本 910.20 元 下方持续运行，那么减仓",
+  "路径：多空拉锯，区间参照8-07筹码50%分位54.00元上方，等W8三季报给新证据",
+  "估值向同花顺方向收敛的逻辑被激活，股价重回 8-07 筹码加权成本 84.28 元上方",
+];
+
+test("位置式带锚：改写后过 QC，锚与方位词原样保留", () => {
+  for (const s of REAL_POSITION) {
+    expect(blocking(s).length).toBeGreaterThan(0);
+    const r = stripAnchoredPrice(s);
+    expect(blocking(r.text)).toEqual([]);
+    expect(r.changes.length).toBe(1);
+  }
+  expect(stripAnchoredPrice(REAL_POSITION[1]).text)
+    .toBe("如果 已持有且股价回到 8-07 筹码 85% 分位成本之上，而 三季报尚未披露");
+});
+
+test("位置式现状陈述一字不动（QC 放行的，改写器也不许削）", () => {
+  for (const s of [
+    "当前股价 60.01 元（9-14 收盘）位于 8-07 加权均本 58.03 元之上、处在筹码分布的中上段",
+    "9-17 收盘 896.00 元已在 8-07 筹码 15% 分位成本 910.20 元下方——意味着多数筹码浮亏",
+  ]) {
+    expect(blocking(s)).toEqual([]);
+    expect(stripAnchoredPrice(s).text).toBe(s);
+  }
+});
+
+test("位置式裸价位 / 区间不动，留给 QC 拦下搁置（改写器不猜）", () => {
+  for (const s of [
+    "演化：情绪资金续炒题材，股价在5.60元上方维持强势",
+    "演化路径：股价在筹码成本区12.7–13.6元上方、现价14元附近宽幅震荡",
+  ]) {
+    expect(stripAnchoredPrice(s).text).toBe(s);
+    expect(blocking(s).length).toBeGreaterThan(0);
+  }
+});
+
+test("位置式 markdown 原文：加粗包住锚与数值时照样剥，且加粗符号配对不落单（300308 原文）", () => {
+  const s = "如果股价在 **8-07 筹码 15% 分位成本 910.20 元**下方持续运行（9-17 收盘 896.00 元已在其下方），那么减仓";
+  const r = stripAnchoredPrice(s);
+  expect(r.text).toBe("如果股价在 **8-07 筹码 15% 分位成本**下方持续运行（9-17 收盘 896.00 元已在其下方），那么减仓");
+  expect((r.text.match(/\*\*/g) || []).length % 2).toBe(0);
+  expect(blocking(s).length).toBeGreaterThan(0);
+  expect(blocking(r.text)).toEqual([]);
+});

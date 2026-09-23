@@ -29,7 +29,7 @@
 // 所有入口 fail-open，出错记下来、当作「没测」，绝不把「没测」说成「测过了」。
 //
 //   bun run scripts/research-qc.js --dir <归档目录名>   # 单篇（收尾自查用）
-//   bun run scripts/research-qc.js --all                # 全部存量
+//   bun run scripts/research-qc.js                      # 全部存量（不带 --dir 就是全量，没有 --all 参数）
 //   bun run scripts/research-qc.js --dir <x> --strict    # 有硬红线即非零退出（push 前闸）
 //   bun run scripts/research-qc.js --dir <x> --challenge # 输出喂给 Step 5.5 核验子 agent 的质证清单
 
@@ -302,6 +302,40 @@ export const STOCK_SECTIONS = [
 const TRIGGER_PRICE_RE =
   /(突破|跌破|失守|站上|站稳|回落至|回落到|下探至|上探至|回踩至|回踩|回调至|回测|测试|止损|止盈)[^。；！？\n，,、（）()]{0,24}?(\d[\d,]*(?:\.\d+)?)\s*(元|港元|美元|港币)/g;
 
+// 位置式触发价位：「股价仍处于筹码加权平均成本 84.28 元下方，那么可小幅试仓」——不带上面那张
+// 表里的任何触发动词，整句漏过（2026-08-31 指南针 300803 那篇是手工改掉的，规则一直没补）。
+// 判据落在**价位后紧跟的方位词**（上方 / 下方 / 之上 / 之下 / 以上 / 以下）：「股价处于历史低位」
+// 这类不带价位的陈述句天然不命中，所以不必担心光加「处于」会造一批误报。
+// 前面的动词表照 2026-09-23 对 179 篇存量的**真实写法**抄（词表照原文抄、别照术语表抄）：
+// 只收「处于」一个字一条都抓不到——存量里真违规写的是「可在 45 元下方分批试仓」「股价重回
+// 筹码加权成本 84.28 元上方」「站回 250.80 元之上」「挑战 50 元上方」「下探 220 元以下」，
+// 还有 K 节 path 的「区间参照 8-07 筹码 50% 分位 54.00 元上方」与 notes.md 的「→ 45 元下方分批」。
+// 间隔放宽到 30 字：「股价在 2026-08-07 筹码 50% 分位成本 241.20 元下方」中间隔着日期与锚名。
+// 单位与方位词之间容许一个 markdown 加粗收尾符：导入侧改写器吃的是 Stocks 的 markdown 原文，
+// 真实写法是「在 **8-07 筹码 15% 分位成本 910.20 元**下方」（300308）。不容许的话 md 里认不出、
+// 渲染成 HTML 后（`<strong>` 剥成空格）却认得出——改写器漏删、QC 照拦，整篇搁置。
+// 动词表导出给 scripts/anchor-candidates.js 拆句用（与这里同一份，不各抄一版）。
+export const POSITION_VERB =
+  "处于|处在|位于|运行于|运行在|维持在|保持在|稳在|在|回到|重回|站回|回升至|回升到|反弹至|反弹到|下探至|下探|跌至|跌到|挑战|向|参照|→";
+const POSITION_PRICE_RE = new RegExp(
+  `(${POSITION_VERB})[^。；！？\\n，,、（）()]{0,30}?(\\d[\\d,]*(?:\\.\\d+)?)\\s*(元|港元|美元|港币)\\s*(?:\\*{1,2}|_{1,2})?\\s*(上方|下方|之上|之下|以上|以下)`,
+  "g",
+);
+
+// 位置式句子比触发动词更常用来**描述现状**，下面三类是存量里标定出的误报，只豁免位置式，
+// 且同条件句 / 操作结论时一律不豁免（与过去时豁免同一道守卫，守卫测试钉着）：
+//   ① 主语是筹码刻度本身：「约 75% 的持仓成本在 329.00 元以上，深套筹码密集」（海光 688041）
+//      ——讲筹码怎么分布，不是讲股价该到哪。只看紧挨动词前的字；
+//   ② 主语是产品 / 商品价格：「光模块价格将维持在 700 美元以上」（300308）。只看紧挨动词前的字。
+//      ⚠️ 必须排除「股价」「市价」「行情价格」——「库内行情价格跌破…」在存量里就是股价（price-anchor 用例）；
+//   ③ 本分句的主语就是现价 / 收盘价：「当前价 269.33 元（2026-08-14）位于 50% 成本线 241.20 元
+//      之上约 11.7%」（胜宏 300476）——「当前」离动词隔着价位和日期 24 个字，过去时豁免的 20 字
+//      窗口够不着。只在**同一分句内**找（逗号 / 顿号 / 句号截断），别处的「当前」不算数。
+const POSITION_CHIP_SUBJ_RE = /(持仓成本|筹码成本|成本|筹码|获利盘|套牢盘|解套盘)\s*$/;
+const POSITION_PRODUCT_SUBJ_RE = /(?<!股|市|行情)价格?\s*(将|会|或|有望|可能|仍)?\s*$/;
+const POSITION_STATE_SUBJ_RE = /当前|现价|最新价|收盘|收于/;
+const CLAUSE_BREAK_RE = /[。；！？\n，,、]/;
+
 // 预测性价格区间（「30–44 元宽幅震荡」）：K 节三情景的「走势特征」最常见的形态，
 // 实质就是给了目标价区间。存量 4 篇都栽在这里，而它不带任何触发动词、靠上面那条抓不到。
 const BAND_PRICE_RE =
@@ -356,7 +390,7 @@ const COMMODITY_SUBJ_RE =
   /批价|出厂价|零售价|售价|单价|吨价|报价|金价|银价|铜价|油价|煤价|电价|气价|面板价|材料价|原料价|现货金|现货黄金|现货白银|期货|价格指数/;
 
 const COMMODITY_UNIT_RE =
-  /(?:元|港元|美元|港币)\s*\/\s*(?:瓶|吨|克|盎司|千克|公斤|升|桶|片|只|个|支|件|平方米|立方米|磅|平米|台)/;
+  /(?:元|港元|美元|港币)\s*\/\s*(?:瓶|吨|克拉|克|盎司|千克|公斤|升|桶|片|只|个|支|件|平方米|立方米|磅|平米|台)/;
 
 // 回购 / 增持 / 减持的**已披露成交价**是客观披露，SKILL §4.9 括号里点名回购可保留；
 // 增减持成交均价同理——都是公告里已发生的事实价，不是对未来的位置指引
@@ -454,6 +488,55 @@ const PRIVACY_NEGATION_RE =
 // 就会被整条吞掉（逗号不算句子边界），漏报比误报危险得多——同「没有」那个坑（守卫见测试）。
 const PRIVACY_BARE_NEGATION_RE = /无$/;
 
+// 商品价语境：整句里有价格主语（金价/批价…）且触发词前 12 字没有「股」，
+// 或数值直接带每单位后缀（元/盎司）。
+function sentenceAt(scanned, i) {
+  let start = 0;
+  for (const p of ["。", "；", "\n"]) start = Math.max(start, scanned.lastIndexOf(p, i) + 1);
+  let end = scanned.length;
+  for (const p of ["。", "；", "\n"]) {
+    const j = scanned.indexOf(p, i);
+    if (j !== -1 && j < end) end = j;
+  }
+  return scanned.slice(start, end);
+}
+
+function isCommodityAt(scanned, m) {
+  return COMMODITY_UNIT_RE.test(scanned.slice(m.index, m.index + m[0].length + 6)) ||
+    (COMMODITY_SUBJ_RE.test(sentenceAt(scanned, m.index)) &&
+      !scanned.slice(Math.max(0, m.index - 12), m.index).includes("股"));
+}
+
+// 位置式触发价位里**该拦的那些**（已过完全部豁免），返回 matchAll 的匹配对象。
+// 导出给 stocks-import 的改写器用：改写器只动这里会报的，改完才保证过闸——两边同一个判定，
+// 不各抄一份（TRIGGER 那张词表就是各抄一份、靠注释提醒同步的）。
+export function positionTriggers(text) {
+  const scanned = String(text || "");
+  const out = [];
+  for (const m of scanned.matchAll(POSITION_PRICE_RE)) {
+    const before = scanned.slice(Math.max(0, m.index - 30), m.index);
+    const around = scanned.slice(Math.max(0, m.index - 40), m.index + m[0].length + 40);
+    const after = scanned.slice(m.index + m[0].length, m.index + m[0].length + 30);
+    if (!CONDITIONAL_NEAR_RE.test(before) && !ACTION_AFTER_RE.test(after)) {
+      if (PAST_TENSE_NEAR_RE.test(before)) continue;
+      if (QUOTE_SOURCE_RE.test(around)) continue;
+      if (POSITION_CHIP_SUBJ_RE.test(before)) continue;
+      if (POSITION_PRODUCT_SUBJ_RE.test(before)) continue;
+      const clause = before.split(CLAUSE_BREAK_RE).pop();
+      if (POSITION_STATE_SUBJ_RE.test(clause)) continue;
+    }
+    if (BASELINE_PRICE_RE.test(m[0])) continue;
+    if (isCommodityAt(scanned, m)) continue;
+    // 商品价的每单位后缀常落在同句**前一个**数值上：「均价由 2022 约 574 元/克拉跌到 151 元以下」
+    // （黄河旋风 600172）。只对位置式放宽到整句，且照旧要求紧挨动词前 12 字没有「股」。
+    if (COMMODITY_UNIT_RE.test(sentenceAt(scanned, m.index)) &&
+      !scanned.slice(Math.max(0, m.index - 12), m.index).includes("股")) continue;
+    if (EPS_METRIC_RE.test(before.slice(-20)) && !EPS_GUARD_RE.test(before.slice(-20))) continue;
+    out.push(m);
+  }
+  return out;
+}
+
 // 返回 {blocking, review}：blocking = 硬红线（--strict 下挡 push）；
 // review = 需人判断的，列出来但不阻断（避免清单失信——Stocks 的核心误报治理经验）。
 export function checkFormat({ reportHtml, notesMd, type, dir }) {
@@ -480,22 +563,7 @@ export function checkFormat({ reportHtml, notesMd, type, dir }) {
     const at = (m) => `…${ctxAround(scanned, m.index, m[0].length)}…`;
 
     if (isStock) {
-      // 商品价语境：整句里有价格主语（金价/批价…）且触发词前 12 字没有「股」，
-      // 或数值直接带每单位后缀（元/盎司）。
-      const sentenceAt = (i) => {
-        let start = 0;
-        for (const p of ["。", "；", "\n"]) start = Math.max(start, scanned.lastIndexOf(p, i) + 1);
-        let end = scanned.length;
-        for (const p of ["。", "；", "\n"]) {
-          const j = scanned.indexOf(p, i);
-          if (j !== -1 && j < end) end = j;
-        }
-        return scanned.slice(start, end);
-      };
-      const isCommodity = (m) =>
-        COMMODITY_UNIT_RE.test(scanned.slice(m.index, m.index + m[0].length + 6)) ||
-        (COMMODITY_SUBJ_RE.test(sentenceAt(m.index)) &&
-          !scanned.slice(Math.max(0, m.index - 12), m.index).includes("股"));
+      const isCommodity = (m) => isCommodityAt(scanned, m);
 
       for (const m of scanned.matchAll(TRIGGER_PRICE_RE)) {
         const before = scanned.slice(Math.max(0, m.index - 30), m.index);
@@ -512,6 +580,9 @@ export function checkFormat({ reportHtml, notesMd, type, dir }) {
         if (isCommodity(m)) continue;
         if (EPS_METRIC_RE.test(before.slice(-20)) && !EPS_GUARD_RE.test(before.slice(-20))) continue;
         blocking.push(`【${label}】具体触发价位「${m[0].trim()}」（§4.9 价位红线：操作触发条件不得用具体价位，改写成相对/条件表述）——上下文：${at(m)}`);
+      }
+      for (const m of positionTriggers(scanned)) {
+        blocking.push(`【${label}】位置式触发价位「${m[0].trim()}」（§4.9 价位红线：用具体价位 + 上方/下方写前瞻位置，等于给了触发价位，改写成相对/条件表述）——上下文：${at(m)}`);
       }
       for (const m of scanned.matchAll(BAND_PRICE_RE)) {
         if (isCommodity(m)) continue;
@@ -625,7 +696,7 @@ export function runQc(dirName, root = ARCHIVE) {
     if (!existsSync(reportPath)) {
       // 已丢弃的报告（stocks-import 判定不值得上线，目录里只留 `.dropped`、正文删掉）
       // 不是「没得测」——它压根不该上线。**只认这个标记**：目录空着照旧按未测处理，
-      // 否则 --all 每次都点亮一片假红线，真问题反而被淹掉。
+      // 否则每次全量跑都点亮一片假红线，真问题反而被淹掉。
       if (existsSync(join(dirPath, ".dropped"))) {
         return { ...base, ok: true, dropped: true, type: "已丢弃" };
       }

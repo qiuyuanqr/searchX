@@ -15,6 +15,8 @@
 // 每处改动都记进 changes 并由导入流程打进日志：改的是别人报告里的字，必须看得见、可复核
 // （这条要求来自 PRICE_REDLINE_FIXES 的原注释，通用规则同样适用）。
 
+import { positionTriggers } from "../../../scripts/research-qc.js";
+
 // 触发词表与 research-qc.js 的 TRIGGER_PRICE_RE **必须同面**：改写器只动 QC 会报的那些，
 // 改完才保证过闸。改这里之前先看那边（两处都改，测试用 checkFormat 直接钉着）。
 export const TRIGGER = "突破|跌破|失守|站上|站稳|回落至|回落到|下探至|上探至|回踩至|回踩|回调至|回测|测试|止损|止盈";
@@ -43,6 +45,40 @@ const PRICE_THEN_ANCHOR = new RegExp(`(${TRIGGER})\\s*${NUM}\\s*[（(]([^）)]*(
 // 「分位成本 <strong>」——留下孤立开标签，页面结构就坏了（2026-08-26 清存量时真踩到）。
 // 宁可不改：QC 会照常把它拦下搁置，人工处理比产出坏页面强。
 const HAS_TAG = /<[^>]+>/;
+
+// 形态三：位置式（`股价回到 8-07 筹码加权成本 253.00 元上方` → `股价回到 8-07 筹码加权成本上方`）。
+// 没有触发动词，靠价位后面的方位词认——**哪些该改直接问 research-qc 的 positionTriggers**，
+// 不在这边另写一张词表：位置式句子常用来陈述现状（「当前股价 60.01 元位于加权均本 58.03 元之上」），
+// 改写器若自己判，就会把 QC 本来放行的现状陈述也削掉数值，丢的是别人报告里的真信息。
+// 从 QC 报出的匹配里只动「有锚」的：取**最后一个**数值（前面的「8-07」「50%」是锚的一部分），
+// 锚要落在动词与该数值之间。区间（`12.7–13.6 元上方`）不动：只删后一个会剩下「12.7–上方」，
+// 交给 QC 拦下搁置。
+// 数值后面若跟着 markdown 加粗收尾符（`…910.20 元**下方`），删数值时要把它原样留下，
+// 否则开头那个 `**` 落单、整段以下全成粗体。
+const POS_TAIL = new RegExp(String.raw`^([\s\S]*)(?<![\d.,])(\d[\d,]*(?:\.\d+)?)\s*(?:元|港元|美元|港币)\s*(\*{1,2}|_{1,2})?\s*(上方|下方|之上|之下|以上|以下)$`);
+const ANCHOR_RE = new RegExp(`(?:${ANCHOR})`);
+const BAND_TAIL = /\d\s*[-–—~至到]\s*$/;
+
+function stripPosition(input, changes) {
+  const hits = positionTriggers(input);
+  if (!hits.length) return input;
+  let out = "";
+  let last = 0;
+  for (const m of hits) {
+    const whole = m[0];
+    const verb = m[1];
+    const t = POS_TAIL.exec(whole);
+    if (!t || HAS_TAG.test(whole)) continue;
+    const [, prefix, , emph = "", dir] = t;
+    if (BAND_TAIL.test(prefix)) continue;
+    if (!ANCHOR_RE.test(prefix.slice(verb.length))) continue;
+    const to = `${prefix.replace(/\s+$/, "")}${emph}${dir}`;
+    out += input.slice(last, m.index) + to;
+    last = m.index + whole.length;
+    changes.push({ from: whole.trim(), to: to.trim() });
+  }
+  return out + input.slice(last);
+}
 
 // 反复跑到不动点。一遍不够：同句里有两个带锚价位时（「站上 15 分位 64.00 元后有望向中位成本
 // 70.00 元推进」），删掉前一个会让触发词与后一个数值的距离缩短、这才落进 24 字匹配窗口——
@@ -77,6 +113,7 @@ function onePass(input, changes) {
     changes.push({ from: whole.trim(), to });
     return to;
   });
+  out = stripPosition(out, changes);
   return out;
 }
 
