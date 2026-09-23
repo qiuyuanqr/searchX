@@ -8,6 +8,7 @@ import {
   stripTags, blocksWithLinks, citedNumbers, numberVariants, containsNumber,
   normalizePage, looksUnrendered, matchNumberInPages, planChecks, classify,
   renderReport, renderChallenge, pageNumbers, scaledCandidates, matchPower, resolveBin, fetchPage,
+  reportUnit, pageIndex, matchByMagnitude, baiwanMatch, looksLikePdf,
 } from "./check-web-numbers.js";
 
 // ========== HTML → 带链接的块 ==========
@@ -171,9 +172,10 @@ test("量级比对不许放过量级对不上的数", () => {
 test("判别力自测：页面数字越密，判别力越低（低了要在输出里明说这轮不作数）", () => {
   const mk = (text) => [{ value: 7.24, raw: "7.24", tail: "亿元", pages: [{ url: "u", text, nums: pageNumbers(text) }] }];
   const sparse = mk(normalizePage("收入724,187千元"));
-  // 密集页：间隔 200 的网格，比容差还细——招股书那种满篇数字的页面就是这个形态
-  // 用「元」而不是空格分隔：normalizePage 会去掉全部空白，空格分隔的话整片数字会连成一串
-  const dense = normalizePage(Array.from({ length: 12000 }, (_, i) => `${100000 + i * 200}元`).join(""));
+  // 密集页：间隔 100 的网格，与万元档的容差窗（「7.24」写到两位小数 → ±50 万元）一样细——
+  // 招股书那种满篇数字的页面就是这个形态。每个数后面带「万元」：量级比对现在要求页面上那个数
+  // 像这个口径的数（紧跟「万」即认），裸数或紧跟「元」的数进不了万元档，那样就测不出「密」了
+  const dense = normalizePage(Array.from({ length: 12000 }, (_, i) => `${10000 + i * 100}万元`).join("，"));
   expect(matchPower(sparse, 40)).toBeGreaterThan(0.8);
   // 变异验证：去掉判别力自测（永远返回 null / 1），这条会红——「全部命中」正是检查失效的样子
   expect(matchPower(mk(dense), 40)).toBeLessThan(0.5);
@@ -400,4 +402,146 @@ test("http 也失败 → 仍报「未测」，且只降级一次；非 403 / 本
   const fhttp = fakeFetch({ "http://x.com/c": { status: 403 } });
   expect((await fetchPage("http://x.com/c", { fetchImpl: fhttp })).note).toBe("HTTP 403");
   expect(fhttp.calls.length).toBe(1);                      // 本就是 http，没得降
+});
+
+// ========== 假「已找到」：整数白捡小数、换算档不看单位（2026-09-23） ==========
+// normalizePage 不再把相邻数字粘成一串以后，行情侧栏、PDF 表格里的独立小数与股票代码成批撞进来。
+// 下面的页面片段都摘自 22 篇存量真跑时抓到的原文（缓存回放），不是编的形态。
+
+const hitOn = (raw, tail, text) =>
+  matchNumberInPages({ raw, value: Number(raw.replace(/,/g, "")), tail }, [{ url: "u", text: normalizePage(text) }]);
+
+test("reportUnit：取报告数字后第一个单位字，标点不算，繁简全半角归一", () => {
+  expect(reportUnit(" 亿港元")).toBe("亿");
+  expect(reportUnit("%）")).toBe("%");
+  expect(reportUnit("％")).toBe("%");
+  expect(reportUnit(" 萬股")).toBe("万");
+  expect(reportUnit(" 吨 +")).toBe("吨");
+  expect(reportUnit("）机器人")).toBe(null);
+  expect(reportUnit("")).toBe(null);
+});
+
+test("整数碰上「N.xx」：四舍五入对得上且紧跟同单位才认", () => {
+  // 变异验证：去掉「紧跟同单位」这条，第一条（侧栏股价）与第三条（股价 vs 报告的 %）会红
+  expect(containsNumber(normalizePage("09-16锦华新材920015 18.15新浪财经"), "18", { unit: "亿" })).toBe(false);
+  expect(containsNumber("报收于30.37元，上涨1.98%", "30", { unit: "%" })).toBe(false);
+  // 变异验证：去掉「四舍五入对得上」这条，这两条会红（42.53 取整是 43，20.94 是 21）
+  expect(containsNumber("营业收入年复合增长率42.53%，归属", "42", { unit: "%" })).toBe(false);
+  expect(containsNumber("20.94亿元", "20", { unit: "亿" })).toBe(false);
+  // 合理四舍五入：照样命中
+  expect(containsNumber("中际旭创2025年实现382.4亿元营业收入", "382", { unit: "亿" })).toBe(true);
+  expect(containsNumber("净利润达4626.39万元", "4626", { unit: "万" })).toBe(true);
+  expect(containsNumber("同比增长1034.18%，已成为", "1034", { unit: "%" })).toBe(true);
+  expect(containsNumber("2,138.17%102,051,079.29", "2,138", { unit: "%" })).toBe(true);
+  // 小数部分全 0 就是同一个数；不给单位（换算来的写法）时「N.xx」一律不认
+  expect(containsNumber("from18.0%in2024to21.0%in2025", "21")).toBe(true);
+  expect(containsNumber("实现382.4亿元", "382")).toBe(false);
+  // 同页别处有干净的写法，不因第一个位置被拒而漏掉
+  expect(containsNumber("型号V64.3A；效率超过64%", "64", { unit: "%" })).toBe(true);
+});
+
+test("三个真实假命中修后不再算找到（侧栏股价 / PDF 表格小数 / 侧栏股票代码）", () => {
+  // 变异验证：containsNumber 恢复旧边界，前两条会红；量级档恢复「只比数值」，第三条会红
+  expect(hitOn("18", " 亿港元", "云汉芯城301563 27 09-16锦华新材920015 18.15新浪财经意见反馈留言板").hit).toBe(false);
+  expect(hitOn("20", " 亿元、", "9,098,838 22.31 2.00 101,486,112 38,768,964 20.94 8.00 445,843,090 100.0").hit).toBe(false);
+  expect(hitOn("92", "亿美元", "成交额1.2万元 08-19贝特利301697--08-17华大海天920288 12.57 08-14高凯技术688835 61.36").hit).toBe(false);
+});
+
+test("合理的四舍五入仍算找到：紧跟同单位的走原样档，别处有精确值的退到原值档", () => {
+  expect(hitOn("382", " 亿、", "中际旭创2025年实现382.4亿元营业收入").hit).toBe(true);
+  expect(hitOn("3118", " 万）", "该项目已经累计实现效益3118.46万元。").hit).toBe(true);
+  const r = hitOn("108", " 亿，", "归母净利润107.97亿元同比增长108.78%；毛利率");
+  expect(r.hit).toBe(true);
+  expect(r.form).toContain("107.97");   // 不是撞上 108.78% 那个百分数
+});
+
+test("量级比对·原值档：页面数紧跟单位字的必须同单位；不跟单位的只在报告写到小数位时认", () => {
+  // 变异验证：原值档不查单位，前三条会红
+  expect(hitOn("69", " 亿美元", "AXT Inc. (AXTI) is up 14.2%, or $8.56 to $68.99. 7 weeks ago").hit).toBe(false); // 股价
+  expect(hitOn("603305", "）机器人", "汉朔科技301275 27.5 02-28永杰新材603271--02-21").hit).toBe(false);          // 另一只代码
+  expect(hitOn("2.2", " 万元/吨", "2026年预计达115万吨（+22.3%），储能占比").hit).toBe(false);                       // 千元档撞上百分数
+  expect(hitOn("67", " 亿，", "实现营业收入66.89亿元，").hit).toBe(true);
+  expect(hitOn("55.4", "%、毛", "锂电铜箔 58.00% 55.37%锂电").hit).toBe(true);
+  expect(hitOn("31", "%）", "Forecast Year, 2034 USD 1,055.11 Mn CAGR, 2025-2034 30.66% Report").hit).toBe(true);
+});
+
+test("量级比对·万元/千元档：紧跟本单位直接认；表格裸数要像金额且页面有口径词；紧跟别的单位不认", () => {
+  // 留下的：A 股公告表格（通篇万元）、港股人民幣千元表、华虹 US$ thousands 表
+  expect(hitOn("12.11", " 亿、", "单位：万元 营业总收入 121,138.73 108,622.10 11.53").hit).toBe(true);
+  expect(hitOn("22.59", " 亿元及", "（人民幣千元）現金 108,593 2,259,147 42,621").hit).toBe(true);
+  expect(hitOn("20.04", " 亿美元", "Summary of Operating Results (Amounts in US$ thousands) ROE 2024 (Unaudited) 2,003,993 205,128 10.2%").hit).toBe(true);
+  expect(hitOn("12.83", " 亿 ", "公司实现营业收入128,349.29万元，").hit).toBe(true);
+  // 挡掉的：
+  // 变异验证：去掉「页面要有千元类口径词」，第一条会红（「单位：元」表里的 27,040,815.86 当成 270 亿）
+  expect(hitOn("270", " 亿元。", "单位：元 52,680,744.28 27,040,815.86 41,533,950.43").hit).toBe(false);
+  // 变异验证：去掉「要像金额」，这两条会红（股票代码、链接里的编号）
+  expect(hitOn("92", "亿美元", "成交额1.2万元 华大海天920288 12.57").hit).toBe(false);
+  expect(hitOn("1.7", " 亿个，", "单位：万元 https://www.anandtech.com/show/17259/intel-disclosure").hit).toBe(false);
+  // 变异验证：去掉「紧跟别的单位不认」，这条会红（2,259.1 是百萬，不是万元）
+  expect(hitOn("0.23", " 亿元。", "人民幣千元 現金及現金等價物為人民幣2,259.1百萬元，較2024年").hit).toBe(false);
+});
+
+test("pageIndex 记下每个数的原串与紧跟字符，以及页面级的万元/千元口径词", () => {
+  const idx = pageIndex(normalizePage("单位：万元 营收 121,138.73 万元；Amounts in US$ thousands"));
+  expect(idx.wan).toBe(true);
+  expect(idx.qian).toBe(true);
+  expect(idx.toks.find((t) => t.v === 121138.73).next.startsWith("万")).toBe(true);
+  expect(pageIndex("单位：元 12,345").qian).toBe(false);
+  expect(matchByMagnitude({ raw: "7.24", value: 7.24, tail: "亿元" }, pageIndex("年内收入724,187千元")).hit).toBe(true);
+});
+
+// ========== 港股「百萬港元」（2026-09-23） ==========
+// 智谱那篇：「313.75 亿港元」配售公告原文「31,374.95百萬港元」、「48.96 亿港元」原文「4,896.2百萬港元」，
+// 修前一直挂在待质证里。
+
+test("亿 ↔ 百萬：带单位词、按报告精度比数值——四舍五入对上的算找到（弱档），正好相等的算原样", () => {
+  const a = hitOn("313.75", " 亿港元", "配售事項所得款項淨額合共約為31,374.95百萬港元。");
+  expect(a.hit).toBe(true);
+  expect(a.form).toContain("百萬");
+  expect(a.scaled).toBe(true);
+  expect(hitOn("48.96", " 亿港元", "全球發售所得款項淨額總計約為4,896.2百萬港元").hit).toBe(true);
+  expect(hitOn("48.96", " 亿港元", "所得款項淨額總計約為4,896.2百万港元").hit).toBe(true);   // 简体「百万」
+  const c = hitOn("2.789", " 亿元）", "承接總額約為人民幣278.90百萬元之債務");
+  expect(c.hit).toBe(true);
+  expect(c.scaled).toBeFalsy();
+});
+
+test("守卫：百萬档必须紧跟单位词、容差随报告精度走、只管「亿」", () => {
+  // 变异验证：去掉「紧跟百萬」，第一条会红（表格里的裸数不在这档管）
+  expect(hitOn("313.75", " 亿港元", "所得款項淨額 31,374.95 其他").hit).toBe(false);
+  // 变异验证：容差不随 ×100 缩放（仍用 ±0.0245），第二条会红；放得太宽，第三条会红
+  expect(baiwanMatch({ raw: "48.96", value: 48.96, tail: " 亿港元" }, "4,896.2百萬港元")).not.toBe(null);
+  expect(baiwanMatch({ raw: "48.96", value: 48.96, tail: " 亿港元" }, "4,910.0百萬港元")).toBe(null);
+  expect(baiwanMatch({ raw: "950", value: 950, tail: " 万股" }, "9.5百萬股")).toBe(null);
+});
+
+// ========== PDF 链接回的不是 PDF（2026-09-23） ==========
+// 上交所 static.sse.com.cn 的公告 PDF 链接对脚本回 200 + text/html 的反爬 JS 挑战页，原先报成
+// 「缺 pdftotext 或为扫描件」——在 runner 刚补好 pdftotext 之后又报一次「缺 pdftotext」，排查方向全错。
+
+const CHALLENGE = "<html><script>\n        var arg1='A75DE4BCCE331556855C45335D25BFEB6DA39F2F';\n var _0x4818=function(){};</script></html>";
+
+test("链接是 .pdf、回来的是网页：如实报「返回的是网页不是 PDF」，不再提 pdftotext", async () => {
+  // 变异验证：改回按后缀送 pdftotext，这条会红
+  const f = fakeFetch({ "https://static.sse.com.cn/a/688521_20260711_8Q6V.pdf": { status: 200, body: CHALLENGE } });
+  const r = await fetchPage("https://static.sse.com.cn/a/688521_20260711_8Q6V.pdf", { fetchImpl: f });
+  expect(r.ok).toBe(false);
+  expect(r.note).toBe("返回的是网页不是 PDF（可能是反爬验证页）");
+  const g = fakeFetch({ "https://x.com/doc": { status: 200, body: "<!doctype html><p>hi</p>", ct: "application/pdf" } });
+  expect((await fetchPage("https://x.com/doc", { fetchImpl: g })).note).toBe("返回的是网页不是 PDF（可能是反爬验证页）");
+  const z = fakeFetch({ "https://x.com/b.pdf": { status: 200, body: "PK\u0003\u0004zip", ct: "application/octet-stream" } });
+  expect((await fetchPage("https://x.com/b.pdf", { fetchImpl: z })).note).toContain("返回的内容不是 PDF");
+});
+
+test("判据是内容本身：文件头 %PDF- 在前 1024 字节内就当 PDF（不管后缀与 content-type）", async () => {
+  expect(looksLikePdf(new TextEncoder().encode("%PDF-1.7\n..."))).toBe(true);
+  expect(looksLikePdf(new TextEncoder().encode("\r\n\r\n%PDF-1.4"))).toBe(true);
+  expect(looksLikePdf(new TextEncoder().encode(CHALLENGE))).toBe(false);
+  // 没有 .pdf 后缀、content-type 还写着 html，但内容是 PDF：走 PDF 路径（抽不抽得出取决于本机
+  // 有没有 pdftotext、这份假 PDF 能不能解析），无论如何不能报成「网页」
+  const f = fakeFetch({ "https://x.com/file?id=1": { status: 200, body: "%PDF-1.4\nnot really a pdf" } });
+  const r = await fetchPage("https://x.com/file?id=1", { fetchImpl: f });
+  expect(r.ok).toBe(false);
+  expect(r.note).toContain("PDF 未能提取文本");
+  expect(r.note).not.toContain("网页");
 });

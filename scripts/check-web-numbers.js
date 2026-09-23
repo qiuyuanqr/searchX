@@ -173,9 +173,53 @@ export function numberVariants({ raw, value, tail }) {
 // 是 `1,089,600`，而页面若写着 `1,089,600,000`（10.896 亿，差 1000 倍），逗号不是数字、
 // 后置断言照样放行——本文件的测试当场抓到过这个。所以再加两条：前面不许是「数字逗号」
 // （自己是更长串的尾段），后面不许是「逗号数字」（串还没结束）。
-export function containsNumber(pageText, needle) {
-  const esc = String(needle).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return new RegExp(`(?<![\\d.])(?<!\\d,)${esc}(?![\\d])(?!,\\d)`).test(pageText);
+//
+// ⚠️ **整数不许白捡小数的整数部分**（2026-09-23 对 22 篇存量实测）。右边界 `(?![\d])` 不挡小数点，
+// 于是整数「18」会在「18.15」里命中。normalizePage 不再把相邻数字粘成一串以后，行情侧栏
+// （「锦华新材920015 18.15」）、PDF 表格（「38,768,964 20.94 8.00」）里的独立小数一下子多了，
+// 这个缺口开始成批造假命中：「18 亿港元」→ 侧栏股价 18.15、「20 亿元」→ 表格里的 20.94。
+// 可一刀切掉也不行：同批数据里整数命中小数前半的 26 处，多数是报告的合理四舍五入
+// （「382 亿」← 页面「382.4亿元」、「4626 万」←「4626.39万元」、「1034%」←「1034.18%」）。
+// 所以整数碰上「N.xx」时只在两条**同时**成立时才认：
+//   ① 四舍五入对得上（小数部分 < 0.5）——「20」对「20.94」不认；
+//   ② 页面那个小数后面**紧跟**与报告同一个单位字（`unit`，亿/万/%/吨…）——四舍五入对上只说明
+//      数值挨得近，单位也对上才说明是同一个量。实测这条把侧栏股价「18.15新浪」、股价「30.37元」
+//      （报告写的是「30%」）、型号「V64.3A」（报告是「64%」）、券商列表「60.86%」（报告是「60 亿」）
+//      全部挡掉，而上面那几条合理四舍五入全都紧跟同单位，照样命中。
+// 小数部分全是 0（「21.0%」「15,000,000.00」）就是同一个数，与裸数字命中同等对待。
+// 不传 `unit` 时（换算来的写法、或报告那个数本身没带单位），「N.xx」一律不认。
+export function containsNumber(pageText, needle, { unit = null } = {}) {
+  const text = String(pageText || "");
+  const s = String(needle);
+  const esc = s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`(?<![\\d.])(?<!\\d,)${esc}(?![\\d])(?!,\\d)`, "g");
+  for (const m of text.matchAll(re)) {
+    if (s.includes(".")) return true;
+    const end = m.index + m[0].length;
+    const frac = text.slice(end).match(/^\.(\d+)/);
+    if (!frac) return true;
+    if (/^0+$/.test(frac[1])) return true;
+    if (unit && Number(`0.${frac[1]}`) < 0.5 && unitCharAt(text, end + frac[0].length) === unit) return true;
+  }
+  return false;
+}
+
+// 数字后面紧跟的「单位字」：百分号或一个汉字（归一后数字与单位之间已没有空白）。繁简、全半角先归一，
+// 「萬」「億」「％」分别当「万」「亿」「%」。空格、数字、英文字母、标点都不算单位——
+// 英文页面去空白后数字常直接粘着单词（「36.69%CAGR」「0.11and」），字母读不出单位。
+const UNIT_FOLD = { "％": "%", "萬": "万", "億": "亿" };
+function foldUnit(c) {
+  if (!c) return null;
+  const f = UNIT_FOLD[c] || c;
+  return /^[%\u4e00-\u9fff]$/.test(f) ? f : null;
+}
+export function unitCharAt(text, i) {
+  return foldUnit(String(text || "")[i]);
+}
+// 报告那个数自己的单位：数字后面第一个非空白字符（「 亿港元」→ 亿、「%）」→ %、「 吨 +」→ 吨）。
+// 「）」「，」这类标点不是单位，返回 null。
+export function reportUnit(tail) {
+  return foldUnit(String(tail || "").replace(/^\s+/, "")[0]);
 }
 
 // 页面文本归一：删空白，但**两个数字之间要留一个分隔**。网页里「61.7 %」「108.96 亿元」中间常夹
@@ -228,6 +272,31 @@ export function unitWordPatterns({ raw, value, tail }) {
   return out.filter(Boolean);
 }
 
+// 亿 ↔ 百萬 / 百万（×100）：港股公告的标准写法。报告写「313.75 亿港元」，配售公告原文是
+// 「31,374.95百萬港元」；「48.96 亿港元」对「4,896.2百萬港元」。报告写的是四舍五入值，原文是精确到
+// 小数的百萬数，精确串永远对不上，所以这一档**按数值比对**：容差取报告写出的精度并随 ×100 缩放
+// （同 scaledCandidates 的 precisionTol）。
+// 与 billion / million 那档同一条规矩：**页面上那个数后面必须紧跟「百萬 / 百万」**才算——单位词在，
+// 才能说这是同一个量；表头写「人民幣百萬元」、单元格里是裸数的表格不在这一档管（已知局限）。
+// 证据强弱照实分：数值**正好相等**（「2.789 亿」对「278.90百萬」）算强证据；靠四舍五入容差对上的
+// 标成换算命中（弱档）——港股公告满篇「xx.x百萬」，小数字的容差窗照样会撞上别的科目
+// （实测「0.23 亿元」购置物业设备，撞上同一份公告里「23.4百萬」的另一项毛利）。
+const BAIWAN_RE = /(?<![\d.,])(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)(?=百[萬万])/g;
+export function baiwanMatch({ raw, value, tail }, pageText) {
+  if (reportUnit(tail) !== "亿") return null;
+  const target = Math.abs(value) * 100;
+  const tol = precisionTol(raw, value) * 100;
+  let near = null;
+  for (const m of String(pageText || "").matchAll(BAIWAN_RE)) {
+    const v = Number(m[1].replace(/,/g, ""));
+    if (Math.abs(v - target) > tol) continue;
+    const shown = `${m[1]}${pageText.slice(m.index + m[1].length, m.index + m[1].length + 2)}`;
+    if (Math.abs(v - target) <= target * 1e-9) return { shown, exact: true };
+    near ||= { shown, exact: false };   // 先记下，页内若另有正好相等的写法，以那个为准
+  }
+  return near;
+}
+
 // ========== 量级比对（字符串搜不到时的第二档） ==========
 
 // 光靠字符串搜是不够的：**报告写的是四舍五入值，来源写的是精确值**。实测智谱那篇
@@ -249,14 +318,36 @@ export function pageNumbers(text) {
   return out;
 }
 
-// 报告数字 → [{v, tol, label}]。只做**放大**方向（亿→万→千→元）这一种真实存在的换算，
-// 「千元」这一档是港交所与 A 股公告的常用口径，漏了它就会整批漏掉一手披露类来源。
-export function scaledCandidates({ raw, value, tail }) {
+// 量级比对要读页面上那个数**长什么样、后面跟着什么**，光有数值集合不够，所以按位置抽一遍：
+// {v 数值, s 原串, next 紧跟的 4 个字符}。外加两个页面级的单位线索：通篇有没有「万元」「千元」
+// 这类口径词（表格常把单位只写在表头，单元格里是裸数）。每个页面只抽一次（classify 里缓存）。
+const WAN_CTX_RE = /[万萬](?:元|股|美元|港元)/;
+const QIAN_CTX_RE = /千(?:元|股|美元|港元)|thousand|['’]000/i;
+export function pageIndex(text) {
+  const t = String(text || "");
+  const toks = [];
+  for (const m of t.matchAll(PAGE_NUM_RE)) {
+    const v = Number(m[1].replace(/,/g, ""));
+    if (!Number.isFinite(v)) continue;
+    const end = m.index + m[1].length;
+    toks.push({ v, s: m[1], next: t.slice(end, end + 4) });
+  }
+  return { toks, wan: WAN_CTX_RE.test(t), qian: QIAN_CTX_RE.test(t) };
+}
+
+// 报告写出的精度对应的容差：写到哪一位就允许那一位的半个单位（写「7.24」就允许 ±0.005），
+// 再兜一个 0.05% 的相对下限。
+function precisionTol(raw, value) {
   const s = String(raw);
   const dot = s.indexOf(".");
   const dec = dot === -1 ? 0 : s.length - dot - 1;
-  // 容差 = 报告写出那一位的半个单位（写「7.24」就允许 ±0.005），再兜一个 0.05% 的相对下限。
-  const tol = Math.max(0.5 * Math.pow(10, -dec), Math.abs(value) * 5e-4);
+  return Math.max(0.5 * Math.pow(10, -dec), Math.abs(value) * 5e-4);
+}
+
+// 报告数字 → [{v, tol, label}]。只做**放大**方向（亿→万→千→元）这一种真实存在的换算，
+// 「千元」这一档是港交所与 A 股公告的常用口径，漏了它就会整批漏掉一手披露类来源。
+export function scaledCandidates({ raw, value, tail }) {
+  const tol = precisionTol(raw, value);
   const out = [{ v: value, tol, label: "原值" }];
   const push = (k, label) => out.push({ v: value * k, tol: tol * k, label });
   const u = (String(tail || "").match(/^\s*(亿|万|%|％)/) || [])[1];
@@ -266,14 +357,59 @@ export function scaledCandidates({ raw, value, tail }) {
   return out;
 }
 
-// ⚠️ 固有局限，别指望它判得出：本函数**只比数值、不读页面上的单位**（同 research-qc）。
-// 页面写的「72,418」按万元读正好是 7.2418 亿，落在「7.24 亿」的容差内 ——
-// 这是**该命中**的；但反过来，若页面那个 72,418 其实是「元」，它也照样命中。
+// 数值挨得上之后，还要页面上那个数**像是这个口径的数**才算（2026-09-23 对 22 篇存量逐条对账后定的）。
+// 早先这一档只比数值，数字不再粘连以后，侧栏股票代码、URL 里的编号、别的量的小数成批撞进容差窗：
+// 「92 亿美元」的万元候选 920000 撞上侧栏代码「华大海天920288」、「69 亿美元」撞上股价「$68.99」、
+// 「2.4 万元」的千元候选 24 撞上链接里的「…/24dGR」、「270 亿元」撞上「单位：元」表里的 27,040,815.86。
+// 判据按档：
+//   · 原值：页面那个数后面紧跟单位字的，必须与报告同一个单位（「66.89亿元」对「67 亿」认、
+//     「18.15新浪」对「18 亿」不认）；后面没有单位字（表格单元格、英文句子）的，只在报告写到了
+//     小数位时才认——整数的 ±0.5 窗口在数字密的页面上几乎总能碰上一个（实测「603305」撞上
+//     另一只股票代码「603271」、「688691」撞上「688521」，都是这个形态）。
+//   · 万元 / 千元：后面紧跟「万」/「千」直接认；紧跟**别的**单位（亿、百萬、元、%、billion…）不认
+//     （「0.23 亿」的万元候选 2,300 撞上「2,259.1百萬元」就是这个）；什么都不跟的（表格单元格），
+//     要「长得像金额」（带千分位或小数点，挡掉股票代码、编号）**且**页面里确有「万元」/「千元」
+//     类口径词才认。实测 A 股公告表格「121,138.73」（通篇万元）、港股「2,259,147」（人民幣千元）、
+//     华虹「2,003,993」（US$ thousands）都靠这条留下。
+//   · 元：紧跟别的量级单位不认；否则要带千分位，或紧跟「元」「股」。
+//   · 小数比率：沿用旧口径（本轮没有对账出反例，不动）。
+// ⚠️ 仍然只是「页面里有个数在这个口径下对得上」，不证明它就是报告说的那个量——同一张表里别的
+// 科目碰巧落进容差（实测「3.8 亿」撞上标的公司营收 38,466.41 万元）判不了，那是核验员的活。
+const OTHER_MAG_RE = /^(?:亿|億|百[萬万]|%|％|billion|bn|million|mn|thousand)/i;
+function magnitudeEvidence(label, tok, idx, num) {
+  const amountLike = /[.,]/.test(tok.s);
+  switch (label) {
+    case "原值": {
+      const pu = unitCharAt(tok.next, 0);
+      if (pu) return pu === reportUnit(num.tail);
+      return String(num.raw).includes(".");
+    }
+    case "万元":
+      if (/^[万萬]/.test(tok.next)) return true;
+      if (OTHER_MAG_RE.test(tok.next) || /^[千元]/.test(tok.next)) return false;
+      return amountLike && idx.wan;
+    case "千元":
+      if (/^千/.test(tok.next)) return true;
+      if (OTHER_MAG_RE.test(tok.next) || /^[万萬元]/.test(tok.next)) return false;
+      return amountLike && idx.qian;
+    case "元":
+      if (OTHER_MAG_RE.test(tok.next) || /^[万萬千]/.test(tok.next)) return false;
+      return tok.s.includes(",") || /^[元股]/.test(tok.next);
+    default:
+      return true;
+  }
+}
+
+// ⚠️ 固有局限，别指望它判得出：页面单位只读「紧跟的那个字」和「通篇有没有口径词」，读不了表头
+// 与单元格的对应关系。页面写的「72,418」按万元读正好是 7.2418 亿，落在「7.24 亿」的容差内 ——
+// 页面若通篇有「万元」，这是**该命中**的；但若那个 72,418 所在的表其实是「元」，它也照样命中。
 // 所以命中只证明「这一页里有个数与报告的数在某个口径下对得上」，不证明口径本身没错配。
 // 口径错配（2026-08-16 中际旭创那篇的第三条硬错）仍然只有核验员回到原文才判得了。
-export function matchByMagnitude(num, pageNums) {
+export function matchByMagnitude(num, idx) {
   for (const { v, tol, label } of scaledCandidates(num)) {
-    for (const t of pageNums) if (Math.abs(v - t) <= tol) return { hit: true, label, found: t };
+    for (const t of idx.toks) {
+      if (Math.abs(v - t.v) <= tol && magnitudeEvidence(label, t, idx, num)) return { hit: true, label, found: t.v };
+    }
   }
   return { hit: false };
 }
@@ -282,9 +418,19 @@ export function matchByMagnitude(num, pageNums) {
 // 比「页面里有个 724,187 换算得上」是强得多的证据，输出要能分清。
 export function matchNumberInPages(num, pages) {
   const variants = numberVariants(num);
+  // 每个写法对应的单位：与报告同值的写法用报告自己的单位；「亿」换成万元的写法用「万」；
+  // 换成元的写法没有可比的单位字（给 null，containsNumber 就不认「N.xx」）。
+  const ru = reportUnit(num.tail);
+  const same = (x, y) => Math.abs(x - y) <= Math.abs(y) * 1e-9;
+  const unitOf = (v) => {
+    const x = Number(String(v).replace(/,/g, ""));
+    if (same(x, num.value)) return ru;
+    if (ru === "亿" && same(x, num.value * 1e4)) return "万";
+    return null;
+  };
   for (const p of pages) {
     for (const v of variants) {
-      if (containsNumber(p.text, v)) return { hit: true, url: p.url, form: `原样「${v}」` };
+      if (containsNumber(p.text, v, { unit: unitOf(v) })) return { hit: true, url: p.url, form: `原样「${v}」` };
     }
   }
   // 英文单位词（billion / million）：带单位词的精确串，与「原样」同属强证据档。
@@ -294,8 +440,14 @@ export function matchNumberInPages(num, pages) {
       if (m) return { hit: true, url: p.url, form: `按英文 ${label} 口径原样搜到「${m[0]}」` };
     }
   }
+  // 港股「百萬」：带单位词、按报告精度比数值；正好相等算强证据，靠容差对上算弱档（理由见 baiwanMatch）。
   for (const p of pages) {
-    const m = matchByMagnitude(num, p.nums || pageNumbers(p.text));
+    const m = baiwanMatch(num, p.text);
+    if (m && m.exact) return { hit: true, url: p.url, form: `按百萬口径原样搜到「${m.shown}」` };
+    if (m) return { hit: true, url: p.url, form: `按百萬口径换算命中「${m.shown}」`, scaled: true };
+  }
+  for (const p of pages) {
+    const m = matchByMagnitude(num, p.idx || pageIndex(p.text));
     if (m.hit) return { hit: true, url: p.url, form: `按${m.label}口径换算命中 ${m.found}`, scaled: true };
   }
   return { hit: false, variants };
@@ -381,6 +533,21 @@ async function decodeBody(buf, contentType) {
   return new TextDecoder("utf-8", { fatal: false }).decode(buf);
 }
 
+// 返回的内容是不是 PDF：看文件头「%PDF-」（按 PDF 规范可以出现在前 1024 字节内），不看链接后缀、
+// 也不按域名写死。2026-09-23 实测：上交所 static.sse.com.cn 的公告 PDF 链接对脚本回 200 + text/html，
+// 内容是 7KB 的反爬 JS 挑战页（`var arg1=…`），另有 sinoss.net 的 .pdf 链接回的是整张网页。原先按
+// 后缀送进 pdftotext、失败后报「缺 pdftotext 或为扫描件」——在 runner 刚补好 pdftotext 之后又报一次
+// 「缺 pdftotext」，排查方向全错。所以：内容里没有 PDF 文件头，就如实说它是什么。
+export function looksLikePdf(buf) {
+  const bytes = new Uint8Array(buf).subarray(0, 1024);
+  return String.fromCharCode(...bytes).includes("%PDF-");
+}
+export function notPdfNote(buf, ct) {
+  const head = String.fromCharCode(...new Uint8Array(buf).subarray(0, 512)).replace(/^\u00EF\u00BB\u00BF/, ""); // UTF-8 BOM 按字节读出来是这三个字符
+  if (/html/i.test(ct) || /^\s*</.test(head)) return "返回的是网页不是 PDF（可能是反爬验证页）";
+  return `返回的内容不是 PDF（content-type: ${ct || "未声明"}）`;
+}
+
 // PDF 走 pdftotext（poppler）。**没装就如实报「未测」**，不猜、不当成搜不到——
 // 智谱那篇 20 条来源是 pdf.dfcfw.com，把它们误报成「数字不在页内」等于毁掉整份清单。
 async function pdfToText(buf) {
@@ -425,10 +592,15 @@ export async function fetchPage(url, { timeout = 12000, fetchImpl = fetch, _retr
     }
     const ct = res.headers.get("content-type") || "";
     const buf = await res.arrayBuffer();
-    if (/pdf/i.test(ct) || /\.pdf$/i.test(new URL(url).pathname)) {
+    // 是不是 PDF 看返回的内容本身（文件头），链接后缀与 content-type 只用来判断「本该是 PDF」。
+    if (looksLikePdf(buf)) {
+      if (!resolveBin("pdftotext")) return { ok: false, note: "PDF 未能提取文本（找不到 pdftotext）" };
       const t = await pdfToText(buf);
-      if (!t) return { ok: false, note: "PDF 未能提取文本（缺 pdftotext 或为扫描件）" };
+      if (!t) return { ok: false, note: "PDF 未能提取文本（pdftotext 没抽出文字，疑为扫描件或加密）" };
       return { ok: true, text: normalizePage(t) };
+    }
+    if (/pdf/i.test(ct) || /\.pdf$/i.test(new URL(url).pathname)) {
+      return { ok: false, note: notPdfNote(buf, ct) };
     }
     const html = await decodeBody(buf, ct);
     const text = stripTags(html);
@@ -518,16 +690,16 @@ export function classify(items, fetched) {
   const scored = [];
   // 每个页面的数值集合只抽一次：一篇报告里同一条来源会被十几个数字共用，
   // 每次重抽一份几千个数的集合是白烧时间。
-  const numsCache = new Map();
-  const numsOf = (url, text) => {
-    if (!numsCache.has(url)) numsCache.set(url, pageNumbers(text));
-    return numsCache.get(url);
+  const idxCache = new Map();
+  const idxOf = (url, text) => {
+    if (!idxCache.has(url)) idxCache.set(url, pageIndex(text));
+    return idxCache.get(url);
   };
   for (const it of items) {
     const pages = it.urls
       .map((u) => ({ url: u, ...(fetched.get(u) || { ok: false, note: "未抓取（超出上限）" }) }))
       .filter((p) => p.ok)
-      .map((p) => ({ ...p, nums: numsOf(p.url, p.text) }));
+      .map((p) => ({ ...p, idx: idxOf(p.url, p.text) }));
     if (!pages.length) {
       const notes = it.urls.map((u) => `${u}（${fetched.get(u)?.note || "未抓取"}）`);
       untested.push({ ...it, notes });
