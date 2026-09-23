@@ -12,6 +12,8 @@
 #   3) 构建自检 —— 本地先跑一遍 bun run build，拦住会让 CI 挂掉的报告
 #   4) 精准 git add（只加本次新增的归档目录 + INDEX.md）→ 提交 → 推送 → CI 部署
 #   5) 有搁置件或有失败时发一封限频报警（同 key 6 小时最多一封）
+#   另：每轮顺带刷新判断档案页的行情快照 research/_series/prices.json（series-prices.js，
+#   有变化才写；通常每个交易日收盘后变一次）。它变了而没有新报告时，照样走 3)→4) 提交推送。
 #
 # 手动跑：bun run stocks-import  （只导，不提交不推送）
 # 立刻触发定时任务：launchctl kickstart gui/$(id -u)/com.searchx.stocks-import
@@ -115,11 +117,25 @@ if [ -n "$(printf '%s' "$ORPHANS" | grep . 2>/dev/null)" ]; then
   NEW_DIRS="$(printf '%s\n%s' "$NEW_DIRS" "$ORPHANS" | grep .)"
 fi
 
-if [ -z "$NEW_DIRS" ]; then
+# —— 1c) 判断档案页的行情快照 ——
+# 本机是 prices.json 的唯一写入方（站点在 CI 构建、摸不到 Stocks 库）。失败不挡报告导入：
+# 档案页照出、只是行情停在上一次的截止日（页面上写着「数据截至」）；报警走独立 key、6 小时限频。
+PRICES_CHANGED=""
+if prices_out=$(bun run services/stocks-import/src/series-prices.js --porcelain 2>>"$LOG"); then
+  if [ "$prices_out" = "changed" ]; then
+    PRICES_CHANGED=1
+    say "判断档案行情快照有更新"
+  fi
+else
+  say "判断档案行情快照更新失败（不影响报告导入），下一轮再试"
+  alert_failed stocks-import-prices "Stocks→searchX · 判断档案行情快照更新失败"
+fi
+
+if [ -z "$NEW_DIRS" ] && [ -z "$PRICES_CHANGED" ]; then
   say "没有新报告，安静退出"
   exit 0
 fi
-say "本轮处理：$(printf '%s\n' "$NEW_DIRS" | tr '\n' ' ')"
+[ -n "$NEW_DIRS" ] && say "本轮处理：$(printf '%s\n' "$NEW_DIRS" | tr '\n' ' ')"
 
 # —— 2) 逐篇机器质检；不过的就地搁置 ——
 PARKED=""
@@ -142,20 +158,29 @@ fi
 # —— 4) 精准提交并推送 ——
 # 中文路径会被 git 转成八进制转义串，凡是解析 git 输出的地方一律关掉 quotePath。
 git -c core.quotePath=false add research/INDEX.md >> "$LOG" 2>&1
+[ -n "$PRICES_CHANGED" ] && git add research/_series/prices.json >> "$LOG" 2>&1
 while IFS= read -r d; do
   [ -z "$d" ] && continue
   git -c core.quotePath=false add "research/$d" >> "$LOG" 2>&1
 done <<< "$NEW_DIRS"
 
-count=$(echo "$NEW_DIRS" | grep -c .)
+count=$(printf '%s\n' "$NEW_DIRS" | grep -c .)
+if [ "$count" -gt 0 ]; then
+  subject="research(stocks): 从 Stocks 同步 ${count} 篇个股深度调研"
+  body="由 services/stocks-import 每日自动导入，已过系统参数过滤与机器质检。"
+  [ -n "$PRICES_CHANGED" ] && body="$body 顺带更新判断档案行情快照。"
+else
+  subject="research(series): 更新判断档案行情快照"
+  body="由 services/stocks-import 从 Stocks 库 daily_kline 写入，供 /s/<代码>/ 判断档案页画走势。"
+fi
 if git diff --cached --quiet; then
   say "没有待提交内容（可能全部被 .gitignore 排除），跳过提交"
 else
-  git commit -q -m "research(stocks): 从 Stocks 同步 ${count} 篇个股深度调研
+  git commit -q -m "$subject
 
-由 services/stocks-import 每日自动导入，已过系统参数过滤与机器质检。" >> "$LOG" 2>&1
+$body" >> "$LOG" 2>&1
   if git push -q >> "$LOG" 2>&1; then
-    say "已推送 ${count} 篇，CI 将自动部署"
+    say "已推送（新报告 ${count} 篇${PRICES_CHANGED:+，含行情快照}），CI 将自动部署"
   else
     say "push 失败"
     alert_failed stocks-import-failed "Stocks→searchX 每日同步 · git push 失败（已本地提交）"

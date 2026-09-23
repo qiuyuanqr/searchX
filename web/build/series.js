@@ -7,6 +7,9 @@
 // 只认标题不认标签是有意的——别的报告标签里提到某只票的代码（如板块报告 tags 含 300476）
 // 不该被并进那只票的系列里。港股 5 位后缀（02476.HK）天然不匹配 6 位，不参与归组。
 // 无代码时退回「去掉括号内容后的标题」，且要求完全相同才归组：宁可不归组，也不错并。
+// 档案页只认 6 位 A 股代码键（seriesKey 的第一支）；港股 5 位本就不参与归组。
+export const ARCHIVE_CODE_RE = /^\d{6}$/;
+
 export function seriesKey(entry) {
   const title = String((entry && entry.title) || "");
   const code = title.match(/\d{6}/);
@@ -38,8 +41,13 @@ export function annotateSeries(entries) {
   }
 
   const info = new Map();                   // entry 对象 → series
-  for (const group of groups.values()) {
+  for (const [key, group] of groups) {
     if (group.length < 2) continue;
+    // 判断档案页（2026-09-23）：只给 6 位代码归组的系列开，地址 s/<代码>/。
+    // 按标题归组的（无代码）不开——标题键没有稳定的网址形态，退回「历史调研」小字行。
+    // 还要整组都是股票：seriesKey 取的是标题里第一个 6 位数，非股票标题里恰好带个 6 位数
+    // （编号、年月）就会被当成代码，给它开一页「判断档案」、再去行情库查一个不存在的票。
+    const archiveHref = ARCHIVE_CODE_RE.test(key) && group.every((e) => e.type === "股票") ? `s/${key}/` : null;
     // 组内按时间旧→新。同一天用 href 兜底，保证顺序确定、不出现两篇并列「最新」。
     const ordered = [...group].sort(
       (a, b) => String(a.date).localeCompare(String(b.date)) || String(a.href).localeCompare(String(b.href)),
@@ -56,6 +64,7 @@ export function annotateSeries(entries) {
         // 顺着链能一篇篇读下去，也能看出判断是怎么一步步改的。
         newerHref: next ? next.href : null,
       };
+      if (archiveHref) s.archiveHref = archiveHref;
       if (next) {
         // 旧篇：报告页横幅要一键直达最新版（顺链读是给愿意考古的人的，横幅先给最新）
         s.latestHref = latest.href;

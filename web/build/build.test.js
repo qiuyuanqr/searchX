@@ -190,3 +190,61 @@ test("build 拒绝发布残留 {{TOKEN}} 的报告（sl-5）", () => {
   rmSync(root, { recursive: true, force: true });
   rmSync(out, { recursive: true, force: true });
 });
+
+// ── 判断档案页（2026-09-23）──
+const STOCK_NOTE = (date, dir) => `---\ntype: 股票\ncreated: ${date}T10:00:00+0800\n---\n\n# 芯原股份（688521.SH）\n\n> 未来约 13 周方向${dir}、置信度中：第 ${date} 篇的结论。\n`;
+const STOCK_FILES = {
+  "2026-07-30_verisilicon-688521/notes.md": STOCK_NOTE("2026-07-30", "震荡"),
+  "2026-07-30_verisilicon-688521/report.html": "<html><head></head><body><div class=\"wrap\">旧</div></body></html>",
+  "2026-09-09_verisilicon-688521/notes.md": STOCK_NOTE("2026-09-09", "偏涨"),
+  "2026-09-09_verisilicon-688521/report.html": "<html><head></head><body><div class=\"wrap\">新</div></body></html>",
+};
+
+test("build：同一只票两篇以上 → 出 s/<代码>/ 档案页；首页、报告页都有入口；行情快照在 <root>/_series/", () => {
+  const root = makeTmpRoot("tmp-archive", {
+    ...STOCK_FILES,
+    "_series/prices.json": JSON.stringify({ asOf: "20260922", source: "x", codes: { "688521": [["20260730", 170.21], ["20260909", 191.0], ["20260922", 208.03]] } }),
+  });
+  const out = "web/build/fixtures/out-archive";
+  build({ ...COMMON, root, out });
+  const page = readFileSync(`${out}/s/688521/index.html`, "utf8");
+  expect(page).toContain('<svg class="arch-chart"');
+  expect(page).toContain("+12.2%");
+  expect(page).toMatch(/href="\.\.\/\.\.\/assets\/feed\.css\?v=[0-9a-f]{10}"/);   // 子目录页也打了资源版本号
+  const home = readFileSync(`${out}/index.html`, "utf8");
+  expect(home).toContain('href="s/688521/">判断档案 · 2 篇 ›</a>');
+  const latest = readFileSync(`${out}/r/2026-09-09_verisilicon-688521/index.html`, "utf8");
+  expect(latest).toContain('这是本股第 2 次调研，历次判断与之后的走势见 <a href="../../s/688521/">判断档案 →</a>');
+  const old = readFileSync(`${out}/r/2026-07-30_verisilicon-688521/index.html`, "utf8");
+  expect(old).toContain('· <a href="../../s/688521/">判断档案 →</a>');
+  const slim = JSON.parse(readFileSync(`${out}/reports.json`, "utf8"));
+  expect(slim.find((e) => e.href.includes("09-09")).series.archiveHref).toBe("s/688521/");
+  rmSync(root, { recursive: true, force: true });
+  rmSync(out, { recursive: true, force: true });
+});
+
+test("build：行情快照缺失或损坏都不挡构建，档案页照出、只是不带图", () => {
+  for (const extra of [{}, { "_series/prices.json": "{坏的 json" }, { "_series/prices.json": "[]" }]) {
+    const root = makeTmpRoot("tmp-archive-noprice", { ...STOCK_FILES, ...extra });
+    const out = "web/build/fixtures/out-archive-noprice";
+    build({ ...COMMON, root, out });
+    const page = readFileSync(`${out}/s/688521/index.html`, "utf8");
+    expect(page).not.toContain("<svg");
+    expect(page).toContain("暂无这只票的行情数据");
+    rmSync(root, { recursive: true, force: true });
+    rmSync(out, { recursive: true, force: true });
+  }
+});
+
+test("build：单篇的票不出档案页", () => {
+  const root = makeTmpRoot("tmp-archive-single", {
+    "2026-09-09_verisilicon-688521/notes.md": STOCK_FILES["2026-09-09_verisilicon-688521/notes.md"],
+    "2026-09-09_verisilicon-688521/report.html": STOCK_FILES["2026-09-09_verisilicon-688521/report.html"],
+  });
+  const out = "web/build/fixtures/out-archive-single";
+  build({ ...COMMON, root, out });
+  expect(existsSync(`${out}/s`)).toBe(false);
+  expect(readFileSync(`${out}/index.html`, "utf8")).not.toContain("判断档案");
+  rmSync(root, { recursive: true, force: true });
+  rmSync(out, { recursive: true, force: true });
+});

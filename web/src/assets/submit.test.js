@@ -104,6 +104,15 @@ test("renderSearchResultsHTML 转义 title 与 url（防 DOM-XSS），excerpt �
   expect(html).toContain("命中<mark>片段</mark>");           // excerpt（Pagefind 高亮）原样保留
 });
 
+test("renderSearchResultsHTML：有判断档案的系列在卡片链接之外挂档案入口（<a> 不许套 <a>）", () => {
+  const entries = [{ title: "芯原股份（688521.SH）", type: "股票", date: "2026-09-09", href: "r/2026-09-09_x-688521/",
+    series: { index: 5, total: 5, archiveHref: "s/688521/", history: [] } }];
+  const html = renderSearchResultsHTML([{ url: "/r/2026-09-09_x-688521/", meta: { title: "芯原" }, excerpt: "" }], entries);
+  expect(html).toContain('</a><a class="rarchive" href="s/688521/">判断档案 · 5 篇 ›</a></div>');
+  const noArchive = renderSearchResultsHTML([{ url: "/r/2026-07-02_crypto-explained/", meta: { title: "虚拟币" }, excerpt: "" }], ENTRIES);
+  expect(noArchive).not.toContain("rarchive");
+});
+
 test("renderSearchResultsHTML 空标题回退「(无标题)」", () => {
   const html = renderSearchResultsHTML([{ url: "u", meta: { title: "" }, excerpt: "" }]);
   expect(html).toContain("(无标题)");

@@ -159,6 +159,16 @@ tail -n 80 ~/Library/Logs/searchx-stocks-import/stocks-import.log
 launchctl kickstart gui/$(id -u)/com.searchx.stocks-import   # 立刻跑一次
 ```
 
+## 判断档案页的行情快照（src/series-prices.js）
+
+同一只票调研过两次以上，站点会出 `/s/<6 位代码>/` 判断档案页：走势图 + 历次判断与之后的涨跌 + 每次的一句话结论（`web/build/render-archive.js`）。站点在 GitHub Actions 上构建、摸不到 Stocks 库，所以由本服务每个 tick 把需要的收盘价写进 `research/_series/prices.json`，有变化才写、才提交（通常每个交易日收盘入库后变一次；系列里新添一只票时也会变）。
+
+- **收哪些票**：与构建同一个口径——跳过 `.parked` / 缺 `report.html` 的，按 `annotateSeries` 拿到 `archiveHref` 的系列（6 位代码、两篇以上）。
+- **取多长**：最早一次调研日往前 14 个自然日起，到 `daily_kline` 的最新交易日。只查白名单表 `daily_kline`（6 位裸码、未复权收盘）。
+- **唯一写入方是 Mac mini 上的这条定时任务**。别在 MacBook 上跑它再提交：MacBook 上的 Stocks 副本是过期的，两台机各写各的还会在自动同步里撞冲突。模块里有一道「数据截止日只许前进」的底，误跑到旧库上不会覆盖更新的快照。
+- **失败不挡报告导入**：记日志、按独立 key `stocks-import-prices` 限频报警（6 小时一封）；档案页照出，只是行情停在上一次的截止日（页面上写着「数据截至」）。
+- 手动看一眼会写什么：`bun run services/stocks-import/src/series-prices.js --dry-run`（只在 Mac mini 上跑）。
+
 ## 搁置的报告怎么处理
 
 ```bash

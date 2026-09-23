@@ -9,6 +9,7 @@ import { injectReportNav } from "./inject-report-nav.js";
 import { findReportDefects } from "./validate-report.js";
 import { fingerprintAssets } from "./fingerprint.js";
 import { annotateSeries } from "./series.js";
+import { renderArchivePage } from "./render-archive.js";
 
 export function build({
   root = "research",
@@ -20,6 +21,10 @@ export function build({
   checkTemplate = "web/src/check.template.html",
   config = "web/src/site.config.json",
   dedup = "services/runner/src/dedup.js", // 查重纯函数：复制给浏览器表单用，单一源、不漂移
+  // 判断档案页的行情快照：Mac mini 上的 stocks-import 是唯一写入方（series-prices.js）。
+  // 缺失或损坏都不挡构建——档案页照出，只是不画图、不列价格。
+  // 默认跟着 root 走（<root>/_series/prices.json），测试传夹具 root 时不会读到真实仓库的数据。
+  prices = null,
 } = {}) {
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
@@ -68,6 +73,23 @@ export function build({
     if (existsSync(dataDir)) cpSync(dataDir, join(destDir, "data"), { recursive: true });
   }
 
+  // 判断档案页（2026-09-23）：同一只票调研过两次以上（6 位代码归组）就出 /s/<代码>/。
+  // 归组直接用上面 annotateSeries 的结果，与首页卡片的档案入口同一份数据，不另算。
+  const priceData = loadPrices(prices ?? join(root, "_series", "prices.json"));
+  const archives = new Map();
+  for (const e of entries) {
+    const href = e.series && e.series.archiveHref;
+    if (!href) continue;
+    if (!archives.has(href)) archives.set(href, []);
+    archives.get(href).push(e);
+  }
+  for (const [href, group] of archives) {
+    const code = href.replace(/^s\//, "").replace(/\/$/, "");
+    const destDir = join(out, "s", code);
+    mkdirSync(destDir, { recursive: true });
+    writeFileSync(join(destDir, "index.html"), renderArchivePage({ code, entries: group, prices: priceData }));
+  }
+
   // 首页：注入卡片 + 提交配置（弹窗表单用 WORKER_URL / WORKER_FALLBACK_URL）
   // 先注模板占位符、再渲染卡片：反过来的话，笔记标题/导语里若出现 {{WORKER_URL}} 这样的
   // 字面字样，会被 injectConfig 一并替换成真实配置值（配置值本身不敏感，但内容被悄悄改写了）。
@@ -114,4 +136,21 @@ export function build({
   fingerprintAssets({ out });
 
   return entries;
+}
+
+// 读行情快照。不存在 → null（Mac mini 还没写过，正常）；存在但坏了 → 警告后当作没有，
+// 不让一份数据文件击穿整站构建。
+export function loadPrices(path) {
+  if (!path || !existsSync(path)) return null;
+  try {
+    const data = JSON.parse(readFileSync(path, "utf8"));
+    if (!data || typeof data !== "object" || !data.codes || typeof data.codes !== "object") {
+      console.warn(`⚠️ ${path} 结构不对（缺 codes），判断档案页本次不带行情`);
+      return null;
+    }
+    return data;
+  } catch (err) {
+    console.warn(`⚠️ ${path} 读不了（${String(err.message).split("\n")[0]}），判断档案页本次不带行情`);
+    return null;
+  }
 }

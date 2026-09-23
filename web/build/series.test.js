@@ -40,12 +40,12 @@ test("两篇：新的拿「第 2 次 + 间隔天数 + history」，旧的拿 new
   const out = annotateSeries([SHENGHONG_NEW, SHENGHONG_OLD]);
   const [nw, old] = out;
   expect(nw.series).toEqual({
-    index: 2, total: 2, daysSincePrev: 48, newerHref: null,
+    index: 2, total: 2, daysSincePrev: 48, newerHref: null, archiveHref: "s/300476/",
     history: [{ date: "2026-06-08", href: "r/2026-06-08_shenghong-tech-300476/" }],
   });
   expect(old.series).toEqual({
     index: 1, total: 2, daysSincePrev: null,
-    newerHref: "r/2026-07-26_shenghong-tech-300476/",
+    newerHref: "r/2026-07-26_shenghong-tech-300476/", archiveHref: "s/300476/",
     latestHref: "r/2026-07-26_shenghong-tech-300476/", latestDate: "2026-07-26",
   });
 });
@@ -57,15 +57,15 @@ test("三篇：中间那篇 newerHref 链紧邻下一篇、latest 直达最新�
   const out = annotateSeries([nw, mid, old]);
   const byHref = Object.fromEntries(out.map((e) => [e.href, e.series]));
   expect(byHref["r/new/"]).toEqual({
-    index: 3, total: 3, daysSincePrev: 31, newerHref: null,
+    index: 3, total: 3, daysSincePrev: 31, newerHref: null, archiveHref: "s/000001/",
     history: [{ date: "2026-03-01", href: "r/mid/" }, { date: "2026-02-01", href: "r/old/" }],
   });
   expect(byHref["r/mid/"]).toEqual({
-    index: 2, total: 3, daysSincePrev: 28, newerHref: "r/new/",
+    index: 2, total: 3, daysSincePrev: 28, newerHref: "r/new/", archiveHref: "s/000001/",
     latestHref: "r/new/", latestDate: "2026-04-01",
   });
   expect(byHref["r/old/"]).toEqual({
-    index: 1, total: 3, daysSincePrev: null, newerHref: "r/mid/",
+    index: 1, total: 3, daysSincePrev: null, newerHref: "r/mid/", archiveHref: "s/000001/",
     latestHref: "r/new/", latestDate: "2026-04-01",
   });
 });
@@ -92,4 +92,21 @@ test("日期缺失或损坏不炸，间隔记 null", () => {
   const out = annotateSeries([a, b]);
   expect(out.every((e) => e.series.total === 2)).toBe(true);
   expect(out.some((e) => e.series.daysSincePrev === null)).toBe(true);
+});
+
+test("判断档案入口：只给 6 位代码归组的系列挂 archiveHref；按标题归组的不挂（没有稳定网址）", () => {
+  const coded = annotateSeries([GUOCI_NEW, GUOCI_OLD]);
+  expect(coded.every((e) => e.series.archiveHref === "s/300285/")).toBe(true);
+  const a = { title: "液冷还是风冷", date: "2026-07-01", href: "r/a/", type: "概念" };
+  const b = { title: "液冷还是风冷", date: "2026-08-01", href: "r/b/", type: "概念" };
+  const titled = annotateSeries([b, a]);
+  expect(titled[0].series.total).toBe(2);
+  expect(titled.some((e) => "archiveHref" in e.series)).toBe(false);
+  expect(annotateSeries([LONE])[0].series).toBeUndefined();   // 单篇不开档案页
+  // 标题里恰好有个 6 位数的非股票报告：照旧归组，但不开档案页
+  const n1 = { title: "第 202609 期周报", date: "2026-09-01", href: "r/n1/", type: "概念" };
+  const n2 = { title: "第 202609 期周报", date: "2026-09-08", href: "r/n2/", type: "概念" };
+  const notStock = annotateSeries([n2, n1]);
+  expect(notStock[0].series.total).toBe(2);
+  expect("archiveHref" in notStock[0].series).toBe(false);
 });

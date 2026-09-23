@@ -27,8 +27,13 @@ export function seriesBadgeHtml(series) {
 
 // 最新条目下的「历史调研」行（2026-08-28 起替代旧篇单独展示）：旧篇不再出现在首页与
 // 搜索里，历史入口收进这一行，日期新→旧、各自链到当次报告。单篇 / 旧篇不出。
+// 2026-09-23 起：有判断档案页的系列（6 位代码归组）这一行换成档案入口——历次报告、
+// 当时判断与之后的走势都在档案页里，比一排日期更有用。没有档案页的（按标题归组）照旧列日期。
 export function seriesHistoryHtml(series) {
   if (!series || !Array.isArray(series.history) || !series.history.length) return "";
+  if (series.archiveHref) {
+    return `<div class="series-history"><a class="series-archive" href="${esc(series.archiveHref)}">判断档案 · ${esc(series.total)} 篇 ›</a></div>`;
+  }
   const links = series.history
     .map((h) => `<a href="${esc(h.href)}">${esc(h.date)}</a>`)
     .join('<span class="series-history-dot"> · </span>');

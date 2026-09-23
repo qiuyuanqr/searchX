@@ -155,7 +155,11 @@ export function renderSearchResultsHTML(items, entries) {
       // 搜索结果里只会出现最新篇，不再需要压暗与「已有更新版」那套。
       const series = entry && entry.series;
       const badge = seriesBadgeHtml(series);
-      return `<div class="result"><a href="${url}"><h3>${title}${badge}</h3><p class="ex">${ex}</p>${meta}</a></div>`;
+      // 判断档案入口放在卡片链接之外：整张卡本身是 <a>，<a> 套 <a> 会被浏览器拆开、链接失效。
+      const archive = series && series.archiveHref
+        ? `<a class="rarchive" href="${escapeHtml(series.archiveHref)}">判断档案 · ${escapeHtml(series.total)} 篇 ›</a>`
+        : "";
+      return `<div class="result"><a href="${url}"><h3>${title}${badge}</h3><p class="ex">${ex}</p>${meta}</a>${archive}</div>`;
     })
     .join("");
 }

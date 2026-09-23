@@ -17,13 +17,13 @@
 | factcheck skill | `.claude/skills/factcheck/SKILL.md` | 交互式 `/factcheck`，或 check-runner spawn | 真假+原委+可信度；产出落 Obsidian `Factcheck/`、整篇经私密 KV 回显手机页，**不进仓库不上公开站** |
 | 报告模板 | `.claude/skills/research/templates/report.html` | 被 research / stock 填充 `{{TOKEN}}` | 离线自包含的纸感报告页 |
 | 调研资产库 | `research/`（= `ARCHIVE_ROOT`） | skill 写入 | 每主题一文件夹（report.html / sources.md / notes.md [+data/]）+ `INDEX.md`；**同时是站点唯一数据源** |
-| 站点构建 | `web/build/`（入口 `cli.js`） | `bun run build`（本地）/ CI | 扫 `research/` → 渲染首页卡片 + 报告副本 + 4 个页面；构建期校验 + CSP 注入 + 缓存指纹 |
+| 站点构建 | `web/build/`（入口 `cli.js`） | `bun run build`（本地）/ CI | 扫 `research/` → 渲染首页卡片 + 报告副本 + 4 个页面 + 判断档案页 `s/<代码>/`（同一只票两篇以上；读 `research/_series/prices.json`，缺失照出、不带图）；构建期校验 + CSP 注入 + 缓存指纹 |
 | 站点前端 | `web/src/` | 浏览器 | 信息流首页、提交弹窗（token 授权）、admin 授权管理页、check 私密核查页（含结果详情渲染） |
 | intake-worker | `services/intake-worker/`（Cloudflare Worker） | 前端 fetch / 两个 runner 的 HTTP 调用 | 唯一对外写入口：提交鉴权→初筛→限频→建 GitHub Issue；`/admin/*` 名单管理；`/check/*` 私密核查任务（KV） |
 | research runner | `services/runner/` | Mac mini launchd 每 300s（`com.searchx.runner`），或 `bun run runner:now` | 取 approved Issue → 查重 → spawn `claude -p "/research …"` → 贴 done → 探活 → 发信；附带探活报警、新链接自检 |
 | check-runner | `services/check-runner/` | Mac mini launchd 每 300s（`com.searchx.check-runner`） | 轮询 `/check/pending` → 下载附图 → spawn `claude -p "/factcheck …"` → 读结果信号文件 result.md（整篇 + frontmatter 的 summary/title） → markDone 回传 |
 | worker 自动部署 | `services/intake-worker/deploy-cron.sh` + plist | Mac mini launchd 每 300s | 检测 HEAD 里 worker 源码变化 → `wrangler deploy`（worker 不随 CI 部署） |
-| Stocks 报告同步 | `services/stocks-import/` | Mac mini launchd 每 5 分钟（`com.searchx.stocks-import`，`StartInterval=300`） | 只读查 Stocks 活库 → 过滤系统参数（取数函数名 / SQL / 主机名 / 运行时故障叙述）→ 产出三件套 + INDEX 行 → 逐篇机器质检（不过就写 `.parked` 搁置）→ 构建自检 → 精准提交推送。轮询不出网、不花配额；导入与提交不原子，故每轮会把磁盘上未提交的导入目录一并拾起 |
+| Stocks 报告同步 | `services/stocks-import/` | Mac mini launchd 每 5 分钟（`com.searchx.stocks-import`，`StartInterval=300`） | 只读查 Stocks 活库 → 过滤系统参数（取数函数名 / SQL / 主机名 / 运行时故障叙述）→ 产出三件套 + INDEX 行 → 逐篇机器质检（不过就写 `.parked` 搁置）→ 构建自检 → 精准提交推送。轮询不出网、不花配额；导入与提交不原子，故每轮会把磁盘上未提交的导入目录一并拾起。每轮顺带刷新判断档案页的行情快照 `research/_series/prices.json`（`series-prices.js`，**唯一写入方**，数据截止日只许前进） |
 | CI 部署 | `.github/workflows/deploy.yml` | push 动到 `research/**`、`web/**`、`package.json`、`bun.lock` | `bun test` → `bun run build` → Pages 部署 → 冒烟探测 |
 | 部署自动补跑 | `.github/workflows/deploy-retry.yml` | Deploy site 失败时 | 自动 rerun --failed ≤2 次；有更晚的部署（成功**或进行中**）时放弃（防旧产物回滚）；失败提交已被后续提交取代时改在 HEAD 上发起新部署（防「修复提交不在 deploy paths 里→站点静默滞留」） |
 | 海外探活 | `.github/workflows/probe.yml` + `.github/scripts/site-probe.sh` | 每半小时 cron | 首页可达 + 注入配置一致 + Worker 可达；挂了 GitHub 发失败邮件 |

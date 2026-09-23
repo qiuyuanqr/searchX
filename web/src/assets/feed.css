@@ -158,6 +158,8 @@ h1.brand{font-family:var(--serif); font-size:1.95rem; font-weight:600; letter-sp
 .series-history a{font-family:var(--mono); color:var(--muted); text-decoration:none; letter-spacing:.02em; transition:color .2s ease}
 .series-history a:hover{color:var(--seal)}
 .series-history-dot{color:var(--faint)}
+.series-history a.series-archive{font-family:var(--sans); color:var(--seal); letter-spacing:.02em}
+.series-history a.series-archive:hover{color:var(--err)}
 /* 滚动逐条浮现（feed.js 的 bindReveal；隐藏态只在 JS 启动后才加，脚本不跑时内容直接可见） */
 body.js-reveal .day-card{opacity:0; transform:translateY(18px); transition:opacity .5s ease, transform .5s ease}
 body.js-reveal .day-card.shown{opacity:1; transform:none}
@@ -323,3 +325,70 @@ body.modal-lock{overflow:hidden}
 .prose table{width:100%; border-collapse:collapse; margin:.8rem 0; font-family:var(--sans); font-size:.82rem; display:block; overflow-x:auto}
 .prose th,.prose td{border:1px solid var(--rule); padding:.4rem .55rem; text-align:left; vertical-align:top}
 .prose thead th{background:var(--paper-2); font-weight:600; white-space:nowrap}
+
+/* ── 判断档案页（/s/<代码>/，2026-09-23）：走势图 + 判断表 + 时间线，版式沿用首页白卡 ── */
+.arch .arch-head{margin:2.2rem 0 1.2rem}
+.arch-title{font-family:var(--serif); font-size:1.7rem; font-weight:800; letter-spacing:.05em; line-height:1.35; margin:0; color:var(--ink)}
+.arch-title .code{font-size:.85rem; opacity:.8; margin-left:.3rem; vertical-align:middle}
+.arch-sub{font-size:.85rem; color:var(--muted); margin:.4rem 0 0; line-height:1.6}
+.arch-card{background:var(--card); border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,.05); padding:1.4rem 1.6rem; margin:0 0 1rem}
+@media (max-width:740px){ .arch-card{padding:1.1rem 1rem} }
+.arch-h{font-family:var(--sans); font-size:.95rem; font-weight:650; color:var(--ink); margin:0 0 .8rem; letter-spacing:.05em}
+.arch-chart{display:block; width:100%; height:auto}
+.arch-chart .arch-axis{stroke:var(--rule); stroke-width:1}
+.arch-chart .arch-line{fill:none; stroke:var(--muted); stroke-width:1.5; stroke-linejoin:round; stroke-linecap:round}
+.arch-chart .arch-tick{font-family:var(--mono); font-size:11px; fill:var(--muted)}
+.arch-chart .arch-now{fill:var(--muted)}
+.arch-mk circle{stroke:var(--card); stroke-width:2}
+.arch-mk text{font-family:var(--mono); font-size:10px; font-weight:600; fill:#fff}
+.arch-mk.flat circle{fill:#9a7420} .arch-mk.up circle{fill:#2f7d54} .arch-mk.down circle{fill:var(--err)} .arch-mk.latest circle{fill:var(--seal)}
+@media (prefers-color-scheme: dark){
+  .arch-mk.flat circle{fill:#c9a04a} .arch-mk.up circle{fill:#5aa87e}
+  .arch-mk text{fill:#1b1a18}
+}
+.arch-cap{font-size:.75rem; color:var(--muted); margin:.5rem 0 0; line-height:1.6}
+/* 手机上整张图缩到约一半，按 viewBox 写的字号只剩 5px：放大点和字，纵轴两个价位收起（价格表里都有） */
+@media (max-width:480px){
+  .arch-chart .arch-tick{font-size:20px}
+  .arch-chart .arch-tick.y{display:none}
+  .arch-chart .arch-line{stroke-width:2.5}
+  .arch-mk circle{r:15px}
+  .arch-mk text{font-size:17px}
+  .arch-chart .arch-now{r:5px}
+}
+.arch-table{width:100%; border-collapse:collapse; font-size:.86rem; line-height:1.5}
+.arch-table th{font-weight:400; font-size:.74rem; color:var(--muted); text-align:left; padding:.35rem .4rem; border-bottom:1px solid var(--rule); white-space:nowrap}
+.arch-table td{padding:.55rem .4rem; border-bottom:1px solid var(--rule); vertical-align:baseline}
+.arch-table tr:last-child td{border-bottom:0}
+.arch-table td a{color:var(--ink); text-decoration:none; white-space:nowrap}
+.arch-table td a:hover{color:var(--seal)}
+.arch-table tr.latest td a{color:var(--seal)}
+.arch-table .mono,.arch-tl .mono{font-family:var(--mono); letter-spacing:.02em}
+.arch-table td.up{color:#2f7d54} .arch-table td.down{color:var(--err)}
+@media (prefers-color-scheme: dark){ .arch-table td.up{color:#5aa87e} }
+.arch-n{display:inline-block; min-width:1.3rem; font-family:var(--mono); font-size:.75rem; color:var(--muted); margin-right:.25rem}
+.arch-cd{display:block; font-size:.68rem; color:var(--muted); line-height:1.3}
+.arch-conf{display:inline-block; font-size:.74rem; color:var(--muted); margin-left:.45rem; white-space:nowrap}
+.arch-muted{color:var(--muted)}
+@media (max-width:480px){ .arch-conf{display:block; margin-left:0} .arch-table{font-size:.8rem} .arch-table td,.arch-table th{padding-left:.25rem; padding-right:.25rem} .arch-table th{white-space:normal} }
+.arch-tl{list-style:none; margin:0; padding:0 0 0 1rem; border-left:2px solid var(--rule)}
+.arch-tl-item{position:relative; padding:0 0 1.1rem .4rem}
+.arch-tl-item:last-child{padding-bottom:.2rem}
+.arch-tl-item::before{content:""; position:absolute; left:calc(-1rem - 6px); top:.55rem; width:10px; height:10px; border-radius:50%; background:var(--faint); border:2px solid var(--card)}
+.arch-tl-item.latest::before{background:var(--seal)}
+.arch-tl-meta{display:flex; flex-wrap:wrap; align-items:baseline; gap:.2rem .6rem; font-size:.82rem}
+.arch-tl-meta a{color:var(--ink); text-decoration:none; border-bottom:1px solid var(--rule)}
+.arch-tl-meta a:hover{color:var(--seal); border-color:var(--seal-soft)}
+.arch-tl-item.latest .arch-tl-meta a{color:var(--seal)}
+.arch-n-text{font-size:.75rem; color:var(--muted)}
+.arch-tl-meta .arch-conf{margin-left:0}
+.arch-tl-lead{font-size:.9rem; line-height:1.75; color:var(--ink-2); margin:.25rem 0 0}
+.arch-tl-item:not(.latest) .arch-tl-lead{color:var(--ink-soft)}
+.arch-tl-diff{font-size:.75rem; color:var(--muted); margin:.15rem 0 0}
+.arch-foot{font-size:.74rem; color:var(--muted); line-height:1.7; margin:1.2rem 0 0}
+a.brand-name{text-decoration:none}
+/* 搜索结果卡片下的档案入口（卡片本身是 <a>，入口在链接之外单独一行） */
+/* 选择器要压过 .result a（整卡链接的白底圆角投影），否则入口会被画成第二张卡 */
+.result a.rarchive{display:inline-block; background:none; border:0; box-shadow:none; border-radius:0; padding:0; transform:none;
+  font-size:.75rem; color:var(--seal); text-decoration:none; margin:.35rem 0 0 .4rem}
+.result a.rarchive:hover{color:var(--err); box-shadow:none; transform:none}

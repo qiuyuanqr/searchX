@@ -22,10 +22,11 @@ import { join } from "path";
 import { createHash } from "crypto";
 
 // 纯函数：把 HTML 里 (src|href)="assets/X.js|css" 改写为加 ?v=<version>。
+// 子目录页面（判断档案 s/<代码>/index.html）写的是 "../../assets/…"，前缀的 ../ 一并认。
 // 只动 .js/.css（favicon 等无所谓）、只动 assets/ 开头（不碰外链）、跳过已带 query 的（幂等）。
 export function addVersionToHtml(html, version) {
   return html.replace(
-    /((?:src|href)=")(assets\/[^"?]+\.(?:js|css))(")/g,
+    /((?:src|href)=")((?:\.\.\/)*assets\/[^"?]+\.(?:js|css))(")/g,
     (_, pre, path, quote) => `${pre}${path}?v=${version}${quote}`,
   );
 }
@@ -63,6 +64,17 @@ export function fingerprintAssets({ out = "web/dist" } = {}) {
   for (const n of readdirSync(out).filter((n) => n.endsWith(".html"))) {
     const p = join(out, n);
     writeFileSync(p, addVersionToHtml(readFileSync(p, "utf8"), version));
+  }
+  // 判断档案页在 s/<代码>/ 下、引用站点 feed.css：不打版本号的话改了样式它会卡在旧缓存。
+  // 报告页（r/）是自包含的、不引用 assets 样式脚本，不必扫。
+  const archiveRoot = join(out, "s");
+  let archiveDirs = [];
+  try { archiveDirs = readdirSync(archiveRoot); } catch {}
+  for (const d of archiveDirs) {
+    const p = join(archiveRoot, d, "index.html");
+    let html;
+    try { html = readFileSync(p, "utf8"); } catch { continue; }
+    writeFileSync(p, addVersionToHtml(html, version));
   }
   // reports.json 的独立数据版本号（内容一变就变，与 assets 版本互不牵连）
   let dataVersion = "";

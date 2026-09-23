@@ -36,3 +36,11 @@ test("history 的 href 与日期都转义（防 DOM-XSS）", () => {
   expect(html).toContain("&quot;&gt;&lt;img");
   expect(html).toContain("&lt;img src=x onerror=alert(1)&gt;");
 });
+
+test("有判断档案的系列：历史行换成档案入口（带篇数），不再列日期", () => {
+  const html = seriesHistoryHtml({ index: 3, total: 3, newerHref: null, archiveHref: "s/300285/",
+    history: [{ date: "2026-08-10", href: "r/b/" }, { date: "2026-07-02", href: "r/a/" }] });
+  expect(html).toBe('<div class="series-history"><a class="series-archive" href="s/300285/">判断档案 · 3 篇 ›</a></div>');
+  // 旧篇（无 history）照旧不出任何行
+  expect(seriesHistoryHtml({ index: 1, total: 3, newerHref: "r/x/", archiveHref: "s/300285/" })).toBe("");
+});

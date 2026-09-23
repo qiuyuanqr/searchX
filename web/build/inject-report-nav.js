@@ -330,12 +330,23 @@ function relatedHtml(related, homeHref) {
 
 // 旧报告页顶部的「已有更新版」横幅（2026-08-28）：旧篇不再出现在首页与搜索，
 // 从「历史调研」链接进来的读者要一眼知道这是过时版本、并能一键跳最新。
+// 2026-09-23 起同一只票（6 位代码归组）有判断档案页：旧篇横幅后面挂档案入口；
+// 最新篇也出一条浅色提示（不用主色浅底——它不是警示，只是告诉读者还有历次记录可看）。
+// 两种都用 .sx-stale-note 这个类，导航脚本才会把它挪到报头之上（脚本按类名找，改名要连脚本一起改）。
 function staleNoteHtml(series) {
-  if (!series || !series.newerHref) return "";
+  if (!series) return "";
+  const archive = series.archiveHref
+    ? `<a href="${escapeHtml("../../" + series.archiveHref)}">判断档案 →</a>`
+    : "";
+  if (!series.newerHref) {
+    if (!archive) return "";
+    return `
+<div class="sx-stale-note sx-series-note">这是本股第 ${escapeHtml(series.index)} 次调研，历次判断与之后的走势见 ${archive}</div>`;
+  }
   const href = escapeHtml("../../" + (series.latestHref || series.newerHref));
   const when = series.latestDate ? escapeHtml(series.latestDate) + " " : "";
   return `
-<div class="sx-stale-note">本报告已有更新版，结论可能过时 — <a href="${href}">查看 ${when}最新版 →</a></div>`;
+<div class="sx-stale-note">本报告已有更新版，结论可能过时 — <a href="${href}">查看 ${when}最新版 →</a>${archive ? ` · ${archive}` : ""}</div>`;
 }
 
 export function injectReportNav(html, {
@@ -609,6 +620,8 @@ body.sx-reveal .sx-rv.in{opacity:1; transform:none}
   font-family:var(--sx-sans); font-size:.85rem; line-height:1.6; color:var(--ink-soft); text-align:center}
 .sx-stale-note a{color:var(--seal); text-decoration:none; font-weight:600; border-bottom:1px solid var(--seal-soft)}
 .sx-stale-note a:hover{border-bottom-width:2px}
+.sx-stale-note.sx-series-note{background:transparent; border-left:0; border-radius:0; padding:.2rem 0; color:var(--muted)}
+.sx-stale-note.sx-series-note a{font-weight:500}
 </style>${staleNoteHtml(series)}${relatedHtml(related, homeHref)}
 <div class="sx-progress" aria-hidden="true"><i></i></div>
 <aside class="sx-toc" aria-label="目录"><nav><div class="h">目录</div></nav></aside>
