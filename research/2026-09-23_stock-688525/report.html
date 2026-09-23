@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>佰维存储（688525.SH） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>佰维存储（688525.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-23（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 半导体</span>
+      <span style="flex-basis:100%"><b>概念标签</b> AI手机 · AI PC · 汽车芯片 · AI眼镜 · 先进封装 · 存储芯片 · 智能穿戴 · 信创</span>
+      <span><b>来源</b> 16 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    佰维存储（688525）主要做的是半导体存储器的研发、生产和销售，产品有嵌入式存储、消费级存储、工业级存储，另外提供先进封测服务。自有品牌 BIWIN 佰维面向企业客户（嵌入式智能终端、工业、PC 整机厂）；子品牌佰微及其运营的 HP 惠普等品牌面向个人消费者（DIY、电竞、移动存储）。员工 2852 人，注册资本 47156.67 万元。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——上半年净利润 71.66 亿元、同比增长 3273%，市盈率只有 12.6 倍；但这是存储涨价周期里的利润，四季度涨价幅度会不会继续缩小，外部预测互相矛盾，同时资金在持续流出。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：上半年净利润 71.66 亿元、同比增长 3273%，市盈率只有 12.6 倍；但这是存储涨价周期里的利润，四季度涨价幅度会不会继续缩小，外部预测互相矛盾，同时资金在持续流出。支撑在于上半年净利润71.66亿同比增3273%；市盈率12.56倍居行业第3低；三季度存储合约价仍在上涨。主要风险是周期高点利润可能大幅回落；近20日主力净流出21.47亿；四季度NAND涨价预测相互矛盾。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>上半年净利润71.66亿同比增3273%</li>
+      <li>市盈率12.56倍居行业第3低</li>
+      <li>三季度存储合约价仍在上涨</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据时点：行情取自库内行情（数据时点 2026-09-23 13:43，盘中实时值，不是收盘价）；估值取自库内估值（2026-09-22）；财务取自库内财务（最新一期 2026-06-30 半年报，2026-08-25 披露）。联网信息都写明了来源和日期。本报告不是买卖建议。</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中） <strong>一句话逻辑</strong>：上半年净利润 71.66 亿元、同比增长 3273%，市盈率只有 12.6 倍；但这是存储涨价周期里的利润，四季度涨价幅度会不会继续缩小，外部预测互相矛盾，同时资金在持续流出。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li>业绩大幅增长：2026 上半年营收 155.75 亿元（同比 +298.10%），净利润 71.66 亿元（同比 +3273.48%），毛利率 54.81%；按上半年减一季度推算，二季度单季净利润约 42.67 亿元，比一季度的 28.99 亿元更高（置信度：高）</li>
+<li>估值口径偏低：滚动市盈率 12.56 倍，在库内 198 只半导体股里第 3 低，行业市盈率中位数是 100.43 倍（置信度：高，只说明估值数字低，不等于便宜）</li>
+<li>存储合约价还在涨：TrendForce 预计 2026 年三季度 DRAM 合约价环比上涨 13–18%，NAND 上涨 10–15%（2026-07 预测，有多个来源转述；置信度：中）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li>周期股利润处在高位时，市盈率低往往是常态；一旦存储价格停止上涨，利润可能大幅回落（置信度：中）</li>
+<li>资金在流出：近 20 个交易日主力合计净流出 21.47 亿元，其中特大单净流出 13.90 亿元，只有 7 天净流入；它所在的「存储芯片与半导体」热点，系统记录已进入热度回落阶段（置信度：高，这是盘面现象，不作为基本面证据）</li>
+<li>下游消费电子需求偏弱：「消费电子与苹果产业链」「AI手机与AI电脑」两个热点也都在热度回落阶段；TrendForce 提到消费类需求在转弱（置信度：中）</li>
+</ol>
+<p><strong>最该盯的信号</strong>：① 10 月底前的三季报：单季净利润能否不低于二季度推算的约 42.67 亿元；② 9-30 美光财报和 10-8 三星业绩预告中关于存储价格的说法。 <strong>这份判断最可能错在哪</strong>：如果四季度 NAND 涨价幅度真的像 9-18 那条转述说的上调到 15–20%，利润还会继续抬高，而本报告的「震荡」可能低估了上涨空间。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>名称 / 代码</strong>：佰维存储（688525），科创板，2022-12-30 上市，正常交易（上市状态=L），上市约 3 年 9 个月。</li>
+<li><strong>行业</strong>：半导体（库内行业分类）。</li>
+<li><strong>主营</strong>：半导体存储器的研发、生产和销售，产品有嵌入式存储、消费级存储、工业级存储，另外提供先进封测服务。自有品牌 BIWIN 佰维面向企业客户（嵌入式智能终端、工业、PC 整机厂）；子品牌佰微及其运营的 HP 惠普等品牌面向个人消费者（DIY、电竞、移动存储）。员工 2852 人，注册资本 47156.67 万元。</li>
+<li><strong>当前行情</strong>（数据时点 13:43 盘中）：股价 222.17 元，当日涨 2.28%，盘中最高涨 5.22%、最低涨 2.18%，成交额 52.2 亿元。</li>
+<li><strong>估值</strong>（2026-09-22）：总市值 1035.77 亿元，滚动市盈率 12.56 倍，市净率 8.16 倍，换手率 4.48%，无股息率数据。同行业 198 只里市盈率第 3 低，行业市盈率中位数 100.43 倍（置信度：高）。</li>
+<li><strong>A/H 溢价</strong>：该票目前不是两地上市（库内无 H 股数据）。它已向港交所重新递交 H 股上市申请（见 F、I 节）。</li>
+</ul>
+<p><strong>判断</strong>：市净率 8.16 倍并不低，市盈率低主要是因为最近四个季度利润大幅增长。这是周期股利润高点时常见的估值形态，不能直接理解为「价格便宜」（置信度：中）。</p>
+<h2>C. 财务健康</h2>
+<p>近 4 期数据（累计口径，来自库内财务）：</p>
+<ul>
+<li><strong>2025-09-30（三季报）</strong>：营收 65.75 亿元（同比 +30.84%）· 净利润 0.30 亿元（同比 -86.67%）· 毛利率 13.91% · 净利率 0.02% · ROE 0.86% · 资产负债率 64.18%</li>
+<li><strong>2025-12-31（年报）</strong>：营收 113.02 亿元（同比 +68.82%）· 净利润 8.53 亿元（同比 +429.07%）· 毛利率 21.44% · 净利率 7.42% · ROE 21.73% · 资产负债率 64.47%</li>
+<li><strong>2026-03-31（一季报）</strong>：营收 68.14 亿元（同比 +341.53%）· 净利润 28.99 亿元（同比 +1567.85%）· 毛利率 53.30% · 净利率 42.22% · ROE 41.56% · 资产负债率 64.96%</li>
+<li><strong>2026-06-30（半年报）</strong>：营收 155.75 亿元（同比 +298.10%）· 净利润 71.66 亿元（同比 +3273.48%）· 毛利率 54.81% · 净利率 45.89% · ROE 79.00% · 每股收益 15.28 元 · 资产负债率 61.64%</li>
+</ul>
+<p><strong>单季推算</strong>（据库内财务累计数相减推算）：</p>
+<ul>
+<li>2025 年四季度：营收约 47.27 亿元，净利润约 8.23 亿元</li>
+<li>2026 年一季度：营收 68.14 亿元，净利润 28.99 亿元</li>
+<li>2026 年二季度：营收约 87.61 亿元，净利润约 42.67 亿元，净利率约 48.7%</li>
+</ul>
+<p><strong>趋势判断</strong>：</p>
+<ol>
+<li>转折点在 2025 年四季度：2025 年前三季度净利润同比下滑 86.67%，四季度起利润大幅增长，到 2026 年二季度已连续三个季度环比增长（置信度：高）。</li>
+<li>毛利率从 2025 年三季报的 13.91% 升到 2026 年半年报的 54.81%。对一家不自己生产存储晶圆、主要做方案设计和封测的公司来说，这么高的毛利率很可能来自低价库存随涨价升值；等库存按新的高价补进来后，这部分额外利润可能缩小（置信度：中，这是推断，库内没有存货成本数据）。</li>
+<li>资产负债率从 64.96% 降到 61.64%，负债情况在好转（置信度：高）。</li>
+<li>仅从估值口径看，12.56 倍滚动市盈率远低于行业中位数；但它反映的是利润高点，不代表盈利能长期保持（置信度：中）。</li>
+</ol>
+<p><strong>信息缺口</strong>：库中没有现金流、存货数据。存储模组厂的利润和库存价格高度相关，缺存货数据就没法判断利润里有多少来自库存升值。补法：查看半年报原文的存货及跌价准备附注。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同行业（半导体）市值前三（库内同业对比，财务为 2026-06-30 半年报）：</p>
+<ul>
+<li><strong>长鑫科技 688825</strong> · 市值 39277.74 亿元 · 市盈率 48.01 倍 · 市净率 29.15 倍 · 营收 1503.10 亿元 · 净利润 776.05 亿元 · ROE 81.06%</li>
+<li><strong>中芯国际 688981</strong> · 市值 10481.07 亿元 · 市盈率 145.42 倍 · 市净率 6.11 倍 · 营收 386.35 亿元 · 净利润 44.67 亿元 · ROE 2.77%</li>
+<li><strong>寒武纪 688256</strong> · 市值 7049.45 亿元 · 市盈率 211.56 倍 · 市净率 52.00 倍 · 营收 59.96 亿元 · 净利润 23.11 亿元 · ROE 18.20%</li>
+<li><strong>佰维存储 688525</strong> · 市值 1035.77 亿元 · 市盈率 12.56 倍 · 市净率 8.16 倍 · 营收 155.75 亿元 · 净利润 71.66 亿元 · ROE 79.00%</li>
+</ul>
+<p><strong>判断</strong>：</p>
+<ul>
+<li>库内给出的是全行业市值前三，不是存储模组的直接对手，横向比较只能作参考。直接对手（如江波龙、德明利等模组厂）库内没有返回对比数据，属于信息缺口（置信度：高）。</li>
+<li>长鑫科技是存储晶圆原厂，处在上游；佰维是模组和封测厂，处在中游。两家 ROE 都在 80% 左右，说明这轮涨价让整条存储产业链的利润同时放大（置信度：中）。</li>
+<li>佰维的市盈率只有长鑫的约四分之一。一个可能的解释是，市场认为模组厂在降价周期里的利润更不稳定——模组厂要从原厂进晶圆，涨价时库存升值，降价时库存贬值（置信度：低，推断）。</li>
+</ul>
+<h2>E. 护城河与商业模式</h2>
+<ul>
+<li><strong>商业模式</strong>：从原厂采购存储晶圆，再做主控搭配、方案设计、封测和品牌销售，赚的是「晶圆成本和成品售价之间的差价」加封测服务费。联网资料（央广财经 2026-05-13 等）称公司有「主控芯片、存储方案设计、先进封测」全链条能力。</li>
+<li><strong>分级</strong>：
+<ul>
+<li>阶段性优势：自有封测产能加方案设计，交货快、可以给客户定制（公司介绍中的「千端千面」定制化方案）；企业级、服务器存储是正在投入的新方向（2026-05-28 机构调研纪要，网易转载）（置信度：中）。</li>
+<li>结构性护城河：从库内信息看不出来。公司不掌握晶圆产能，上游议价权在原厂手里（置信度：中）。</li>
+</ul></li>
+<li><strong>结论</strong>：利润高度依赖存储价格周期，属于「周期中游加工 + 品牌」模式，不是靠技术垄断拿定价权（置信度：中）。</li>
+</ul>
+<h2>F. 政策与监管</h2>
+<ul>
+<li><strong>H 股上市</strong>：公司首次递交 H 股上市申请是在 2025-10-28，满 6 个月后于 2026-04-28 失效，2026-05-12 重新递交，独家保荐人华泰国际（来源：央广财经 2026-05-13；新浪财经公司公告转载 2026-05-14；财联社）。传导：如果成功发行 H 股，将带来新股本和融资，也会给 A 股估值提供一个港股参照价（中性偏利好融资、利空每股摊薄）（置信度：高，多源）。</li>
+<li><strong>2026 年第三次临时股东会</strong>：公司曾公告于 2026-08-27 召开（来源：新浪财经 2026-08-11，单源未交叉验证·置信度：低），议案内容没有检索到。</li>
+<li><strong>行业政策</strong>：本次检索没有找到 2026 年 9 月直接针对存储模组行业的新政策，属于信息缺口。</li>
+</ul>
+<h2>G. 题材与产业链关联</h2>
+<h3>所在板块的热点方向（截至 2026-09-22）</h3>
+<p>系统记录这只票所在的 5 个热点方向，<strong>全部处在热度回落阶段</strong>：</p>
+<ol>
+<li><strong>存储芯片与半导体</strong>（从 2026-07-21 开始，已第 46 天，热度回落）
+<ul>
+<li>为什么热：前一晚海外芯片股集体大涨，又有报道说海外大厂存储产能要翻倍。</li>
+<li>实际情况：钱没有跟进来——存储芯片板块净流出 42.9 亿元、比大盘少涨 0.7 个百分点；中芯国际概念一家涨停都没有、净流出 43.7 亿元；第三代半导体净流出 30.5 亿元。</li>
+<li>风险：只有 MCU 芯片还有 13.9 亿元流入，消息一条接一条，钱却一直在走。</li>
+<li>当晚参考新闻：9-21 费城半导体指数曾涨超 3%；9-21 三星 HBM 产能将翻倍的报道；9-21 长鑫科技第五代工艺平台宣布量产、良率爬坡和规模销售仍需时间。</li>
+</ul></li>
+<li><strong>PCB与先进封装</strong>（热度回落）：先进封装一家涨停都没有、净流出 67.3 亿元；PCB 概念近 3 日累计净流出 42.5 亿元。</li>
+<li><strong>AI手机与AI电脑</strong>（从 2026-09-07 开始，第 12 天，热度回落）：三个板块当天合计没有一家涨停，AI PC 只流入 5.0 亿元。</li>
+<li><strong>汽车芯片与智能座舱</strong>（从 2026-09-16 开始，第 5 天，热度回落）：汽车芯片净流出 5.6 亿元，近 10 日仍比大盘多涨 5.0 个百分点，有回吐压力。</li>
+<li><strong>消费电子与苹果产业链</strong>（热度回落）：瑞银 9-21 称 iPhone 18 Pro 系列初期需求偏弱；折叠机整机组装良率六成多。</li>
+</ol>
+<p><strong>判断</strong>：这只票关联的所有热点方向同时进入热度回落阶段，题材资金目前没有提供支撑（置信度：高，系统记录）。</p>
+<h3>概念标签分级（库内概念标签，共 26 个）</h3>
+<ul>
+<li><strong>真有业务</strong>（有主营描述支撑）：存储芯片、先进封装（公司有封测业务）、芯片概念、消费电子概念（消费级存储品牌）、专精特新（公司介绍写明国家专精特新小巨人企业）、AI PC / AI手机（嵌入式存储与 PC 整机厂客户是主营方向，但具体营收占比未见）</li>
+<li><strong>仅概念标签，未见营收佐证</strong>：AI眼镜、智能穿戴、人形机器人、机器人概念、汽车芯片（公司介绍提到车联网应用，但没有营收占比）、数据中心(AIDC)（企业级存储正在布局，没有营收数据）、华为概念、小米概念、比亚迪概念、阿里巴巴概念（客户关系未在库内得到证实）、信创、同花顺出海50、粤港澳大湾区</li>
+<li><strong>身份类标签</strong>（不代表业务）：上证180成份股、中证500成份股、沪股通、融资融券、国家大基金持股、2025年报预增</li>
+</ul>
+<h3>产业链位置</h3>
+<p>上游是存储晶圆原厂（三星、SK 海力士、美光、长鑫等）→ <strong>佰维（主控搭配、方案设计、封测、品牌）</strong> → 下游是手机、PC 整机厂、工业和车载客户、零售渠道。议价权在上游原厂：涨价时模组厂靠库存赚钱，降价时库存贬值（置信度：中）。</p>
+<h2>H. 消息面与市场情绪</h2>
+<h3>所在板块热点（先写）</h3>
+<p>见 G 节：5 个热点方向全部处于热度回落阶段，题材资金整体净流出。</p>
+<h3>这只票自己的新闻（库内新闻，近 60 日只有 3 条，都是板块类新闻）</h3>
+<ul>
+<li>2026-09-14 东方财富「存储板块明显承压」：板块层面的走弱，对公司基本面没有实质影响（置信度：高）</li>
+<li>2026-09-10 财联社「存储芯片概念盘初活跃太极实业涨停」：板块短线活跃，和公司本身无直接关系</li>
+<li>2026-09-09 东方财富「科创综指跌超1%」：大盘层面，无实质影响</li>
+</ul>
+<p>库内近 60 日<strong>没有公司自身的公告类新闻</strong>，是信息缺口（半年报、临时股东会、H 股进展都要去交易所公告里看）。</p>
+<h3>涨停记录</h3>
+<p>近 180 日无涨停记录（库内涨停记录返回空）。市值上千亿的科创板股票涨停本来就少，这一条不代表缺少关注（置信度：中）。</p>
+<h3>资金与筹码（库内资金筹码，仅作情绪参考）</h3>
+<ul>
+<li>近 20 个交易日（2026-08-26 至 2026-09-22）：主力合计净流出 21.47 亿元，其中特大单净流出 13.90 亿元；净流入 7 天、净流出 13 天。资金持续流出（置信度：高，盘面事实）。</li>
+<li>筹码数据：库内只覆盖关注票，该票暂无。</li>
+<li>股东户数：截至 2026-06-30 为 143869 户；库内没有上一期数据，算不出变化方向（季度数据本身就有滞后）。</li>
+</ul>
+<p><strong>纪律提醒</strong>：以上资金和筹码是盘面现象，不作为 J 节逻辑链的决定性依据。</p>
+<h2>I. 未来 13 周事件日历</h2>
+<ul>
+<li><strong>W1（2026-09-21 起）</strong>：9-23 华为 Mate 90 发布会（首发新一代麒麟芯片）· 行业 · 重要性中 · 影响：华为产业链情绪；9-23~24 Meta Connect 2026（AI 眼镜）· 行业 · 重要性低（公司只有概念标签）；9-23 高通骁龙峰会（首款 2nm 手机芯片）· 行业 · 重要性中 · 影响：AI 手机存储容量需求预期</li>
+<li><strong>W2（2026-09-28 起）</strong>：9-30 美光公布 2026 财年四季度财报 · 行业 · 重要性 <strong>高</strong> · 影响：存储价格和需求的直接风向标；国庆长假 A 股休市（具体以交易所公告为准）</li>
+<li><strong>W3（2026-10-05 起）</strong>：10-8 三星电子三季度业绩预告 · 行业 · 重要性 <strong>高</strong> · 影响：存储价格与出货指引</li>
+<li><strong>W4（2026-10-12 起）</strong>：10-14 ASML 三季报 · 行业 · 重要性低；10-15 台积电三季报 · 行业 · 重要性中 · 影响：AI 服务器需求，间接关系到企业级存储</li>
+<li><strong>W5（2026-10-19 起）</strong>：10-21 特斯拉三季报 · 行业 · 重要性低（人形机器人仅概念标签）</li>
+<li><strong>W6（2026-10-26 起）</strong>：<strong>公司 2026 年三季报</strong>（法定最晚 10-31 披露，去年是 2025-10-31 披露）· 财报 · 重要性 <strong>最高</strong> · 影响：检验单季利润还在不在增长；10-29 AMD 三季报 · 行业 · 重要性中；11-1 博通财报 · 行业 · 重要性低</li>
+<li><strong>W7（2026-11-02 起）</strong>：11-3 苹果 2026 财年四季度财报 · 行业 · 重要性中 · 影响：消费电子需求，对应 G 节「iPhone 需求偏弱」的说法能否得到证实</li>
+<li><strong>W8（2026-11-09 起）</strong>：H 股申请 6 个月有效期约在 11 月中旬前后到期（据 2026-05-12 重新递表推算，是否已通过聆讯没有查到）· 公司 · 重要性中 · 影响：上市有进展还是再次失效（置信度：低）</li>
+<li><strong>W9（2026-11-16 起）</strong>：本周无已知事件</li>
+<li><strong>W10（2026-11-23 起）</strong>：本周无已知事件</li>
+<li><strong>W11（2026-11-30 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-12-07 起）</strong>：本周无已知事件</li>
+<li><strong>W13（2026-12-14 起）</strong>：本周无已知事件（美光下一季财报通常在 12 月中下旬，具体日期还没公布）</li>
+</ul>
+<h2>J. 逻辑链</h2>
+<ol>
+<li><strong>因为</strong>存储合约价从 2025 年四季度起持续上涨（TrendForce 多季度预测，多源；置信度：中）</li>
+<li><strong>且</strong>佰维毛利率从 13.91% 升到 54.81%，单季净利润从约 8.23 亿元增长到约 42.67 亿元（库内，置信度：高）</li>
+<li><strong>所以</strong>公司利润高度依赖存储价格；只要价格还在涨，利润就能维持在高位（置信度：中）</li>
+<li><strong>如果</strong>三季度合约价还在涨（TrendForce 预测 DRAM +13–18%、NAND +10–15%），<strong>那么</strong>三季报单季净利润应当不低于二季度（置信度：中）</li>
+<li><strong>关键分歧</strong>：四季度 NAND 涨幅——一条 9-18 的转述说 TrendForce 上调到 +15–20%（新浪微博转载，单源）；另一处英文报道说四季度涨幅会进一步缩小（Yahoo Finance 引用 TrendForce）。两者矛盾（置信度：低）</li>
+<li><strong>应该能观察到</strong>：美光（9-30）、三星（10-8）如果都说价格继续上涨、需求没有转弱，则第 4 环成立。</li>
+</ol>
+<p><strong>最弱的一环</strong>：第 5 环。四季度涨价幅度的方向有两种互相矛盾的说法。存储模组厂的利润对涨价幅度非常敏感：涨幅缩小时，毛利率可能先回落，即使价格还在涨。</p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（30%）</strong>｜触发：三季报单季净利润高于二季度推算的约 42.67 亿元，且美光、三星财报都表示四季度存储价格继续上涨｜路径：市场按「涨价周期延长」重新定价，估值在行业低位基础上有所回升，资金净流出转为净流入</li>
+<li><strong>中性（45%）</strong>｜触发：三季报单季净利润与二季度相差在 ±15% 以内，四季度涨价幅度缩小但仍为正｜路径：业绩高位持平，股价随存储板块宽幅震荡，市盈率维持低位</li>
+<li><strong>悲观（25%）</strong>｜触发：三季报单季净利润比二季度下降超过 15%，或单季毛利率低于一季度的 53.30%，或原厂财报表示价格见顶｜路径：市场按「周期高点已过」定价，股价跟随存储板块回调，H 股发行进一步压低估值</li>
+</ul>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong>：</p>
+<ol>
+<li>如果三季报单季净利润高于二季度推算的约 42.67 亿元，且单季毛利率不低于半年报的 54.81%，那么可以考虑试仓（轻仓）。</li>
+<li>如果美光 9-30 财报或三星 10-8 预告表示四季度存储价格涨幅明显缩小或持平，且近 20 日主力资金仍为净流出，那么观望。</li>
+<li>如果三季报单季净利润比二季度下降超过 15%，或单季毛利率低于一季度的 53.30%，那么回避；已有仓位的减仓。</li>
+</ol>
+<p><strong>推翻条件</strong>：</p>
+<ul>
+<li>如果四季度 NAND 涨幅真的上调（TrendForce 官方报告或至少两个独立来源确认 +15–20%），「震荡」判断应改为偏涨方向。</li>
+<li>如果原厂宣布大幅扩产、合约价转为下跌，任何偏正面的判断都作废。</li>
+</ul>
+<p><strong>仓位思路</strong>：在三季报出来之前，周期拐点方向不清楚，适合轻仓或不参与。</p>
+<h2>M. 逻辑自查</h2>
+<ul>
+<li><strong>最依赖的假设</strong>：利润主要由存储价格驱动。如果公司企业级存储业务已经带来稳定的新增收入（2026-05 调研纪要提到在战略性投入），利润对价格的依赖会比本报告认为的小，悲观情景的概率就高估了。</li>
+<li><strong>可能忽略的反面证据</strong>：12.56 倍市盈率 + 79.00% 的半年 ROE，即使利润减半，按静态口径估值也不算高；本报告把「周期高点」放在前面讲，可能对这一点强调不够。</li>
+<li><strong>信息缺口清单</strong>：
+<ol>
+<li>库中没有现金流、存货数据 → 没法判断利润中有多少来自库存升值（影响大）。补法：查半年报附注。</li>
+<li>库内研报只有 1 篇（国金证券 2026-08-10《AI存储量价齐升，研发封测一体化释放成长弹性》），没有评级分布和盈利预测数据 → 缺少卖方一致预期。</li>
+</ol></li>
+</ul>
+<p>〔卖方预期〕来源：国金证券研报（库内）· 日期：2026-08-10 · 观点：从标题看，认为 AI 存储量价齐升，研发封测一体化带来成长弹性（库内只有标题，没有具体预测数字）· 置信度：低</p>
+<ol>
+<li>库内没有返回直接对手（存储模组厂）的对比数据 → D 节只能拿全行业市值前三做参考。</li>
+<li>筹码数据库内不覆盖该票；股东户数只有一期，看不出变化方向。</li>
+<li>四季度 NAND 价格预测，两个联网来源互相矛盾（见 J 节第 5 环）→ 需要等 TrendForce 官方季度报告或原厂财报确认。</li>
+<li>H 股发行进度（是否通过聆讯、发行规模）没有查到 → 影响 W8 事件判断。</li>
+<li>近 60 日库内没有公司自身的公告类新闻。</li>
+</ol>
+<p><strong>联网来源</strong>：</p>
+<ul>
+<li><a href="https://www.trendforce.com/presscenter/news/20260703-13134.html" target="_blank" rel="noopener">TrendForce 2026-07-03 三季度存储价格预测</a></li>
+<li><a href="https://www.eet-china.com/mp/a507355.html" target="_blank" rel="noopener">电子工程专辑三季度 DRAM 合约价 +13–18%</a></li>
+<li><a href="https://www.igorslab.de/en/dram-and-nand-remain-more-expensive-trendforce-sees-slowing-but-still-rising-memory-prices-q3-2026/" target="_blank" rel="noopener">igor'sLAB 引 TrendForce 三季度价格</a></li>
+<li><a href="https://www.sina.cn/weibo/detail/5344875430022488.html" target="_blank" rel="noopener">新浪 2026-09-18 NAND 价格预测更新转述（单源）</a></li>
+<li><a href="https://finance.yahoo.com/markets/stocks/articles/sandisk-rode-estimated-70-jump-035801474.html" target="_blank" rel="noopener">Yahoo Finance 引 TrendForce NAND 涨幅缩小</a></li>
+<li><a href="https://finance.cnr.cn/ycbd/20260513/t20260513_527619104.shtml" target="_blank" rel="noopener">央广财经 2026-05-13 重新递交 H 股申请</a></li>
+<li><a href="https://finance.sina.com.cn/roll/2026-05-14/doc-inhxuwsw8990353.shtml" target="_blank" rel="noopener">新浪财经 2026-05-14 公司 H 股公告</a></li>
+<li><a href="https://www.cls.cn/detail/2369489" target="_blank" rel="noopener">财联社再次递表港交所</a></li>
+<li><a href="https://finance.sina.com.cn/stock/relnews/cn/2026-08-11/doc-inimyhkh5706598.shtml" target="_blank" rel="noopener">新浪财经 2026-08-11 第三次临时股东会</a></li>
+<li><a href="https://www.163.com/dy/article/KUH40EHP051984TV.html" target="_blank" rel="noopener">网易 2026-05-28 机构调研</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-23），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>周期高点利润可能大幅回落</li>
+      <li>近20日主力净流出21.47亿</li>
+      <li>四季度NAND涨价预测相互矛盾</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>业绩预告</dt><dd>上市公司在正式财报前发布的盈利区间预告，达到规定变动幅度时强制披露。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>一致预期</dt><dd>多家券商盈利预测的平均值。是别人的观点，不是事实。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.trendforce.com/presscenter/news/20260703-13134.html" target="_blank" rel="noopener">TrendForce 2026-07-03 三季度存储价格预测</a> <em>2026-07-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.eet-china.com/mp/a507355.html" target="_blank" rel="noopener">电子工程专辑三季度 DRAM 合约价 +13–18%</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.igorslab.de/en/dram-and-nand-remain-more-expensive-trendforce-sees-slowing-but-still-rising-memory-prices-q3-2026/" target="_blank" rel="noopener">igor'sLAB 引 TrendForce 三季度价格</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.sina.cn/weibo/detail/5344875430022488.html" target="_blank" rel="noopener">新浪 2026-09-18 NAND 价格预测更新转述（单源）</a> <em>2026-09-18</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.yahoo.com/markets/stocks/articles/sandisk-rode-estimated-70-jump-035801474.html" target="_blank" rel="noopener">Yahoo Finance 引 TrendForce NAND 涨幅缩小</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.cnr.cn/ycbd/20260513/t20260513_527619104.shtml" target="_blank" rel="noopener">央广财经 2026-05-13 重新递交 H 股申请</a> <em>2026-05-13</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://finance.sina.com.cn/roll/2026-05-14/doc-inhxuwsw8990353.shtml" target="_blank" rel="noopener">新浪财经 2026-05-14 公司 H 股公告</a> <em>2026-05-14</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2369489" target="_blank" rel="noopener">财联社再次递表港交所</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/relnews/cn/2026-08-11/doc-inimyhkh5706598.shtml" target="_blank" rel="noopener">新浪财经 2026-08-11 第三次临时股东会</a> <em>2026-08-11</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.163.com/dy/article/KUH40EHP051984TV.html" target="_blank" rel="noopener">网易 2026-05-28 机构调研</a> <em>2026-05-28</em></li>
+      <li><span class="src-tag src-disc">披露</span> 新浪财经公司公告转载 2026-05-14 <em>2026-05-14</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-08-11，单源未交叉验证·置信度：低 <em>2026-08-11</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 最新一期 2026-06-30 半年报，2026-08-25 披露 <em>2026-06-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内同业对比，财务为 2026-06-30 半年报 <em>2026-06-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 央广财经 2026-05-13 等 <em>2026-05-13</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 2026-05-28 机构调研纪要，网易转载 <em>2026-05-28</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-23 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
