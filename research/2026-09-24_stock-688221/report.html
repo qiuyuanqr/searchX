@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>前沿生物（688221.SH） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>前沿生物（688221.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-24（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 化学制药</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 医药电商 · 创新药 · 医疗器械概念</span>
+      <span><b>来源</b> 49 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    前沿生物（688221）是一家 A 股上市公司。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——授权款撑起上半年盈利，二季度已由盈转亏
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度低：授权款撑起上半年盈利，二季度已由盈转亏。支撑在于FB7013国内临床获批；GSK里程碑款待到账；小核酸对外授权交易活跃。主要风险是艾可宁收入同比下滑；二季度由盈转亏下半年续亏；定增摊薄与内部人减持。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>FB7013国内临床获批</li>
+      <li>GSK里程碑款待到账</li>
+      <li>小核酸对外授权交易活跃</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">调研日期：2026-09-24｜行情时点：2026-09-24 13:48 盘中实时价（非收盘）｜估值时点：2026-09-23 收盘 库内数据来自库内取数；联网信息逐条附来源与日期。本报告不构成任何投资建议，也不含任何用户私人信息。</div>
+<h2>A. 一屏结论</h2>
+<p><strong>方向</strong>：震荡（置信度：低） <strong>一句话逻辑</strong>：授权款撑起上半年盈利，二季度已由盈转亏</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li>自研小核酸药物 FB7013（IgA 肾病）2026 年 3 月拿到国内临床试验批件，公司从「单一抗艾药」转向「小核酸研发平台」的方向有了第一个临床节点（置信度：中，两个联网来源）</li>
+<li>与 GSK 的授权协议还有 1300 万美元近期里程碑款、最高 9.5 亿美元后续里程碑款没到账，任何一笔到账都会直接进利润表（置信度：中，协议条款多源一致，到账时点未知）</li>
+<li>国内小核酸对外授权交易活跃，同类资产受关注，对公司在研管线的估值有支撑（置信度：中）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li>扣掉 GSK 授权收入后，产品销售收入在下降：据推算，2026 上半年非授权收入约 0.36 亿元、同比约 −38%；二季度单季营收 1616.44 万元、同比 −46.67%（置信度：中）</li>
+<li>上半年盈利是一次性的：二季度单季已由盈转亏（据推算亏约 0.78 亿元），两家券商的全年预测反推下半年亏损 1.2–1.9 亿元（置信度：中）</li>
+<li>股东会已授权董事会以简易程序定增（上限 3 亿元），8 月创始人之一王昌进减持 233 万股，持股比例降到 5% 以下；叠加近 20 日资金净流出 1.95 亿元，筹码面偏弱（置信度：中）</li>
+</ol>
+<p><strong>最该盯的信号</strong>：① 10 月 31 日前披露的三季报——单季亏损幅度，以及是否确认了 GSK 近期里程碑收入；② 11 月发布的 2026 年版国家医保目录里，艾可宁是否还在目录内、支付标准有没有变。 <strong>这份判断最可能错在哪</strong>：如果 1300 万美元近期里程碑款在三季度确认（按首付款折算比例粗算约 0.9 亿元），三季度可能再次单季盈利，「下半年恢复亏损」这条主线就会被推迟验证。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>公司</strong>：前沿生物（688221），科创板，2020-10-28 上市（至今约 5 年 11 个月），上市状态 L（正常上市），库内行业「生物制药」，员工 314 人，注册资本 37457.87 万元。（置信度：高，库内）</li>
+<li><strong>做什么</strong>：研发、生产、销售创新药。唯一上市产品是<strong>艾可宁（艾博韦泰）</strong>：国家一类新药，长效 HIV 融合抑制剂，每周注射一次，2018 年 5 月获批，2018 年 8 月起在国内销售。在研方向已转向<strong>小核酸（siRNA）药物</strong>，主攻 IgA 肾病等补体相关疾病。（置信度：高，库内简介＋联网）</li>
+<li>⚠️ 库内公司简介写的是「中国市场唯一获批上市的抗 HIV 病毒长效注射药」，这个说法<strong>已过时</strong>：吉利德的长效 HIV 治疗药来那卡帕韦（lenacapavir）已于 2025 年 1 月在中国获批，适应症是多重耐药 HIV-1 感染（来源：<a href="https://english.nmpa.gov.cn/2025-01/06/c_1061969.htm" target="_blank" rel="noopener">NMPA 英文站 2025-01-06</a>、<a href="https://www.yicaiglobal.com/news/gileads-long-acting-hiv-therapy-gets-nod-to-go-to-market-in-china" target="_blank" rel="noopener">第一财经 Yicai Global 2025-01</a>）。（置信度：中）</li>
+<li><strong>当前行情</strong>（库内行情，数据时点 2026-09-24 13:48 盘中）：16.86 元，当日 −3.55%，成交额 1.40 亿元；日内最高相对昨收 −0.17%，最低 −3.78%。（置信度：高）</li>
+<li><strong>估值</strong>（库内估值，2026-09-23 收盘）：总市值 65.48 亿元，市净率（PB）6.33，换手率 3.05%；市盈率（PE-TTM）库内为空。所属「生物制药」行业共 82 只，PE 中位数 57.43；该票因为 PE 为空，没有行业 PE 排名。（置信度：高）</li>
+<li><strong>PE 为空的原因</strong>（据推算）：2025 年全年净利 −2.68 亿元，再用 2026 上半年净利 1.49 亿元及同比 +252.98% 反推 2025 上半年约 −0.97 亿元，滚动四个季度净利约 −0.2 亿元，仍是小幅亏损，所以没有 PE。（置信度：中，推算值）</li>
+<li>仅看估值：PB 6.33 对应的是「账上一次性授权收入＋在研管线」，不是稳定的经营利润。这是<strong>仅从估值角度</strong>的描述，不是好坏结论。（置信度：中）</li>
+</ul>
+<h2>C. 财务健康</h2>
+<p>库内财务（近 4 期），新→旧（营收、净利单位亿元）：</p>
+<ul>
+<li><strong>2026 中报（截至 06-30，08-31 公告）</strong>：营收、净利绝对值<strong>库内为空</strong>｜营收同比 +434.27%｜净利同比 +252.98%｜ROE 15.59%｜毛利率 84.05%｜净利率 47.54%｜EPS 0.40｜资产负债率 40.77%</li>
+<li><strong>2026 一季报（截至 03-31，04-25 公告）</strong>：营收 2.97｜净利 2.27｜营收同比 +948.89%｜净利同比 +615.38%｜ROE 22.91%｜毛利率 94.01%｜净利率 76.53%｜EPS 0.61｜资产负债率 40.11%</li>
+<li><strong>2025 年报（截至 12-31，04-25 公告）</strong>：营收 1.23｜净利 −2.68｜营收同比 −4.70%｜净利同比 −33.11%（亏损扩大）｜ROE −26.56%｜毛利率 33.22%｜净利率 −217.25%｜EPS −0.72｜资产负债率 44.44%</li>
+<li><strong>2025 三季报（截至 09-30，10-31 公告）</strong>：营收 1.03｜净利 −1.60｜营收同比 +12.80%｜净利同比 +17.39%（亏损收窄）｜ROE −15.06%｜毛利率 34.84%｜净利率 −154.59%｜EPS −0.43｜资产负债率 40.06%</li>
+</ul>
+<p><strong>中报绝对值（联网补充）</strong>：2026 上半年营收 3.13 亿元，归母净利 1.49 亿元，扣非净利 1.28 亿元，经营活动现金流净额 1.81 亿元；其中确认 GSK 授权许可收入 27655.78 万元（来源：<a href="https://news.qq.com/rain/a/20260830A098BF00" target="_blank" rel="noopener">腾讯新闻 2026-08-30</a>、<a href="https://news.qq.com/rain/a/20260830A088PS00" target="_blank" rel="noopener">腾讯新闻 2026-08-30</a>、<a href="https://www.orangenews.hk/finance/1451744/%E5%89%8D%E6%B2%BF%E7%94%9F%E7%89%A9-2026%E5%B9%B4%E5%8D%8A%E5%B9%B4%E5%BA%A6%E6%B7%A8%E5%88%A9%E6%BD%A41-49%E5%84%84%E5%85%83%E5%90%8C%E6%AF%94%E6%89%AD%E8%99%A7.shtml" target="_blank" rel="noopener">橙新闻</a>）。用库内数字交叉核对：EPS 0.40 × 股本约 3.7458 亿股 ≈ 1.50 亿元，再除以净利率 47.54% ≈ 3.15 亿元，与联网值一致。（置信度：高）</p>
+<p><strong>趋势判断</strong>：</p>
+<ol>
+<li><strong>盈利来自一次性授权收入，不来自卖药</strong>。2026 年一季度扭亏为盈、净利 2.27 亿元，对应 GSK 首付款 4000 万美元在当期确认；毛利率从 2025 年的 33.22% 升到一季度的 94.01%，也是授权收入几乎没有成本造成的。（置信度：高）</li>
+<li><strong>二季度单季由盈转亏</strong>：据推算，上半年净利 1.49 亿元减去一季度 2.27 亿元，二季度单季净利约 −0.78 亿元；单季营收约 0.16 亿元（联网：1616.44 万元，同比 −46.67%，来源：<a href="https://news.qq.com/rain/a/20260901A02J5700" target="_blank" rel="noopener">腾讯新闻 2026-09-01 中报简析</a>，与库内推算一致）。（置信度：中）</li>
+<li><strong>产品销售收入在下降</strong>：用中报同比 +434.27% 反推，2025 上半年营收约 0.59 亿元；2026 上半年扣掉授权收入 2.77 亿元后约 0.36 亿元，<strong>同比约 −38%</strong>。2025 年全年营收同比也是 −4.70%，其中艾可宁贡献约 1.05 亿元（来源：<a href="https://m.21jingji.com/article/20260225/6980583bcc4fb37fb79f4af53f831325.html" target="_blank" rel="noopener">21 财经 2026-02-25</a>，单一来源，未交叉验证）。（置信度：中）</li>
+<li><strong>2025 年亏损扩大</strong>：全年净利 −2.68 亿元、同比 −33.11%；四季度单季据推算营收约 0.20 亿元、净利约 −1.08 亿元，是 2025 年亏得最多的一个季度。（置信度：高）</li>
+<li><strong>负债稳定</strong>：资产负债率一直在 40%–44% 之间，没有明显变化；上半年经营现金流净额 1.81 亿元，主要来自 GSK 首付款到账（2026-03-19 到账）。（置信度：中）</li>
+</ol>
+<p><strong>拐点在哪</strong>：一季度的「扭亏为盈」是会计上的一次性确认，二季度已经回到亏损，经营上的拐点还没出现。（置信度：中）</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比（取 3 家）（均为 2026-06-30 期财务，市值按库内最新）：</p>
+<ul>
+<li><strong>前沿生物 688221</strong> · 市值 65.48 亿 · PE 空 · PB 6.33 · 上半年营收 3.13 亿（联网）· 净利约 1.49 亿（联网）· ROE 15.59%</li>
+<li><strong>百济神州 688235</strong> · 市值 3915.48 亿 · PE 91.45 · PB 11.05 · 营收 222.2 亿 · 净利 32.71 亿 · ROE 9.90%</li>
+<li><strong>荣昌生物 688331</strong> · 市值 704.19 亿 · PE 12.10 · PB 8.47 · 营收 58.53 亿 · 净利 46.62 亿 · ROE 78.21%</li>
+<li><strong>凯莱英 002821</strong> · 市值 678.08 亿 · PE 65.48 · PB 3.82 · 营收 36.07 亿 · 净利 5.2 亿 · ROE 2.94%</li>
+</ul>
+<p><strong>位置判断</strong>：</p>
+<ul>
+<li>前沿生物市值只有这三家的十分之一到六十分之一，库内选出来的「同行」规模差得太远，横向比参考价值有限。（置信度：高）</li>
+<li>凯莱英做的是药品外包生产（CDMO），业务模式和前沿生物不同，只能当行业估值背景看。（置信度：中）</li>
+<li>荣昌生物上半年净利与营收之比约 80%，对创新药公司来说偏高，库内分不出其中有没有一次性收入。它和前沿生物的上半年报表可能都受一次性收入影响，拿 ROE 直接比会误判。（置信度：低，推测）</li>
+<li>PB 6.33 低于百济神州、荣昌生物，高于凯莱英；但前沿生物的净资产里有一部分来自授权收入的一次性增厚，PB 低不等于便宜。（置信度：中）</li>
+</ul>
+<h2>E. 护城河与商业模式</h2>
+<ul>
+<li><strong>结构性护城河（有，但变现弱）</strong>：艾可宁在全球主要市场有专利、有 GMP 认证的生产设施，属于牌照＋专利类壁垒。但它 2025 年销售额约 1.05 亿元（单源），2026 上半年据推算还在下降，说明专利壁垒<strong>没转化成收入增长</strong>。（置信度：中）</li>
+<li><strong>竞争在加剧</strong>：艾可宁的主要用途是住院、重症、耐药患者。吉利德来那卡帕韦 2025 年 1 月在中国获批，针对多重耐药 HIV-1 感染，一年注射两次，与艾可宁的用途有重叠（来源同 B 节两条）。GSK 的长效卡替拉韦 2024 年在中国获批，但适应症是暴露前预防，不直接冲击艾可宁的治疗用途（来源：<a href="https://www.gsk-china.com/zh-cn/media/press-releases/hiv-prep-approval/" target="_blank" rel="noopener">GSK 中国新闻稿</a>、<a href="https://www.sh.chinanews.com.cn/yljk/2024-05-14/124152.shtml" target="_blank" rel="noopener">中新社上海 2024-05-14</a>）。（置信度：中）</li>
+<li><strong>阶段性优势（小核酸平台）</strong>：GSK 以 4000 万美元首付款＋1300 万美元近期里程碑＋最高 9.5 亿美元后续里程碑＋销售分成，拿下两款小核酸药物的全球权益，说明大药企认可公司的早期研发能力（来源：<a href="https://www.cls.cn/detail/2293284" target="_blank" rel="noopener">财联社</a>、<a href="https://m.21jingji.com/article/20260223/herald/d9ca8299cbbc68fd1a2f548738e91eb3.html" target="_blank" rel="noopener">21 财经 2026-02-23</a>）。但两款都还在临床前或刚拿到临床批件，失败率高。（置信度：中）</li>
+<li><strong>商业模式</strong>：从「自己卖药」变成「早期研发＋对外授权拿首付款和里程碑款」。这种模式的收入<strong>按项目一笔一笔来，不连续</strong>，季度业绩会大起大落。（置信度：高）</li>
+</ul>
+<h2>F. 政策与监管</h2>
+<ol>
+<li><strong>2026 年国家医保目录调整</strong>（与艾可宁直接相关）：现场谈判 2026 年 9 月 5–8 日已完成，新目录预计 11 月发布，2027 年 1 月 1 日起施行；今年同时调整「商业健康保险创新药品目录」（来源：<a href="https://www.nhsa.gov.cn/art/2026/5/31/art_109_20816.html" target="_blank" rel="noopener">国家医保局 2026-05-31</a>、<a href="https://news.qq.com/rain/a/20260909A089ML00" target="_blank" rel="noopener">腾讯新闻 2026-09-09</a>）。
+<ul>
+<li>传导：艾可宁 2024 年 11 月续约进入医保目录，支付标准维持 532 元（来源：<a href="https://m.rccaijing.com/news-7267853839461185405.html" target="_blank" rel="noopener">瑞财经</a>、<a href="https://www.stcn.com/article/detail/1433162.html" target="_blank" rel="noopener">证券时报</a>）。医保谈判药一般两年一个协议期，如果按惯例，2024 年续约的协议期到 2026 年底结束，本轮可能涉及再次续约或降价——<strong>但没查到公司或医保局对此的公开说明</strong>。（置信度：低，推测）</li>
+<li>方向：继续留在目录内＝中性；如果降价＝对本已下降的艾可宁收入不利；如果被调出目录＝明显不利。</li>
+</ul></li>
+<li><strong>美国对中美生物医药交易的审查在收紧</strong>（与授权模式直接相关）：美国《对外投资国家安全综合法案》（COINS Act）2025-12-18 生效；2026-06-02 美国众议员提出议案，想把生物技术写进受管制领域，并且覆盖授权交易；2026-05-01 美国众议院拨款法案加入了限制 FDA 使用特定国家临床数据的条款（来源：<a href="https://chinamedglobal.com/blog/coins-act-biotech-outbound-investment-restriction-china-pharma-guide" target="_blank" rel="noopener">chinamedglobal · COINS Act</a>、<a href="https://bydrug.pharmcube.com/news/detail/4ad3db1289f99d09db39aba5000a6f1c" target="_blank" rel="noopener">医药魔方</a>、<a href="https://www.sohu.com/a/1078634693_121124543" target="_blank" rel="noopener">搜狐</a>）。
+<ul>
+<li>传导：前沿生物靠对外授权拿钱（GSK 交易），如果相关立法落地，<strong>新的对外授权会更难谈、后续里程碑款的不确定性会上升</strong>；已经签订的 GSK 协议会不会受影响，目前看不出来。（置信度：低，议案阶段，尚未成法）</li>
+</ul></li>
+</ol>
+<h2>G. 题材与产业链关联</h2>
+<p>库内概念标签给出 5 个同花顺概念标签，逐个分级：</p>
+<ul>
+<li><strong>创新药</strong> → <strong>真有业务</strong>：艾可宁是国家一类新药，另有 FB7013 等小核酸在研药物，GSK 授权收入 2.77 亿元已经入账。（置信度：高）</li>
+<li><strong>医疗器械概念</strong> → <strong>仅概念标签，未见营收佐证</strong>：经营范围里有第二、三类医疗器械生产和经营，但库内主营和财报信息里没有看到器械收入。（置信度：中）</li>
+<li><strong>医药电商</strong> → <strong>仅概念标签，未见营收佐证</strong>：库内主营、简介都没提电商业务。（置信度：中）</li>
+<li><strong>沪股通 / 融资融券</strong> → 这两个是<strong>交易资格属性</strong>，不代表任何业务，只说明北向资金可以交易、可以融资融券。（置信度：高）</li>
+</ul>
+<p><strong>产业链位置</strong>：</p>
+<ul>
+<li>上游：多肽原料与化学合成（艾可宁）；小核酸药物需要的寡核苷酸合成、递送技术及外包生产。</li>
+<li>本公司：研发＋生产（艾可宁）＋早期研发后对外授权（小核酸）。</li>
+<li>下游：艾可宁卖给 HIV 定点医院，价格由医保谈判定，<strong>公司议价能力弱</strong>；小核酸管线的买家是 GSK 这类跨国药企，<strong>议价能力取决于临床数据</strong>，数据出来之前处于弱势。（置信度：中）</li>
+</ul>
+<p><strong>在研管线</strong>（联网）：FB7013（靶点 MASP-2，IgA 肾病）2026 年 3 月获国内临床试验批准，全球该靶点首个申报临床的小核酸药物（来源：<a href="https://bydrug.pharmcube.com/news/detail/bc5704f3f4925105fa6488c83e77cdfa" target="_blank" rel="noopener">医药魔方</a>、<a href="https://synapse.zhihuiya.com/blog/%E5%89%8D%E6%B2%BF%E7%94%9F%E7%89%A9fb7013%E6%B3%A8%E5%B0%84%E6%B6%B2%E4%B8%B4%E5%BA%8A%E8%AF%95%E9%AA%8C%E7%94%B3%E8%AF%B7%E8%8E%B7%E6%89%B9%EF%BC%8Cmasp-2%E9%9D%B6%E5%90%91%E5%88%9B%E6%96%B0%E5%BC%95%E5%8F%91%E5%B9%BF%E6%B3%9B%E5%85%B3%E6%B3%A8" target="_blank" rel="noopener">智慧芽</a>）；FB7011（同时针对 MASP-2 和 CFB 两个靶点，IgA 肾病）处于申报临床前的研究阶段（来源：<a href="http://hy.stock.cnfol.com/hangyejingcui/20260831/32354716.shtml" target="_blank" rel="noopener">中金在线 2026-08-31</a>、<a href="https://synapse.zhihuiya.com/drug/0f4f5f3883c74027ab3779dea43f1996" target="_blank" rel="noopener">智慧芽 FB-7011</a>）；另有 FB7023、FB7033，公司计划 2027 年推动 1–2 款完成临床申报（来源：<a href="https://wap.eastmoney.com/a/202602253654316911.html" target="_blank" rel="noopener">东方财富 2026-02-25</a>，单一来源，未交叉验证）。（置信度：中）</p>
+<p><strong>行业背景</strong>：据报道，2026 年一季度中国小核酸对外授权交易总额约 71.6 亿美元，已超过 2025 全年（来源：<a href="https://www.pharnexcloud.com/zixun/trz_330433" target="_blank" rel="noopener">摩熵医药</a>、<a href="https://chinamedglobal.com/blog/small-nucleic-acid-drug-q1-2026-china-global-race-sirna-aso" target="_blank" rel="noopener">chinamedglobal</a>）。chinamedglobal 对前沿生物-GSK 单笔交易金额的写法与公司公告的约 10 亿美元不一致，所以这个行业总额只作背景参考。（置信度：中）</p>
+<h2>H. 消息面与市场情绪</h2>
+<p><strong>库内新闻</strong>：库内新闻（近 60 日）返回为空，近 60 日库内没有这只票的新闻（信息缺口，见 M 节）。以下是联网补充的公司事件，每条带来源和日期：</p>
+<ol>
+<li><strong>GSK 授权协议（2026-02-23）</strong>：两款小核酸药物全球独家授权给 GSK，首付款 4000 万美元，1300 万美元近期里程碑，最高 9.5 亿美元后续里程碑＋销售分成；首付款 2026-03-19 到账（来源：<a href="https://www.cls.cn/detail/2293284" target="_blank" rel="noopener">财联社</a>、<a href="https://stock.stockstar.com/IG2026031800027764.shtml" target="_blank" rel="noopener">证券之星 2026-03-18</a>）。<strong>实质影响：有</strong>，直接带来一季度扭亏为盈。消息公布后股价 2 月 24 日曾大涨 9.3%，随后连续回调 3 天（来源：<a href="https://www.nbd.com.cn/articles/2026-02-27/4272985.html" target="_blank" rel="noopener">每经 2026-02-27</a>）。（置信度：高）</li>
+<li><strong>FB7013 国内临床获批（2026 年 3 月）</strong>：见 G 节。<strong>实质影响：有</strong>，是管线从研究阶段进入临床的第一个节点，但离上市和收入还很远。（置信度：中）</li>
+<li><strong>一季报后 20% 涨停（2026-04-27）</strong>：见下方涨停记录。报道称「股价业绩齐飞，逆势 20cm 涨停」（来源：<a href="https://36kr.com/p/3784985260792840" target="_blank" rel="noopener">36 氪</a>）。<strong>实质影响：无新增</strong>，是对一季报的情绪反应。（置信度：中）</li>
+<li><strong>股东会授权简易程序定增（2026-05-22 通过）</strong>：授权董事会以简易程序向特定对象发行股票，融资额不超过 3 亿元，且不超过上年末净资产的 20%，同意率 98.71%（来源：<a href="http://dataclouds.cninfo.com.cn/shgonggao/hsomarket/2026/20260424/f416a4f333844adca4b3f28821bd2843.PDF" target="_blank" rel="noopener">公司公告 2026-04-24</a>、<a href="https://finance.sina.com.cn/stock/aigc/gdhjy/2026-05-22/doc-inhyumqk5173278.shtml" target="_blank" rel="noopener">新浪财经 2026-05-22</a>）。<strong>实质影响：潜在摊薄</strong>，启动与否未知。（置信度：高）</li>
+<li><strong>7 月初股价短期大涨</strong>：6 月中旬到 7 月 2 日半个月累计涨幅超 55%，7 月 2 日曾收于 27.33 元，触发异常波动公告，公司回应经营正常、没有需要澄清的传闻（来源：<a href="https://m.sfccn.com/2026/7-3/3MMDE1MjZfMjE3MzU3MA.html" target="_blank" rel="noopener">21 世纪经济报道 2026-07-03</a>，新浪、东方财富为同文转载，按单一来源算）。对照当前 16.86 元（库内行情），据推算较 7 月 2 日收盘已下跌约 38%。<strong>实质影响：无</strong>，属于题材炒作后的回落。（置信度：中）</li>
+<li><strong>创始人之一王昌进减持（2026-08-06 至 08-11）</strong>：通过集中竞价和大宗交易合计减持 233 万股，持股比例从 5.6222% 降到 4.9999%。他是公司核心技术人员、非独立董事、首席商务官（来源：<a href="https://www.cfi.net.cn/p20260812001128.html" target="_blank" rel="noopener">中财网公告 2026-08-12</a>、<a href="https://www.nbd.com.cn/articles/2026-08-12/4540089.html" target="_blank" rel="noopener">每经 2026-08-12</a>）。<strong>实质影响：对基本面没有直接影响，但属于内部人减持信号</strong>；降到 5% 以下后，按 5% 以上股东身份的披露约束就没有了（作为董事仍需按规定披露）。（置信度：高）</li>
+<li><strong>中报（2026-08-30）</strong>：见 C 节。上半年归母净利 1.49 亿元、同比扭亏为盈，但主要是 GSK 授权收入。另有报道称，截至 2026-08-30，173 家机构合计持股 1.37 亿股、占总股本 36.51%，二季度前十大机构持股比例合计下降 1.97 个百分点（来源：<a href="https://news.qq.com/rain/a/20260831A07FJ200" target="_blank" rel="noopener">腾讯新闻 2026-08-31</a>，单一来源，未交叉验证）。（置信度：中）</li>
+</ol>
+<p><strong>涨停记录</strong>（库内涨停记录（近 180 日））：近 180 日只有 1 次——2026-04-27 首板涨停 20%（科创板涨跌幅 20%），09:33:55 第一次封住涨停，14:45:31 最后一次封住，<strong>中间涨停后又打开 20 次</strong>，封单 0.22 亿元，涨停时点库内归类为「化学制药」。反复打开说明当天分歧很大，封单也小。（置信度：高）</p>
+<p><strong>资金与筹码</strong>（库内资金筹码，⚠️ 以下是盘面现象，不是基本面证据）：</p>
+<ul>
+<li>资金流：2026-08-27 至 09-23 共 20 个交易日，全部资金合计净流出 1.95 亿元，其中特大单净流出 0.32 亿元；净流入为正 8 天、为负 12 天。流出以中小单为主，大资金流出幅度相对小。（置信度：高）</li>
+<li>筹码数据：库内只覆盖关注的票，这只票暂无。</li>
+<li>股东户数：截至 2026-06-30 为 20043 户，库内没有上一期数据，无法算环比；季度数据天然滞后，只能反映 6 月底的状态。（置信度：高）</li>
+</ul>
+<h2>I. 未来 13 周事件日历</h2>
+<p>库内事件日历（近 120 日）返回为空（库内没有该票的已知未来事件），以下根据往年披露规律和联网信息补充：</p>
+<ul>
+<li><strong>W1（2026-09-21 起）</strong>：本周无已知公司事件 · 重要性 — · 影响：—</li>
+<li><strong>W2（2026-09-28 起）</strong>：国庆假期前后（休市日以上交所公告为准）· 市场 · 重要性低 · 影响：假期前后成交通常偏少</li>
+<li><strong>W3（2026-10-05 起）</strong>：本周无已知事件</li>
+<li><strong>W4（2026-10-12 起）</strong>：本周无已知事件</li>
+<li><strong>W5（2026-10-19 起）</strong>：本周无已知事件</li>
+<li><strong>W6（2026-10-26 起）</strong>：三季报披露（科创板季报法定截止 10-31；去年三季报在 2025-10-31 公告，库内公告日）· 财报 · 重要性 <strong>高</strong> · 影响：验证 C 节「下半年恢复亏损」判断；看有没有确认 1300 万美元近期里程碑收入；看艾可宁销售是否继续下降</li>
+<li><strong>W7（2026-11-02 起）</strong>：本周无已知事件</li>
+<li><strong>W8（2026-11-09 起）</strong>：2026 年版国家医保目录预计 11 月内发布（具体日期未定）· 政策 · 重要性 <strong>高</strong> · 影响：艾可宁是否仍在目录内、支付标准是否调整</li>
+<li><strong>W9（2026-11-16 起）</strong>：本周无已知事件（医保目录发布窗口仍在 11 月内）</li>
+<li><strong>W10（2026-11-23 起）</strong>：本周无已知事件（同上）</li>
+<li><strong>W11（2026-11-30 起）</strong>：12 月 1 日世界艾滋病日 · 行业 · 重要性低 · 影响：HIV 用药话题关注度短期上升，对业绩没有实质影响</li>
+<li><strong>W12（2026-12-07 起）</strong>：本周无已知事件</li>
+<li><strong>W13（2026-12-14 起）</strong>：本周无已知事件</li>
+</ul>
+<p><strong>时点未知、13 周内可能出现的事件</strong>（需持续跟踪公告）：</p>
+<ul>
+<li>GSK 1300 万美元近期里程碑款到账公告 · 重要性高 · 触发条件和时点没查到</li>
+<li>FB7013 国内一期临床首例受试者给药公告 · 重要性中</li>
+<li>简易程序定增启动公告（上限 3 亿元）· 重要性中 · 会有摊薄</li>
+<li>美国把生物技术纳入对外投资限制的立法进展 · 重要性中</li>
+</ul>
+<h2>J. 逻辑链</h2>
+<ol>
+<li><strong>因为</strong>：2026 上半年 1.49 亿元净利几乎全部来自 GSK 一次性授权收入 2.77 亿元（置信度：高，库内同比/毛利率＋联网多源）</li>
+<li><strong>且</strong>：扣除授权收入后，上半年产品收入据推算约 0.36 亿元、同比约 −38%，二季度单季营收同比 −46.67%、单季由盈转亏约 −0.78 亿元（置信度：中，推算＋单源，两者互相吻合）</li>
+<li><strong>所以</strong>：没有新的授权或里程碑收入时，季度报表会回到亏损；两家券商的全年预测反推下半年亏损 1.2–1.9 亿元，与这条推论方向一致（置信度：中）</li>
+<li><strong>所以</strong>：当前 65.48 亿元市值的主要支撑，不是艾可宁的销售，而是市场给小核酸在研药物（FB7013、FB7011 等）和 GSK 后续里程碑款的估值（置信度：中）</li>
+<li><strong>如果上面成立，应该能观察到</strong>：三季报单季亏损时，股价反应比较平淡；而里程碑到账、临床进展这类公告出来时，股价反应明显更大（置信度：低，待验证）</li>
+</ol>
+<p><strong>最弱的一环是第 4 环</strong>：小核酸管线的估值能不能维持，取决于 FB7013 临床进度和 GSK 后续推进，而 13 周内可公开核实的节点很少（里程碑触发条件未披露），美国对授权交易的审查也可能压低同类资产估值。（置信度：低）</p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（20%）</strong>｜触发：三季报确认 GSK 近期里程碑收入、单季盈利，或公司公告 FB7013 完成首例受试者给药且单季亏损收窄到 0.6 亿元以内｜路径：市场把注意力放回小核酸管线，股价向 7 月初前高靠拢，但艾可宁收入下降会限制涨幅</li>
+<li><strong>中性（50%）</strong>｜触发：三季报单季亏损在 0.6–1.0 亿元之间（与二季度推算亏损和券商全年预测反推的下半年节奏一致），期间没有新授权或里程碑公告｜路径：在 4 月底涨停后形成的区间里来回波动，跟着创新药板块走</li>
+<li><strong>悲观（30%）</strong>｜触发：三季报单季亏损超过 1.0 亿元，或 2026 年版医保目录里艾可宁被调出或大幅降价，或公告启动简易程序定增｜路径：市场只按账面亏损和摊薄定价，股价回到 GSK 授权公告前的水平附近</li>
+</ul>
+<p>（三个情景合计 100%；概率是主观估计，置信度：低）</p>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong>：</p>
+<ol>
+<li>如果三季报（10-31 前）确认了 GSK 1300 万美元近期里程碑收入，或单季净亏损收窄到 0.6 亿元以内、单季营收同比转正，那么可以小仓位<strong>试仓</strong>（置信度：低）</li>
+<li>如果三季报单季净亏损超过 1.0 亿元，或 11 月发布的 2026 年版医保目录里艾可宁被调出或支付标准明显下调，那么<strong>回避</strong>；已有仓位的<strong>减仓</strong>（置信度：中）</li>
+<li>如果公司公告启动简易程序定增，那么先<strong>观望</strong>，等发行价、认购方和募资用途披露后再判断摊薄程度（置信度：中）</li>
+</ol>
+<p><strong>风控要点（什么情况说明本报告判断错了）</strong>：</p>
+<ul>
+<li>三季度出现与 GSK 无关的新授权交易，或产品收入同比转正 → 「产品收入在下降」的前提不成立，需要重新评估</li>
+<li>美国相关议案正式成法、且明确覆盖已签授权协议 → 小核酸管线估值的支撑会被削弱，悲观情景概率要上调</li>
+<li>公司披露 FB7013 临床暂停或 GSK 退回权益 → 第 4 环直接不成立</li>
+</ul>
+<p><strong>仓位思路</strong>：轻仓或不参与。原因是公司的季度盈亏由一次性授权款决定，报表波动大，13 周内能核实的节点只有三季报和医保目录两个。</p>
+<h2>M. 逻辑自查</h2>
+<p><strong>这份判断最依赖的假设</strong>：下半年没有大额授权或里程碑收入入账，报表回到亏损。如果 1300 万美元近期里程碑在三季度确认（按首付款 4000 万美元确认 2.77 亿元的比例粗算约 0.9 亿元），三季度可能单季盈利，这个假设会被推迟验证，中性情景的亏损区间就不适用了。</p>
+<p><strong>可能被我忽略的反面证据</strong>：</p>
+<ul>
+<li>两款授权给 GSK 的药物全球权益价值，本报告无法量化；如果 GSK 推进快，后续 9.5 亿美元里程碑款的现值可能远超当前市值对应的预期。</li>
+<li>近 20 日特大单只净流出 0.32 亿元，远小于总净流出 1.95 亿元，大资金撤出并不明显。这是盘面现象，不改变基本面判断，但说明悲观情景未必是大资金的主流看法。</li>
+<li>艾可宁收入下降的原因（竞品挤占、医保控费，还是渠道调整）本报告没有查到公司解释，也可能只是短期波动。</li>
+</ul>
+<p><strong>卖方观点（单列，不是事实）</strong>：</p>
+<ul>
+<li>〔卖方预期〕来源：开源证券研报（库内）· 日期：2026-09-02 · 观点：标题为「2026H1 营收高增，双靶点 siRNA 研发持续推进」，库内没有这篇的盈利预测数字 · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：国联民生证券研报（库内）· 日期：2026-09-03 · 观点：预测净利润 2026 年 2500 万元、2027 年 −9900 万元、2028 年 −8800 万元，对应 EPS 0.07 / −0.26 / −0.24；卖方给出的评级为「推荐」（库内期次标注为 2026Q2 / 2027Q2 / 2028Q2，按数值看应是年度预测，推测）· 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：浙商证券研报（库内）· 日期：2026-09-15 · 观点：预测 EPS 2026 年 −0.10、2027 年 −0.36、2028 年 −0.50 · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>两家有数字的券商都预计 2027–2028 年继续亏损；用它们的 2026 全年预测减去上半年实际 1.49 亿元，反推下半年亏损约 1.24 亿元（国联民生）到约 1.87 亿元（浙商，EPS × 股本约 3.7458 亿股推算）。这是<strong>卖方预测的推算值</strong>，不是事实。</li>
+</ul>
+<p><strong>信息缺口清单</strong>：</p>
+<ol>
+<li><strong>库中 2026 中报营收、净利绝对值为空</strong>（库内财务该期只有比率）。影响：C 节绝对值用了联网值，已用 EPS × 股本 ÷ 净利率交叉核对，一致。补法：数据补齐后重跑。</li>
+<li><strong>库中近 60 日新闻为空</strong>（库内新闻返回 []）。影响：H 节全部依靠联网，可能漏掉重要公告。补法：检查新闻采集是否覆盖这只票。</li>
+<li><strong>库中无未来事件</strong>（库内事件日历返回 []）。影响：I 节日历靠往年规律和联网补充，具体日期可能不准。补法：以交易所预约披露时间为准。</li>
+<li><strong>筹码数据空、股东户数无上期</strong>。影响：H 节无法判断获利盘比例和筹码集中度变化。补法：这只票进入关注列表后才会有筹码数据；股东户数等三季报。</li>
+<li><strong>PE-TTM 与行业 PE 排名为空</strong>。影响：B 节无法给出行业内估值位置。原因：滚动四季仍是小幅亏损（推算）。</li>
+<li><strong>库内研报数据前后不一致</strong>：库内研报显示 2 家机构、2 篇研报，但标题只列出开源证券，预测来自浙商证券和国联民生证券，实际涉及 3 家；评级分布只有「推荐」1 条。影响：卖方观点的完整性存疑。补法：核查研报表的机构归并逻辑。</li>
+<li><strong>艾可宁 2026 年医保协议期与续约状态未查到</strong>。影响：F 节和 I 节 W8 的判断只能标低置信度。补法：11 月医保目录发布后核对。</li>
+<li><strong>授权给 GSK 的是哪两款药、1300 万美元近期里程碑的触发条件与时点，均未查到公开说明</strong>。按「一款已申报临床、一款在临床前」的描述，与 FB7013 / FB7011 的进度吻合，但这是推测（置信度：低）。影响：三季报是否确认这笔收入无法事先判断。补法：跟踪公司公告和三季报附注。</li>
+<li><strong>行业归属两处不一致</strong>：库内公司行业为「生物制药」，涨停记录里记为「化学制药」。影响小，只在比较同行时需要留意。</li>
+<li><strong>公司简介过时</strong>：库内简介仍称艾可宁是「中国市场唯一获批上市的抗 HIV 长效注射药」，与来那卡帕韦 2025 年在华获批的事实冲突（B 节已注明）。</li>
+<li><strong>所属板块热点</strong>：返回为空，这只票所在板块近期没有系统记录中的活跃热点方向。</li>
+</ol>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-24），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>艾可宁收入同比下滑</li>
+      <li>二季度由盈转亏下半年续亏</li>
+      <li>定增摊薄与内部人减持</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>扣非净利</dt><dd>扣除非经常性损益后的净利润。剔除卖资产、政府补助、公允价值变动等一次性项目，更接近主业真实盈利。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>经营现金流</dt><dd>经营活动产生的现金流量净额。利润是账面数，这个是真金白银进出。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://english.nmpa.gov.cn/2025-01/06/c_1061969.htm" target="_blank" rel="noopener">NMPA 英文站 2025-01-06</a> <em>2025-01-06</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.yicaiglobal.com/news/gileads-long-acting-hiv-therapy-gets-nod-to-go-to-market-in-china" target="_blank" rel="noopener">第一财经 Yicai Global 2025-01</a> <em>2025-01</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260830A098BF00" target="_blank" rel="noopener">腾讯新闻 2026-08-30</a> <em>2026-08-30</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260830A088PS00" target="_blank" rel="noopener">腾讯新闻 2026-08-30</a> <em>2026-08-30</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.orangenews.hk/finance/1451744/%E5%89%8D%E6%B2%BF%E7%94%9F%E7%89%A9-2026%E5%B9%B4%E5%8D%8A%E5%B9%B4%E5%BA%A6%E6%B7%A8%E5%88%A9%E6%BD%A41-49%E5%84%84%E5%85%83%E5%90%8C%E6%AF%94%E6%89%AD%E8%99%A7.shtml" target="_blank" rel="noopener">橙新闻</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260901A02J5700" target="_blank" rel="noopener">腾讯新闻 2026-09-01 中报简析</a> <em>2026-09-01</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.21jingji.com/article/20260225/6980583bcc4fb37fb79f4af53f831325.html" target="_blank" rel="noopener">21 财经 2026-02-25</a> <em>2026-02-25</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.gsk-china.com/zh-cn/media/press-releases/hiv-prep-approval/" target="_blank" rel="noopener">GSK 中国新闻稿</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.sh.chinanews.com.cn/yljk/2024-05-14/124152.shtml" target="_blank" rel="noopener">中新社上海 2024-05-14</a> <em>2024-05-14</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/2293284" target="_blank" rel="noopener">财联社</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.21jingji.com/article/20260223/herald/d9ca8299cbbc68fd1a2f548738e91eb3.html" target="_blank" rel="noopener">21 财经 2026-02-23</a> <em>2026-02-23</em></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.nhsa.gov.cn/art/2026/5/31/art_109_20816.html" target="_blank" rel="noopener">国家医保局 2026-05-31</a> <em>2026-05-31</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260909A089ML00" target="_blank" rel="noopener">腾讯新闻 2026-09-09</a> <em>2026-09-09</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.rccaijing.com/news-7267853839461185405.html" target="_blank" rel="noopener">瑞财经</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.stcn.com/article/detail/1433162.html" target="_blank" rel="noopener">证券时报</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://chinamedglobal.com/blog/coins-act-biotech-outbound-investment-restriction-china-pharma-guide" target="_blank" rel="noopener">chinamedglobal · COINS Act</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://bydrug.pharmcube.com/news/detail/4ad3db1289f99d09db39aba5000a6f1c" target="_blank" rel="noopener">医药魔方</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.sohu.com/a/1078634693_121124543" target="_blank" rel="noopener">搜狐</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://bydrug.pharmcube.com/news/detail/bc5704f3f4925105fa6488c83e77cdfa" target="_blank" rel="noopener">医药魔方</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://synapse.zhihuiya.com/blog/%E5%89%8D%E6%B2%BF%E7%94%9F%E7%89%A9fb7013%E6%B3%A8%E5%B0%84%E6%B6%B2%E4%B8%B4%E5%BA%8A%E8%AF%95%E9%AA%8C%E7%94%B3%E8%AF%B7%E8%8E%B7%E6%89%B9%EF%BC%8Cmasp-2%E9%9D%B6%E5%90%91%E5%88%9B%E6%96%B0%E5%BC%95%E5%8F%91%E5%B9%BF%E6%B3%9B%E5%85%B3%E6%B3%A8" target="_blank" rel="noopener">智慧芽</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="http://hy.stock.cnfol.com/hangyejingcui/20260831/32354716.shtml" target="_blank" rel="noopener">中金在线 2026-08-31</a> <em>2026-08-31</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://synapse.zhihuiya.com/drug/0f4f5f3883c74027ab3779dea43f1996" target="_blank" rel="noopener">智慧芽 FB-7011</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://wap.eastmoney.com/a/202602253654316911.html" target="_blank" rel="noopener">东方财富 2026-02-25</a> <em>2026-02-25</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.pharnexcloud.com/zixun/trz_330433" target="_blank" rel="noopener">摩熵医药</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://chinamedglobal.com/blog/small-nucleic-acid-drug-q1-2026-china-global-race-sirna-aso" target="_blank" rel="noopener">chinamedglobal</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://stock.stockstar.com/IG2026031800027764.shtml" target="_blank" rel="noopener">证券之星 2026-03-18</a> <em>2026-03-18</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.nbd.com.cn/articles/2026-02-27/4272985.html" target="_blank" rel="noopener">每经 2026-02-27</a> <em>2026-02-27</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://36kr.com/p/3784985260792840" target="_blank" rel="noopener">36 氪</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://dataclouds.cninfo.com.cn/shgonggao/hsomarket/2026/20260424/f416a4f333844adca4b3f28821bd2843.PDF" target="_blank" rel="noopener">公司公告 2026-04-24</a> <em>2026-04-24</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/aigc/gdhjy/2026-05-22/doc-inhyumqk5173278.shtml" target="_blank" rel="noopener">新浪财经 2026-05-22</a> <em>2026-05-22</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.sfccn.com/2026/7-3/3MMDE1MjZfMjE3MzU3MA.html" target="_blank" rel="noopener">21 世纪经济报道 2026-07-03</a> <em>2026-07-03</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.cfi.net.cn/p20260812001128.html" target="_blank" rel="noopener">中财网公告 2026-08-12</a> <em>2026-08-12</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.nbd.com.cn/articles/2026-08-12/4540089.html" target="_blank" rel="noopener">每经 2026-08-12</a> <em>2026-08-12</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260831A07FJ200" target="_blank" rel="noopener">腾讯新闻 2026-08-31</a> <em>2026-08-31</em></li>
+      <li><span class="src-tag src-media">媒体</span> [NMPA 英文站 2025-01-06](https://english.nmpa.gov.cn/2025-01/06/c_1061969.htm <em>2025-01-06</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [腾讯新闻 2026-08-30](https://news.qq.com/rain/a/20260830A098BF00 <em>2026-08-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [财联社](https://www.cls.cn/detail/2293284 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [国家医保局 2026-05-31](https://www.nhsa.gov.cn/art/2026/5/31/art_109_20816.html <em>2026-05-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [瑞财经](https://m.rccaijing.com/news-7267853839461185405.html — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [医药魔方](https://bydrug.pharmcube.com/news/detail/bc5704f3f4925105fa6488c83e77cdfa — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [东方财富 2026-02-25](https://wap.eastmoney.com/a/202602253654316911.html <em>2026-02-25</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [摩熵医药](https://www.pharnexcloud.com/zixun/trz_330433 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [每经 2026-02-27](https://www.nbd.com.cn/articles/2026-02-27/4272985.html <em>2026-02-27</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [36 氪](https://36kr.com/p/3784985260792840 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [21 世纪经济报道 2026-07-03](https://m.sfccn.com/2026/7-3/3MMDE1MjZfMjE3MzU3MA.html <em>2026-07-03</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> [中财网公告 2026-08-12](https://www.cfi.net.cn/p20260812001128.html <em>2026-08-12</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> [腾讯新闻 2026-08-31](https://news.qq.com/rain/a/20260831A07FJ200 <em>2026-08-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 科创板季报法定截止 10-31 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 去年三季报在 2025-10-31 公告，库内公告日 <em>2025-10-31</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-24 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
