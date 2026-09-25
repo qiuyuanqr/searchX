@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>隆平高科（000998.SZ） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>隆平高科（000998.SZ）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-25（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 种植业</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 转基因 · 玉米 · 粮食概念 · 生态农业 · 基因测序 · 俄乌冲突概念 · 农业种植 · 鸿蒙概念</span>
+      <span><b>来源</b> 37 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    隆平高科（000998）是一家 A 股上市公司。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——政策支持转基因玉米推广，但上半年亏损扩大 66.41%，全国种子供给依然充足。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：政策支持转基因玉米推广，但上半年亏损扩大 66.41%，全国种子供给依然充足。支撑在于生物育种产业化政策支持；二季度单季亏损收窄；四季度销售季决定全年。主要风险是杂交稻种子供给充足压价；卖方全年盈利预测偏高；巴西玉米受厄尔尼诺扰动。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>生物育种产业化政策支持</li>
+      <li>二季度单季亏损收窄</li>
+      <li>四季度销售季决定全年</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">数据时点：行情取自 2026-09-25 16:29（已收盘，即当天收盘值）；估值取自 2026-09-24；财务最新一期为 2026 年半年报（2026-06-30，2026-08-21 公告）；资金流统计区间为 2026-08-28 至 09-24。联网信息截至 2026-09-25。本报告只整理事实、给出判断依据，不是买卖建议。</div>
+<h2>A. 结论先行</h2>
+<p><strong>方向</strong>：震荡（置信度：中） <strong>一句话逻辑</strong>：政策支持转基因玉米推广，但上半年亏损扩大 66.41%，全国种子供给依然充足。</p>
+<p><strong>核心驱动（前 3 条）</strong></p>
+<ol>
+<li>政策：2026 年中央一号文件写明「加快选育和推广突破性品种，推进生物育种产业化」（新华网 2026-02-03、界面新闻 2026-02-05）。公司在转基因玉米品种审定和推广上属第一梯队（置信度：中）</li>
+<li>二季度单季有改善：用库内累计值推算，二季度单季收入约 8.02 亿元，比上年同期约 7.57 亿元增长约 5.9%；单季亏损约 1.42 亿元，比上年同期约 1.66 亿元收窄；上半年毛利率 39.05%，高于一季度的 35.25%（置信度：中）</li>
+<li>全年利润集中在四季度：用库内推算，2025 年四季度单季净利润约 8.30 亿元，而全年只有 1.66 亿元。年末销售季卖得怎么样决定全年结果（置信度：高）。这一条既是驱动，也是风险</li>
+</ol>
+<p><strong>核心风险（前 3 条）</strong></p>
+<ol>
+<li>行业供给过剩：全国农业技术推广服务中心 2026-09-11 发布，2026 年杂交稻制种面积同比增加 5.8%，新产种子 4.0 亿公斤，结论是「市场供应充足」。水稻种子是公司第一大业务（置信度：高）</li>
+<li>卖方预测偏高：中金公司 8-21 预测 2026 年净利润 4.01 亿元。推算下来，下半年要赚约 6.74 亿元，大约是 2025 年下半年（约 3.30 亿元）的两倍（置信度：中）</li>
+<li>巴西玉米：上半年巴西玉米种子收入 4.83 亿元，同比下降 38.21%；2026/27 季还面临强厄尔尼诺天气预警（置信度：中）</li>
+</ol>
+<p><strong>最该盯的信号</strong>：① 三季报（预计 10 月下旬，见 I 节 W5）里，前三季度归母净亏损是否小于 2025 年同期的 6.64 亿元；② 11-13 有 15,248 万股解禁（控股股东中信农业认购的定增股），解禁后有没有减持公告。 <strong>这份判断最可能错在哪</strong>：四季度利润占全年比重极高，三季报能透露的信息有限。如果年末订货明显好于预期，或者新一批转基因品种国家审定超出预期，「震荡」会低估上涨空间。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>公司</strong>：袁隆平农业高科技股份有限公司。库内简介：以袁隆平院士名字命名，大股东为中国中信集团；1999 年成立，2000-12-11 在深交所主板上市，至今约 26 年。业务分「种业运营」和「农业服务」两块，种子覆盖水稻、玉米、蔬菜、食葵、谷子、小麦、棉花等。员工 4,220 人（库内）。</li>
+<li><strong>库内行业</strong>：种植业。<strong>主营</strong>：杂交水稻、蔬菜等农作物种子和种苗的培育、繁殖、推广和销售，以及新型农药的研制和销售。</li>
+<li><strong>公司自述</strong>（出自库内简介，属于公司自己的说法，未经核实）：研发团队 500 余人，年研发投入约占收入 10%，2017 年进入全球种业企业前十。</li>
+<li><strong>当前行情</strong>（库内行情，2026-09-25 收盘）：8.68 元，当天下跌 2.36%；盘中最高涨 1.01%，最低跌 2.47%；成交额 1.70 亿元。</li>
+<li><strong>估值</strong>（库内估值，2026-09-24）：总市值 127.55 亿元；市盈率（PE，按最近四个季度利润算）223.78 倍；市净率（PB）1.93 倍；股息率 0.46%；换手率 1.51%。</li>
+<li><strong>同行业位置</strong>：种植业在市 19 只，市盈率为正的同行市盈率中位数 67.94 倍。本票在市盈率为正的同行里从低到高排第 14 位（亏损的票不参与排名）。</li>
+<li><strong>怎么看市盈率 223.78 倍</strong>：用库内数据推算，最近四个季度合计净利润只有约 0.57 亿元（2025 全年 1.66 亿元，加上 2026 上半年 -2.73 亿元，减去 2025 上半年约 -1.64 亿元），和 223.78 倍对得上。分母太小，市盈率被放大，参考价值有限；市净率 1.93 倍更能说明问题（置信度：高）。</li>
+<li><strong>仅从估值看</strong>：市盈率看起来很贵，但这是利润太少造成的；按市净率在同行里处于中间偏低（见 D 节）。这只是估值上的比较，不代表好坏结论（置信度：中）。</li>
+<li><strong>定增价作参考</strong>：2025 年定增发行价 7.87 元/股，由中信农业全额认购，2025-05-14 上市（农资与市场网、证券之星转载的上市公告书，2025-05）。按收盘价推算，现价比定增发行价高约 10.3%（置信度：高）。</li>
+</ul>
+<h2>C. 财务健康</h2>
+<p>近 4 期数据（库内财务，均为年初至期末的累计值，从新到旧）：</p>
+<ul>
+<li><strong>2026 上半年</strong>：营收 17.10 亿元，同比 -21.05%｜归母净利润 -2.73 亿元，亏损扩大 66.41%｜毛利率 39.05%｜净利率 -22.42%｜ROE -4.11%｜资产负债率 59.12%</li>
+<li><strong>2026 一季度</strong>：营收 9.08 亿元，同比 -35.56%｜归母净利润 -1.31 亿元｜毛利率 35.25%｜ROE -1.95%｜资产负债率 57.94%</li>
+<li><strong>2025 全年</strong>：营收 84.77 亿元，同比 -1.03%｜归母净利润 1.66 亿元，同比 +45.63%｜毛利率 39.30%｜净利率 1.28%｜ROE 2.90%｜资产负债率 59.50%</li>
+<li><strong>2025 前三季度</strong>：营收 28.41 亿元，同比 -1.39%｜归母净利润 -6.64 亿元，同比 -39.62%（即亏损扩大）｜毛利率 31.98%｜资产负债率 63.85%</li>
+</ul>
+<p><strong>趋势判断</strong></p>
+<ol>
+<li><strong>一季度由盈转亏</strong>：一季度净利润同比为 -6145.62%，据此推算 2025 年一季度净利润约 +0.02 亿元，所以 2026 年一季度是由盈转亏（置信度：中，属推算）。</li>
+<li><strong>二季度单季有改善</strong>：用上半年减一季度推算，二季度单季收入约 8.02 亿元，同比约 +5.9%（上年同期约 7.57 亿元）；单季净利润约 -1.42 亿元，比上年同期约 -1.66 亿元亏损收窄；单季毛利率约 43.4%。上半年累计收入的下滑，主要来自一季度（置信度：中）。</li>
+<li><strong>季节性极强</strong>：推算下来，2025 年三季度单季亏损约 5.00 亿元（与新浪财经 2025-10-30「第三季度亏损 5.0 亿元」的报道一致），四季度单季收入约 56.36 亿元、净利润约 8.30 亿元。前三季度亏损、四季度集中盈利是这家公司的常态，<strong>单看三季报容易误判全年</strong>（置信度：高）。</li>
+<li><strong>负债</strong>：资产负债率从 2025 年三季度的 63.85% 降到 2026 年上半年的 59.12%（2025 年 5 月到账 12 亿元定增款是原因之一），但比一季度的 57.94% 略有回升（置信度：高）。</li>
+<li><strong>库外补充</strong>（股百科 2026-08 财报快报，部分内容与搜狐 2026-07 业绩预告报道吻合；单源为主，置信度：中）：上半年扣非净利润 -2.96 亿元，同比 -88.35%；财务费用 1.71 亿元，上年同期为 -0.14 亿元，公司解释是上年同期有境外贷款汇兑收益、本期没有；经营现金流 -8.39 亿元，同比改善 10.60%；存货 46.39 亿元，比年初增加 3.28 亿元。</li>
+<li><strong>分业务收入</strong>（股百科 2026-08，与公司半年报相关媒体报道一致；库内没有分业务数据，置信度：中）：水稻种子 7.15 亿元，同比 -8.22%，占营收 41.81%｜玉米种子 5.18 亿元，同比 -42.95%，其中国内 0.34 亿元（-72.67%）、巴西 4.83 亿元（-38.21%）｜专精特新种子 2.97 亿元，同比 -1.17%。</li>
+</ol>
+<p><strong>小结</strong>：收入和利润都在变差，拐点要看二季度单季数字能不能在下半年延续。存货增加加上行业供给充足，是需要重点盯的一项（置信度：中）。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同行（库内同业对比，库内行业「种植业」，均为 2026 年半年报数据）：</p>
+<ul>
+<li><strong>隆平高科 000998</strong> · 市值 127.55 亿元 · PE 223.78 · PB 1.93 · 上半年营收 17.10 亿元 · 净利润 -2.73 亿元 · ROE -4.11%</li>
+<li><strong>北大荒 600598</strong> · 市值 222.03 亿元 · PE 无数据 · PB 3.42 · 营收 21.28 亿元 · 净利润 -5.37 亿元 · ROE -7.40%</li>
+<li><strong>苏垦农发 601952</strong> · 市值 125.54 亿元 · PE 26.23 · PB 1.74 · 营收 43.32 亿元 · 净利润 1.44 亿元 · ROE 2.02%</li>
+<li><strong>登海种业 002041</strong> · 市值 87.47 亿元 · PE 82.48 · PB 2.36 · 营收 4.69 亿元 · 净利润 0.50 亿元 · ROE 1.34%</li>
+</ul>
+<p><strong>位置判断</strong></p>
+<ul>
+<li>库内「种植业」把种地的公司和卖种子的公司放在一起。北大荒、苏垦农发是种植和土地经营公司，业务模式不同，只能粗略参考；真正的种子同行只有登海种业（置信度：高）。</li>
+<li>和登海种业比：隆平上半年收入约为登海的 3.6 倍（据库内推算），但登海盈利 0.50 亿元，隆平亏损 2.73 亿元；隆平市净率 1.93 倍，低于登海的 2.36 倍。规模大、品类全是隆平的优势，巴西业务和财务费用拖累利润是它的劣势（置信度：中）。</li>
+<li>信息缺口：库内同行清单按市值取前 3，没有收入其他种子公司（例如联创种业所在的上市主体、荃银高科等），种子行业的横向对比不完整。</li>
+</ul>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>：自主或合作育种，拿到品种审定资质，委托基地和农户繁育种子，再通过经销商卖给种植户。收入高度集中在国内年末到春季的销售季；巴西子公司经营当地玉米种子。</p>
+<p><strong>护城河分级</strong></p>
+<ul>
+<li><strong>结构性护城河（有，但眼下被行业周期压住）</strong>：品种权和审定资质储备、商业化育种体系（公司自述，库内简介）。2023 年 12 月首批转基因玉米品种审定中，公司旗下联创种业、巡天农业、惠民农业共 8 个品种入选（上海证券报·中国证券网 2023-12；财联社股东会报道也提到公司审定品种数量和推广面积居前）（置信度：中）。</li>
+<li><strong>阶段性优势</strong>：控股股东中信集团提供融资和信用支持，2025 年 12 亿元定增由中信农业全额认购（两个来源，置信度：高）。</li>
+<li><strong>护城河的限制</strong>：行业供给过剩时，品种优势很难变成定价能力。上半年国内玉米种子收入只有 0.34 亿元，同比 -72.67%，说明转基因品种推广暂时没能扭转国内玉米业务的下滑（置信度：中）。</li>
+<li>据开源证券 2026-08-27 报告的相关转述：截至报告期末已有 19 个（次）转基因品种通过审定，生物育种推广面积国内第一（单源未交叉验证，置信度：低）。</li>
+</ul>
+<h2>F. 政策与监管</h2>
+<ol>
+<li><strong>2026 年中央一号文件（2026-02-03 发布）</strong>：写明「加快选育和推广突破性品种，推进生物育种产业化」（新华网 2026-02-03；界面新闻 2026-02-05 引原句）。传导方向：利好。传导链条：转基因玉米推广面积扩大 → 有审定品种和转化体资源的种子公司量价受益 → 国内玉米种子收入。落到公司财报上需要时间，而上半年国内玉米收入仍在下滑（置信度：中）。</li>
+<li><strong>转基因品种国家审定持续推进</strong>：2025-04-08 农业农村部种业管理司公示第五届国家农作物品种审定委员会第九次会议初审通过的转基因玉米、大豆品种，新浪财经同日报道为 99 个，是继 2023、2024 年之后的第三批（两个来源，置信度：高）。传导方向：利好行业。但品种越来越多，也会加剧同质化竞争，对单个公司是中性（置信度：中）。</li>
+<li><strong>行业供需（官方口径）</strong>：全国农业技术推广服务中心在 2026-09-11 第十八届中国国际种业博览会上发布（中新网 2026-09-11、21 经济网 2026-09-11、腾讯新闻 2026-09-13）：
+<ul>
+<li>杂交玉米：2026 年制种面积 358.5 万亩，同比减少 7%，新产种子 14.3 亿公斤，「能够满足明年春夏播用种需求」→ 行业在主动压缩生产、消化库存，对玉米种子价格是边际利好（置信度：中）</li>
+<li>杂交稻：制种面积 238.4 万亩，同比增加 5.8%，新产种子 4.0 亿公斤，「市场供应充足」→ 对公司第一大业务水稻种子的价格是利空（置信度：中）</li>
+</ul></li>
+<li>单源信息：据腾讯新闻 2026-09-03，截至 2026 年 5 月全国累计批准转基因生物安全证书（生产应用）39 个，其中玉米 27 个（单源未交叉验证，置信度：低）。</li>
+</ol>
+<h2>G. 题材与产业链关联</h2>
+<p><strong>先写热点记录（hotspot_context，2026-09-24）</strong>：这只票通过两个概念标签，被归入两个正在活动的热点方向，<strong>两个都和公司主业无关</strong>。</p>
+<ul>
+<li><strong>计算机与国产软件</strong>（通过「鸿蒙概念」标签关联）：处在热度回落阶段，第 9 天，从 2026-09-14 开始。为什么热：前一天晚上一家政务软件公司说智能体相关业务还在市场开拓初期；智慧政务 3 家涨停（平时 2.5 家），净流出 16.0 亿元，比大盘少涨 0.2 个百分点；计算机、鸿蒙概念当天都没达到门槛。风险：鸿蒙概念近 3 日累计净流出 43.6 亿元，资金还在流出。</li>
+<li><strong>创新药与医药</strong>（通过「基因测序」标签关联）：处在热度回落阶段，系统没有记开始日期。为什么热：十部门医药工业五年规划提出创新药产业规模年均增速超过 20%，前一天晚上还有血液制品公司公告要收购一家外资生物药公司；但资金在流出，CRO 概念净流出 29.4 亿元、比大盘少涨 1.8 个百分点，几个板块合计只有 1 家涨停。风险：重组蛋白比大盘少涨 1.1 个百分点，连续涨停已经停下；CRO 概念近 10 日累计仍多涨 7.8 个百分点，前面涨得多。</li>
+<li><strong>判断</strong>：这两个方向对隆平高科基本没有实际影响，因为两个标签都没有营收支撑（见下文）。另外要注意：<strong>截至 9-24，热点记录里没有正在活动的农业或粮食方向</strong>。8 月到 9 月上旬公司两次涨停时的农业板块热度，目前不在活动中的热点里（置信度：中）。</li>
+</ul>
+<p><strong>概念标签逐个分级</strong>（库内概念标签，同花顺，共 12 个）</p>
+<ul>
+<li>真有业务 · <strong>农业种植</strong>：主营就是农作物种子（置信度：高）</li>
+<li>真有业务 · <strong>玉米</strong>：上半年玉米种子收入 5.18 亿元，其中巴西 4.83 亿元（置信度：高）</li>
+<li>真有业务 · <strong>转基因</strong>：有已通过审定的转基因玉米品种，但转基因品种的收入没有单独披露（置信度：中）</li>
+<li>间接相关 · <strong>粮食概念</strong>：种子处在粮食生产的上游，粮价会影响农户买种意愿，但公司不卖粮（置信度：中）</li>
+<li>间接相关 · <strong>乡村振兴</strong>：公司有农业服务业务，库内没有这块的收入规模（置信度：低）</li>
+<li>股权属实但题材空泛 · <strong>国企改革</strong>：中信集团控股属实，但没有看到具体的改革事项（置信度：中）</li>
+<li>仅概念标签 · <strong>基因测序</strong>：公司有生物技术育种平台，但没有看到对外测序服务的收入，未见营收佐证（置信度：中）</li>
+<li>仅概念标签 · <strong>俄乌冲突概念</strong>：只和粮食安全这类说法沾边，未见营收佐证（置信度：中）</li>
+<li>仅概念标签 · <strong>生态农业</strong>：未见营收佐证（置信度：中）</li>
+<li>仅概念标签 · <strong>鸿蒙概念</strong>：未见任何营收佐证（置信度：高）</li>
+<li>交易属性（不算题材） · <strong>深股通</strong>、<strong>融资融券</strong></li>
+</ul>
+<p><strong>产业链位置</strong></p>
+<ul>
+<li>上游：制种基地和农户（受托繁育）、转基因性状（转化体）的授权方</li>
+<li>中游：公司自己——育种研发、品种权、种子加工和销售</li>
+<li>下游：经销商 → 种植户；种植户买种意愿受粮价影响。据中金在线 2026-09-17、腾讯新闻 2026-09-14 报道，9 月国内新季玉米大量上市后，华北深加工企业下调收购价，部分企业累计降价超过 100 元/吨，玉米 2611 合约周收 2255 元/吨</li>
+<li>议价能力：在行业供给充足的阶段，议价能力偏向下游经销商和种植户（置信度：中）</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<p><strong>先写热点记录</strong>：见 G 节。这只票关联的两个热点方向都处在热度回落阶段，且都是通过无营收支撑的标签关联进来的，对这只票的情绪带动很弱。当晚系统参考过的新闻：「3 连板南威软件：公司政务智能体、WellWork 智能体平台相关业务尚处于市场开拓初期」（09-23 19:22）；「上海莱士：拟收购勃林格殷格翰生物药业（中国）有限公司 100% 股权」（09-23 18:18）。两条都和隆平无关（置信度：高）。</p>
+<p><strong>本公司新闻</strong>（库内新闻，近 60 天，库内共 8 条）</p>
+<ol>
+<li>09-25 19:49（东方财富）：公司再次声明，「袁隆平」不能用作商品名称，市面上「袁隆平」品牌大米没有取得授权。属于品牌保护，对营收没有实质影响（置信度：中）</li>
+<li>09-21（公告）：子公司为子公司提供担保的进展公告。常规融资安排，结合上半年财务费用 1.71 亿元（库外数据）来看，属于日常资金运作（置信度：中）</li>
+<li>09-11（董秘问答）：投资者问公司能否对接中科院、拿到早粳稻品种的经营权，以免水稻市场被竞争对手分走。这反映出投资者担心水稻种子竞争，库内没有公司的回复内容（置信度：低）</li>
+<li>09-08 13:08（财联社）：「农业板块再度拉升，金健米业 17 天 9 板」，说明当时农业板块情绪活跃（发稿时点的情况）</li>
+<li>09-07 20:01（公告）：2026 年第二次临时股东会决议和律师法律意见书。库内没有决议的具体内容（信息缺口）</li>
+<li>09-07 09:49（东方财富）：「粮食板块拉升」，粮食 ETF 跟踪的指数当时曾涨超 2%（发稿时点的旧数字）</li>
+<li>09-07 09:37（财联社）：「农业板块反复活跃，敦煌种业 7 天 4 板」（发稿时点的情况）</li>
+</ol>
+<p>信息缺口：8-21 半年报发布，本应在 60 天窗口内，但库内新闻没有收录半年报相关报道，半年报细节靠联网补（见 C 节）。</p>
+<p><strong>涨停记录</strong>（库内涨停记录，近 180 天共 2 次，都是首次涨停，不是连续涨停）</p>
+<ul>
+<li>2026-08-18：涨 10.02%，14:40:27 封住涨停，当天没有再打开，涨停价上排队的买单 1.81 亿元</li>
+<li>2026-09-01：涨 10.04%，10:05:27 封住涨停，当天没有再打开，涨停价上排队的买单 1.18 亿元</li>
+<li>判断：8 月中到 9 月初农业板块活跃期间，这只票有过两次单日情绪关注，都没有延续成连续涨停（置信度：高）</li>
+</ul>
+<p><strong>资金与筹码</strong>（库内资金筹码，只作情绪面参考，不作基本面证据）</p>
+<ul>
+<li>近 20 个交易日（2026-08-28 至 09-24）：特大单净流入合计 1.56 亿元；全部资金合计净流出 3.14 亿元；净流入为正 8 天、为负 12 天。大资金小幅流入、整体资金流出，方向不一致（置信度：中）</li>
+<li>筹码数据：库内只覆盖关注票，这只票暂时没有</li>
+<li>股东户数：截至 2026-06-30 为 138,559 户；库内没有上一期数据，算不出环比。这是季度数据，本身有滞后</li>
+</ul>
+<h2>I. 未来 13 周事件日历</h2>
+<ul>
+<li><strong>W1（2026-09-28 起）</strong>：本周无已知公司事件｜背景：巴西 2026/27 季大豆和第一季玉米进入播种期，强厄尔尼诺天气预警还在（中国金融信息网 2026-06-09、博亚和讯）· 行业 · 重要性中 · 影响：巴西业务明年上半年的收入基础</li>
+<li><strong>W2（2026-10-05 起）</strong>：本周无已知事件</li>
+<li><strong>W3（2026-10-12 起）</strong>：本周无已知事件</li>
+<li><strong>W4（2026-10-19 起）</strong>：本周无已知事件（三季报也可能提前到本周，以交易所预约披露日为准）</li>
+<li><strong>W5（2026-10-26 起）</strong>：2026 年三季报预计披露窗口（2025 年三季报库内公告日为 2025-10-30；法定截止日为 10-31）· 财报 · 重要性高 · 影响：前三季度归母净亏损和 2025 年同期 6.64 亿元对比，验证 C 节「二季度单季改善」能不能延续</li>
+<li><strong>W6（2026-11-02 起）</strong>：本周无已知事件</li>
+<li><strong>W7（2026-11-09 起）</strong>：11-13 限售股解禁 15,248 万股，约占流通盘 11.6%，涉及 1 名股东（库内库内事件日历）；联网核实为 2025-05-14 上市的中信农业定增股，锁定期 18 个月（农资与市场网、证券之星上市公告书）· 公司事件 · 重要性中 · 影响：控股股东刚为提高持股比例全额认购，减持概率偏低，但要核实解禁后有没有公告（置信度：中）</li>
+<li><strong>W8（2026-11-16 起）</strong>：本周无已知事件</li>
+<li><strong>W9（2026-11-23 起）</strong>：本周无已知事件</li>
+<li><strong>W10（2026-11-30 起）</strong>：本周无已知事件</li>
+<li><strong>W11（2026-12-07 起）</strong>：本周无已知事件</li>
+<li><strong>W12（2026-12-14 起）</strong>：往年 12 月中下旬召开中央农村工作会议，可能给出 2027 年种业和生物育种的政策方向（2026 年日期未公布，没有联网核实，置信度：低）· 政策 · 重要性中</li>
+<li><strong>W13（2026-12-21 起）</strong>：本周无已知事件｜背景：年末进入国内种子销售和回款旺季（推算 2025 年四季度单季收入约 56.36 亿元），这里的情况只能等 2027 年 4 月的年报验证，不在本日历窗口内</li>
+</ul>
+<p>另外还没排进日历的：新一批转基因玉米品种国家审定公示时间（2025 年那批是 4 月公示），2026 年这批时间未知。</p>
+<h2>J. 逻辑链</h2>
+<ol>
+<li>全国杂交稻制种面积同比增加 5.8%、「市场供应充足」，杂交玉米「能够满足用种需求」（官方 2026-09-11），同时国内玉米新粮上市后收购价下降（2026-09 报道）→ 2026/27 销售季种子价格和销量都难明显好转（置信度：中）</li>
+<li>公司上半年收入同比 -21.05%，亏损扩大 66.41%；但二季度单季收入同比约 +5.9%、单季亏损收窄、毛利率回升（推算）→ 下滑可能已接近底部，但还不够说成好转（置信度：中）</li>
+<li>全年利润靠四季度（2025 年四季度单季约 8.30 亿元，推算）→ 2026 年全年能不能盈利，取决于年末水稻和玉米种子的销售（置信度：高）</li>
+<li>〔卖方预期〕中金预测 2026 年净利润 4.01 亿元 → 推算需要下半年净利润约 6.74 亿元，约为 2025 年下半年约 3.30 亿元的两倍 → 在第 1 环的供需背景下，这个预测有下调可能（置信度：中）</li>
+<li>生物育种产业化政策 + 公司有审定品种 → 中长期国内玉米业务的增量来源；但上半年国内玉米收入 0.34 亿元（-72.67%），说明还没兑现（置信度：中）</li>
+<li>巴西：厄尔尼诺扰乱播种期、农户改种大豆，上半年巴西玉米收入 -38.21%（公司解释，股百科 2026-08）；2026/27 季面临强厄尔尼诺预警 → 巴西业务明年上半年能不能恢复不确定（置信度：中低）</li>
+</ol>
+<p><strong>推论</strong>：如果第 1、3、4 环成立，接下来一个季度应该能看到：三季报前三季度亏损和上年同期（6.64 亿元）差不多，卖方下调 2026 年盈利预测，股价在没有新政策催化时区间震荡。 <strong>最弱的一环</strong>：第 5 环，政策利好能不能在 2026/27 销售季变成国内玉米收入。公司不单独披露转基因品种收入，这一环很难提前验证，只能等年报。</p>
+<h2>K. 三情景推演</h2>
+<ul>
+<li><strong>乐观（20%）</strong>｜触发：三季报前三季度归母净亏损小于 2025 年同期的 6.64 亿元，且年内公布的新一批转基因玉米国家审定品种里有公司品种｜路径：市场改看市净率和转基因推广进度，股价在 MA20 上方运行，向 9 月上旬的前高靠近（置信度：低）</li>
+<li><strong>中性（50%）</strong>｜触发：三季报前三季度亏损在 5.64 亿至 7.63 亿元之间（上年同期 6.64 亿元上下 15%），没有新的政策文件｜路径：在 MA20 和 MA60 之间来回波动，跟着农业板块轮动起落（置信度：中）</li>
+<li><strong>悲观（30%）</strong>｜触发：三季报前三季度亏损超过 7.63 亿元，或卖方把 2026 年净利润预测下调到 2 亿元以下（可用库内研报核对），或中信农业在 11-13 解禁后公告减持｜路径：跌破 MA60 后向前低回落，农业板块热度回落时跌得更多（置信度：中）</li>
+</ul>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong></p>
+<ol>
+<li>如果三季报前三季度归母净亏损小于 2025 年同期的 6.64 亿元，且收盘站上 MA20，那么可以轻仓试仓（置信度：低）</li>
+<li>如果三季报前三季度亏损超过 7.63 亿元，或收盘跌破 9-25 收盘之后又跌破 MA60，那么回避；已有仓位的减仓（置信度：中）</li>
+<li>如果 11-13 解禁后中信农业公告减持计划，那么回避；如果没有减持公告、三季报又落在中性区间，那么观望，等年末销售季数据（置信度：中）</li>
+</ol>
+<p><strong>风控要点（什么情况下推翻本判断）</strong></p>
+<ul>
+<li>公司发布上调的全年业绩预告，或三季报里预收款、合同负债明显增加（说明年末订货好）→ 推翻「震荡」，改为偏涨</li>
+<li>巴西子公司出现大额减值、汇兑损失重新扩大，或中信农业减持 → 推翻「震荡」，改为偏跌</li>
+</ul>
+<p><strong>仓位思路</strong>：轻仓或不参与。原因：全年利润靠四季度，一季度内能拿到的验证信息少，确定性不高。</p>
+<h2>M. 逻辑自查</h2>
+<p><strong>这份判断最依赖的假设</strong>：「2026/27 销售季种子供给充足、价格难明显改善」。如果转基因玉米推广速度远超预期（比如有说法称 2026 年推广面积会有数倍增长，这是单源行业报道，未采信），公司国内玉米收入可能大幅反弹，那样本报告会明显低估上涨空间。</p>
+<p><strong>可能被忽略的反面证据</strong></p>
+<ul>
+<li>二季度单季收入已经同比增长约 5.9%，单季毛利率约 43.4%，都是真实的改善信号，本报告可能低估了回升的持续性</li>
+<li>近 20 日特大单净流入 1.56 亿元；8-18、9-01 两次涨停，说明有资金在布局农业和种业方向</li>
+<li>库内几家券商的预测都是盈利，中金给了「跑赢行业」评级——虽然这是卖方观点，但说明机构对年末销售季的判断比本报告乐观</li>
+</ul>
+<p><strong>卖方观点（单列，都是别人的预测，不是事实）</strong></p>
+<ul>
+<li>〔卖方预期〕来源：中金公司研报（库内）· 日期：2026-08-21 · 观点：2026 年 EPS 0.27 元、净利润 4.01 亿元（对应 PE 32.4 倍）；2027 年 EPS 0.34 元、净利润 4.96 亿元（对应 PE 26.2 倍）；评级「跑赢行业」· 置信度：低（卖方预测，未经交叉验证）</li>
+<li>〔卖方预期〕来源：国信证券研报（库内）· 日期：2026-08-31 · 观点：2026 年 EPS 0.36 元（PE 25 倍）；2027 年 EPS 0.48 元（PE 19 倍）· 置信度：低</li>
+<li>〔卖方预期〕来源：申万宏源研究（库内）· 日期：2026-09-24 · 观点：EPS 0.26 元（PE 34 倍）、0.28 元（PE 32 倍），库内期次标为「2026Q2」「2027Q2」，和年度预测的写法不一致，无法确认对应哪个期间 · 置信度：低</li>
+<li>〔卖方预期〕来源：开源证券研报（库内只有标题）· 日期：2026-08-27 · 观点：标题为「巴西及国内玉米业务承压，育种优势持续深化」，库内没有这条的盈利预测 · 置信度：低</li>
+<li>库内近 90 天共 3 家机构、3 篇研报，库内评级只有 1 条（中金「跑赢行业」）</li>
+</ul>
+<p><strong>信息缺口清单</strong></p>
+<ol>
+<li>库内没有分业务收入、扣非净利润、经营现金流、存货、合同负债。影响：C 节分业务分析靠联网（以股百科单源为主，置信度中）。补法：三季报发布后核对公司公告原文</li>
+<li>股东户数只有 2026-06-30 一期，算不出变化方向。补法：三季报披露后重跑</li>
+<li>筹码数据：库内只覆盖关注票，这只票没有，属于数据覆盖范围的限制</li>
+<li>9-07 临时股东会审议了什么，库内没有。影响：可能遗漏担保或关联交易安排。补法：查巨潮资讯公告原文</li>
+<li>库内新闻没有收录 8-21 半年报相关报道</li>
+<li>申万宏源预测的期次标签和年度预测对不上，无法和中金、国信直接比较</li>
+<li>转基因品种收入公司不单独披露，J 节最弱一环无法验证</li>
+<li>Conab 预计 2026/27 巴西第二季玉米面积增加 3.7%、达到 1,848 万公顷，只有 Yahoo 奇摩一个来源（单源未交叉验证，置信度：低），没有写进正文判断</li>
+<li>同行对比只覆盖库内同行业市值前 3，种子同行只有登海种业</li>
+<li>12 月中央农村工作会议的日期没有联网核实</li>
+</ol>
+<p><strong>联网来源</strong></p>
+<ul>
+<li><a href="https://www.chinanews.com.cn/cj/2026/09-11/10694986.shtml" target="_blank" rel="noopener">中新网 2026-09-11：玉米预计新产种子 14.3 亿公斤</a>｜<a href="https://www.21jingji.com/article/20260911/herald/1b35c7f5791efd85f065ea11d4dc7272.html" target="_blank" rel="noopener">21 经济网 2026-09-11</a>｜<a href="https://news.qq.com/rain/a/20260913A03NGK00" target="_blank" rel="noopener">腾讯新闻 2026-09-13：主要农作物种子供应充足</a>｜<a href="https://news.qq.com/rain/a/20260911A0G5TP00" target="_blank" rel="noopener">腾讯新闻 2026-09-11：杂交稻新产种子 4.0 亿公斤</a></li>
+<li><a href="https://www.aigbk.com/article/longping_2026_h1_loss_widens_66_pct/" target="_blank" rel="noopener">股百科 2026-08：隆平高科上半年财报快报</a>｜<a href="https://www.sohu.com/a/1050280577_115377" target="_blank" rel="noopener">搜狐：上半年扣非亏损预告</a>｜<a href="https://static.weeklyonstock.com/26/0820/ABB2618114473094.html" target="_blank" rel="noopener">证券市场周刊 2026-08-20</a></li>
+<li><a href="https://www.enongzi.com/news/details/8cb716d8-4b61-4b2f-bae6-c38ba139036f" target="_blank" rel="noopener">农资与市场网：定增 12 亿元中信全额认购</a>｜<a href="https://stock.stockstar.com/notice/SN2025051200031602.shtml" target="_blank" rel="noopener">证券之星：定增上市公告书 2025-05</a></li>
+<li><a href="https://www.news.cn/politics/20260203/87ac7e9830094e3585c4ca9cf0020c0b/c.html" target="_blank" rel="noopener">新华网 2026-02-03：中央一号文件发布</a>｜<a href="https://www.jiemian.com/article/13978597.html" target="_blank" rel="noopener">界面新闻 2026-02-05</a></li>
+<li><a href="https://zys.moa.gov.cn/gsgg/202504/t20250408_6472948.htm" target="_blank" rel="noopener">农业农村部种业管理司 2025-04-08 公示</a>｜<a href="https://finance.sina.com.cn/jjxw/2025-04-08/doc-inesnnhm3506734.shtml" target="_blank" rel="noopener">新浪财经 2025-04-08</a>｜<a href="https://news.cnstock.com/news,bwkx-202312-5160786.htm" target="_blank" rel="noopener">中国证券网 2023-12</a>｜<a href="https://www.cls.cn/detail/1016063" target="_blank" rel="noopener">财联社股东会报道</a></li>
+<li><a href="https://www.cnfin.com/dz-lb/detail/20260609/4423753_1.html" target="_blank" rel="noopener">中国金融信息网 2026-06-09：超级厄尔尼诺或冲击巴西</a>｜<a href="https://m.boyar.cn/article/1259761.html" target="_blank" rel="noopener">博亚和讯：强厄尔尼诺与巴西 2026/27</a>｜<a href="https://www.oilcn.com/article/2026/06/06_98294.html" target="_blank" rel="noopener">导油网 2026-06-06</a></li>
+<li><a href="http://futures.cnfol.com/qishidongtai/20260917/32373119.shtml" target="_blank" rel="noopener">中金在线 2026-09-17：华北玉米新作上市</a>｜<a href="https://news.qq.com/rain/a/20260914A035A500" target="_blank" rel="noopener">腾讯新闻 2026-09-14：新粮上市期现回落</a></li>
+<li><a href="https://www.nbd.com.cn/articles/2025-10-29/4117811.html" target="_blank" rel="noopener">每经网 2025-10-29：前三季度净利润 -6.64 亿元</a>｜<a href="https://finance.sina.com.cn/stock/zqgd/2025-10-30/doc-infvrtfs9547313.shtml" target="_blank" rel="noopener">新浪财经 2025-10-30：三季度亏损 5.0 亿元</a></li>
+<li><a href="https://news.qq.com/rain/a/20260903A09A6D00" target="_blank" rel="noopener">腾讯新闻 2026-09-03：转基因种子商业化（单源）</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-25），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>杂交稻种子供给充足压价</li>
+      <li>卖方全年盈利预测偏高</li>
+      <li>巴西玉米受厄尔尼诺扰动</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>扣非净利</dt><dd>扣除非经常性损益后的净利润。剔除卖资产、政府补助、公允价值变动等一次性项目，更接近主业真实盈利。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>经营现金流</dt><dd>经营活动产生的现金流量净额。利润是账面数，这个是真金白银进出。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>业绩预告</dt><dd>上市公司在正式财报前发布的盈利区间预告，达到规定变动幅度时强制披露。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.chinanews.com.cn/cj/2026/09-11/10694986.shtml" target="_blank" rel="noopener">中新网 2026-09-11：玉米预计新产种子 14.3 亿公斤</a> <em>2026-09-11</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.21jingji.com/article/20260911/herald/1b35c7f5791efd85f065ea11d4dc7272.html" target="_blank" rel="noopener">21 经济网 2026-09-11</a> <em>2026-09-11</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260913A03NGK00" target="_blank" rel="noopener">腾讯新闻 2026-09-13：主要农作物种子供应充足</a> <em>2026-09-13</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260911A0G5TP00" target="_blank" rel="noopener">腾讯新闻 2026-09-11：杂交稻新产种子 4.0 亿公斤</a> <em>2026-09-11</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.aigbk.com/article/longping_2026_h1_loss_widens_66_pct/" target="_blank" rel="noopener">股百科 2026-08：隆平高科上半年财报快报</a> <em>2026-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.sohu.com/a/1050280577_115377" target="_blank" rel="noopener">搜狐：上半年扣非亏损预告</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://static.weeklyonstock.com/26/0820/ABB2618114473094.html" target="_blank" rel="noopener">证券市场周刊 2026-08-20</a> <em>2026-08-20</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.enongzi.com/news/details/8cb716d8-4b61-4b2f-bae6-c38ba139036f" target="_blank" rel="noopener">农资与市场网：定增 12 亿元中信全额认购</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://stock.stockstar.com/notice/SN2025051200031602.shtml" target="_blank" rel="noopener">证券之星：定增上市公告书 2025-05</a> <em>2025-05</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.news.cn/politics/20260203/87ac7e9830094e3585c4ca9cf0020c0b/c.html" target="_blank" rel="noopener">新华网 2026-02-03：中央一号文件发布</a> <em>2026-02-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.jiemian.com/article/13978597.html" target="_blank" rel="noopener">界面新闻 2026-02-05</a> <em>2026-02-05</em></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://zys.moa.gov.cn/gsgg/202504/t20250408_6472948.htm" target="_blank" rel="noopener">农业农村部种业管理司 2025-04-08 公示</a> <em>2025-04-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/jjxw/2025-04-08/doc-inesnnhm3506734.shtml" target="_blank" rel="noopener">新浪财经 2025-04-08</a> <em>2025-04-08</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.cnstock.com/news,bwkx-202312-5160786.htm" target="_blank" rel="noopener">中国证券网 2023-12</a> <em>2023-12</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cls.cn/detail/1016063" target="_blank" rel="noopener">财联社股东会报道</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cnfin.com/dz-lb/detail/20260609/4423753_1.html" target="_blank" rel="noopener">中国金融信息网 2026-06-09：超级厄尔尼诺或冲击巴西</a> <em>2026-06-09</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.boyar.cn/article/1259761.html" target="_blank" rel="noopener">博亚和讯：强厄尔尼诺与巴西 2026/27</a> <em>2026-27</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.oilcn.com/article/2026/06/06_98294.html" target="_blank" rel="noopener">导油网 2026-06-06</a> <em>2026-06-06</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="http://futures.cnfol.com/qishidongtai/20260917/32373119.shtml" target="_blank" rel="noopener">中金在线 2026-09-17：华北玉米新作上市</a> <em>2026-09-17</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260914A035A500" target="_blank" rel="noopener">腾讯新闻 2026-09-14：新粮上市期现回落</a> <em>2026-09-14</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.nbd.com.cn/articles/2025-10-29/4117811.html" target="_blank" rel="noopener">每经网 2025-10-29：前三季度净利润 -6.64 亿元</a> <em>2025-10-29</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/zqgd/2025-10-30/doc-infvrtfs9547313.shtml" target="_blank" rel="noopener">新浪财经 2025-10-30：三季度亏损 5.0 亿元</a> <em>2025-10-30</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260903A09A6D00" target="_blank" rel="noopener">腾讯新闻 2026-09-03：转基因种子商业化（单源）</a> <em>2026-09-03</em></li>
+      <li><span class="src-tag src-disc">披露</span> 2026-06-30，2026-08-21 公告 <em>2026-06-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新华网 2026-02-03、界面新闻 2026-02-05 <em>2026-02-03</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 农资与市场网、证券之星转载的上市公告书，2025-05 <em>2025-05</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 与新浪财经 2025-10-30「第三季度亏损 5.0 亿元」的报道一致 <em>2025-10-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 股百科 2026-08 财报快报，部分内容与搜狐 2026-07 业绩预告报道吻合 <em>2026-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 单源为主，置信度：中 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 股百科 2026-08，与公司半年报相关媒体报道一致 <em>2026-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 库内没有分业务数据，置信度：中 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 上海证券报·中国证券网 2023-12 <em>2023-12</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 财联社股东会报道也提到公司审定品种数量和推广面积居前 — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 界面新闻 2026-02-05 引原句 <em>2026-02-05</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 中新网 2026-09-11、21 经济网 2026-09-11、腾讯新闻 2026-09-13 <em>2026-09-11</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 2025 年三季报库内公告日为 2025-10-30 <em>2025-10-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 法定截止日为 10-31 — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-25 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
