@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>海南橡胶（601118.SH） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>海南橡胶（601118.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-25（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 种植业</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 可降解塑料 · 农业种植 · 碳中和 · 军工</span>
+      <span><b>来源</b> 33 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    海南橡胶（601118）是一家 A 股上市公司。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——胶价在近两年高位，二季度单季刚好扭亏为盈，但毛利率只有 3.4%，负债率 70.7%。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：胶价在近两年高位，二季度单季刚好扭亏为盈，但毛利率只有 3.4%，负债率 70.7%。支撑在于胶价处近两年高位且下半年是割胶旺季；二季度单季扭亏为盈，毛利率回升；厄尔尼诺峰值期主产区或减产。主要风险是毛利率仅3.38%，干旱推高收购成本；负债率70.69%，财务费用增四成；农业题材资金撤出，股价波动大。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>胶价处近两年高位且下半年是割胶旺季</li>
+      <li>二季度单季扭亏为盈，毛利率回升</li>
+      <li>厄尔尼诺峰值期主产区或减产</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">行情数据时点：2026-09-24 收盘（库内行情时点 15:34；9 月 25 日至 27 日中秋休市，9 月 28 日开市，见<a href="http://big5.sse.com.cn/site/cht/www.sse.com.cn/disclosure/announcement/general/c/c_20260915_10832273.shtml" target="_blank" rel="noopener">上交所休市公告</a>，2026-09-15） 财务数据最新期：2026 年半年报（2026-06-30，8 月 28 日披露） 本报告不是买卖建议。</div>
+<h2>A. 核心结论</h2>
+<p><strong>方向</strong>：震荡（置信度：中） <strong>一句话逻辑</strong>：胶价在近两年高位，二季度单季刚好扭亏为盈，但毛利率只有 3.4%，负债率 70.7%。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li>天然橡胶现货 9 月初站上近两年高位，比年初涨约 14%。下半年又是割胶旺季，天然橡胶价格上涨对自有胶园的产出是正面影响（置信度：中）</li>
+<li>据半年报和一季报累计值推算，二季度单季归母净利润约 +208 万元，单季扭亏为盈；单季毛利率约 4.5%，高于一季度的 1.94%。三季度还将确认已公告的保险赔款和征地青苗补偿款，合计约 0.67 亿元（置信度：高）</li>
+<li>气象机构预计厄尔尼诺在 10–12 月达到峰值，东南亚主产区可能减产，支撑胶价（置信度：中）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li>公司自己在半年度业绩预告里写明：产区高温干旱使原料收购竞争加剧、采购成本上升，橡胶产品毛利下降。胶价上涨对它的加工贸易环节是成本压力，不全是利好（置信度：高）</li>
+<li>资产负债率 70.69%，比 2025 年三季度的 67.85% 上升；据媒体报道，上半年财务费用同比增 40.55%（置信度：中）</li>
+<li>股价受农业和厄尔尼诺题材带动波动很大：8 月 20 日涨停；9 月 10、11、14 日连续三天跌幅偏离值累计超过 20%，触发交易异常波动公告；近 20 个交易日资金合计净流出 3.98 亿元（置信度：高）</li>
+</ol>
+<p><strong>最该盯的信号</strong>：10 月 31 日前披露的三季报——三季度单季归母净利润是否为正、扣掉约 0.67 亿元一次性收入后是否仍为正、单季毛利率是否不低于二季度的约 4.5%。 <strong>这份判断最可能错在哪</strong>：库内和联网都查不到公司自产胶和外购加工贸易的收入拆分，所以「胶价上涨能给利润带来多大增量」本报告量化不了。如果自产胶占比比想象的高，下半年盈利可能明显好于「震荡」的判断。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>公司</strong>：海南天然橡胶产业集团股份有限公司，2005 年成立，承接海南农垦的橡胶资产，上交所主板上市。业务覆盖天然橡胶研发、种植、加工、橡胶木加工与销售、贸易、仓储物流等；主营为「天然橡胶的种植、加工、科研和销售」（库内公司档案，置信度：高）</li>
+<li><strong>上市时间</strong>：2011-01-07 上市，约 15 年 8 个月；在市状态正常（L）</li>
+<li><strong>员工</strong>：24953 人；注册资本 427942.78 万元</li>
+<li><strong>行业归属</strong>：Tushare 行业分类为「橡胶」，同行业共 18 只在市票；涨停记录里的行业标签为「种植业」</li>
+<li><strong>控股股东</strong>：海垦控股集团（据公司 2026-09-15 异常波动公告，编号 2026-043）</li>
+<li><strong>当前行情</strong>：2026-09-24 收盘 6.48 元，当日跌 2.7%；盘中最高涨 1.35%，最低跌 3.9%；成交额 7.5 亿元（库内行情，置信度：高）</li>
+<li><strong>估值（2026-09-24）</strong>：总市值 277.31 亿元；PE（TTM）无值——近四个季度合计亏损，市盈率算不出来；PB 2.919 倍；股息率 0.17%；换手率 2.67%</li>
+<li><strong>同行业位置</strong>：行业 PE 中位数 45.04 倍（18 只）。本公司亏损、PE 为空，所以没有行业 PE 分位排名。<strong>这只能说明「按市盈率没法比」，不说明贵或便宜</strong>（置信度：高）</li>
+<li><strong>仅从估值看</strong>：公司处于亏损状态，却按每股净资产的约 2.9 倍定价（每股净资产据 6.48 元 ÷ 2.919 倍推算约 2.22 元，与<a href="https://news.qq.com/rain/a/20260829A03CRA00" target="_blank" rel="noopener">证券之星 2026-08-29 中报简析</a>一致）。说明市场在给未来胶价上涨带来的盈利修复提前定价，不是按当前盈利定价（置信度：中）</li>
+<li>A/H 溢价：非两地上市，不适用。</li>
+</ul>
+<h2>C. 财务健康</h2>
+<p>近 4 期累计值如下（库内财务，新→旧；单位：亿元）：</p>
+<ul>
+<li><strong>2026 半年报（06-30）</strong>：营收 151.23 · 同比 -25.40% ｜归母净利 -1.30 · 同比 +25.88%（亏损收窄）｜ ROE -1.31% ｜毛利率 3.38% ｜净利率 -1.78% ｜资产负债率 70.69%</li>
+<li><strong>2026 一季报（03-31）</strong>：营收 65.39 · 同比 -20.75% ｜归母净利 -1.33 · 同比 -22.31%（亏损扩大）｜ ROE -1.32% ｜毛利率 1.94% ｜净利率 -3.17% ｜资产负债率 71.20%</li>
+<li><strong>2025 年报（12-31）</strong>：营收 422.37 · 同比 +0.55% ｜归母净利 -1.03 · 同比 -199.65%（由盈转亏）｜ ROE -1.03% ｜毛利率 2.52% ｜净利率 -0.74% ｜资产负债率 70.29%</li>
+<li><strong>2025 三季报（09-30）</strong>：营收 305.74 · 同比 +9.47% ｜归母净利 -2.75 · 同比 +40.24%（亏损收窄）｜ ROE -2.77% ｜毛利率 2.99% ｜净利率 -1.41% ｜资产负债率 67.85%</li>
+</ul>
+<p><strong>单季拆分（都是用库内累计值相减推算的）</strong></p>
+<ul>
+<li>2026 年二季度：营收 85.84 亿元（151.23 − 65.39）；归母净利润约 +0.02 亿元（约 208 万元），<strong>单季扭亏为盈</strong>；单季毛利率约 4.5%（用两期营收×毛利率算出毛利后相减）。<a href="https://news.qq.com/rain/a/20260829A03CRA00" target="_blank" rel="noopener">证券之星 2026-08-29</a> 给出的二季度单季营收 85.84 亿元、归母净利润 207.72 万元与推算一致（置信度：高）</li>
+<li>2025 年四季度：归母净利润约 +1.72 亿元（−1.03 − (−2.75)），单季盈利（置信度：高）</li>
+<li>2025 年上半年归母净利润为 −1.76 亿元（公司 2026-07-15 半年度业绩预告披露的上年同期数 −17,604.72 万元）。由此推算：2025 年三季度单季约 −0.99 亿元，2025 年下半年合计约 +0.73 亿元（置信度：高）</li>
+</ul>
+<p><strong>趋势判断</strong></p>
+<ol>
+<li><strong>盈利</strong>：上半年亏损同比收窄（−1.76 → −1.30 亿元）。二季度单季刚到盈亏平衡，但规模只有约 208 万元，谈不上稳定盈利（置信度：高）</li>
+<li><strong>收入</strong>：营收连续两期同比下降（一季度 −20.75%，上半年 −25.40%）。联网资料称公司在主动收缩低毛利的贸易和加工业务，但这个说法只见于自媒体、没有公告原文佐证，只能当作单源说法（置信度：低）</li>
+<li><strong>毛利率是拐点指标</strong>：一季度 1.94% → 上半年累计 3.38%，推算二季度单季约 4.5%，是近四期里最好的一个季度。但绝对水平很低，说明营收里低毛利的加工贸易占大头（置信度：中）</li>
+<li><strong>负债</strong>：资产负债率从 67.85% 升到 70.69%。据<a href="http://stock.10jqka.com.cn/20260923/c680229866.shtml" target="_blank" rel="noopener">凤凰网财经 2026-09-23（同花顺转载）</a>：有息负债 167.80 亿元，短期借款 73.97 亿元，上半年财务费用 4.23 亿元（同比 +40.55%），经营活动现金流净额 10.1 亿元（同比 −51.9%），应收账款周转天数 23.02 天（同比增加 9.37 天）。这些是单源数据，未交叉验证（置信度：中）。另据<a href="https://news.qq.com/rain/a/20260829A03CRA00" target="_blank" rel="noopener">证券之星 2026-08-29</a>，流动比率 0.98，货币资金/流动负债为 41.68%——短期偿债能力偏紧（置信度：中）</li>
+<li><strong>利润质量</strong>：公司 2026-07-15 业绩预告给出上半年扣除非经常性损益后的净利润（下称「扣非净利润」）为 −3.80 亿至 −2.55 亿元。凤凰网财经 9-23 报道上半年非经常性损益约 1.59 亿元，据此推算实际扣非净利润约 −2.89 亿元，落在预告区间内。<strong>主业仍是亏损的，账面亏损收窄主要靠非经常性收益</strong>（置信度：中）</li>
+</ol>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比返回的是 Tushare「橡胶」行业里市值最大的 3 只（字段：市值 · PE（TTM） · PB · 2026H1 营收 · 2026H1 归母净利 · ROE）：</p>
+<ul>
+<li><strong>海南橡胶 601118</strong>：277.31 亿 · 亏损无 PE · 2.92 · 151.23 亿 · −1.30 亿 · −1.31%</li>
+<li><strong>长鸿高科 605008</strong>：94.96 亿 · 亏损无 PE · 4.95 · 15.46 亿 · −0.58 亿 · −2.99%</li>
+<li><strong>科创新源 300731</strong>：93.64 亿 · 614.85 倍 · 15.17 · 5.17 亿 · −0.03 亿 · −0.45%</li>
+<li><strong>新莱福 301323</strong>：82.69 亿 · 52.75 倍 · 3.66 · 5.96 亿 · 0.86 亿 · 3.84%</li>
+</ul>
+<p><strong>解读</strong></p>
+<ul>
+<li>这三只都是橡胶材料或制品公司，<strong>不是天然橡胶种植企业</strong>，和海南橡胶的商业模式基本不可比。分类系统把它们放进同一个行业，横向对比的参考价值有限（置信度：高）</li>
+<li>在库内「橡胶」行业里，海南橡胶市值和营收都是第一，营收是其余三只之和的约 5.8 倍（据上面数字推算）。PB 2.92 倍在四只里最低，但它是四只里唯一一家以大宗商品加工贸易为主的公司，毛利率结构完全不同，PB 低不能直接理解为「便宜」（置信度：中）</li>
+<li>真正可比的是天然橡胶上游同行（例如中化国际的天然橡胶板块、海外上市的种植园公司），库内同行函数没覆盖，属于信息缺口（见 M 节）。</li>
+</ul>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式</strong>（依据库内公司档案主营介绍，以及公司公告和媒体报道）：</p>
+<ul>
+<li>上游：自有胶园种植和割胶（承接海南农垦资产）</li>
+<li>中游：初加工。据<a href="https://news.qq.com/rain/a/20260827A0AGDP00" target="_blank" rel="noopener">腾讯新闻 2026-08-27 半年报报道</a>，全球共 61 家初加工厂，年加工能力约 235 万吨；海外子公司合盛农业建立了 HeveaPro 生产标准（单源，置信度：低）</li>
+<li>下游：天然橡胶贸易，销售给轮胎等工业用户；另有橡胶木加工、仓储物流等</li>
+</ul>
+<p><strong>护城河分级</strong></p>
+<ul>
+<li><strong>阶段性优势——资源禀赋</strong>：国内天然橡胶只能种在海南、云南、广东等少数热带地区，公司承接海南农垦的胶园，土地资源难以复制。但这类资源的回报取决于胶价，不能保证持续赚钱：2025 年全年仍是亏损（置信度：中）</li>
+<li><strong>阶段性优势——政策支持</strong>：公司投保了天然橡胶收入保险，2026 年 5 月胶价波动就触发了 3856.15 万元赔付（公司公告 2026-042）。这能减少胶价下跌时的损失，但保险赔款属于政策性收入，不是竞争力（置信度：高）</li>
+<li><strong>加工贸易环节：看不出结构性护城河</strong>。上半年毛利率 3.38%，说明这部分业务是量大、利润薄的大宗商品买卖，公司是胶价的接受者，没有定价权（置信度：中）</li>
+<li><strong>EUDR（欧盟零毁林法案）合规能力</strong>：可以视为出口欧洲市场的合规优势，但公司业绩预告承认「符合 EUDR 要求的产品溢价下滑」，优势正在缩小（置信度：中）</li>
+</ul>
+<h2>F. 政策与监管</h2>
+<ol>
+<li><strong>2026 年中央一号文件点名天然橡胶</strong>：文件提出「推动棉花、糖料、天然橡胶等产业平稳发展」（<a href="https://www.ccdi.gov.cn/toutun/202602/t20260203_473514_m.html" target="_blank" rel="noopener">中纪委网站 2026-02-03</a>）。农业农村部统筹实施天然橡胶生产能力建设、良种良法补助、综合保险等扶持政策，推进老旧胶园更新（<a href="https://nync.yn.gov.cn/html/2026/yunnongkuanxun-new_0415/1425603.html" target="_blank" rel="noopener">云南省农业农村厅 2026-04-15</a>，<a href="https://hainan.sina.cn/news/zh/2026-04-15/detail-inhupvfk3645450.d.html?vt=4&amp;cid=56310&amp;node_id=56310" target="_blank" rel="noopener">新浪海南 2026-04-15 同文转载</a>）。传导：补贴与胶园更新 → 降低种植端成本、稳定产量。<strong>方向：利好，影响幅度温和</strong>（置信度：中）</li>
+<li><strong>天然橡胶综合保险</strong>：财政部 2023 年 12 月发文实施，含橡胶树物化成本保险、完全成本保险、收入保险三个险种（<a href="http://jrs.mof.gov.cn/zhengcefabu/phjr/202312/t20231211_3921121.htm" target="_blank" rel="noopener">财政部金融司</a>）。公司已实际拿到 2026 年 5 月的收入保险赔款 3856.15 万元（公告 2026-042）。传导：胶价下跌时有赔付兜底 → 减轻种植端亏损。<strong>方向：利好（兜底作用）</strong>（置信度：高）</li>
+<li><strong>海南自贸港封关与加工增值免关税</strong>：2025 年 12 月 18 日全岛封关。到 2026 年 6 月，加工增值免关税政策已覆盖橡胶塑料制品等 11 个行业，橡胶被认定为海南自产货物之一（<a href="https://www.chinanews.com.cn/cj/2026/07-11/10657594.shtml" target="_blank" rel="noopener">中新网 2026-07-11</a>，<a href="http://hi.people.com.cn/n2/2026/0712/c231190-41636377.html" target="_blank" rel="noopener">人民网海南 2026-07-12</a>）。传导：进口胶在岛内加工增值后免关税内销 → 对岛内橡胶加工企业是成本优势。<strong>公司没有单独披露这项政策给自己带来的收益</strong>，影响大小无法核实（置信度：低）</li>
+<li><strong>欧盟零毁林法案（EUDR）</strong>：对大中型运营商的实施日期是 2026 年 12 月 30 日，小微企业是 2027 年 6 月 30 日（<a href="https://www.cirs-sustainability.com/ou-meng-ling-hui-lin-fa-an-que-ren-zai-ci-yan-qi" target="_blank" rel="noopener">瑞旭集团 CIRS</a>，<a href="https://www.cria.org.cn/a/2053016728972136449" target="_blank" rel="noopener">中国橡胶工业协会 2026-05-09</a> 称「预计 2026 年底对大型企业生效」，欧盟同时推出简化措施）。传导：生效后，出口欧洲的橡胶要证明产地没有毁林 → 合规胶可能重新获得溢价。但公司上半年说这个溢价在下滑。<strong>方向：中性偏利好，时点在本报告 13 周日历之后一周</strong>（置信度：中）</li>
+</ol>
+<h2>G. 题材与产业链关联</h2>
+<p><strong>概念标签逐个分级</strong>（库内概念标签，共 10 个）：</p>
+<ul>
+<li><strong>农业种植</strong>：真有业务——主营就是天然橡胶种植（置信度：高）</li>
+<li><strong>海南自贸区</strong>：地域属实（资产和注册地在海南）；自贸港政策给公司带来的具体收益未见披露（置信度：中）</li>
+<li><strong>国企改革</strong>：国资控股属实（控股股东海垦控股集团）；但「改革」要有具体事项才算数，公司 9-15 异常波动公告明确写了「不存在……重大资产重组、股份发行……引进战略投资者等重大事项」。仅概念标签，未见相关事项佐证（置信度：高）</li>
+<li><strong>乡村振兴</strong>：政策主题标签。业务确实属于农业，一号文件也点名天然橡胶，但没有能单独拆出来的对应营收（置信度：中）</li>
+<li><strong>军工</strong>：仅概念标签，未见营收佐证。天然橡胶是战略物资，但公司没有军品业务披露（置信度：中）</li>
+<li><strong>可降解塑料</strong>：仅概念标签，未见营收佐证（置信度：中）</li>
+<li><strong>碳中和</strong>：仅概念标签，未见营收佐证（胶林碳汇没有看到收入披露）（置信度：中）</li>
+<li><strong>中证500成份股 / 沪股通 / 融资融券</strong>：指数成分与交易资格标签，和业务无关（置信度：高）</li>
+</ul>
+<p><strong>产业链位置</strong></p>
+<ul>
+<li><strong>上游</strong>：自有胶园（受气候、台风、树龄影响）；外购原料（向民营胶农和海外产区收购胶水、杯胶）</li>
+<li><strong>本公司</strong>：种植 + 初加工 + 贸易，是<strong>天然橡胶的供给方</strong></li>
+<li><strong>下游</strong>：轮胎厂（占天然橡胶消费的大头）、乳胶制品等。2026 年以来米其林、普利司通、中策橡胶、赛轮轮胎等密集提价，幅度普遍在 2%–5%（<a href="https://news.qq.com/rain/a/20260903A0AT1E00" target="_blank" rel="noopener">证券时报 e 公司 2026-09-03</a>，<a href="https://www.21jingji.com/article/20260904/herald/cc19c4b580e168649cc1f4f978616ead.html" target="_blank" rel="noopener">新华财经 2026-09-04</a>；两篇措辞一致，可能来自同一底稿），说明下游在把成本往终端转嫁（置信度：中）</li>
+<li><strong>议价能力</strong>：天然橡胶按上海期货交易所和新加坡交易所的期货定价，公司是价格接受者。自有胶园的产出在胶价上涨时直接受益；外购原料加工贸易环节则两头受压——胶价上涨时原料收购成本同步上升，公司半年度业绩预告已明确这一点（置信度：高）</li>
+</ul>
+<p><strong>产业链景气（联网）</strong></p>
+<ul>
+<li>胶价：9 月初国内天然橡胶现货站上 17900 元/吨，比年初上涨约 14%，为近两年高位；沪胶主力合约 9 月 3 日一度突破 18800 元/吨（证券时报 e 公司 2026-09-03、新华财经 2026-09-04，见上）。9 月 24 日天然橡胶期货再涨超 2%，20 号胶涨超 4%，原因是丁二烯成本上升（合成橡胶原料）、库存下降、原油反弹；同一篇文章也提示「下游轮胎开工受双节影响边际走弱」（<a href="https://m.21jingji.com/article/20260924/herald/e3ee7e218d7bd3fa4f7f9d80b5a79813.html" target="_blank" rel="noopener">21 财经 2026-09-24</a>，单源未交叉验证·置信度低）</li>
+<li>供需：ANRPC（天然橡胶生产国协会）预计 2026 年全球供不应求，但缺口大小各来源说法不一——<a href="https://news.10jqka.com.cn/20260830/c679417960.shtml" target="_blank" rel="noopener">证券之星 2026-08-30</a> 引用约 10 万吨，证券时报 e 公司 9-03 引用约 28 万吨。方向一致，数字冲突（见 M 节）；上半年全球产量同比下降 2.3%（证券之星 2026-08-30，单源·置信度低）</li>
+<li>合成橡胶替代：丁二烯供应紧张，推高合成橡胶价格，部分需求转向天然橡胶（21 财经 9-24；新华财经 9-04）（置信度：中）</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<p><strong>热点方向</strong>：返回为空，这里不写。</p>
+<p><strong>个股新闻（库内新闻近 60 天，按重要性排序）</strong></p>
+<ol>
+<li><strong>2026-09-15 股票交易异常波动公告</strong>（2026-043）：9 月 10 日、11 日、14 日连续 3 个交易日收盘价跌幅偏离值累计超过 20%。公司自查并问询控股股东，确认日常经营正常，不存在应披露而未披露的重大事项，也没有重组、股份发行、引入战略投资者等事项。<strong>对基本面没有实质影响，但说明此前的上涨主要来自题材情绪，这次下跌也不是公司基本面变化引起的</strong>（置信度：高）</li>
+<li><strong>2026-09-05 收到橡胶收入保险赔款及征地青苗补偿款</strong>（2026-042）：收入保险赔款 3856.15 万元（2026 年 5 月胶价波动触发），计入其他收益；G98 环岛高速大三亚段扩容等征地项目的青苗补偿款 2848.59 万元，计入营业外收入。两项合计约 0.67 亿元（据公告两项相加推算），预计在三季度确认，最终以审计结果为准。<strong>对三季度利润有实质补充，但属于一次性或政策性收入</strong>（置信度：高）</li>
+<li><strong>2026-09-17 第三次临时股东会决议</strong>（2026-044）：审议续聘会计师事务所、修订部分公司制度、修订《股东会网络投票实施细则》、修订《募集资金管理办法》四项议案，全部通过，出席股东代表 64.99% 的表决权。<strong>常规治理事项，没有基本面影响</strong>（置信度：高）</li>
+<li><strong>农业板块先涨后跌（财联社）</strong>：9 月 8 日「农业板块再度拉升」（当时金健米业曾 17 天 9 板）；9 月 10 日「农业板块震荡回落，中粮糖业触及跌停」；9 月 11 日「农业板块延续调整，新赛股份触及跌停」。海南橡胶 9 月 10 日起的连续下跌和整个农业板块同步。<strong>这是板块情绪变化，不是公司基本面变化</strong>（置信度：中）</li>
+<li><strong>2026-09-07 东方财富</strong>：六部门加码粮食主产区补偿、厄尔尼诺「超强」预警，粮食 ETF 当时曾涨超 2.7%。<strong>说明厄尔尼诺是这轮农业题材的主要叙事；和天然橡胶的直接关系在于主产区干旱减产</strong>（置信度：中）</li>
+<li>9 月 10 日财联社「人气板块及个股点评」「连板股分析」两条命中本票，库内只有标题、没有正文，不知道具体内容（见 M 节）。</li>
+</ol>
+<p><strong>涨停史（库内涨停记录近 180 天）</strong>：只有 1 次——<strong>2026-08-20 涨停</strong>，涨幅 9.93%，首板（1/1），首次封板 10:17:29，最后封板 13:33:50，期间打开 2 次，封单 1.27 亿元，行业标签「种植业」。封板后两次打开、盘中才封住，说明当天分歧不小（置信度：中）</p>
+<p><strong>资金与筹码（库内资金筹码）</strong></p>
+<ul>
+<li>资金流：2026-08-28 至 09-24 共 20 个交易日，全部资金合计净流出 3.98 亿元，其中特大单合计净流入 0.23 亿元；净流入为正的只有 8 天，净流出 12 天。整体看，9 月题材回落期间资金以流出为主（置信度：高）</li>
+<li>筹码数据：库内仅覆盖关注票，该票暂无</li>
+<li>股东户数：截至 2026-06-30 为 97198 户；库内没有上一期数据，算不出环比。季度数据天然滞后，也反映不了 8–9 月题材行情期间的筹码变化（置信度：高）</li>
+<li>⚠️ 以上资金和筹码都是盘面现象，不是基本面证据，只作情绪面参考。</li>
+</ul>
+<h2>I. 未来 13 周事件日历</h2>
+<p>库内事件日历（120 天）返回为空，下表由联网信息和库内历史披露日期补齐：</p>
+<ul>
+<li><strong>W1（2026-09-28 起）</strong>：9-28 中秋后开市；9-30 为国庆前最后一个交易日 · 交易日历 · 重要性中 · 影响：节前一般有资金减仓；21 财经 9-24 提示下游轮胎开工受双节影响会边际走弱</li>
+<li><strong>W2（2026-10-05 起）</strong>：10-1 至 10-7 国庆休市，10-8 开市；10-10（周六）不交易（上交所公告）· 交易日历 · 重要性中 · 影响：国庆 7 天里境外橡胶期货照常交易，节后首个交易日会集中反映这段时间的胶价变化（置信度：中）</li>
+<li><strong>W3（2026-10-12 起）</strong>：本周无已知事件（处在国家海洋环境预报中心判断的 10–12 月厄尔尼诺峰值窗口内，留意主产区天气）</li>
+<li><strong>W4（2026-10-19 起）</strong>：本周无已知事件</li>
+<li><strong>W5（2026-10-26 起）</strong>：2026 年三季报 · 财报 · 重要性高 · 按规定最晚 10-31 披露（去年三季报在 2025-10-31 披露，库内披露日期；今年的预约日期没查到）· 影响：验证 C 节「二季度单季扭亏为盈」能否延续，以及约 0.67 亿元一次性收入入账后扣非净利润是否仍为亏损</li>
+<li><strong>W6（2026-11-02 起）</strong>：本周无已知事件</li>
+<li><strong>W7（2026-11-09 起）</strong>：本周无已知事件</li>
+<li><strong>W8（2026-11-16 起）</strong>：厄尔尼诺峰值窗口（<a href="https://news.10jqka.com.cn/20260830/c679417960.shtml" target="_blank" rel="noopener">证券之星 2026-08-30</a> 称「11 月前后」）· 外部气候事件 · 重要性中 · 影响：东南亚旺产季的实际产量是否低于预期，决定胶价能不能守住高位</li>
+<li><strong>W9（2026-11-23 起）</strong>：本周无已知事件</li>
+<li><strong>W10（2026-11-30 起）</strong>：本周无已知事件</li>
+<li><strong>W11（2026-12-07 起）</strong>：中央经济工作会议往年在 12 月中旬召开（今年日期未公布）· 政策 · 重要性低 · 影响：农业和大宗商品方面的政策方向（置信度：低）</li>
+<li><strong>W12（2026-12-14 起）</strong>：本周无已知事件</li>
+<li><strong>W13（2026-12-21 起）</strong>：本周无已知事件；紧接着 12-30（W14）是 EUDR 对大中型运营商的生效日 · 政策 · 重要性中 · 影响：合规胶溢价能否回升</li>
+</ul>
+<h2>J. 逻辑链</h2>
+<ol>
+<li><strong>事实 1</strong>：天然橡胶现货 9 月初比年初涨约 14%，处于近两年高位（两个媒体来源，措辞相同，可能同一底稿）→ 置信度：中</li>
+<li><strong>事实 2</strong>：据库内累计值推算，二季度单季归母净利润约 +208 万元（扭亏为盈），单季毛利率约 4.5%，是近四期最好 → 置信度：高</li>
+<li><strong>事实 3</strong>：季节性。据库内累计值推算，2025 年四季度单季盈利约 1.72 亿元，下半年合计约 +0.73 亿元，都好于上半年 → 置信度：高</li>
+<li><strong>推论</strong>：因为胶价比上半年明显高，而下半年是割胶旺季，所以 2026 年下半年单季盈利应该延续，并比 2025 年下半年更好 → 置信度：中</li>
+<li><strong>反向约束（事实 4）</strong>：公司半年度业绩预告原文——干旱导致「原料收购竞争加剧推高采购成本，公司橡胶产品毛利下降」。也就是说，厄尔尼诺减产在推高胶价的同时，也在推高公司的收购成本 → 置信度：高</li>
+<li><strong>可观察的现象</strong>：推论成立的话，三季报应该出现：① 三季度单季归母净利润为正，且扣掉约 0.67 亿元保险赔款和青苗补偿款后仍为正；② 单季毛利率不低于二季度的约 4.5%；③ 前三季度资产负债率不再上升（不超过 71.20% 这一近四期高点）</li>
+<li><strong>和卖方预测的差距</strong>：国盛证券预测 2026 年全年归母净利润 1.96 亿元（卖方预期，见下）。据此推算，下半年要赚约 3.26 亿元，是 2025 年下半年约 0.73 亿元的 4 倍多 → 本报告认为这个预测偏乐观，置信度：低</li>
+</ol>
+<p><strong>最弱的一环</strong>：第 4 步到第 5 步之间的「胶价上涨 → 公司利润增加」。这一环的强弱取决于自产胶占销售量的比例，但库内没有分业务数据，联网也只找到自媒体口径。如果自产胶占比低，胶价上涨带来的收益会被加工贸易环节的采购成本上升抵掉大半——上半年毛利率只有 3.38%，就是这个原因的直接体现。</p>
+<p><strong>机构观点（卖方预期·都不是事实）</strong></p>
+<ul>
+<li>〔卖方预期〕来源：国盛证券研报（库内）· 日期：2026-09-24 · 观点：预计 2026/2027/2028 年归母净利润 1.96/7.06/8.30 亿元，每股收益 0.05/0.16/0.19 元，对应市盈率 145.5/40.4/34.3 倍；给出其评级体系中最正面的一档 · 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：国信证券研报（库内）· 日期：2026-08-31 · 观点：预计 2026/2027 年每股收益 0.06/0.11 元，对应市盈率 108.0/59.0 倍（库内无净利润和评级字段；按总股本 427942.78 万股推算，2026 年净利润约 2.57 亿元）· 置信度：低（卖方预期非事实，未经交叉验证）</li>
+<li>〔卖方预期〕来源：国信证券行业报告（联网，<a href="https://finance.sina.com.cn/stock/hkstock/ggscyd/2026-01-27/doc-inhitszt7513165.shtml" target="_blank" rel="noopener">新浪财经转载</a>）· 日期：2026-01-27 · 观点：2026 年天然橡胶价格预计「易涨难跌」，理由是合成橡胶涨价、新季增产乏力、长期产能瓶颈 · 置信度：低（卖方预期非事实）</li>
+<li>库内近 90 天共 2 家机构、2 篇研报，评级有值的只有 1 家。样本很少，不代表市场共识。</li>
+</ul>
+<h2>K. 三情景推演（未来 13 周）</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜触发：10-31 前的三季报显示，三季度单季归母净利润扣除已公告的约 0.67 亿元一次性收入后仍为正、单季毛利率高于二季度的约 4.5%；同时沪胶主力合约没有比 9 月初高点回落超过 10%，ANRPC 月报显示主产国产量继续同比下降｜路径：市场按胶价上涨周期给盈利修复定价，农业题材以外的资金开始关注，股价重新站上 MA60 并守住</li>
+<li><strong>中性（45%）</strong>｜触发：三季度单季小幅盈利，但主要靠保险赔款和青苗补偿款，扣非净利润仍亏；胶价在近两年高位附近来回波动｜路径：股价在 MA20 和 MA60 之间反复，跟着胶价和农业板块情绪涨跌，没有持续方向</li>
+<li><strong>悲观（30%）</strong>｜触发：三季度单季归母净利润为负；或沪胶主力合约比 9 月初高点回落超过 10%（厄尔尼诺减产没有兑现）；或海南、东南亚产区出现台风等灾害，公司公告胶园受损｜路径：题材资金继续撤出，股价回到 8-20 涨停前的起涨位置附近，市场重新按亏损企业给它定价</li>
+</ul>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong></p>
+<ol>
+<li>如果 10-31 前披露的三季报显示三季度单季归母净利润为正，扣掉已公告的保险赔款和青苗补偿款（合计约 0.67 亿元）后仍为正，并且单季毛利率不低于二季度的约 4.5%（推算值），那么<strong>试仓</strong>（轻仓）（置信度：中）</li>
+<li>如果三季报显示三季度单季归母净利润为负，或前三季度资产负债率高于一季度的 71.20%，那么<strong>回避</strong>（置信度：中）</li>
+<li>如果三季报出来之前，股价在没有新公告的情况下只靠农业或厄尔尼诺题材放量站上 MA60，那么<strong>观望</strong>，不追涨——9 月中旬已经发生过一次题材推动的上涨后连续三天大幅下跌、触发异常波动（置信度：中）</li>
+<li>如果股价跌破 MA60，同时沪胶主力合约比 9 月初高点回落超过 10%，那么已持有者<strong>减仓</strong>（置信度：中）</li>
+</ol>
+<p><strong>这份判断在什么情况下应当被推翻</strong></p>
+<ul>
+<li>公司披露分业务数据（例如年报或投资者交流），显示自产胶收入占比明显高于市场印象 → 胶价上涨给利润带来的弹性应上调，「震荡」判断要改</li>
+<li>胶价比 9 月初高点回落超过 10%，或 ANRPC 月报显示主产国产量恢复同比增长 → 支撑逻辑失效</li>
+<li>公司公告台风、病害导致胶园大面积受损（参照：2024 年台风「摩羯」使公司约 23 万亩胶园报废、全年干胶减产约 1.8 万吨，<a href="https://www.stcn.com/article/detail/1318632.html" target="_blank" rel="noopener">证券时报</a>、<a href="https://news.qq.com/rain/a/20240912A09NQN00" target="_blank" rel="noopener">腾讯新闻 2024-09-12</a>）→ 转为悲观情景</li>
+<li>短期借款继续上升、财务费用继续大幅增加 → 负债压力会反过来拖累利润</li>
+</ul>
+<p><strong>仓位思路</strong>：轻仓或不参与。原因：主业扣非净利润仍为亏损，股价受题材情绪影响大，最关键的验证点（三季报）在 5 周以后。</p>
+<h2>M. 逻辑自查</h2>
+<p><strong>这份判断最依赖的假设</strong>：胶价会大致守在近两年高位附近。如果厄尔尼诺减产没有兑现，胶价回落，那么乐观情景的前提就不存在，中性和悲观情景的合计概率要从 75% 往上调。</p>
+<p><strong>有没有为了让逻辑好看而忽略的反面证据</strong></p>
+<ul>
+<li>正面：二季度扭亏为盈的金额只有约 208 万元，放在季度营收 85.84 亿元里几乎就是盈亏平衡，不能当作盈利修复已经确立的证据。本报告把它写成「刚好扭亏」，没有写成「开始修复」。</li>
+<li>反面：公司自己在 7 月的业绩预告里说「价格仍处于周期性的底部」，这和 9 月初媒体报道的「近两年高位」看起来矛盾。实际是时间点不同：前者说的是上半年，后者说的是 9 月初。这说明三季度的胶价环境确实比上半年好，是一条对乐观情景有利、但本报告在 A 节没有单独强调的证据。</li>
+<li>反面：库内四个季度里只有 2025 年四季度一个季度盈利超过 1 亿元，说明季节性确实存在。本报告只用它来论证「下半年好于上半年」，没有用它推算全年会盈利。</li>
+</ul>
+<p><strong>信息缺口清单</strong></p>
+<ol>
+<li><strong>三季报还没出</strong>：库内财务最新期是 2026-06-30。影响：C 节和 J 节的核心判断都要等三季报验证。补法：三季报披露后（W5，最晚 10-31）重跑本调研。</li>
+<li><strong>没有分业务数据</strong>：库内没有种植、加工、贸易的分业务收入与毛利，也没有自产干胶产量和单吨成本；联网只见自媒体口径（自产产能、单吨固定成本等），未采用。影响：J 节最弱的一环无法量化。补法：查 2025 年年报和 2026 年半年报原文的分行业营收与毛利表。</li>
+<li><strong>事件日历为空</strong>：库内事件日历返回空，三季报预约披露日期没查到。影响：W5 的具体日期只能写「最晚 10-31」。补法：上交所定期报告预约披露表。</li>
+<li><strong>没有筹码数据</strong>：库内筹码只覆盖关注票；股东户数只有 2026-06-30 一期，算不出环比。影响：H 节情绪面判断只能依靠资金流。</li>
+<li><strong>ANRPC 供需缺口数字不一致</strong>：约 10 万吨（证券之星 8-30）和约 28 万吨（证券时报 e 公司 9-03 / 新华财经 9-04）冲突，还有其他来源称约 40 万吨。方向一致，幅度未定。影响：乐观情景对胶价的支撑力度没法精确判断。补法：直接查 ANRPC 官方月报。</li>
+<li><strong>半年报现金流和负债细项只有单一来源</strong>：经营现金流 −51.9%、财务费用 +40.55%、有息负债 167.80 亿元都来自凤凰网财经 9-23 一篇报道，未交叉验证；库内财务没有这些字段。补法：查半年报原文的现金流量表和财务费用附注。</li>
+<li><strong>2026 年 9 月台风对海南胶园的影响</strong>：本次没有检索到相关报道，不代表没有发生。补法：留意公司灾害类公告。</li>
+<li><strong>自贸港政策给公司带来的具体收益</strong>：公司没有单独披露。</li>
+<li><strong>库内新闻只有标题</strong>：9 月 10 日两条财联社稿件（人气板块点评、连板股分析）没有正文，不知道对本票说了什么。影响：小。</li>
+<li><strong>同行对比不可比</strong>：库内同业对比返回的是橡胶材料和制品公司，不是天然橡胶种植加工企业，D 节横向对比参考价值有限。补法：手动选中化国际等天然橡胶业务可比公司比较。</li>
+<li><strong>国信证券库内预测字段不全</strong>：没有净利润和评级；联网还看到过「国信预测 2026 年净利润 2.39 亿元」「中泰预测 5.03 亿元」这类说法，出处不明，未采用。</li>
+</ol>
+<p><strong>来源</strong></p>
+<ul>
+<li>公司公告：<a href="http://static.cninfo.com.cn/finalpage/2026-09-15/1225564126.PDF" target="_blank" rel="noopener">2026-043 异常波动公告</a>、<a href="http://static.cninfo.com.cn/finalpage/2026-09-05/1225548359.PDF" target="_blank" rel="noopener">2026-042 保险赔款及青苗补偿款公告</a>、<a href="http://static.cninfo.com.cn/finalpage/2026-09-18/1225570550.PDF" target="_blank" rel="noopener">2026-044 临时股东会决议</a>、<a href="http://dataclouds.cninfo.com.cn/shgonggao/hsomarket/2026/20260714/fceef4d1e0894818a71cd808a6a8b880.PDF" target="_blank" rel="noopener">2026-036 半年度业绩预告</a></li>
+<li>休市安排：<a href="http://big5.sse.com.cn/site/cht/www.sse.com.cn/disclosure/announcement/general/c/c_20260915_10832273.shtml" target="_blank" rel="noopener">上交所 2026-09-15</a>、<a href="https://finance.sina.com.cn/roll/2026-09-17/doc-iniscqxz3581962.shtml" target="_blank" rel="noopener">新浪财经 2026-09-17</a></li>
+<li>厄尔尼诺：<a href="https://www.news.cn/tech/20260418/b3b60a2427cc4c54b6a65afb90736b2b/c.html" target="_blank" rel="noopener">新华网 2026-04-18（国家气候中心预测）</a>、<a href="https://k.sina.cn/article_7879995911_1d5af320706802a98w.html" target="_blank" rel="noopener">新浪 · 国家海洋环境预报中心 7-14 判断</a>、<a href="https://news.qq.com/rain/a/20260625A01LMF00" target="_blank" rel="noopener">腾讯新闻 2026-06-25（多国机构预警）</a></li>
+<li>胶价与供需：<a href="https://news.qq.com/rain/a/20260903A0AT1E00" target="_blank" rel="noopener">证券时报 e 公司 2026-09-03</a>、<a href="https://www.21jingji.com/article/20260904/herald/cc19c4b580e168649cc1f4f978616ead.html" target="_blank" rel="noopener">新华财经 2026-09-04</a>、<a href="https://m.21jingji.com/article/20260924/herald/e3ee7e218d7bd3fa4f7f9d80b5a79813.html" target="_blank" rel="noopener">21 财经 2026-09-24</a>、<a href="https://news.10jqka.com.cn/20260830/c679417960.shtml" target="_blank" rel="noopener">证券之星 2026-08-30</a></li>
+<li>财务补充：<a href="https://news.qq.com/rain/a/20260829A03CRA00" target="_blank" rel="noopener">证券之星 2026-08-29</a>、<a href="http://stock.10jqka.com.cn/20260923/c680229866.shtml" target="_blank" rel="noopener">凤凰网财经 2026-09-23</a>、<a href="https://news.qq.com/rain/a/20260827A0AGDP00" target="_blank" rel="noopener">腾讯新闻 2026-08-27</a></li>
+<li>政策：<a href="https://www.ccdi.gov.cn/toutun/202602/t20260203_473514_m.html" target="_blank" rel="noopener">中纪委网站 2026-02-03</a>、<a href="https://nync.yn.gov.cn/html/2026/yunnongkuanxun-new_0415/1425603.html" target="_blank" rel="noopener">云南省农业农村厅 2026-04-15</a>、<a href="http://jrs.mof.gov.cn/zhengcefabu/phjr/202312/t20231211_3921121.htm" target="_blank" rel="noopener">财政部天然橡胶综合保险通知</a>、<a href="https://www.chinanews.com.cn/cj/2026/07-11/10657594.shtml" target="_blank" rel="noopener">中新网 2026-07-11</a>、<a href="http://hi.people.com.cn/n2/2026/0712/c231190-41636377.html" target="_blank" rel="noopener">人民网海南 2026-07-12</a>、<a href="https://www.cria.org.cn/a/2053016728972136449" target="_blank" rel="noopener">中国橡胶工业协会 2026-05-09</a>、<a href="https://www.cirs-sustainability.com/ou-meng-ling-hui-lin-fa-an-que-ren-zai-ci-yan-qi" target="_blank" rel="noopener">瑞旭集团 CIRS</a></li>
+<li>历史台风：<a href="https://www.stcn.com/article/detail/1318632.html" target="_blank" rel="noopener">证券时报</a>、<a href="https://news.qq.com/rain/a/20240912A09NQN00" target="_blank" rel="noopener">腾讯新闻 2024-09-12</a></li>
+<li>卖方观点：<a href="https://finance.sina.com.cn/stock/hkstock/ggscyd/2026-01-27/doc-inhitszt7513165.shtml" target="_blank" rel="noopener">新浪财经 2026-01-27</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-25），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>毛利率仅3.38%，干旱推高收购成本</li>
+      <li>负债率70.69%，财务费用增四成</li>
+      <li>农业题材资金撤出，股价波动大</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>扣非净利</dt><dd>扣除非经常性损益后的净利润。剔除卖资产、政府补助、公允价值变动等一次性项目，更接近主业真实盈利。</dd><dt>非经常性损益</dt><dd>与主营业务无关、偶发的收益或损失，如处置资产、政府补助、金融资产公允价值变动。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>经营现金流</dt><dd>经营活动产生的现金流量净额。利润是账面数，这个是真金白银进出。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>业绩预告</dt><dd>上市公司在正式财报前发布的盈利区间预告，达到规定变动幅度时强制披露。</dd><dt>中报</dt><dd>半年度报告。法定披露截止日为 8 月 31 日。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://big5.sse.com.cn/site/cht/www.sse.com.cn/disclosure/announcement/general/c/c_20260915_10832273.shtml" target="_blank" rel="noopener">上交所休市公告</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260829A03CRA00" target="_blank" rel="noopener">证券之星 2026-08-29 中报简析</a> <em>2026-08-29</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="http://stock.10jqka.com.cn/20260923/c680229866.shtml" target="_blank" rel="noopener">凤凰网财经 2026-09-23（同花顺转载）</a> <em>2026-09-23</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260827A0AGDP00" target="_blank" rel="noopener">腾讯新闻 2026-08-27 半年报报道</a> <em>2026-08-27</em></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.ccdi.gov.cn/toutun/202602/t20260203_473514_m.html" target="_blank" rel="noopener">中纪委网站 2026-02-03</a> <em>2026-02-03</em></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://nync.yn.gov.cn/html/2026/yunnongkuanxun-new_0415/1425603.html" target="_blank" rel="noopener">云南省农业农村厅 2026-04-15</a> <em>2026-04-15</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://hainan.sina.cn/news/zh/2026-04-15/detail-inhupvfk3645450.d.html?vt=4&amp;cid=56310&amp;node_id=56310" target="_blank" rel="noopener">新浪海南 2026-04-15 同文转载</a> <em>2026-04-15</em></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="http://jrs.mof.gov.cn/zhengcefabu/phjr/202312/t20231211_3921121.htm" target="_blank" rel="noopener">财政部金融司</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.chinanews.com.cn/cj/2026/07-11/10657594.shtml" target="_blank" rel="noopener">中新网 2026-07-11</a> <em>2026-07-11</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="http://hi.people.com.cn/n2/2026/0712/c231190-41636377.html" target="_blank" rel="noopener">人民网海南 2026-07-12</a> <em>2026-07-12</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cirs-sustainability.com/ou-meng-ling-hui-lin-fa-an-que-ren-zai-ci-yan-qi" target="_blank" rel="noopener">瑞旭集团 CIRS</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.cria.org.cn/a/2053016728972136449" target="_blank" rel="noopener">中国橡胶工业协会 2026-05-09</a> <em>2026-05-09</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260903A0AT1E00" target="_blank" rel="noopener">证券时报 e 公司 2026-09-03</a> <em>2026-09-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.21jingji.com/article/20260904/herald/cc19c4b580e168649cc1f4f978616ead.html" target="_blank" rel="noopener">新华财经 2026-09-04</a> <em>2026-09-04</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.21jingji.com/article/20260924/herald/e3ee7e218d7bd3fa4f7f9d80b5a79813.html" target="_blank" rel="noopener">21 财经 2026-09-24</a> <em>2026-09-24</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.10jqka.com.cn/20260830/c679417960.shtml" target="_blank" rel="noopener">证券之星 2026-08-30</a> <em>2026-08-30</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/stock/hkstock/ggscyd/2026-01-27/doc-inhitszt7513165.shtml" target="_blank" rel="noopener">新浪财经转载</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.stcn.com/article/detail/1318632.html" target="_blank" rel="noopener">证券时报</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20240912A09NQN00" target="_blank" rel="noopener">腾讯新闻 2024-09-12</a> <em>2024-09-12</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://static.cninfo.com.cn/finalpage/2026-09-15/1225564126.PDF" target="_blank" rel="noopener">2026-043 异常波动公告</a> <em>2026-04</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://static.cninfo.com.cn/finalpage/2026-09-05/1225548359.PDF" target="_blank" rel="noopener">2026-042 保险赔款及青苗补偿款公告</a> <em>2026-04</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://static.cninfo.com.cn/finalpage/2026-09-18/1225570550.PDF" target="_blank" rel="noopener">2026-044 临时股东会决议</a> <em>2026-04</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://dataclouds.cninfo.com.cn/shgonggao/hsomarket/2026/20260714/fceef4d1e0894818a71cd808a6a8b880.PDF" target="_blank" rel="noopener">2026-036 半年度业绩预告</a> <em>2026-03</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/roll/2026-09-17/doc-iniscqxz3581962.shtml" target="_blank" rel="noopener">新浪财经 2026-09-17</a> <em>2026-09-17</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.news.cn/tech/20260418/b3b60a2427cc4c54b6a65afb90736b2b/c.html" target="_blank" rel="noopener">新华网 2026-04-18（国家气候中心预测）</a> <em>2026-04-18</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://k.sina.cn/article_7879995911_1d5af320706802a98w.html" target="_blank" rel="noopener">新浪 · 国家海洋环境预报中心 7-14 判断</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260625A01LMF00" target="_blank" rel="noopener">腾讯新闻 2026-06-25（多国机构预警）</a> <em>2026-06-25</em></li>
+      <li><span class="src-tag src-disc">披露</span> 据公司 2026-09-15 异常波动公告，编号 2026-043 <em>2026-09-15</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 公司公告 2026-042 <em>2026-04</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 证券时报 e 公司 2026-09-03、新华财经 2026-09-04，见上 <em>2026-09-03</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 证券之星 2026-08-30，单源·置信度低 <em>2026-08-30</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-disc">披露</span> 去年三季报在 2025-10-31 披露，库内披露日期 <em>2025-10-31</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 今年的预约日期没查到 — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-25 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
