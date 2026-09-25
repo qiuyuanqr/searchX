@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>中粮糖业（600737.SH） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>中粮糖业（600737.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-09-25（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 农产品加工</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 农业种植 · 中字头股票 · 新疆振兴</span>
+      <span><b>来源</b> 29 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    中粮糖业（600737）是一家 A 股上市公司。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。眼下的处境一句话说完——上半年营收同比下降 21%，净利润同比增长 37%；国际糖价上涨，但国内库存偏高，国内糖价涨幅有限。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度中：上半年营收同比下降 21%，净利润同比增长 37%；国际糖价上涨，但国内库存偏高，国内糖价涨幅有限。支撑在于上半年净利润同比增36.75%；厄尔尼诺推高国际原糖价格；生产许可新规限制预混粉制糖。主要风险是国内库存高且新榨季预计增产；进口原糖成本上升压缩炼糖利润；营收连续四期同比下降。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>上半年净利润同比增36.75%</li>
+      <li>厄尔尼诺推高国际原糖价格</li>
+      <li>生产许可新规限制预混粉制糖</li>
+    </ul>
+  </div>
+
+  <main>
+    <div class="callout">调研日期：2026-09-25（中秋节，A 股休市）｜行情时点：最近一个交易日 9 月 24 日收盘（库内行情数据时点 15:34）｜估值与资金数据截至 2026-09-24｜最新财报：2026 年半年报（8 月 28 日披露） 这份报告只整理事实和判断依据，不构成任何买卖建议。</div>
+<h2>A. 结论先行</h2>
+<p><strong>方向</strong>：震荡（置信度：中） <strong>一句话逻辑</strong>：上半年营收同比下降 21%，净利润同比增长 37%；国际糖价上涨，但国内库存偏高，国内糖价涨幅有限。</p>
+<p><strong>核心驱动（Top 3）</strong></p>
+<ol>
+<li><strong>上半年营收下降、净利润增长</strong>：2026 年上半年营收 92.77 亿元，同比下降 21.16%；归母净利润 6.08 亿元，同比增长 36.75%。毛利率从 2025 年全年的 11.41% 升到 14.59%，二季度单季净利润约 3.92 亿元，同比增长约 46%（据库内财务推算）（置信度：高）</li>
+<li><strong>厄尔尼诺带来的减产预期推高了国际糖价</strong>：ICE 原糖主力合约从 8 月初的 14.65 美分/磅涨到 9 月 10 日的 19.69 美分/磅，涨了 34%。泰国、印度两个产糖国都下调了产量预估（腾讯新闻 2026-09-11 等多个来源）（置信度：中）</li>
+<li><strong>食糖生产许可新规在征求意见</strong>：市场监管总局 9 月 16 日发布征求意见稿，规定生产食糖不得以预混粉、复配糖浆为原料，食糖中不得添加淀粉糖，意见截止 10 月 16 日。这会压缩「预混粉再加工成糖」的渠道，对正规制糖和炼糖企业有利（置信度：中）</li>
+</ol>
+<p><strong>核心风险（Top 3）</strong></p>
+<ol>
+<li><strong>国内库存偏高，新榨季还预计增产</strong>：截至 8 月底，广西工业库存 149.61 万吨，同比增加 78.74 万吨。有分析认为郑糖上涨空间有限（新浪财经 2026-09-07）（置信度：中）</li>
+<li><strong>进口原糖成本上升，可能压缩炼糖利润</strong>：公司是国内最大的食糖进口贸易商之一。国际糖价涨、国内糖价涨不动的时候，进口加工的利润空间会收窄（推论，库内没有分业务利润数据，置信度：低）</li>
+<li><strong>营收连续四期同比下降，估值不低</strong>：营收同比依次为 -10.60%、-18.42%、-14.64%、-21.16%。市盈率（TTM）28.30 倍，略高于食品行业中位数 27.42 倍（置信度：高）</li>
+</ol>
+<p><strong>最该盯的信号</strong>：10 月底前披露的三季报。关键看前三季度归母净利润同比能不能 ≥ +20%（等于三季度单季不低于去年同期的约 3.70 亿元），以及毛利率能不能守在 14% 左右。 <strong>这份判断最可能错在哪</strong>：库内没有「自产糖 / 进口炼糖 / 贸易 / 番茄」的分业务利润。国际糖价上涨对公司到底是好是坏，完全取决于这几块的占比，本报告只能推测。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>做什么</strong>：中粮集团控股的上市公司，主业是食糖，另有番茄加工（库内公司档案）。
+<ul>
+<li>国内有 13 家制糖企业，分布在广西、广东、云南、新疆，年产糖 70 万吨。</li>
+<li>澳大利亚昆士兰州的 Tully 糖业年产原糖 30 万吨。</li>
+<li>两家炼糖厂：曹妃甸年炼糖 50 万吨，营口年炼糖 100 万吨。</li>
+<li>21 个食糖仓储库，总库容 200 万吨。</li>
+<li>食糖贸易年经营量 300 万吨，公司称约占全国消费总量的 20%。</li>
+<li>番茄业务有 16 家工厂，年产能 30 万吨，主要做出口用的大包装番茄酱。</li>
+<li>以上都是公司介绍里的自述数字，披露时间不详（置信度：中）</li>
+</ul></li>
+<li><strong>行业归属</strong>：库内行业是「食品」；涨停记录里的行业是「农产品加工」。</li>
+<li><strong>上市时间</strong>：1996-07-31，已上市约 30 年。员工 5,546 人，注册资本 213,884.82 万元。</li>
+<li><strong>当前行情</strong>（库内行情，最近一个交易日 9 月 24 日收盘）：收盘 14.75 元，当天跌 1.86%，成交额 7.50 亿元。日内最高比前一天收盘高 0.86%，最低低 2.79%。</li>
+<li><strong>估值</strong>（库内估值，2026-09-24）：
+<ul>
+<li>总市值 315.48 亿元，市盈率（TTM）28.30 倍，市净率 2.82 倍，股息率 2.78%，换手率 2.35%。</li>
+<li>食品行业在市 92 只。在市盈率为正的同行里，它由低到高排第 38 名；这些同行的市盈率中位数是 27.42 倍。</li>
+<li>所以按市盈率看，它略贵于行业中位数（这只是估值上的比较，不代表公司好坏）（置信度：高）</li>
+</ul></li>
+<li>最近 12 个月归母净利润约 11.15 亿元（据库内财务推算：2025 年全年 9.51 亿 − 2025 年上半年约 4.45 亿 + 2026 年上半年 6.08 亿），和 28.30 倍市盈率对得上。</li>
+</ul>
+<h2>C. 财务健康</h2>
+<p>近四期数据（库内财务，都是年初到当期末的累计数）：</p>
+<ul>
+<li><strong>2026 年上半年</strong>（8-28 披露）：营收 92.77 亿（同比 -21.16%）· 净利润 6.08 亿（同比 +36.75%）· 毛利率 14.59% · 净利率 6.65% · ROE 5.38% · 资产负债率 39.08% · 每股收益 0.2844 元</li>
+<li><strong>2026 年一季度</strong>：营收 43.00 亿（-14.64%）· 净利润 2.16 亿（+22.04%）· 毛利率 10.97% · 净利率 5.21% · ROE 1.87% · 资产负债率 46.00%</li>
+<li><strong>2025 年全年</strong>：营收 265.11 亿（-18.42%）· 净利润 9.51 亿（-44.48%）· 毛利率 11.41% · 净利率 3.61% · ROE 8.29% · 资产负债率 44.14%</li>
+<li><strong>2025 年前三季度</strong>：营收 203.05 亿（-10.60%）· 净利润 8.15 亿（-29.86%）· 毛利率 8.55% · 净利率 4.08% · ROE 7.15% · 资产负债率 45.45%</li>
+</ul>
+<p><strong>变化趋势</strong></p>
+<ol>
+<li><strong>净利润由降转增，增速在加快</strong>：2025 年全年净利润同比下降 44.48%；2026 年一季度转为增长 22.04%，上半年增长 36.75%（置信度：高）</li>
+<li><strong>单季利润</strong>（据累计数推算，置信度：高）：
+<ul>
+<li>2025 年三季度约 3.70 亿元；四季度约 1.36 亿元，是近几个季度最低。</li>
+<li>2026 年一季度 2.16 亿元；二季度约 3.92 亿元，比去年二季度的约 2.68 亿元增长约 46%。</li>
+</ul></li>
+<li><strong>营收下降，利润增长</strong>：营收已连续四期同比下降，而且上半年降幅（-21.16%）比一季度（-14.64%）更大。公司的解释是食糖销量和售价都比去年低（半年报，腾讯新闻 2026-09-14 转述）。利润能增长，靠的是成本降得比收入快：糖网转述半年报称，营业成本同比下降 26.42%，降幅大于收入降幅（糖网 2026-08）（置信度：中）</li>
+<li><strong>毛利率明显回升，变化出现在 2025 年四季度</strong>：毛利率从 2025 年前三季度的 8.55% 升到全年的 11.41%，2026 年上半年升到 14.59%。据推算，二季度单季毛利率约 17.7%。上半年毛利约 13.54 亿元（营收 × 毛利率），和糖网转述的「营业收入与营业成本差额从 9.99 亿元增至 13.54 亿元」一致，所以去年同期毛利率约 8.5%，今年同比提高约 6 个百分点（置信度：中）</li>
+<li><strong>资产负债率 6 月末明显下降</strong>：从 3 月末的 46.00% 降到 6 月末的 39.08%，下降约 6.9 个百分点。可能是榨季结束后卖库存、还短期借款的季节性变化，库内没有资产负债表明细，这个原因是推测（置信度：低）</li>
+<li>扣非净利润 5.67 亿元，同比增长 40.70%。这个数来自糖网转述的半年报，库内没有（单一来源，置信度：中）</li>
+</ol>
+<p><strong>信息缺口</strong>：库内没有分业务（自产糖 / 进口炼糖 / 贸易 / 番茄）的营收和利润。影响：没法判断毛利率回升是靠成本管理，还是靠国内外糖价差带来的一次性收益，也就判断不了下半年能不能持续。补法：看三季报和年报的分业务披露。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>库内同业对比按市值取了同属「食品」行业的三家公司（都不是糖业公司，只能看估值高低）：</p>
+<ul>
+<li>海天味业（603288）· 市值 1985.26 亿 · 市盈率 27.13 · 市净率 5.08 · 上半年营收 161.46 亿 · 净利润 41.90 亿 · ROE 10.42%</li>
+<li>金龙鱼（300999）· 市值 1331.00 亿 · 市盈率 36.05 · 市净率 1.37 · 上半年营收 1228.52 亿 · 净利润 22.94 亿 · ROE 2.37%</li>
+<li>双汇发展（000895）· 市值 803.11 亿 · 市盈率 15.79 · 市净率 3.84 · 上半年营收 281.84 亿 · 净利润 23.06 亿 · ROE 10.91%</li>
+<li><strong>中粮糖业（600737）· 市值 315.48 亿 · 市盈率 28.30 · 市净率 2.82 · 上半年营收 92.77 亿 · 净利润 6.08 亿 · ROE 5.38%</strong></li>
+</ul>
+<p>另外查了库里两家做糖的公司（另行调用库内基础资料 / 库内估值 / 库内财务，2026-09-24）：</p>
+<ul>
+<li>*ST广糖（000911，库内行业「食品」，主营机制糖、酒精、文化用纸等）· 市值 20.46 亿 · 亏损，市盈率为空 · 上半年营收 15.82 亿（+17.39%）· 净利润 -0.16 亿（净利润同比 -275.69%，去年同期是盈利，属于由盈转亏）· 毛利率 9.05% · 资产负债率 100.20%</li>
+<li>粤桂股份（000833，库内行业「综合类」，主营含食糖、纸，也有硫铁矿开采和硫酸、磷肥）· 市值 162.90 亿 · 市盈率 17.93 · 市净率 3.65 · 上半年营收 23.43 亿（+72.37%）· 净利润 6.63 亿（+182.76%）· 毛利率 43.54%。它的高毛利率大概率不是来自糖，没法直接比（置信度：中）</li>
+</ul>
+<p><strong>位置判断</strong></p>
+<ul>
+<li>在「食品」大行业里，中粮糖业的 ROE（5.38%，半年数）和净利率都偏低，市盈率却接近行业中位数。这说明市场给它的估值里已经算进了盈利修复的预期，按估值看不算便宜（置信度：中）</li>
+<li>和同样做广西甘蔗糖的 *ST广糖比，中粮糖业上半年毛利率 14.59%，高于对方的 9.05%。*ST广糖已由盈转亏，资产负债率超过 100%。可以看出，中粮糖业有进口、炼糖、贸易的全产业链，在糖价下行周期里比单纯的制糖厂更能扛（置信度：中）</li>
+</ul>
+<h2>E. 护城河与商业模式</h2>
+<ul>
+<li><strong>结构性护城河（规模和布局）</strong>（置信度：中）：
+<ul>
+<li>国内外合计年产糖约 100 万吨（国内 70 万吨 + Tully 30 万吨）；</li>
+<li>两家港口炼糖厂（曹妃甸、营口）；</li>
+<li>21 个仓储库，总库容 200 万吨；</li>
+<li>年贸易量 300 万吨。</li>
+<li>这些都来自库内公司档案的公司自述。</li>
+<li>食糖进口实行关税配额管理：2026 年配额总量 194.5 万吨，其中 70% 是国营贸易配额，配额外进口关税 50%（商务部公告 2025 年第 64 号，<a href="https://sw.beijing.gov.cn/zwxx/2024zcwj/202510/W020251011615787109423.pdf" target="_blank" rel="noopener">北京市商务局转载</a>；<a href="https://www.yntw.com/2025/10/35379.html" target="_blank" rel="noopener">糖网 2025-10</a>）。进口要靠配额和港口炼糖产能，这提高了新进入者的门槛。</li>
+<li>本报告没有核实公司具体拿到多少配额。</li>
+</ul></li>
+<li><strong>阶段性优势</strong>（置信度：低）：新业务包括药用糖（部分客户已开始商业化供货）和液体糖（客户有蜜雪冰城、沪上阿姨等新茶饮品牌）（糖网 2026-08 转述半年报，单一来源未交叉核实）。库内看不到这两块的营收占比，现在还没法判断它们对利润的贡献。</li>
+<li><strong>没有护城河的部分</strong>（置信度：中）：糖是大宗商品，价格由期货市场定，公司说了不算。番茄酱主要出口大包装原料，同样是随行就市。</li>
+</ul>
+<h2>F. 政策与监管</h2>
+<ol>
+<li><strong>《食糖生产许可审查细则（征求意见稿）》</strong>（市场监管总局，2026-09-16 发布，意见截止 2026-10-16）
+<ul>
+<li>内容：食糖中不得添加淀粉糖；不得以复合糖、复配糖浆或预混粉为原料生产食糖；新增红糖、液体糖等细类。</li>
+<li>来源：<a href="https://news.qq.com/rain/a/20260916A05GY900" target="_blank" rel="noopener">腾讯新闻 2026-09-16</a>、<a href="https://www.yntw.com/2026/09/39189.html" target="_blank" rel="noopener">糖网 2026-09</a></li>
+<li>影响：利好。原来可以把进口的预混粉、糖浆加工成糖来绕开配额，新规会压缩这条渠道，减少对国产糖和配额内进口糖的冲击，对国内糖价和正规制糖、炼糖产能是支撑。</li>
+<li>不确定性：现在只是征求意见稿，最后怎么定、什么时候施行还不知道（置信度：中）</li>
+</ul></li>
+<li><strong>食糖进口关税配额</strong>（2026 年 194.5 万吨，70% 国营贸易，配额外关税 50%，来源同 E 节）
+<ul>
+<li>这是长期不变的制度，决定了国内糖价可以明显高于国际糖价。</li>
+<li>2025 年的做法是 10 月公布下一年的实施细则，10 月 15 日到 30 日受理申请。按这个时间推断，2027 年的细则可能在 10 月前后公布（据往年时间推断，置信度：中）</li>
+</ul></li>
+<li><strong>印度食糖出口政策</strong>
+<ul>
+<li>印度 2026 年 5 月起禁止原糖、白糖、精炼糖出口，期限到 2026-09-30 或另行通知（<a href="https://finance.sina.com.cn/money/future/fmnews/2026-05-19/doc-inhyksxt2391635.shtml" target="_blank" rel="noopener">新浪财经 2026-05-19</a>、<a href="https://m.jrj.com.cn/madapter/futures/2026/08/17112958136201.shtml" target="_blank" rel="noopener">金融界 2026-08-17</a>）。</li>
+<li>印度政府表示，2026/27 榨季（10 月开始）要不要出口现在决定还太早；优先顺序是国内消费、乙醇生产，最后才是出口（<a href="https://www.msweet.com.cn/eportal/ui?pageId=2590581&amp;articleKey=3204816&amp;columnId=2590629" target="_blank" rel="noopener">沐甜科技</a>；<a href="https://finance.sina.com.cn/money/future/2026-06-24/doc-inienpna6337351.shtml" target="_blank" rel="noopener">新浪财经 2026-06-24 转述嘉利高：印度 2026/27 榨季不太可能恢复出口</a>）。</li>
+<li>影响：印度继续不出口，国际糖价就有支撑，这对公司海外产糖（Tully）有利，但会抬高公司进口炼糖的原料成本（置信度：中）</li>
+</ul></li>
+<li><strong>糖浆、预混粉进口变化</strong>：2026 年 1—8 月，三类糖浆合计进口约 56.94 万吨，同比增长 76.2%；两类预混糖粉约 14.48 万吨，同比下降 64.7%（<a href="https://www.yntw.com/2026/09/39236.html" target="_blank" rel="noopener">糖网 2026-09</a>，单一来源未交叉核实，置信度：低）。这些替代品仍在冲击食糖需求，上面第 1 条新规就是针对这个问题的。</li>
+</ol>
+<h2>G. 题材与产业链关联</h2>
+<p><strong>概念标签逐个分级</strong>（库内概念标签，同花顺标签共 11 个）：</p>
+<ul>
+<li><strong>农业种植</strong>：真有业务。公司介绍写明做糖料加工，番茄业务覆盖「种子研发、种植、初加工、深加工」，经营范围也有「农产品的开发、种植、销售」（置信度：中）</li>
+<li><strong>新疆振兴</strong>：真有业务。公司介绍写明制糖企业分布在新疆等主产区。但新疆业务单独的营收，库内没有（置信度：中）</li>
+<li><strong>西部大开发</strong>：有业务分布。制糖企业在广西、云南、新疆，但这是地区政策标签，没有对应的单独营收（置信度：中）</li>
+<li><strong>乡村振兴</strong>：沾边。公司介绍自称「服务三农」，但没有单独的营收证据（置信度：低）</li>
+<li><strong>中字头股票 / 央企国企改革 / 国企改革</strong>：「中粮集团控股」这个身份是真的（公司介绍）。但近 60 日新闻里没有具体的改革事项，「国企改革」只是标签，没看到对应的营收或事件（置信度：中）</li>
+<li><strong>上证 380 成份股 / 中证 500 成份股 / 沪股通 / 融资融券</strong>：指数和交易制度标签，和业务无关（置信度：高）</li>
+<li>药用糖、液体糖不在概念标签里，只见于半年报转述，见 E 节。</li>
+</ul>
+<p><strong>产业链位置</strong></p>
+<ul>
+<li><strong>上游</strong>：国内甘蔗、甜菜种植户，以及国际原糖（巴西、泰国、印度等）。国际原糖价格由 ICE 期货决定，公司只能接受。</li>
+<li><strong>中游（公司）</strong>：自产糖、进口原糖加工（炼糖）、贸易、仓储。</li>
+<li><strong>下游</strong>：食品饮料企业、新茶饮品牌、制药企业（药用糖）。</li>
+<li><strong>议价能力</strong>：公司在两头都主要是接受市场价格。它的优势在于规模、仓储和进口通道，能赚到「国际和国内的价差」以及「不同时间段的价差」，而不是能自己定价（置信度：中）</li>
+</ul>
+<p><strong>影响行业供给的外部事件：厄尔尼诺</strong>（置信度：中）</p>
+<ul>
+<li>2026 年 8 月 17 日有报道称，强厄尔尼诺出现的概率升到 81%（<a href="https://m.jrj.com.cn/madapter/futures/2026/08/17112958136201.shtml" target="_blank" rel="noopener">金融界</a>）；9 月 11 日的报道称，2026 至 2027 年北半球秋冬出现极强厄尔尼诺的概率超过 90%（<a href="https://news.qq.com/rain/a/20260911A05ETW00" target="_blank" rel="noopener">腾讯新闻</a>）。两个数字发布时间不同，定义也可能不同，不宜直接比较。</li>
+<li>高盛提示巴西、印度、泰国三大产糖国都面临天气风险（<a href="https://www.yntw.com/2026/09/39116.html" target="_blank" rel="noopener">糖网 2026-09</a>）。</li>
+<li>国内方面：广西 2026/27 榨季种蔗面积稳中有增，但要留意厄尔尼诺可能带来的干旱和虫害（<a href="https://www.hisugar.com/home/articleContent?id=2026051108464866847582" target="_blank" rel="noopener">泛糖科技 2026-05-11</a>）。</li>
+</ul>
+<h2>H. 消息面与市场情绪</h2>
+<p><strong>近 60 日新闻中比较重要的几条</strong>（库内新闻，按重要性排）：</p>
+<ol>
+<li><strong>9 月 9 日、9 月 14 日两份股票交易异常波动公告</strong>（库内公告标题）
+<ul>
+<li>9 月 7 日至 9 日，连续 3 个交易日收盘价涨幅偏离值累计超过 20%；9 月 10 日、11 日、14 日，连续 3 个交易日跌幅偏离值累计超过 20%。</li>
+<li>公司自查称生产经营正常，没有应披露而未披露的重大事项，控股股东和董事在异动期间没有买卖股票（<a href="https://news.qq.com/rain/a/20260909A0CFGY00" target="_blank" rel="noopener">腾讯新闻 2026-09-09</a>、<a href="https://news.qq.com/rain/a/20260914A0AWFA00" target="_blank" rel="noopener">腾讯新闻 2026-09-14</a>）。</li>
+<li>这说明大涨大跌是交易情绪推动的，没有基本面上的新变化（置信度：高）</li>
+</ul></li>
+<li><strong>9 月 10 日 13:26 财联社「农业板块震荡回落中粮糖业触及跌停」</strong>：发稿时曾触及跌停。这是当时盘中的情况，不代表现在（置信度：高）</li>
+<li><strong>9 月 8 日多篇板块新闻</strong>：「&quot;甜蜜&quot;板块集体涨停」（东方财富 10:31）、「泰国食糖产量下降17%，市场或面临新一轮供应冲击」（东方财富 10:19）、「粮食概念持续火热」（财联社 13:24）。这一天公司涨停，是板块情绪带动的（置信度：高）</li>
+<li><strong>9 月 11 日东方财富「主产国减产预期升温厄尔尼诺成国际糖价催化剂」</strong>：产业面利好，但对公司利润是好是坏还不确定，见 J 节（置信度：中）</li>
+<li><strong>9 月 22 日一组公告</strong>：第十一届董事会第五次会议决议、独立董事任期届满辞职及补选、召开 2026 年第二次临时股东会的通知。股东会定在 10 月 9 日（<a href="https://www.sohu.com/a/1079733532_120988533" target="_blank" rel="noopener">搜狐转载公告</a>）。这些是公司治理方面的常规事项，对基本面没有实质影响（置信度：高）</li>
+<li><strong>9 月 8 日东方财富「资源&amp;周期&amp;农业齐发力！机构：中美利差走扩提升红利配置意愿」</strong>：市场风格方面的消息，和个股基本面关系不大（置信度：中）</li>
+<li><strong>9 月 23 日财联社「农业板块午后活跃万向德农涨停」</strong>：板块层面的消息，和本票关系不大（置信度：中）</li>
+</ol>
+<p><strong>涨停记录</strong>（库内涨停记录，近 180 日共 5 次，都是一天涨停、第二天没有继续涨停）：</p>
+<ul>
+<li>5-13 · 首次封板 13:38 · 涨停后又打开 4 次 · 封单 0.60 亿</li>
+<li>6-01 · 首次封板 13:14 · 打开 3 次 · 封单 0.21 亿</li>
+<li>6-30 · 首次封板 09:37 · 打开 1 次 · 封单 0.78 亿</li>
+<li>8-18 · 首次封板 13:04 · 打开 2 次 · 封单 0.73 亿</li>
+<li>9-08 · 首次封板 09:30 · 打开 1 次 · 封单 2.89 亿（5 次里封板最早、封单最大）</li>
+</ul>
+<p>也就是说，股价会跟着糖价和农业板块的情绪间歇性涨停，但从来没有连续涨停（置信度：高）</p>
+<p><strong>资金与筹码</strong>（库内资金筹码；这些是盘面现象，不是基本面证据，只作辅助参考）：</p>
+<ul>
+<li><strong>资金流</strong>：近 20 个交易日（8-28 至 9-24）资金合计净流出 13.55 亿元，其中特大单净流出 7.59 亿元；净流入的有 9 天，净流出的有 11 天。9 月上旬大涨之后，资金总体在流出（置信度：高）</li>
+<li><strong>筹码</strong>：库内只覆盖关注票的筹码数据，这只票暂时没有。</li>
+<li><strong>股东户数</strong>：2026-06-30 为 98,457 户。库内没有上一期数据，算不出环比变化。另外季度数据本身有滞后，反映不了 9 月的情况。</li>
+</ul>
+<h2>I. 未来 13 周事件日历</h2>
+<p>库内事件日历返回为空，下面都是联网补充的，另有按惯例推断的事项并注明。</p>
+<ul>
+<li><strong>W1（2026-09-28 起）</strong>：9-30 印度食糖出口禁令到期（或另行通知）· 政策 · 重要性高 · 影响：印度会不会延长禁令、2026/27 榨季要不要开放出口，会直接影响国际原糖价格。10-1 起国庆节休市</li>
+<li><strong>W2（2026-10-05 起）</strong>：10-8、10-9 恢复交易；10-9 召开 2026 年第二次临时股东会（补选独立董事）· 公司治理 · 重要性低 · 影响：没有基本面影响</li>
+<li><strong>W3（2026-10-12 起）</strong>：10-16 食糖生产许可审查细则征求意见截止 · 政策 · 重要性中 · 影响：之后要看正式稿什么时候出、条款有没有变。按惯例农业农村部这一时段会发布月度农产品供需形势分析（没有核实具体日期，置信度：中）</li>
+<li><strong>W4（2026-10-19 起）</strong>：按惯例海关会发布 9 月食糖和糖浆、预混粉进口数据（没有核实具体日期，置信度：中）· 数据 · 重要性中 · 影响：看进口是否继续减少。另外按往年时间，2027 年食糖进口关税配额实施细则可能在 10 月公布（置信度：中）</li>
+<li><strong>W5（2026-10-26 起）</strong>：三季报。公司还没公告预约日期；去年三季报是 10-29 披露的，法定最晚 10-31 · 财报 · 重要性高 · 影响：检验前三季度净利润同比能否 ≥ +20%、毛利率能否守在 14% 左右</li>
+<li><strong>W6（2026-11-02 起）</strong>：广西等主产区的 2026/27 榨季按惯例 11 月陆续开榨（以各糖厂公告为准，置信度：中）· 行业 · 重要性中 · 影响：新糖上市会增加国内供给</li>
+<li><strong>W7（2026-11-09 起）</strong>：按惯例农业农村部月度供需形势分析（置信度：中）· 数据 · 重要性中 · 影响：看 2026/27 年度国内产量预测有没有调整</li>
+<li><strong>W8（2026-11-16 起）</strong>：按惯例海关发布 10 月进口数据（置信度：中）· 数据 · 重要性中</li>
+<li><strong>W9（2026-11-23 起）</strong>：本周无已知事件</li>
+<li><strong>W10（2026-11-30 起）</strong>：本周无已知事件（广西 11 月的开榨和产销进度一般在月初前后陆续公布，没有核实，置信度：低）</li>
+<li><strong>W11（2026-12-07 起）</strong>：按惯例农业农村部月度供需形势分析（置信度：中）· 数据 · 重要性中</li>
+<li><strong>W12（2026-12-14 起）</strong>：按惯例海关发布 11 月进口数据（置信度：中）· 数据 · 重要性中</li>
+<li><strong>W13（2026-12-21 起）</strong>：本周无已知事件</li>
+</ul>
+<p>另外，巴西中南部糖协（UNICA）每半个月发布一次产量报告，在整个 13 周里都要跟踪，是看国际糖价供给面的主要数据（每期具体日期以发布为准，置信度：中）</p>
+<h2>J. 逻辑链</h2>
+<ol>
+<li><strong>事实一</strong>：2026 年上半年营收下降 21.16%，净利润增长 36.75%，毛利率 14.59%，高于 2025 年全年的 11.41%（库内，置信度：高）</li>
+<li><strong>事实二</strong>：国际原糖从 8 月初到 9 月 10 日涨了 34%，9 月 24 日回落到 18.59 美分/磅，但仍比一个月前高 7.64%（<a href="https://news.qq.com/rain/a/20260911A05ETW00" target="_blank" rel="noopener">腾讯新闻 2026-09-11</a>；<a href="https://tradingeconomics.com/commodity/sugar" target="_blank" rel="noopener">Trading Economics 2026-09-24</a>；两个价格来自不同来源、不同日期，置信度：中）</li>
+<li><strong>事实三</strong>：国内糖价涨得慢。郑糖 2701 合约 9 月 1 日收于 5397 元/吨（<a href="https://www.yntw.com/2026/09/39056.html" target="_blank" rel="noopener">糖网 2026-09-01</a>），9 月 9 日曾触及 5500 元/吨（<a href="https://www.yntw.com/2026/09/39137.html" target="_blank" rel="noopener">糖网 2026-09-09</a>）。国内库存处在历史高位，新榨季还预计增产（<a href="https://finance.sina.com.cn/money/future/fmnews/2026-09-07/doc-iniqyeue6446780.shtml" target="_blank" rel="noopener">新浪财经 2026-09-07</a>）（置信度：中）</li>
+<li><strong>推论</strong>：国际涨得多、国内涨得少，进口原糖加工的利润空间会收窄。7 月全国食糖进口 47 万吨，同比减少 27.44 万吨，已经能看到这个迹象（新浪财经 2026-09-07、糖网两个来源）。对公司来说：
+<ul>
+<li>进口炼糖可能受损；</li>
+<li>国内自产糖（70 万吨）按国内价格卖，Tully（30 万吨原糖）按国际价格卖，这两块会受益；</li>
+<li>合起来是好是坏，<strong>取决于各块的利润占比</strong>（置信度：低）</li>
+</ul></li>
+<li><strong>如果上半年的利润改善能持续</strong>，三季报应该看到：前三季度毛利率维持在 14% 左右，前三季度净利润同比 ≥ +20%。<strong>如果主要是一次性的价差收益</strong>，三季度毛利率应该明显回落。</li>
+</ol>
+<p><strong>最弱的一环是第 4 环</strong>：库内没有分业务利润，国际糖价上涨到底对公司有利还是不利，本报告无法算出来，只能靠三季报去验证。整条逻辑链成不成立，关键就在这里。</p>
+<h2>K. 三情景推演（未来 13 周）</h2>
+<ul>
+<li><strong>乐观（25%）</strong>｜触发：三季报前三季度归母净利润同比 ≥ +30%（即三季度单季不低于约 4.51 亿元，据库内财务推算），且前三季度毛利率 ≥ 14%；同时食糖生产许可细则的正式稿保留「不得以预混粉为原料」的条款｜路径：市场认可利润改善能持续，股价站回 MA60 上方，估值向行业中位数以上靠拢</li>
+<li><strong>中性（50%）</strong>｜触发：前三季度归母净利润同比在 +10% 到 +30% 之间，毛利率在 11.41% 到 14% 之间｜路径：股价在 MA20 和 MA60 附近来回波动，跟着国际糖价和农业板块情绪一起起落，偶尔涨停但没有连续涨停</li>
+<li><strong>悲观（25%）</strong>｜触发：前三季度归母净利润同比 &lt; +10%（即三季度单季低于约 2.88 亿元，据推算同比下降超过 22%），或前三季度毛利率回落到 2025 年全年 11.41% 以下；又或者印度宣布 2026/27 榨季恢复大规模出口，ICE 原糖比 9 月 10 日的高点回落超过 20%｜路径：利润改善被证明是一次性的，市盈率向同行下沿靠拢，股价在 MA20 下方运行</li>
+</ul>
+<p>（三种情景的概率是主观估计，置信度：低）</p>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向</strong></p>
+<ol>
+<li>如果三季报前三季度归母净利润同比 ≥ +20%（即三季度单季不低于去年同期约 3.70 亿元），前三季度毛利率 ≥ 14%，并且收盘站上 MA20，那么<strong>轻仓试仓</strong>（置信度：中）</li>
+<li>如果三季报还没披露，股价一直在 MA20 下方，那么<strong>观望</strong>。这时候决定方向的财报还没出来，资金流只作参考，不单独作为依据（置信度：中）</li>
+<li>如果前三季度归母净利润同比 &lt; +10%，或前三季度毛利率回落到 11.41%（2025 年全年水平）以下，并且收盘跌破 9-24 收盘，那么<strong>回避 / 减仓</strong>（置信度：中）</li>
+</ol>
+<p><strong>风控要点：出现这些情况，本报告的判断就要推翻</strong></p>
+<ul>
+<li>三季报显示营收降幅扩大到 -25% 以下，同时毛利率回落。这说明「营收下降、利润增长」的局面已经结束。</li>
+<li>食糖生产许可细则的正式稿删掉了限制预混粉的条款，F 节第 1 条利好就不成立了。</li>
+<li>公司公告与大宗商品套期保值相关的大额亏损，或计提大额存货减值。</li>
+</ul>
+<p><strong>仓位思路</strong>：糖价是大宗商品价格，股价又常被板块情绪带着走（近 180 日 5 次涨停，9 月上旬还出现先大涨超过 20%、再大跌超过 20% 的情况），所以只适合<strong>轻仓</strong>，或者<strong>等三季报出来再说</strong>。</p>
+<h2>M. 逻辑自查</h2>
+<p><strong>这份判断最依赖的假设</strong>：上半年毛利率 14.59% 主要来自可以持续的成本管理，而不是一次性的价差或存货收益。如果这个假设错了，三季度毛利率会明显回落，乐观情景就不成立，结论应该转向悲观。</p>
+<p><strong>有没有被忽略的反面证据</strong></p>
+<ul>
+<li>8、9 月国内糖价在涨（郑糖 1 个月涨了 219 元/吨，新浪财经 9-07），公司三季度卖库存反而可能受益。所以「国内糖价涨不动」这个风险，放在三季度可能被高估了。</li>
+<li>公司股息率 2.78%，又是央企，在市场偏好高股息的时候可能有资金托底（东方财富 9-08「中美利差走扩提升红利配置意愿」）。本报告没把这一点当成主要驱动因素。</li>
+<li>〔卖方预期〕来源：国盛证券研报 · 日期：2026-09-18 · 观点：首次覆盖，给出正面评级。认为公司是食糖全产业链龙头，番茄业务可以挖掘国内需求，药用糖和小包装番茄制品打开中长期空间。没查到具体的盈利预测数字。转载标题有的写「首次覆盖」、有的写「维持」，说法不一 · 置信度：低（<a href="https://news.qq.com/rain/a/20260918A08XT900" target="_blank" rel="noopener">腾讯新闻 2026-09-18</a>）</li>
+<li>〔卖方预期〕来源：中原证券研报 · 日期：2025-09-17 · 观点：预计 2025 年归母净利润 12.98 亿元，2026 年 18.92 亿元，2027 年 20.29 亿元 · 置信度：低（<a href="https://www.163.com/dy/article/K9M8CHG5051984TV.html" target="_blank" rel="noopener">网易 2025-09</a>）。对照：库内 2025 年实际净利润 9.51 亿元，比这份预测低约 27%；2026 年最近 12 个月约 11.15 亿元，离它的 2026 年预测差距也很大。这说明卖方对这家公司的盈利预测曾经明显偏乐观。</li>
+</ul>
+<p><strong>信息缺口清单</strong></p>
+<ol>
+<li><strong>库内没有研报数据</strong>：库内研报返回为空，也就是库内近 90 天没有这只票的研报。但网上有国盛证券 9-18 的覆盖报道，库和网上对不上。影响：J 节没有可以比对的一致预期。补法：等研报表收录后重跑。</li>
+<li><strong>库内没有未来事件</strong>：库内事件日历返回为空。I 节全靠联网补，并按惯例推断；三季报预约日期没查到。补法：留意上交所的预约披露公告。</li>
+<li><strong>没有分业务利润</strong>：这是影响最大的缺口，见 J 节最弱的一环。补法：三季报和年报的分业务披露。</li>
+<li><strong>没有筹码数据</strong>：库内只覆盖关注票。<strong>股东户数没有上一期</strong>，算不出环比。</li>
+<li><strong>产能数字对不上</strong>：公司介绍里的炼糖产能是 150 万吨（曹妃甸 50 + 营口 100），糖网转述半年报说「炼糖产能超 200 万吨/年」。以库内公司介绍为准，差异原因没核实。</li>
+<li><strong>产量数字的基数对不上</strong>：农业农村部 5 月预计 2026/27 年度国产糖 1293 万吨，比上年度增加 1.0%（<a href="https://finance.sina.com.cn/money/future/wemedia/2026-05-13/doc-inhxteiv4649977.shtml" target="_blank" rel="noopener">新浪财经 2026-05-13</a>）。但糖网报道 2025/26 榨季实际产量是 1327.62 万吨（<a href="https://www.yntw.com/2026/09/39090.html" target="_blank" rel="noopener">糖网 2026-09</a>，单一来源），两个数字的统计基数不一致，看不出新榨季到底是增产还是减产。</li>
+<li><strong>库内没有糖价数据</strong>：ICE 原糖、郑糖都只有联网得到的某一天的价格，拼不成连续的走势。</li>
+<li><strong>番茄业务缺少定量数据</strong>：半年报只说「销量回落、价格小幅回暖、利润总额同比增长」（腾讯新闻 9-14），没有具体数字。</li>
+<li><strong>奇台糖业本榨季因空气质量要求停产</strong>（糖网 2026-08，单一来源）：对产量的影响有多大，没法量化。</li>
+</ol>
+<p><strong>联网来源汇总</strong>：</p>
+<ul>
+<li><a href="https://m.jrj.com.cn/madapter/futures/2026/08/17112958136201.shtml" target="_blank" rel="noopener">金融界 2026-08-17</a></li>
+<li><a href="https://news.qq.com/rain/a/20260911A05ETW00" target="_blank" rel="noopener">腾讯新闻 2026-09-11</a></li>
+<li><a href="https://tradingeconomics.com/commodity/sugar" target="_blank" rel="noopener">Trading Economics</a></li>
+<li><a href="https://finance.sina.com.cn/money/future/fmnews/2026-09-07/doc-iniqyeue6446780.shtml" target="_blank" rel="noopener">新浪财经 2026-09-07</a></li>
+<li><a href="https://www.yntw.com/2026/09/39056.html" target="_blank" rel="noopener">糖网现货 9-01</a></li>
+<li><a href="https://www.yntw.com/2026/09/39137.html" target="_blank" rel="noopener">糖网现货 9-09</a></li>
+<li><a href="https://news.qq.com/rain/a/20260916A05GY900" target="_blank" rel="noopener">腾讯新闻细则 2026-09-16</a></li>
+<li><a href="https://www.yntw.com/2026/09/39189.html" target="_blank" rel="noopener">糖网细则</a></li>
+<li><a href="https://www.yntw.com/2026/09/39236.html" target="_blank" rel="noopener">糖网进口糖浆</a></li>
+<li><a href="https://www.yntw.com/2026/08/39030.html" target="_blank" rel="noopener">糖网半年报解读</a></li>
+<li><a href="https://news.qq.com/rain/a/20260909A0CFGY00" target="_blank" rel="noopener">腾讯新闻异动 9-09</a></li>
+<li><a href="https://news.qq.com/rain/a/20260914A0AWFA00" target="_blank" rel="noopener">腾讯新闻异动 9-14</a></li>
+<li><a href="https://news.qq.com/rain/a/20260914A0C44100" target="_blank" rel="noopener">腾讯新闻三度异动</a></li>
+<li><a href="https://www.sohu.com/a/1079733532_120988533" target="_blank" rel="noopener">搜狐股东会通知</a></li>
+<li><a href="https://finance.sina.com.cn/money/future/fmnews/2026-05-19/doc-inhyksxt2391635.shtml" target="_blank" rel="noopener">新浪财经印度禁令</a></li>
+<li><a href="https://finance.sina.com.cn/money/future/2026-06-24/doc-inienpna6337351.shtml" target="_blank" rel="noopener">新浪财经嘉利高</a></li>
+<li><a href="https://www.msweet.com.cn/eportal/ui?pageId=2590581&amp;articleKey=3204816&amp;columnId=2590629" target="_blank" rel="noopener">沐甜科技印度政策</a></li>
+<li><a href="https://www.yntw.com/2026/09/39116.html" target="_blank" rel="noopener">糖网高盛</a></li>
+<li><a href="https://www.hisugar.com/home/articleContent?id=2026051108464866847582" target="_blank" rel="noopener">泛糖科技广西</a></li>
+<li><a href="https://finance.sina.com.cn/money/future/wemedia/2026-05-13/doc-inhxteiv4649977.shtml" target="_blank" rel="noopener">新浪财经农业农村部</a></li>
+<li><a href="https://www.yntw.com/2026/09/39090.html" target="_blank" rel="noopener">糖网国产糖产量</a></li>
+<li><a href="https://sw.beijing.gov.cn/zwxx/2024zcwj/202510/W020251011615787109423.pdf" target="_blank" rel="noopener">北京市商务局配额细则</a></li>
+<li><a href="https://www.yntw.com/2025/10/35379.html" target="_blank" rel="noopener">糖网配额细则</a></li>
+<li><a href="https://news.qq.com/rain/a/20260918A08XT900" target="_blank" rel="noopener">腾讯新闻国盛</a></li>
+<li><a href="https://www.163.com/dy/article/K9M8CHG5051984TV.html" target="_blank" rel="noopener">网易中原证券</a></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-09-25），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>国内库存高且新榨季预计增产</li>
+      <li>进口原糖成本上升压缩炼糖利润</li>
+      <li>营收连续四期同比下降</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>扣非净利</dt><dd>扣除非经常性损益后的净利润。剔除卖资产、政府补助、公允价值变动等一次性项目，更接近主业真实盈利。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>一致预期</dt><dd>多家券商盈利预测的平均值。是别人的观点，不是事实。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://sw.beijing.gov.cn/zwxx/2024zcwj/202510/W020251011615787109423.pdf" target="_blank" rel="noopener">北京市商务局转载</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.yntw.com/2025/10/35379.html" target="_blank" rel="noopener">糖网 2025-10</a> <em>2025-10</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260916A05GY900" target="_blank" rel="noopener">腾讯新闻 2026-09-16</a> <em>2026-09-16</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.yntw.com/2026/09/39189.html" target="_blank" rel="noopener">糖网 2026-09</a> <em>2026-09</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/money/future/fmnews/2026-05-19/doc-inhyksxt2391635.shtml" target="_blank" rel="noopener">新浪财经 2026-05-19</a> <em>2026-05-19</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://m.jrj.com.cn/madapter/futures/2026/08/17112958136201.shtml" target="_blank" rel="noopener">金融界 2026-08-17</a> <em>2026-08-17</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.msweet.com.cn/eportal/ui?pageId=2590581&amp;articleKey=3204816&amp;columnId=2590629" target="_blank" rel="noopener">沐甜科技</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/money/future/2026-06-24/doc-inienpna6337351.shtml" target="_blank" rel="noopener">新浪财经 2026-06-24 转述嘉利高：印度 2026/27 榨季不太可能恢复出口</a> <em>2026-06-24</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.yntw.com/2026/09/39236.html" target="_blank" rel="noopener">糖网 2026-09</a> <em>2026-09</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260911A05ETW00" target="_blank" rel="noopener">腾讯新闻</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.yntw.com/2026/09/39116.html" target="_blank" rel="noopener">糖网 2026-09</a> <em>2026-09</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.hisugar.com/home/articleContent?id=2026051108464866847582" target="_blank" rel="noopener">泛糖科技 2026-05-11</a> <em>2026-05-11</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260909A0CFGY00" target="_blank" rel="noopener">腾讯新闻 2026-09-09</a> <em>2026-09-09</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260914A0AWFA00" target="_blank" rel="noopener">腾讯新闻 2026-09-14</a> <em>2026-09-14</em></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://www.sohu.com/a/1079733532_120988533" target="_blank" rel="noopener">搜狐转载公告</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://tradingeconomics.com/commodity/sugar" target="_blank" rel="noopener">Trading Economics 2026-09-24</a> <em>2026-09-24</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.yntw.com/2026/09/39056.html" target="_blank" rel="noopener">糖网 2026-09-01</a> <em>2026-09-01</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.yntw.com/2026/09/39137.html" target="_blank" rel="noopener">糖网 2026-09-09</a> <em>2026-09-09</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/money/future/fmnews/2026-09-07/doc-iniqyeue6446780.shtml" target="_blank" rel="noopener">新浪财经 2026-09-07</a> <em>2026-09-07</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260918A08XT900" target="_blank" rel="noopener">腾讯新闻 2026-09-18</a> <em>2026-09-18</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.163.com/dy/article/K9M8CHG5051984TV.html" target="_blank" rel="noopener">网易 2025-09</a> <em>2025-09</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.sina.com.cn/money/future/wemedia/2026-05-13/doc-inhxteiv4649977.shtml" target="_blank" rel="noopener">新浪财经 2026-05-13</a> <em>2026-05-13</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.yntw.com/2026/09/39090.html" target="_blank" rel="noopener">糖网 2026-09</a> <em>2026-09</em></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.yntw.com/2026/08/39030.html" target="_blank" rel="noopener">糖网半年报解读</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://news.qq.com/rain/a/20260914A0C44100" target="_blank" rel="noopener">腾讯新闻三度异动</a></li>
+      <li><span class="src-tag src-media">媒体</span> 腾讯新闻 2026-09-11 等多个来源 <em>2026-09-11</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 半年报，腾讯新闻 2026-09-14 转述 <em>2026-09-14</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 糖网 2026-08 转述半年报，单一来源未交叉核实 <em>2026-08</em> — 原文以文字标注出处，未附链接</li>
+      <li><span class="src-tag src-media">媒体</span> 新浪财经 2026-09-07、糖网两个来源 <em>2026-09-07</em> — 原文以文字标注出处，未附链接</li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-09-25 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
