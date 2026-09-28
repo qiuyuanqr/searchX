@@ -126,6 +126,11 @@ bun run scripts/backfill-sectors.js            # 真改（幂等，按当前库�
 `stocks_report_id: <id>`，启动时扫一遍 `research/` 收集已导过的 id。
 删掉目录＝允许重导，手工改名/挪动也不会失配，不存在「状态文件与磁盘打架」这类故障。
 
+**同一只票同一天出了两份报告**（Stocks 那边重跑）时，两份的目录名相同，而 notes.md 只记得下一个
+id。所以导入前先按目录去重、只认最新一份（`latestPerDir`），旧的视为被重跑版取代、不再导。
+没有这一步，两份会每 5 分钟互相覆盖一次、各自提交推送部署——2026-09-23 的 688525 就这样来回翻了
+5 天（550 多次提交），还把 Pages 部署挤成一串失败邮件。`--id` 点名导某篇时不去重。
+
 ## 每日无人值守
 
 `scheduled-run.sh` + `launchd/com.searchx.stocks-import.plist`，**每 5 分钟**跑一次

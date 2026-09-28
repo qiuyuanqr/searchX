@@ -148,6 +148,27 @@ export function importedIds(archiveRoot) {
   return ids;
 }
 
+// 归档目录名 = 生成日期 + slug。同一只票同一天出了两份报告（Stocks 那边重跑）时，
+// 两份会落到**同一个目录**，而 notes.md 只记得下最后写入的那个 stocks_report_id——
+// 另一份就永远像「没导过」，每个 tick 都导一次、把对方覆盖掉，两版轮流上线。
+// 2026-09-23 的 688525（148 与 149）就这样来回翻了 5 天，每 5 分钟一次提交 + 部署，
+// 顺带把 Pages 部署挤到排队失败、报警邮件一串。
+// 所以同目录只认最新一份（generated_at 最大，同刻再比 id）；旧的视为被重跑版取代。
+export function dirOf(row) {
+  const code = String(row.ts_code).padStart(6, "0");
+  return `${splitTime(row.generated_at).date}_${metaOf(code).slug}`;
+}
+
+export function latestPerDir(rows) {
+  const best = new Map();
+  for (const r of rows) {
+    const d = dirOf(r);
+    const b = best.get(d);
+    if (!b || r.generated_at > b.generated_at || (r.generated_at === b.generated_at && r.id > b.id)) best.set(d, r);
+  }
+  return rows.filter((r) => best.get(dirOf(r)) === r);
+}
+
 // ========== 组装 ==========
 
 // generated_at（库里是北京时间的朴素 ISO）→ 日期 / 带时区的 created
@@ -449,8 +470,8 @@ function warn(...s) { console.error(...s); }
 export function importOne(row, { template, dryRun, sector }) {
   const code = String(row.ts_code).padStart(6, "0");
   const { date, created } = splitTime(row.generated_at);
-  const { slug, boards, known } = metaOf(code);
-  const dir = `${date}_${slug}`;
+  const { boards, known } = metaOf(code);
+  const dir = dirOf(row);
   const parsedSummary = JSON.parse(row.summary_json || "{}");
   // 两层价位处理：先走 PRICE_REDLINE_FIXES 那张逐条手列的明表（首批 25 篇的历史遗留），
   // 再走通用的「删掉带锚价位里的数值」（见 price-anchor.js）。没有锚的裸价位两层都不碰，
@@ -533,7 +554,10 @@ export function main(argv = process.argv.slice(2)) {
   const args = parseArgs(argv);
   const template = readFileSync(TEMPLATE, "utf8");
   const done = importedIds(ARCHIVE);
-  let rows = queryReports().filter((r) => !done.has(r.id));
+  // 先按目录去重、再看导没导过：顺序不能反——反过来的话，已导的新版被滤掉后，
+  // 旧版就成了该目录「唯一」的候选，又会被导回去。--id 是排障时点名导某一篇，不去重。
+  const all = queryReports();
+  let rows = (args.only != null ? all : latestPerDir(all)).filter((r) => !done.has(r.id));
   if (args.since) rows = rows.filter((r) => r.generated_at.slice(0, 10) >= args.since);
   if (args.only != null) rows = rows.filter((r) => r.id === args.only);
 

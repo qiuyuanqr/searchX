@@ -5,7 +5,7 @@ import { tmpdir } from "os";
 import { join } from "path";
 import {
   splitTime, buildTldr, applyPriceFixes, insertIndexRow, hasIndexRow, importedIds, buildSources,
-  sqliteJsonLines, DB_BUSY_TIMEOUT_MS,
+  sqliteJsonLines, DB_BUSY_TIMEOUT_MS, dirOf, latestPerDir,
 } from "./index.js";
 import { metaOf, exchangeOf } from "./mapping.js";
 import { extractDirection } from "../../../web/build/extract-direction.js";
@@ -219,4 +219,21 @@ test("importedIds 认 .dropped 标记：丢弃过的报告不会被重新导入"
   mkdirSync(join(root, "2026-08-25_stock-000002"), { recursive: true });
   writeFileSync(join(root, "2026-08-25_stock-000002", "notes.md"), "---\nstocks_report_id: 42\n---\n");
   expect([...importedIds(root)].sort((a, b) => a - b)).toEqual([42, 77]);
+});
+
+test("同票同日两份报告只认最新一份：否则两版轮流覆盖同一目录、每 tick 都重导", () => {
+  // 2026-09-23 688525 真实情形：148（13:45）与 149（14:23 重跑）落到同一目录
+  const old = { id: 148, ts_code: "688525", generated_at: "2026-09-23T13:45:58" };
+  const neu = { id: 149, ts_code: "688525", generated_at: "2026-09-23T14:23:07" };
+  const other = { id: 150, ts_code: "688525", generated_at: "2026-09-24T09:00:00" };
+  expect(dirOf(old)).toBe(dirOf(neu));
+  expect(latestPerDir([old, neu, other]).map((r) => r.id)).toEqual([149, 150]);
+  expect(latestPerDir([neu, old]).map((r) => r.id)).toEqual([149]);
+  // 已导过 149 后，148 不能因为「149 被滤掉」而重新成为候选
+  const done = new Set([149]);
+  expect(latestPerDir([old, neu]).filter((r) => !done.has(r.id))).toEqual([]);
+  // 同一时刻比 id
+  const a = { id: 7, ts_code: "1", generated_at: "2026-09-01T10:00:00" };
+  const b = { id: 8, ts_code: "000001", generated_at: "2026-09-01T10:00:00" };
+  expect(latestPerDir([b, a]).map((r) => r.id)).toEqual([8]);
 });
