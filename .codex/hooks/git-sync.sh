@@ -1,0 +1,199 @@
+#!/usr/bin/env bash
+# ───────────────────────────────────────────────────────────────
+# searchX · 两台机 git 自动同步（开发机 ⇄ 服务器）
+# 由 Claude Code hooks 调用（见 .claude/settings.json）：
+#   SessionStart(startup|resume) → git-sync.sh pull   开工前拉取另一台进度
+#   SessionEnd                   → git-sync.sh push   收工：未提交改动自动提交后推
+#
+# 设计铁律：
+#   1. 永不 force-push。
+#   2. 任何冲突立即 rebase --abort 回滚到干净状态，大声报警，绝不留半残。
+#   3. 脏工作区也安全（pull/rebase 一律 --autostash）。
+#   4. 安全闸：仅当 origin 是本人仓库才动作（公开仓库被 clone 后自动空转）。
+#   5. 没网 / 无上游 / 游离 HEAD → 静默跳过；改动至少已本地提交，下次补推。
+# ───────────────────────────────────────────────────────────────
+set -o pipefail
+
+MODE="${1:-}"
+REPO="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
+cd "$REPO" 2>/dev/null || { echo "[git-sync] 找不到仓库目录，跳过"; exit 0; }
+
+warn(){ printf "\033[33m[git-sync] %s\033[0m\n" "$1"; }
+ok(){   printf "\033[32m[git-sync] %s\033[0m\n" "$1"; }
+
+# 读暂存区文件名：core.quotePath=false + -z 保证中文/特殊字符原样输出。
+# 默认的 quotePath=true 会把非 ASCII 路径转义成 "\346\214\201..." 八进制串，
+# 下面几道按文件名匹配的闸（机密词、park 目录）对中文名会全部失效。
+staged_names(){ git -c core.quotePath=false diff --cached --name-only -z 2>/dev/null | tr '\0' '\n'; }
+
+# 文件 mtime（秒）。macOS 用 stat -f %m、GNU 用 stat -c %Y——两边语法互不兼容，且
+# GNU 的 -f 是「文件系统状态」，喂 %m 会打印挂载点「/」而不是报错，直接拿去做减法会让
+# 整个算术表达式炸掉、锁龄判定失效（锁被误判成残锁抢走）。所以按「结果必须是纯数字」来选。
+file_mtime(){
+  local m
+  m="$(stat -c %Y "$1" 2>/dev/null)"
+  case "$m" in ''|*[!0-9]*) m="$(stat -f %m "$1" 2>/dev/null)";; esac
+  case "$m" in ''|*[!0-9]*) m="$(date +%s)";; esac
+  printf '%s' "$m"
+}
+
+# —— 即时通知对端拉取（仅 MacBook→Mac mini 方向；best-effort，绝不阻塞收工）——
+# 自我识别：只有本机 ssh 配了别名 mac-mini→stocks 时才触发（Mac mini 无指向自己的别名，
+# 故不会自 ping、不会反向回环）。对端睡眠/离线就静默跳过——它的定时自动拉 autopull 会补上。
+# 触发的是对端的 pull 分支（不再 push），无递归。反向 mini→MacBook 仍靠 MacBook 的 SessionStart 拉。
+notify_peer(){
+  command -v ssh >/dev/null 2>&1 || return 0
+  ssh -G mac-mini 2>/dev/null | grep -qiE '^hostname[[:space:]]+stocks$' || return 0
+  if ssh -o ConnectTimeout=5 -o BatchMode=yes mac-mini \
+       'bash /Users/yangqiuyuan/Coding/searchX/.claude/hooks/git-sync.sh pull' >/dev/null 2>&1; then
+    ok "已即时通知 Mac mini 同步"
+  else
+    warn "Mac mini 没连上（睡眠/离线？）——改动已推 GitHub，其定时自动拉会补上"
+  fi
+}
+
+# —— 安全闸：必须是本人的仓库 ——
+ORIGIN="$(git remote get-url origin 2>/dev/null || true)"
+case "$ORIGIN" in
+  *qiuyuanqr/searchX*) : ;;
+  *) exit 0 ;;
+esac
+
+# —— 与定时 runner 互斥：runner 跑研究期间不插手 git，避免三方并发写同一工作树 ——
+# 1) 本会话若就是 runner spawn 出来的研究子进程（带哨兵）→ 直接跳过，别让会话级 pull/push
+#    与 /research Step6 的 push 打架。
+[ -n "${SEARCHX_IN_RUNNER:-}" ] && exit 0
+# 1.5) 自互斥：ssh 即时通知触发的 pull 与本机定时 autopull 的 tick 会撞在一起，
+#      两个 git-sync 对同一工作树并发 pull --rebase --autostash 是要出事的。
+#      拿不到锁就静默跳过——对端马上/稍后那一轮会拉到同样的东西，不丢活。
+# 固定路径，不用 $TMPDIR：ssh 触发的那次（TMPDIR 常为空→/tmp）与 launchd 拉起的那次
+# （TMPDIR 是 per-user 私有目录）会算出不同的锁路径，互斥就形同虚设。测试可用 SEARCHX_SYNC_LOCK 覆盖。
+SYNC_LOCK="${SEARCHX_SYNC_LOCK:-/tmp/searchx-gitsync.lock}"
+if mkdir "$SYNC_LOCK" 2>/dev/null; then
+  echo $$ > "$SYNC_LOCK/pid" 2>/dev/null
+  trap '[ "$(tr -dc "0-9" < "$SYNC_LOCK/pid" 2>/dev/null)" = "$$" ] && rm -rf "$SYNC_LOCK" 2>/dev/null' EXIT
+else
+  SPID="$(tr -dc '0-9' < "$SYNC_LOCK/pid" 2>/dev/null)"
+  SAGE=$(( $(date +%s) - $(file_mtime "$SYNC_LOCK") ))
+  # 持有者还活着、且锁没老到离谱 → 让路。否则判定为残锁，抢过来接着干。
+  if [ -n "$SPID" ] && [ "$SAGE" -lt 1800 ] && kill -0 "$SPID" 2>/dev/null; then
+    exit 0
+  fi
+  # pid 还没写进去（另一个进程刚 mkdir 成功、正要写 pid 的那一瞬）：锁很新就一律让路，
+  # 否则会把刚拿到锁的那个进程挤掉，两边同时动工作树——正是这把锁要防的事。
+  # 与 autopull.sh 的同款守卫保持一致。
+  if [ -z "$SPID" ] && [ "$SAGE" -le 600 ]; then
+    exit 0
+  fi
+  rm -rf "$SYNC_LOCK" 2>/dev/null
+  mkdir "$SYNC_LOCK" 2>/dev/null || exit 0
+  echo $$ > "$SYNC_LOCK/pid" 2>/dev/null
+  trap '[ "$(tr -dc "0-9" < "$SYNC_LOCK/pid" 2>/dev/null)" = "$$" ] && rm -rf "$SYNC_LOCK" 2>/dev/null' EXIT
+fi
+# 2) 别的会话同步时，若 runner 正持锁跑研究 → 也跳过（同步可跳过、下次补，不丢活）。
+RUNNER_LOCK="$HOME/Library/Application Support/searchx-runner/runner.lock"
+if [ -f "$RUNNER_LOCK" ]; then
+  LPID="$(tr -dc '0-9' < "$RUNNER_LOCK" 2>/dev/null)"
+  # pid 有限会被 OS 回收复用：断电残留锁若正好被复用给别的常驻进程（甚至常驻 root 进程），
+  # kill -0 会一直"判活"，没有年龄兜底就永久静默跳过同步。6 小时远大于一次研究批次最长可能
+  # 占锁的时长（claude 超时默认 3h + push 余量），真在跑的合法长批次锁龄够不到这个上限。
+  LOCK_AGE=$(( $(date +%s) - $(file_mtime "$RUNNER_LOCK") ))
+  if [ -n "$LPID" ] && [ "$LOCK_AGE" -lt 21600 ] && kill -0 "$LPID" 2>/dev/null; then
+    warn "runner 正在跑研究（pid=$LPID），本次 git 同步跳过（避免并发冲突，下次收工补）。"
+    exit 0
+  fi
+fi
+
+# —— 必须在某个分支上、且有上游 ——
+BRANCH="$(git symbolic-ref --short HEAD 2>/dev/null || true)"
+[ -n "$BRANCH" ] || { warn "处于游离 HEAD，跳过"; exit 0; }
+git rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1 \
+  || { warn "分支 $BRANCH 无上游，跳过"; exit 0; }
+
+case "$MODE" in
+  pull)
+    git fetch --quiet origin "$BRANCH" 2>/dev/null || { warn "fetch 失败（没网？），跳过拉取"; exit 0; }
+    behind="$(git rev-list --count "HEAD..@{u}" 2>/dev/null || echo 0)"
+    if [ "$behind" = "0" ]; then ok "已是最新（$BRANCH @ $(git rev-parse --short HEAD)）"; exit 0; fi
+    if git pull --rebase --autostash --no-edit --quiet >/dev/null 2>&1; then
+      # 关键：autostash 弹回可能在 rebase 成功**之后**才冲突 → 整条命令退出码仍是 0，
+      # 但工作区残留 <<<<<<< 冲突标记、index 出现未合并条目。若不显式拦下，收工的
+      # git add -A 会把冲突标记提交并推上公开仓，本地真实改动则困死在孤儿 stash 里。
+      if [ -n "$(git ls-files -u 2>/dev/null)" ]; then
+        git reset --hard HEAD >/dev/null 2>&1   # 丢弃弹回冲突残留；你的改动仍安全保存在 git stash
+        warn "⚠️ 拉取后 autostash 弹回冲突：已恢复干净工作区。你的本地改动安全保留在 git stash（用 git stash list 查看、手动 git stash pop 解决）。先别收工，以免误提交冲突标记。"
+        exit 0
+      fi
+      ok "已拉取并 rebase $behind 个提交（$BRANCH @ $(git rev-parse --short HEAD)）"
+    else
+      git rebase --abort >/dev/null 2>&1
+      warn "⚠️ 拉取冲突，已回滚到拉取前状态。请手动 git pull --rebase 解决后再继续。"
+    fi
+    ;;
+
+  push)
+    # 1) 有未提交改动 → 自动提交（提交前两道终检闸）
+    if [ -n "$(git status --porcelain)" ]; then
+      git add -A
+      # 闸1：暂存内容含 git 冲突标记 → 中止（多为 autostash/rebase 残留被误纳入，防其推上公开仓）
+      if git diff --cached -U0 2>/dev/null | grep -qE '^\+(<{7}|={7}|>{7})([ \t]|$)'; then
+        git reset -q >/dev/null 2>&1
+        warn "⚠️ 暂存区检测到冲突标记（<<<<<<< / ======= / >>>>>>>），已取消本次自动提交。请手动 git diff 检查解决后再收工。"
+        exit 0
+      fi
+      # 闸2：暂存文件名命中机密/敏感模式 → 中止（公开仓库，绝不自动提交机密/临时密钥）
+      SENSITIVE="$(staged_names | grep -iE '(^|/)\.env($|\.)|\.(pem|key|p12|pfx|keystore)$|(^|/)(secret|secrets|credential|credentials|token)([._-]|$)|持仓|holding' || true)"
+      if [ -n "$SENSITIVE" ]; then
+        git reset -q >/dev/null 2>&1
+        warn "⚠️ 暂存区出现疑似机密/敏感文件，已取消自动提交，避免推上公开仓："
+        printf '%s\n' "$SENSITIVE" | sed 's/^/      /'
+        warn "请确认后处理（如需忽略加入 .gitignore），再手动提交。"
+        exit 0
+      fi
+      # 闸3：暂存区含被搁置（park）的报告文件夹 → 整体剔除，绝不随自动提交推上公开仓。
+      # research SKILL Step 5.5 规定 park 的报告"绝不 push"；交互式 park 只把文件夹带
+      # .parked 标记留在本地、不写 .parked.json（那是给 runner 的信号），若不在此拦下，
+      # 收工时这里的 git add -A 会把它连同完整报告一起自动提交推送、被 deploy.yml 发布上线。
+      PARKED_DIRS="$(staged_names | grep -E '^research/[^/]+/\.parked$' | sed -E 's#^(research/[^/]+)/\.parked$#\1#' | sort -u)"
+      if [ -n "$PARKED_DIRS" ]; then
+        N="$(printf '%s\n' "$PARKED_DIRS" | grep -c .)"
+        warn "⚠️ ${N} 个被搁置（park）的报告文件夹已从自动提交排除：$(printf '%s' "$PARKED_DIRS" | tr '\n' ' ')"
+        while IFS= read -r d; do
+          [ -n "$d" ] && git reset -q -- "$d" >/dev/null 2>&1
+        done <<< "$PARKED_DIRS"
+      fi
+      if [ -n "$(staged_names)" ]; then
+        HOST="$(hostname -s 2>/dev/null || echo unknown)"
+        STAMP="$(date '+%Y-%m-%d %H:%M')"
+        if git commit --quiet -m "chore(sync): 自动同步 · ${HOST} · ${STAMP}"; then
+          ok "已自动提交未保存改动"
+        fi
+      else
+        ok "剔除搁置报告后暂存区为空，本次无待提交"
+      fi
+    fi
+    # 2) 远程若已前进，先 rebase 再推（避免 non-fast-forward）
+    git fetch --quiet origin "$BRANCH" 2>/dev/null || { warn "fetch 失败（没网？），改动已本地提交，下次收工补推"; exit 0; }
+    behind="$(git rev-list --count "HEAD..@{u}" 2>/dev/null || echo 0)"
+    if [ "$behind" != "0" ]; then
+      if ! git rebase --autostash --quiet "@{u}" >/dev/null 2>&1; then
+        git rebase --abort >/dev/null 2>&1
+        warn "⚠️ 推送前同步远程时冲突，已回滚。改动已本地提交，请手动解决后 git push。"
+        exit 0
+      fi
+    fi
+    # 3) 有领先提交才推
+    ahead="$(git rev-list --count "@{u}..HEAD" 2>/dev/null || echo 0)"
+    if [ "$ahead" = "0" ]; then ok "无待推送提交"; exit 0; fi
+    if git push --quiet origin "$BRANCH" 2>/dev/null; then
+      ok "已推送 $ahead 个提交到 origin/$BRANCH"
+      notify_peer
+    else
+      warn "⚠️ 推送失败（鉴权/网络？）。改动已本地提交，下次收工自动补推。"
+    fi
+    ;;
+
+  *)
+    echo "[git-sync] 用法: git-sync.sh pull|push"; exit 0 ;;
+esac
+exit 0

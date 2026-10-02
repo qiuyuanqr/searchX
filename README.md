@@ -1,5 +1,7 @@
 # searchX
 
+> **维护开工入口（Claude / Codex 共用）**：[HANDOFF.md](HANDOFF.md) → [项目背景与维护上下文](docs/maintenance/PROJECT_CONTEXT.md) → [架构手册](docs/ARCHITECTURE.md)。Codex 读取根 `AGENTS.md`，项目技能位于 `.agents/skills/`；Claude 的规则与技能继续保留。后台仍调用 Claude CLI，实际装载与部署状态以 HANDOFF 的日期快照为准。
+
 通用深度调研引擎，跑在 Claude Code 上——给它一个**调研目标**（概念 / 人物 / 方法论 / 事件 / 板块 / 单只股票），它会自动检索、深入分析、挖掘真实案例，产出可离线阅读的 HTML 报告 + 来源清单，同时在 Obsidian 里保存一份带双向链接（`[[双链]]`）的笔记，并**自动发布**到公开信息流站。
 
 🌐 公开站：**https://qiuyuanqr.github.io/searchX/**
