@@ -10,7 +10,7 @@
 
 ## 2026-10-03 Codex 后台接线补充
 
-以下为本地新增实现，生产尚未同步或启用；第1节原Claude链路保留为历史地图。实时验收进度见[测试记录](progress/2026-10-03-codex-runtime-tests.md)。
+以下实现已部署 Mac mini，2026-10-03 16:26 已补齐生产配置并恢复两条定时服务；第1节原Claude链路保留为历史地图。隔离验收见[测试记录](progress/2026-10-03-codex-runtime-tests.md)，真实交付进度见[生产恢复记录](progress/2026-10-03-production-resume.md)。
 
 - 两个 `src/index.js` 沿用队列、锁、失败缓存和通知状态机，模型入口改接 `services/codex-runtime/adapter.js`。配置/依赖预检及交付开关在取队列之前；固定 `gpt-6.1-sol`，默认和最低思考档均为 `high`。
 - `workflow.py` 显式提供 `.agents` 技能，股票分阶段取证/写作/模板装配，通用研究与核查按结构化结果交付；统一机械检查，研究三路、核查一路独立联网复核，最多两轮修订。检查点记录输入、能力规则、产物和原始取数hash；总预算不因恢复重置。

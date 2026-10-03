@@ -1,5 +1,7 @@
 # Codex 后台切换步骤
 
+2026-10-03 16:27 更新：用户已明确要求补齐生产配置和完整恢复，不再重复询问。两条 Mac mini LaunchAgent 已配置并启用，公开任务 #52 正在真实执行，核查空队列首轮成功；最终交付进度见 [生产恢复记录](../progress/2026-10-03-production-resume.md) 和 HANDOFF。下文的分阶段授权状态为此前部署时的历史记录，不能再据此要求同一范围的重复确认。
+
 截至 2026-10-03（北京时间），第一阶段代码提交 `f9801eb` 已合入main、push GitHub并部署Mac mini，两个runner仍停用。此文件保留后续审批步骤；实际部署证据见HANDOFF和 `docs/progress/2026-10-03-codex-runtime-tests.md`。
 
 2026-10-03 用户已明确授权第一阶段：“合入 main。push 到 GitHub。部署到 macmini。”本次第一阶段已执行并保持两个 runner 停用；第二、三阶段仍未授权。最终执行证据以 HANDOFF 和日期测试记录为准。

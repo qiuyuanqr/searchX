@@ -1,6 +1,6 @@
 # docs — 开发文档
 
-**切换审批入口**：[Codex 后台切换步骤](maintenance/CODEX_RUNTIME_SWITCH.md) — 先同步代码并保持停用，单条生产及周期启用分别验收。
+**生产恢复入口**：[2026-10-03 生产恢复](progress/2026-10-03-production-resume.md) — 两条定时服务已配置并启用，追踪真实交付。此前的分阶段过程见 [Codex 后台切换步骤](maintenance/CODEX_RUNTIME_SWITCH.md)。
 
 **当前维护入口**：根 [HANDOFF.md](../HANDOFF.md)、[项目背景与维护上下文](maintenance/PROJECT_CONTEXT.md)、[2026-10-02 Codex 接管证据](progress/2026-10-02-codex-takeover.md)。旧设计/计划/进度保留原文；当前状态与已标出的冲突先看这三个文件。
 

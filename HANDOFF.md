@@ -1,6 +1,16 @@
 # searchX 维护交接
 
-## 2026-10-03 main / GitHub / Mac mini 部署（当前状态）
+## 2026-10-03 生产恢复（16:39 配置及定时恢复完成）
+
+用户明确要求补齐生产配置并恢复完整业务，无需再次确认；本轮范围包含真实调研交付、公开发布、任务状态及原有通知，并恢复研究与核查的周期执行。下面的“两个 runner 停用”属于恢复前快照。
+
+- Mac mini 两个已安装 LaunchAgent 已补充非敏感配置：生产交付开关、`gpt-6.1-sol/high`、仓外状态目录、真实 Obsidian 库 `/Volumes/SS_SSD/obsidian`、北京时间。没有修改 `.env`；凭据仅由既有运行时注入，没有输出凭据明文。原 plist 已在常驻机 `~/Library/Application Support/searchx-codex-ops/20261003-162601/` 私密备份。
+- 两服务已 enable / bootstrap / kickstart，间隔均为 300 秒。启动前实际配置和路径预检通过，GitHub 队列鉴权、Worker 提交者路由与私密队列鉴权、SMTP verify 均成功；SMTP verify 只证明认证，尚不证明完成通知到达。
+- 公开 approved 未 done 队列只有 #52「华为和问界的分家了吗」。16:26 已启动真实研究，任务 `issue-52` 的持久身份与实际阶段进度均为 `gpt-6.1-sol/high`；分类完成，正文生成中；实际 Codex 进程参数也核对为相同模型和档位。报告、笔记、GitHub 发布、Issue done 和通知尚未完成验收。
+- 核查队列为空，恢复后首轮及两轮自然定时轮询均成功、exit=0；没有人为制造私密核查任务，真实成品回传和手机效果仍待自然任务核验。
+- 当前运行源码仍为 `f9801eb`，部署记录 HEAD 为 `f01e777`。后续追踪 #52 的独立核验、宿主交付、Pages 实际可达与通知；若失败，保存检查点并按实际错误修复，不重复生成或伪报完成。
+
+## 2026-10-03 main / GitHub / Mac mini 部署（恢复前快照）
 
 用户明确授权“合入 main。push 到 GitHub。部署到 macmini。”已完成：代码提交 `f9801eb27d78a4c5e34859a2d16ec78c03f26315` 快进合入 main、推送 GitHub，并在共享 importer / git-sync 锁保护下将 Mac mini 从684adcb快进到该提交。此前未推送的d31349f接管提交也一并同步，三份.agents技能和模板均已到常驻机。后续本次文档提交只记录部署结果，不改变运行代码。
 

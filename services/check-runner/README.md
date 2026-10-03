@@ -2,7 +2,7 @@
 
 轮询 Worker 的待核查任务，由共享 Codex 工作流按 factcheck 技能生成完整笔记、机械质检并独立核验。通过后宿主把同字节全文写入本机 Obsidian 和回传文件，再标记完成。整条流程私密，不写公开研究目录、不 push、不查重。
 
-2026-10-03：代码已随 `f9801eb` 部署到 Mac mini，服务仍 disabled / 未加载，尚未验收真实队列/手机链路。必须显式配置 `SEARCHX_CODEX_DELIVERY_ENABLED=1`；未启用、模型/档位不合要求、真实库未挂载或状态目录位于仓库内时，在取队列前退出。模型固定 `gpt-6.1-sol`，推理档位最低 `high`，不调用 Claude，不自动降级。
+2026-10-03 16:26：代码已部署到 Mac mini，生产配置已补齐，服务已启用，每 5 分钟轮询。首轮真实队列为空、exit=0，真实核查交付及手机效果仍待自然任务核验。已配置 `SEARCHX_CODEX_DELIVERY_ENABLED=1` 和 `gpt-6.1-sol/high`；未启用、模型/档位不合要求、真实库未挂载或状态目录位于仓库内时，在取队列前退出，不调用 Claude，不自动降级。当前证据见 `docs/progress/2026-10-03-production-resume.md`。
 
 ```
 Cloudflare KV（check:* 键）

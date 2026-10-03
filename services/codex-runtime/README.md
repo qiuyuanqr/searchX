@@ -1,6 +1,6 @@
 # Codex 隔离执行与工作流（测试阶段）
 
-为 searchX 提供 GPT-6.1 Sol 的受控调用。**runner / check-runner 已接入此执行层，代码已部署到 Mac mini，生产服务仍未启用。隔离测试不消费队列、发布、发信或写真实 Obsidian。** 2026-10-03 的验证记录见 `docs/progress/2026-10-03-codex-runtime-tests.md`。
+为 searchX 提供 GPT-6.1 Sol 的受控调用。**runner / check-runner 已接入此执行层，2026-10-03 16:26 已在 Mac mini 补齐生产配置并启用，固定 `gpt-6.1-sol/high`。隔离测试仍不消费队列、发布、发信或写真实 Obsidian。** 隔离证据见 `docs/progress/2026-10-03-codex-runtime-tests.md`，真实交付进度见 `docs/progress/2026-10-03-production-resume.md`。
 
 ## 固定契约
 
@@ -63,7 +63,7 @@ python3 workflow.py --root "$JOB_ROOT" --task-id "$TASK_ID" \
 
 `--kind factcheck` 走私密核查；`--inputs` 为明确准备的素材目录，`--image claim.png` 相对于该目录。`--stocks-root` 配常驻机 Stocks 白名单查询，`--budget` 是全任务秒数，恢复须保持相同值。`--no-quality-web` 仅供离线测试，并在回执明确记录。Bun检查从隔离任务目录执行，避免自动加载仓库 `.env`。
 
-自动股票及概念编排已完成常驻机隔离实测和临时宿主交付，仍保留未核事实边界；本地两个 index.js 已接共享 `adapter.js`，并要求 `SEARCHX_CODEX_DELIVERY_ENABLED=1` 才能取队列。当前未设置生产开关、未启用服务。`adapter.js` 校验真实产物全清单、哈希、模型/档位、核验与笔记回执；缓存交付重试不重复调用模型，即使生成预算已过期。
+自动股票及概念编排已完成常驻机隔离实测和临时宿主交付，仍保留未核事实边界；两个 index.js 已接共享 `adapter.js`，并要求 `SEARCHX_CODEX_DELIVERY_ENABLED=1` 才能取队列。2026-10-03 16:26 已配置生产开关并启用两服务，首条真实研究正在执行。`adapter.js` 校验真实产物全清单、哈希、模型/档位、核验与笔记回执；缓存交付重试不重复调用模型，即使生成预算已过期。
 
 研究宿主在 `services/runner/src/codex-delivery.js` 负责互斥、归档、笔记、构建、精确提交及推送；核查宿主在 `services/check-runner/src/codex-delivery.js` 负责真实笔记与同字节 result.md。它们属于需要生产授权的边界，执行层本身不发布。新代码通过单元/临时仓库测试并不等于生产推送、邮件、同步及手机回显已通过。
 
@@ -90,4 +90,4 @@ python3 job_control.py resume --root "$JOB_ROOT" --task-id "$TASK_ID" --binary "
 2026-10-03 原暂停发生在接口落地前。`adopt-pause --receipt <绝对路径> --receipt-job stock|concept` 只用于导入可信宿主的历史 `user-pause.json`：要求已停止进程、目标 root 一致、旧 job 精确哈希、原 deadline/剩余秒数算术及成功检查点清单全部吻合。导入与恢复为两个明确动作；不能拿模型返回、超时记录或未知文件恢复额度。只要记录已消费或证据改变，就拒绝，不伪造成功检查点。
 
 
-2026-10-03 最终隔离回归：Bun1422通过/1跳过、Python96项在本机与Mac mini镜像通过。人工暂停/链接接线/宿主交付均经独立复审；真实自动股票与概念样本保持未核事实范围。Darwin组销毁短窗口的EPERM仅在signal 0确认ESRCH后视作消失，探测最多10ms，仍存活或无法确认则失败。生产同步步骤见 `docs/maintenance/CODEX_RUNTIME_SWITCH.md`，两个runner仍未启用。
+2026-10-03 最终隔离回归：Bun1422通过/1跳过、Python96项在本机与Mac mini镜像通过。人工暂停/链接接线/宿主交付均经独立复审；真实自动股票与概念样本保持未核事实范围。Darwin组销毁短窗口的EPERM仅在signal 0确认ESRCH后视作消失，探测最多10ms，仍存活或无法确认则失败。此前生产同步步骤见 `docs/maintenance/CODEX_RUNTIME_SWITCH.md`；16:26 已启用两服务，真实交付进度见生产恢复记录。
