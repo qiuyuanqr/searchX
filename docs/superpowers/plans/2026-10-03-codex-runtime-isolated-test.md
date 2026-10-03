@@ -50,4 +50,5 @@
 - [x] 可重复股票模板装配、原质量检查只读接口及真样本检查。
 - [x] 自动研究/核查工作流的无人干预真实样本、失败和恢复验收；暂停预算显式恢复，保留事实未核边界。
 - [x] 生产装配适配、归档互斥/精确发布与队列接线的本地实现及隔离验证。
-- [ ] 按 docs/maintenance/CODEX_RUNTIME_SWITCH.md 获准后保存/同步代码，再分别做单条生产与周期启用验收。
+- [x] 获用户授权后合入main、push GitHub、部署Mac mini（代码f9801eb），服务保持停用。
+- [ ] 按 docs/maintenance/CODEX_RUNTIME_SWITCH.md 分别做获准单条生产与周期启用验收。

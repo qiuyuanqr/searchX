@@ -1,13 +1,13 @@
 # 2026-10-03 Codex 隔离执行测试
 
-状态：自动股票与概念编排已完成隔离真实样本及临时宿主交付，自动图片核查已通过；保留各成品未核事实边界。本地两个 runner 已接入，**尚未部署或启用生产服务**。用户要求全部模型为 `gpt-6.1-sol`、最低 `high`，已同意开始隔离测试。
+状态：自动股票与概念编排已完成隔离真实样本及临时宿主交付，自动图片核查已通过；保留各成品未核事实边界。两个 runner 已接入且代码已部署 Mac mini，**生产服务仍未启用**。用户要求全部模型为 `gpt-6.1-sol`、最低 `high`，已同意开始隔离测试。
 
 ## 工作区与范围
 
 - 开工 main `d31349f`，本轮分支 `codex/searchx-codex-runtime`；新代码在 `services/codex-runtime/`。
 - MacBook 仅离线测试与浏览器预览；真实模型调用全部在 Mac mini 独立临时目录。
 - 无生产队列消费、报告发布、邮件/Bark、真实 Obsidian 写入；Stocks 活库仅查询共享数据和报告元数据。未更改代理、SSH、账号或 Stocks 代码。
-- 研究/核查生产服务仍未迁移；导入服务保持原状。代码可运行不等于手机提交至通知的全链路已通过。
+- 研究/核查代码已部署、服务仍停用；导入服务保持原状。代码可运行不等于手机提交至通知的全链路已通过。
 
 ## 已完成的基础验收
 
@@ -186,3 +186,14 @@ runtime修复仅在初始errno=EPERM时，最多3次signal 0探测、两次5ms�
 原始回执、暂停记录、链接快照、宿主acceptance与日志保存在忽略local-evidence/2026-10-03，原备份未重写；最终hash清单及resume-acceptance记录本轮结论。最后可靠性补丁用fake进程和本地bare仓库验证，未重跑已验收内容模型、未把旧真实调用审计改写成新代码调用。Mac mini临时Python镜像起初只复制runtime目录，因测试依赖repo布局出现31项准备错误；改为完整无凭据repo布局后92项及最终96项通过，不据首轮夹具错误修改代码。
 
 当前分支尚未提交/合并/push，生产常驻机仍旧SHA、两个runner停用，真实队列、Obsidian、手机同步、邮件/Bark/KV外部回传均未本轮验收。推荐下一步是用户授权后保存并同步代码、保持服务停用；之后以明确任务ID和外部效果范围单条验收，再单独恢复周期执行。具体步骤、回退边界及现入口会处理全队列的限制见 [切换步骤](../maintenance/CODEX_RUNTIME_SWITCH.md)。
+
+
+## 用户授权保存、推送与Mac mini部署
+
+用户明确授权“合入 main。push 到 GitHub。部署到 macmini。”部署前89个代码文件与最终测试镜像同hash，无需为纯Git/文档操作重跑内容模型或扩大测试。只暂存56个任务文件，检查无research测试稿、.env、local-evidence、pyc或记忆材料；提交f9801eb27d78a4c5e34859a2d16ec78c03f26315快进合入main，GitHub远端refs/heads/main确认同SHA。旧接管提交d31349f一并发布；未删除任务分支或工作树。
+
+Mac mini旧main为684adcb且干净、两个runnerdisabled / 未加载、无活动runner。部署脚本先按既有顺序拿importer run.lock与/tmp/searchx-gitsync.lock，拒绝任何已占用锁；只git fetch与ff-only合入批准SHA，不运行同步钩子、不autostash、不reset、不清理他人文件。完成后HEAD/status与服务状态核对通过，释放自有锁。93个运行源码及三份技能/模板文件的SHA256与本地逐一相同，Python源码compile通过。
+
+执行器首轮raw SSH PATH没有node，直接codex --version报127；按现有scheduled-run完整PATH（包含/opt/homebrew/bin与/usr/local/bin）重验，Codex0.160.0/Bun1.2.17/Python3.9.6正常，没有改PATH配置、安装软件或调整服务。共享CLAUDE.local.md的Obsidian库根存在；从无.env临时cwd只导入宿主预检模块，研究assertResearchStartup及核查assertDeliveryConfiguration通过。预检使用共享路径及默认state/Stocks根，不读取实际.env配置或凭据、不验证鉴权、不跑队列或写库。
+
+本次main diff不含Deploy site触发paths，gh按提交查询未出现Actions run。没有改Worker源码或声称Pages/Worker已重新部署。代码部署完成与周期启用、真实队列、KV回传、邮件/Bark/手机同步验收分别记录；后二者仍待明确范围与授权。后续部署记录文档提交也同步常驻机，运行代码仍是f9801eb。

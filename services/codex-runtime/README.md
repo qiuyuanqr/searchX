@@ -1,6 +1,6 @@
 # Codex 隔离执行与工作流（测试阶段）
 
-为 searchX 提供 GPT-6.1 Sol 的受控调用。**本地 runner / check-runner 已接入此执行层，尚未部署或启用生产服务。隔离测试不消费队列、发布、发信或写真实 Obsidian。** 2026-10-03 的验证记录见 `docs/progress/2026-10-03-codex-runtime-tests.md`。
+为 searchX 提供 GPT-6.1 Sol 的受控调用。**runner / check-runner 已接入此执行层，代码已部署到 Mac mini，生产服务仍未启用。隔离测试不消费队列、发布、发信或写真实 Obsidian。** 2026-10-03 的验证记录见 `docs/progress/2026-10-03-codex-runtime-tests.md`。
 
 ## 固定契约
 

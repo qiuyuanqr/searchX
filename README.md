@@ -1,6 +1,6 @@
 # searchX
 
-> **维护开工入口（Claude / Codex 共用）**：[HANDOFF.md](HANDOFF.md) → [项目背景与维护上下文](docs/maintenance/PROJECT_CONTEXT.md) → [架构手册](docs/ARCHITECTURE.md)。Codex 读取根 `AGENTS.md`，项目技能位于 `.agents/skills/`；Claude 的规则与技能继续保留。本地两个后台入口已接 Codex，固定 `gpt-6.1-sol`、思考至少 `high`；尚未部署或启用生产服务，实际状态与测试证据见 HANDOFF。
+> **维护开工入口（Claude / Codex 共用）**：[HANDOFF.md](HANDOFF.md) → [项目背景与维护上下文](docs/maintenance/PROJECT_CONTEXT.md) → [架构手册](docs/ARCHITECTURE.md)。Codex 读取根 `AGENTS.md`，项目技能位于 `.agents/skills/`；Claude 的规则与技能继续保留。本地两个后台入口已接 Codex，固定 `gpt-6.1-sol`、思考至少 `high`；已部署代码到 Mac mini，两个生产服务仍未启用，实际状态与测试证据见 HANDOFF。
 
 通用深度调研引擎：给它一个**调研目标**（概念 / 人物 / 方法论 / 事件 / 板块 / 单只股票），自动检索、分析，产出可离线阅读的 HTML 报告和来源清单，并转换成带双向链接（`[[双链]]`）的 Obsidian 笔记。项目保留 Claude 交互技能，新后台由受控 Codex 工作流生成和核验，宿主负责归档、发布与通知。
 

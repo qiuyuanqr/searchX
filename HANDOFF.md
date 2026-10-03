@@ -1,10 +1,16 @@
 # searchX 维护交接
 
-## 2026-10-03 提交与部署授权（执行中）
+## 2026-10-03 main / GitHub / Mac mini 部署（当前状态）
 
-用户明确授权“合入 main。push 到 GitHub。部署到 macmini。”本次只保存和同步已验收代码，两个 runner 保持 disabled / 未加载，不运行真实队列、不设置交付开关、不发通知或写真 Obsidian。已核对本地 main 与远端只差此前接管提交，Mac mini main 工作区干净、无活动 runner；89个代码文件与最终通过的隔离测试镜像完全一致。部署完成后在本页和日期记录补实际SHA及状态。
+用户明确授权“合入 main。push 到 GitHub。部署到 macmini。”已完成：代码提交 `f9801eb27d78a4c5e34859a2d16ec78c03f26315` 快进合入 main、推送 GitHub，并在共享 importer / git-sync 锁保护下将 Mac mini 从684adcb快进到该提交。此前未推送的d31349f接管提交也一并同步，三份.agents技能和模板均已到常驻机。后续本次文档提交只记录部署结果，不改变运行代码。
 
-## 2026-10-03 用户明确继续（当前状态）
+- 本地 / GitHub / Mac mini 已核对一致，main工作区干净；部署脚本只释放自己创建的锁，未回收未知锁或改服务状态。93个代码/技能文件逐字节哈希相同，部署前89个代码文件与最终测试镜像一致。
+- Mac mini按已有scheduled-run PATH检查：Codex0.160.0、Bun1.2.17、Python3.9.6可用；Python源码compile通过；共享CLAUDE.local.md指定的库根存在，研究启动及核查交付路径预检通过。预检使用共享路径/默认state与Stocks路径，未读取.env或核验真实生产配置值、鉴权与外部交付。
+- 两个runner仍disabled / 未加载，无活动runner进程。没有运行index、定时包装或同步钩子，没有设置生产交付开关、消费真实队列、发通知或写真Obsidian；Stocks导入和其他服务保持原状。
+- 本次diff不含Deploy site触发paths，该代码push未出现对应Actions run；没有据此宣称Pages或Worker新部署。
+- 下一步如需恢复业务，按 [切换步骤](docs/maintenance/CODEX_RUNTIME_SWITCH.md) 的第二阶段明确单条任务与发布/通知/真实库范围，补实际配置及外部链路验收，再单独启用周期执行。当前入口会处理全队列，不能把直接跑入口当指定单条测试。
+
+## 2026-10-03 用户明确继续（部署前隔离验收记录）
 
 用户说“读 handoffs 继续”。已完成本地实现及隔离真实样本验收，生产切换仍待明确授权。当前任务分支 `codex/searchx-codex-runtime`，改动尚未提交；只有主工作区，无新增工作树。下一步按 [切换步骤](docs/maintenance/CODEX_RUNTIME_SWITCH.md) 保存并同步代码，两个 runner 先保持停用；真实队列、笔记库和通知另做单条验收。
 

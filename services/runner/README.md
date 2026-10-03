@@ -1,6 +1,6 @@
 # searchX Runner（M2b · 一键跑研究 + 发信）
 
-2026-10-03：本工作区已接入共享 Codex workflow 和宿主交付，**尚未部署到生产常驻机**。交接状态中的 `runner` / `check-runner` 仍为 disabled，本次没有恢复周期执行。下面描述待切换代码行为；过去的“已上线”“每 5 分钟自动跑”不能证明新链路验收完成。
+2026-10-03：共享 Codex workflow 和宿主交付已随代码提交 `f9801eb` 部署到 Mac mini，**两个 runner 仍未启用**。交接状态中的 `runner` / `check-runner` 仍为 disabled，本次没有恢复周期执行。下面描述待切换代码行为；过去的“已上线”“每 5 分钟自动跑”不能证明新链路验收完成。
 
 Runner 只在指定 Mac mini 上消费队列。MacBook 用于开发和离线验证，不运行 `runner`、定时包装脚本或同步钩子。启用后，它只处理 `approved` 且未 `done` 的 Issue：先查重，再由固定 `gpt-6.1-sol`（默认 `high`，最低 `high`）隔离研究和独立核验；通过后由宿主写三件套与 Obsidian、构建、精准提交推送，最后沿用原标签、页面可达检查和邮件逻辑。模型不直接提交、发布、写真实笔记或发信。
 
@@ -88,7 +88,7 @@ bun test /绝对路径/searchX/services/runner # 从仓外启动，不自动加�
 
 ## 历史初始化 Runbook（账号与 Worker 配置参考）
 
-下面 1–4 步来自原 M2b 初始化，保留作历史参考，不表示需要重新配置凭据或重新部署 Worker。账号、密钥、部署和服务变更必须按当前会话授权执行。步骤 5–7 已改为此次 Codex 切换说明，尚未执行。
+下面 1–4 步来自原 M2b 初始化，保留作历史参考，不表示需要重新配置凭据或重新部署 Worker。账号、密钥、部署和服务变更必须按当前会话授权执行。步骤 5–7 已改为此次 Codex 切换说明；代码已同步，真实配置、队列和通知验收尚未执行。
 
 > `{owner}=qiuyuanqr`、`{repo}=searchX`、`{author}=qiuyuanqr`。承接 M2a：Cloudflare 账号 `<你的 Gmail>`、Worker `searchx-intake.qiuyuanqr.workers.dev`、KV `INTAKE_KV`、四个标签 `pending/approved/rejected/done` 已建好、提交者邮箱已存入 KV 的 `sub:<n>` 键。**凭据永不入库。**
 
