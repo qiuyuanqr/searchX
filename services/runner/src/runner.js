@@ -303,7 +303,18 @@ export async function runOnce(config, deps) {
     // 原始目录快照优先用文件系统的（listOutputDirs），退回 scanDirs 只是为了兼容旧调用方。
     const rawBefore = listOutputDirs ? (await listOutputDirs()).map((d) => d.dir) : existing.map((e) => e.dir);
     const startedAt = now();
-    const ok = await runResearch(buildResearchPrompt({ topic, focus }));
+    const result = await runResearch(buildResearchPrompt({ topic, focus }), { issue, topic, focus });
+    // Reviewed content can outlive a temporary delivery lock/build/vault/push
+    // failure. Do not scan partial archive files or consume a park signal; the
+    // adapter will validate/reuse its cache on the next tick. Operational
+    // failure remains visible through summary.failed, without spending the
+    // model-generation failure budget or retiring the Issue.
+    if(result?.status==='delivery_deferred' && ['isolated_reviewed','parked'].includes(result.workflow_status)) {
+      summary.failed++;
+      log(`#${issue.number} 交付延期：已核验产物保留，本轮不贴 done、不通知，下一轮重试交付（研究失败计数保持 ${prevFails}）`);
+      continue;
+    }
+    const ok = result===true;
     const after = scanDirs();
     const rawAfter = listOutputDirs ? await listOutputDirs() : after.map((e) => ({ dir: e.dir, mtimeMs: 0 }));
     const newDirs = diffNewDirs(rawBefore, rawAfter.map((d) => d.dir));

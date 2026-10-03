@@ -1,6 +1,6 @@
 // services/runner/src/index.js
 // 一键启动入口：bun run runner。装配真实依赖后跑 runOnce。
-// 副作用集中在此（spawn claude / nodemailer / 文件系统 / 网络），不单测——逻辑都在被注入的纯函数里。
+// 副作用集中在此（Codex workflow / nodemailer / 文件系统 / 网络），不单测——逻辑都在被注入的纯函数里。
 
 import nodemailer from "nodemailer";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, openSync, closeSync, writeSync, statSync, utimesSync } from "fs";
@@ -8,7 +8,7 @@ import { join } from "path";
 import { homedir } from "os";
 import { scanResearch } from "../../../web/build/scan.js";
 import { loadRunnerConfig } from "./config.js";
-import { buildChildEnv } from "./child-env.js";
+import { assertResearchStartup, runCodexResearch } from "./codex-research.js";
 import { sendEmail as sendEmailImpl } from "./email.js";
 import { runOnce } from "./runner.js";
 import { pollUntilOk } from "./verify-published.js";
@@ -237,17 +237,19 @@ async function main() {
     console.error("✗ 请在 searchX 仓库根目录运行（缺 research/ 或 .git/）");
     process.exit(1);
   }
-  if (!Bun.which("claude")) {
-    console.error("✗ 找不到 claude CLI（headless /research 依赖它）");
-    process.exit(1);
-  }
-
   // 先加载 config：抢锁的超龄回收上限要用到 config.claudeTimeoutMs（见下方 acquireLock）。
   let config;
   try {
     config = loadRunnerConfig(process.env);
   } catch (e) {
     console.error("✗ " + e.message);
+    process.exit(1);
+  }
+
+  try {
+    assertResearchStartup(config,process.cwd());
+  } catch(error) {
+    console.error(`✗ Codex 交付启动检查失败：${error.message} → 本轮不取队列`);
     process.exit(1);
   }
 
@@ -272,16 +274,23 @@ async function main() {
   const stopLockRefresh = startLockRefresh(lockFile());
   process.on("exit", () => { stopLockRefresh(); release(); });
 
-  // 当前 spawn 的 claude 子进程句柄：SIGTERM/SIGINT 是「裸 kill runner 进程」场景（区别于下面
-  // runResearch 内部 termTimer/killTimer 那条超时自杀路径）。没有这层，进程退出只会跑
-  // process.on("exit", release) 删锁，但 Bun.spawn 出的 claude 不随父进程退出——锁没了、claude
-  // 还在写 research/ 并将 push，下个 tick 新 runner 会对同一 Issue 再 spawn 一次，两边并发写
-  // 同一工作树、重复消耗额度、push 互顶。
+  // 退出前让 Python workflow 回收其模型进程组，期间禁止进入宿主交付。
   let currentChild = null;
-  function killChildAndExit(code) {
-    if (currentChild) { try { currentChild.kill(9); } catch {} }
+  let stopping=false;
+  async function killChildAndExit(code) {
+    if(stopping)return;stopping=true;
+    const child=currentChild;
+    if(child){
+      // Python owns CLI groups; its finally block must reap them before releasing this lock.
+      try{child.kill("SIGTERM");}catch{}
+      await Promise.race([
+        child.exited || new Promise(resolve=>child.once("close",resolve)),
+        new Promise(resolve=>setTimeout(()=>{try{child.kill("SIGKILL");}catch{}resolve();},10000)),
+      ]);
+    }
     process.exit(code);
   }
+
   process.on("SIGINT", () => killChildAndExit(130));
   process.on("SIGTERM", () => killChildAndExit(143));
 
@@ -303,32 +312,10 @@ async function main() {
     // 「有没有产出」只看文件系统，不看解析结果（frontmatter 语法错不等于没产出）。
     // mtime 取 notes.md / report.html 里较新的那个，用来识别「重跑覆写了同名目录」。
     listOutputDirs: () => listResearchDirs("research"),
-    runResearch: async (prompt) => {
-      console.log(`→ claude -p ${JSON.stringify(prompt)}`);
-      // 剥机密 + 打 git-sync 哨兵：见 child-env.js（与 check-runner 共用同一套装配）。
-      const proc = Bun.spawn(["claude", "-p", prompt, ...config.claudeArgs], {
-        stdout: "inherit",
-        stderr: "inherit",
-        stdin: "ignore",
-        env: buildChildEnv(process.env),
-      });
-      currentChild = proc; // 存句柄：裸 kill runner 进程时 SIGTERM/SIGINT 处理器据此一并杀子进程
-      // 硬超时：claude 挂死会让单实例锁被活进程一直持有，后续 launchd tick 全部 exit 0
-      // 跳过（不触发 scheduled-run 报警），公开流水线静默停摆。到点先 TERM、宽限 10 秒再
-      // KILL；超时按「研究未产出」计入失败退避（连续达阈值自动贴 done 停跑并专信作者）。
-      let timedOut = false;
-      const termTimer = setTimeout(() => { timedOut = true; try { proc.kill(); } catch {} }, config.claudeTimeoutMs);
-      const killTimer = setTimeout(() => { try { proc.kill(9); } catch {} }, config.claudeTimeoutMs + 10_000);
-      const code = await proc.exited;
-      currentChild = null;
-      clearTimeout(termTimer);
-      clearTimeout(killTimer);
-      if (timedOut) {
-        console.log(`✗ 研究超时（${Math.round(config.claudeTimeoutMs / 60_000)} 分钟），已终止 claude 子进程`);
-        return false;
-      }
-      return code === 0;
-    },
+    runResearch: (_prompt,context) => runCodexResearch(context,config,{
+      repoRoot:process.cwd(),env:process.env,onChild:(child)=>{currentChild=child;},isCancelled:()=>stopping,
+      log:(message)=>console.log(message),
+    }),
     // 部署探活：Step6 push 后 GitHub Actions 才 build+deploy（约 1–2 分钟）；偶发 Pages 5xx
     // 会打掉部署 → 报告子页 404。轮询报告 URL 直到 200（含单次硬超时，防连接卡死永久占锁）。
     verifyPublished: async (url) => {

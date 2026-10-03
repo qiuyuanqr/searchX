@@ -5,9 +5,30 @@ import { loadCheckRunnerConfig } from "./config.js";
 const BASE = {
   CHECK_RUNNER_WORKER_URL: "https://worker.dev",
   CHECK_RUNNER_SECRET: "secret123",
+  CHECK_RUNNER_OBSIDIAN_VAULT: "/private/tmp/searchx-test-vault",
+  SEARCHX_CODEX_DELIVERY_ENABLED: "1",
 };
 
 describe("loadCheckRunnerConfig", () => {
+  it("未显式启用交付时拒绝启动", () => {
+    for (const enabled of [undefined, "0", "true"]) {
+      expect(() => loadCheckRunnerConfig({ ...BASE, SEARCHX_CODEX_DELIVERY_ENABLED: enabled })).toThrow("SEARCHX_CODEX_DELIVERY_ENABLED=1");
+    }
+  });
+
+  it("拒绝换模型或低于 high 档位", () => {
+    expect(() => loadCheckRunnerConfig({ ...BASE, SEARCHX_CODEX_MODEL: "gpt-5.6-sol" })).toThrow("gpt-6.1-sol");
+    for (const effort of ["low", "medium", "typo"]) {
+      expect(() => loadCheckRunnerConfig({ ...BASE, SEARCHX_CODEX_EFFORT: effort })).toThrow("high");
+    }
+    expect(loadCheckRunnerConfig({ ...BASE, SEARCHX_CODEX_EFFORT: "xhigh" }).codexEffort).toBe("xhigh");
+  });
+
+  it("私密状态根默认固定在用户 Application Support，覆盖必须为绝对路径", () => {
+    expect(loadCheckRunnerConfig(BASE).codexStateRoot).toEndWith("/Library/Application Support/searchx-codex-jobs");
+    expect(loadCheckRunnerConfig({ ...BASE, SEARCHX_CODEX_STATE_ROOT: "/private/tmp/codex-jobs" }).codexStateRoot).toBe("/private/tmp/codex-jobs");
+    expect(() => loadCheckRunnerConfig({ ...BASE, SEARCHX_CODEX_STATE_ROOT: "research/private" })).toThrow("绝对路径");
+  });
   it("必填齐全时正常加载", () => {
     const cfg = loadCheckRunnerConfig(BASE);
     expect(cfg.workerUrl).toBe("https://worker.dev");
@@ -96,8 +117,8 @@ describe("loadCheckRunnerConfig", () => {
     expect(loadCheckRunnerConfig({ ...BASE, CHECK_RUNNER_TIMEOUT_MINUTES: "0" }).claudeTimeoutMs).toBe(30 * 60_000);
   });
 
-  it("obsidianVault 可选：缺省空串，配了去首尾空白", () => {
-    expect(loadCheckRunnerConfig(BASE).obsidianVault).toBe("");
+  it("obsidianVault 必填，配了去首尾空白", () => {
+    expect(() => loadCheckRunnerConfig({ ...BASE, CHECK_RUNNER_OBSIDIAN_VAULT: "" })).toThrow("CHECK_RUNNER_OBSIDIAN_VAULT");
     expect(loadCheckRunnerConfig({ ...BASE, CHECK_RUNNER_OBSIDIAN_VAULT: " /Volumes/SS_SSD/obsidian " }).obsidianVault).toBe("/Volumes/SS_SSD/obsidian");
   });
 });

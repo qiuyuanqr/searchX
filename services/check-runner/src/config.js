@@ -2,9 +2,13 @@
 // 从 process.env 读 Check Runner 配置；缺必填即抛清晰错误（列出所有缺的键）。
 // 机密只在本机环境变量 / 未入库的 .env，绝不入库。
 
+import { homedir } from "os";
+import { isAbsolute, join } from "path";
+
 const REQUIRED = [
   "CHECK_RUNNER_WORKER_URL",  // Worker 基址，形如 https://searchx-intake.qiuyuanqr.workers.dev
   "CHECK_RUNNER_SECRET",      // 与 Worker secret CHECK_RUNNER_SECRET 同值
+  "CHECK_RUNNER_OBSIDIAN_VAULT", // 宿主交付必须明确真实库根
 ];
 
 const t = (s) => String(s).trim();
@@ -16,6 +20,18 @@ export function loadCheckRunnerConfig(env) {
     throw new Error(
       `缺少 Check Runner 必需环境变量：${missing.join(", ")}（放进未入库的 .env 或 export，绝不入库）`
     );
+  }
+  if (env.SEARCHX_CODEX_DELIVERY_ENABLED !== "1") {
+    throw new Error("Codex 交付未启用：必须显式设置 SEARCHX_CODEX_DELIVERY_ENABLED=1，本轮不取队列");
+  }
+  const codexModel = t(env.SEARCHX_CODEX_MODEL || "gpt-6.1-sol");
+  const codexEffort = t(env.SEARCHX_CODEX_EFFORT || "high");
+  if (codexModel !== "gpt-6.1-sol" || !["high", "xhigh", "max", "ultra"].includes(codexEffort)) {
+    throw new Error("Codex 必须使用 gpt-6.1-sol，推理档位至少 high；拒绝换模型或降级");
+  }
+  const codexStateRoot = t(env.SEARCHX_CODEX_STATE_ROOT || join(homedir(), "Library", "Application Support", "searchx-codex-jobs"));
+  if (!isAbsolute(codexStateRoot) || !isAbsolute(t(env.CHECK_RUNNER_OBSIDIAN_VAULT))) {
+    throw new Error("Codex stateRoot 与 CHECK_RUNNER_OBSIDIAN_VAULT 必须为绝对路径");
   }
 
   // SMTP 可选：全部填写才启用，否则 notify 关闭
@@ -36,10 +52,10 @@ export function loadCheckRunnerConfig(env) {
     barkUrl: trimUrl(env.CHECK_RUNNER_BARK_URL || ""),
     barkDetail: String(env.CHECK_RUNNER_BARK_DETAIL || "").trim() === "1",
     checkPageUrl: t(env.CHECK_RUNNER_CHECK_PAGE_URL || ""),
-    // Obsidian 库根（可选）：配了就在每轮开跑前探一下目录在不在。Mac mini 的库在外置 SSD 上，盘没挂时
-    // claude 会「退出码 0 且无产出」→ 重试 3 次退休、只留一封看不出原因的失败邮件；探活让这种情况
-    // 在跑 claude 之前就以明确原因退出（exit 1 → scheduled-run 连败报警会带上原因）。
-    // 与 CLAUDE.local.md 里的 OBSIDIAN_VAULT 同值（那份是给 claude 读的，runner 只认环境变量）。
+    codexModel,
+    codexEffort,
+    codexStateRoot,
+    // 库根必须存在；宿主写入 Factcheck，模型只生成隔离产物。
     obsidianVault: t(env.CHECK_RUNNER_OBSIDIAN_VAULT || ""),
     claudeArgs: (env.CHECK_RUNNER_CLAUDE_ARGS || "--permission-mode bypassPermissions")
       .split(/\s+/)
@@ -49,8 +65,7 @@ export function loadCheckRunnerConfig(env) {
       const n = parseInt(env.CHECK_RUNNER_MAX_ATTEMPTS, 10);
       return Number.isInteger(n) && n >= 1 ? n : 3;
     })(),
-    // claude 子进程硬超时（分钟，默认 30）：挂死的子进程会让单实例锁一直被活进程持有、
-    // 整条管道停摆，必须有到点强杀。非法值回落默认。
+    // 旧字段名仅保留接口兼容；实际限制整个 Codex workflow（含核验）。
     claudeTimeoutMs: (() => {
       const n = parseInt(env.CHECK_RUNNER_TIMEOUT_MINUTES, 10);
       return (Number.isInteger(n) && n >= 1 ? n : 30) * 60_000;

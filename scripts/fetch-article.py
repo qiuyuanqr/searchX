@@ -4,6 +4,7 @@
 用法：
     python3 scripts/fetch-article.py <url>                 抓取并把正文以 markdown 打到 stdout
     python3 scripts/fetch-article.py <url> --html <file>   不联网，解析本地 HTML（测试 / 排障用）
+    python3 scripts/fetch-article.py <url> --json          输出机器协议（原文与可信正文字数分字段）
 
 为什么要有这个脚本：微信公众号等站点对数据中心 IP 与无头抓取器返回「环境异常 / 去验证」的验证页，
 WebFetch 与 jina 阅读代理都拿不到正文；而从本机（住宅网络）用手机 UA 直连，公众号文章能正常
@@ -16,6 +17,7 @@ WebFetch 与 jina 阅读代理都拿不到正文；而从本机（住宅网络�
 """
 import html
 import ipaddress
+import json
 import re
 import subprocess
 import sys
@@ -205,9 +207,15 @@ def main(argv):
     ]
     if desc:
         lines.append(f"摘要: {desc}")
-    print("\n".join(lines))
-    print()
-    print(body if body else "（正文为空：页面可能靠脚本渲染，或站点结构不在解析范围内）")
+    markdown = "\n".join(lines) + "\n\n" + (body if body else "（正文为空：页面可能靠脚本渲染，或站点结构不在解析范围内）") + "\n"
+    if "--json" in argv:
+        # Metadata and article text are hostile strings. JSON escaping keeps
+        # them separate from host-owned availability/count fields.
+        print(json.dumps({"version": 1, "url": url, "body": body,
+                          "body_char_count": len(body), "truncated": truncated,
+                          "markdown": markdown}, ensure_ascii=False))
+    else:
+        print(markdown, end="")
     return 0
 
 

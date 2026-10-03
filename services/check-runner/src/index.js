@@ -1,10 +1,10 @@
 // services/check-runner/src/index.js
 // 核查 runner 装配入口：bun run check-runner。装配真实依赖后跑 runOnce。
-// 副作用集中在此（spawn claude / nodemailer / 文件锁 / 网络），不单测——逻辑都在被注入的纯函数里。
+// 副作用集中在此（Codex workflow / nodemailer / 文件锁 / 网络），不单测——逻辑都在被注入的纯函数里。
 
 import nodemailer from "nodemailer";
-import { mkdirSync, openSync, closeSync, writeSync, writeFileSync, readFileSync, rmSync, statSync, utimesSync, existsSync } from "fs";
-import { join } from "path";
+import { mkdirSync, openSync, closeSync, writeSync, writeFileSync, readFileSync, rmSync, statSync, lstatSync, utimesSync, realpathSync } from "fs";
+import { join, resolve } from "path";
 import { homedir, tmpdir } from "os";
 import { loadCheckRunnerConfig } from "./config.js";
 import { fetchPendingChecks, markCheckDone, fetchCheckImage, markCheckStart } from "./poll.js";
@@ -14,7 +14,8 @@ import { createAttemptsStore } from "./attempts.js";
 import { runOnce } from "./runner.js";
 import { signalsFromResult } from "./result-signals.js";
 import { qcResult } from "./result-qc.js";
-import { buildChildEnv } from "../../runner/src/child-env.js";
+import { runWorkflow } from "../../codex-runtime/adapter.js";
+import { assertDeliveryConfiguration, assertSafeDirectory, runCodexFactcheck } from "./codex-delivery.js";
 import { writeFileAtomic } from "../../runner/src/atomic-write.js";
 import { evaluateLock, formatLockFile, parseLockFile } from "../../runner/src/lock-policy.js";
 import { sendEmail } from "../../runner/src/email.js";
@@ -57,7 +58,7 @@ function makeRelease(path) {
 
 // 定期更新锁时间戳：批次期间周期性刷新锁文件 mtime。锁龄本来只在建锁时定格，而 runOnce 是串行处理整个
 // 队列的——一批多条合法任务的总时长轻松超过「单条任务超时 + 余量」这个上限，于是下一个
-// launchd tick 会把仍在跑的实例判成超龄残锁抢走，两个实例并发跑 claude、并发写同一临时目录。
+// launchd tick 会把仍在跑的实例判成超龄残锁抢走，两个实例并发跑 Codex、并发写同一临时目录。
 // 有了这个定期更新，「超龄」才真正只匹配死锁（进程没了自然不再刷新）。
 function startLockRefresh(path, intervalMs = 60_000) {
   const timer = setInterval(() => {
@@ -105,7 +106,25 @@ export function assertSafeTaskId(id) {
 }
 
 function taskTmpDir(id) {
-  return join(tmpdir(), "searchx-check", assertSafeTaskId(id));
+  return join(realpathSync(tmpdir()), "searchx-check", assertSafeTaskId(id));
+}
+
+function cleanupTaskTmpDir(dir) {
+  try {
+    assertSafeDirectory(dir); // 不跟随后来出现的目录软链清理别处文件。
+    rmSync(dir, { recursive: true, force: true });
+  } catch {}
+}
+
+function writeTaskInput(path, bytes) {
+  assertSafeDirectory(join(path, ".."));
+  try {
+    const previous = lstatSync(path);
+    if (previous.isSymbolicLink() || !previous.isFile()) throw new Error("核查输入文件含软链或不是普通文件");
+    rmSync(path); // 先移除残留普通文件，不能截断可能与别处共享的硬链接。
+  } catch (error) { if (error.code !== "ENOENT") throw error; }
+  const fd = openSync(path, "wx", 0o600);
+  try { writeFileSync(fd, bytes); } finally { closeSync(fd); }
 }
 
 function extFromMime(mime) {
@@ -127,14 +146,14 @@ async function prepareCheckImages(task, { workerUrl, secret }) {
   const parentCount = task.parentId && pc && Number.isInteger(pc.imageCount) && pc.imageCount > 0 ? pc.imageCount : 0;
   if (!imgs.length && !parentCount) return { imagePaths: [], parentImagePaths: [], cleanup: () => {} };
   const dir = taskTmpDir(task.id);
-  const cleanup = () => { try { rmSync(dir, { recursive: true, force: true }); } catch {} };
+  const cleanup = () => cleanupTaskTmpDir(dir);
   try {
-    mkdirSync(dir, { recursive: true });
+    assertSafeDirectory(dir, { create: true });
     const imagePaths = [];
     for (let n = 0; n < imgs.length; n++) {
       const { bytes, mime } = await fetchCheckImage({ workerUrl, secret, id: task.id, n });
       const p = join(dir, `${n}.${extFromMime(mime)}`);
-      writeFileSync(p, bytes);
+      writeTaskInput(p, bytes);
       imagePaths.push(p);
     }
     const parentImagePaths = [];
@@ -152,7 +171,7 @@ async function prepareCheckImages(task, { workerUrl, secret }) {
           throw err;
         }
         const p = join(dir, `prev-${n}.${extFromMime(got.mime)}`);
-        writeFileSync(p, got.bytes);
+        writeTaskInput(p, got.bytes);
         parentImagePaths.push(p);
       }
     }
@@ -171,7 +190,7 @@ async function prepareCheckImages(task, { workerUrl, secret }) {
 // 标题→空），绝不影响核查主流程。
 function prepareCheckVerdict(task) {
   const dir = taskTmpDir(task.id);
-  mkdirSync(dir, { recursive: true });
+  assertSafeDirectory(dir, { create: true });
   const resultPath = join(dir, "result.md");
   const legacyVerdictPath = join(dir, "verdict.txt");
   const legacyTitlePath = join(dir, "title.txt");
@@ -186,7 +205,7 @@ function prepareCheckVerdict(task) {
   // 父结果已过期（null）就不写、不给路径——skill 只拿到分隔线内的父任务原始内容。
   let hasPrevious = false;
   if (typeof task.parentResult === "string" && task.parentResult.trim()) {
-    writeFileSync(previousPath, task.parentResult);
+    writeTaskInput(previousPath, task.parentResult);
     hasPrevious = true;
   }
   const readResult = () => {
@@ -205,7 +224,7 @@ function prepareCheckVerdict(task) {
     readResult,
     // 内容标题：frontmatter title 优先，兜底 title.txt；都没有返回 null（前端 fallback 旧摘要）
     readTitle: () => signalsFromResult(readResult()).title || firstLine(legacyTitlePath),
-    cleanup: () => { try { rmSync(dir, { recursive: true, force: true }); } catch {} },
+    cleanup: () => cleanupTaskTmpDir(dir),
   };
 }
 
@@ -284,11 +303,6 @@ function makeDoneCache() {
 }
 
 async function main() {
-  if (!Bun.which("claude")) {
-    console.error("✗ 找不到 claude CLI（/factcheck 依赖它）");
-    process.exit(1);
-  }
-
   let config;
   try {
     config = loadCheckRunnerConfig(process.env);
@@ -297,21 +311,19 @@ async function main() {
     process.exit(1);
   }
 
-  // Obsidian 库目录探活（配了 CHECK_RUNNER_OBSIDIAN_VAULT 才探）。Mac mini 的库在外置 SSD 上，盘没挂时
-  // claude 会「退出码 0 且无产出」→ 同一任务重试 3 次退休、只留一封看不出原因的失败邮件。这里在
-  // 抢锁、跑 claude 之前就以明确原因 exit 1：任务原地留在 pending、不计失败次数，scheduled-run 的
-  // 连败报警（3 tick）会把这行原因带进邮件；盘挂回来下一 tick 自动恢复。
-  // 只探库根、不探 Factcheck/ 子目录——SKILL 规定子目录缺了 mkdir -p 即可，不是故障。
-  if (config.obsidianVault) {
-    let isDir = false;
-    try { isDir = existsSync(config.obsidianVault) && statSync(config.obsidianVault).isDirectory(); } catch {}
-    if (!isDir) {
-      console.error(`✗ Obsidian 库目录不存在或不是目录：${config.obsidianVault}（外置盘没挂？）→ 本轮不跑核查，任务留在队列`);
-      process.exit(1);
+  // 启用门禁、模型档位、库挂载和仓外状态目录必须在取队列之前通过。
+  const repoRoot = resolve(import.meta.dir, "../../..");
+  try {
+    assertDeliveryConfiguration(config, repoRoot);
+    for (const [key, fallback] of [["SEARCHX_CODEX_BIN", "codex"], ["SEARCHX_PYTHON_BIN", "python3"], ["SEARCHX_BUN_BIN", "bun"]]) {
+      if (!Bun.which(process.env[key] || fallback)) throw new Error(`执行器不可用：${key}`);
     }
+  } catch (error) {
+    console.error(`✗ Codex 交付启动检查失败：${error.message} → 本轮不取队列`);
+    process.exit(1);
   }
 
-  // 超龄上限给足余量（claude 超时 + kill 宽限 + 网络缓冲），远高于任何一次合法核查任务的真实
+  // 超龄上限给足余量（Codex 超时 + kill 宽限 + 网络缓冲），远高于任何一次合法核查任务的真实
   // 耗时，只用来兜断电残留锁被复用 pid 判活的死锁——不会误杀正在跑的长任务。
   const release = acquireLock(config.claudeTimeoutMs + 30 * 60_000);
   if (!release) {
@@ -330,12 +342,26 @@ async function main() {
   const stopLockRefresh = startLockRefresh(lockFile());
   process.on("exit", () => { stopLockRefresh(); release(); });
 
-  // 当前 spawn 的 claude 子进程句柄：SIGTERM/SIGINT 是「裸 kill runner 进程」场景（区别于下面
-  // runFactcheck 内部 termTimer/killTimer 那条超时自杀路径）。没有这层，进程退出只会跑
-  // process.on("exit", release) 删锁，但 Bun.spawn 出的 claude 不随父进程退出。
+  // 当前 Codex workflow 子进程句柄：SIGTERM/SIGINT 是「裸 kill runner 进程」场景（区别于下面
+  // 适配器内部的绝对超时终止路径）。没有这层，进程退出只会跑
+  // process.on("exit", release) 删锁，但 Codex workflow 子进程 不随父进程退出。
   let currentChild = null;
-  function killChildAndExit(code) {
-    if (currentChild) { try { currentChild.kill(9); } catch {} }
+  let stopping = false;
+  async function killChildAndExit(code) {
+    if (stopping) return;
+    stopping = true;
+    // workflow 的 Python 宿主收到 TERM 后负责回收 Codex 进程组；给它原有的 10 秒宽限。
+    const child = currentChild;
+    if (child) {
+      try { child.kill("SIGTERM"); } catch {}
+      let timer;
+      const exited = await Promise.race([
+        Promise.resolve(child.exited).then(() => true, () => true),
+        new Promise((resolve) => { timer = setTimeout(() => resolve(false), 10_000); }),
+      ]);
+      clearTimeout(timer);
+      if (!exited) { try { child.kill("SIGKILL"); } catch {} }
+    }
     process.exit(code);
   }
   process.on("SIGINT", () => killChildAndExit(130));
@@ -361,36 +387,15 @@ async function main() {
       prepareCheckImages(task, { workerUrl: config.workerUrl, secret: config.secret }),
     prepareVerdict: prepareCheckVerdict,
     buildPrompt: buildFactcheckPrompt,
-    runFactcheck: async (prompt) => {
-      // 只打元信息：prompt 里含被核查内容的明文（私人核查，可能是聊天记录/截图 OCR），
-      // 日志文件长期留在本机且会被排障时随手 cat/贴出来，正文不该落盘。
-      // 确需看全文时用 CHECK_RUNNER_LOG_PROMPT=1 临时打开。
-      if (process.env.CHECK_RUNNER_LOG_PROMPT === "1") console.log(`→ claude -p ${JSON.stringify(prompt)}`);
-      else console.log(`→ claude -p （prompt ${prompt.length} 字，正文不入日志）`);
-      // 剥机密（RUNNER_* 与 CHECK_RUNNER_* 一起剥——共用同一个 .env，只剥一组等于白送另一组）
-      // + 打 git-sync 哨兵防止子会话钩子把脏工作树推上公开仓：见 child-env.js。
-      const proc = Bun.spawn(["claude", "-p", prompt, ...config.claudeArgs], {
-        stdout: "inherit",
-        stderr: "inherit",
-        stdin: "ignore",
-        env: buildChildEnv(process.env),
-      });
-      currentChild = proc; // 存句柄：裸 kill runner 进程时 SIGTERM/SIGINT 处理器据此一并杀子进程
-      // 硬超时：claude 挂死会让单实例锁被活进程一直持有，后续 launchd tick 全部跳过、
-      // 整条管道停摆。到点先 TERM、宽限 10 秒再 KILL；超时按失败计（attempts 接住、走退休）。
-      let timedOut = false;
-      const termTimer = setTimeout(() => { timedOut = true; try { proc.kill(); } catch {} }, config.claudeTimeoutMs);
-      const killTimer = setTimeout(() => { try { proc.kill(9); } catch {} }, config.claudeTimeoutMs + 10_000);
-      const code = await proc.exited;
-      currentChild = null;
-      clearTimeout(termTimer);
-      clearTimeout(killTimer);
-      if (timedOut) {
-        console.log(`✗ 核查超时（${Math.round(config.claudeTimeoutMs / 60_000)} 分钟），已终止 claude 子进程`);
-        return 124; // 即使被 TERM 后进程以 0 退出，也按超时失败处理
-      }
-      return code;
-    },
+    // 旧 prompt 只保留 deps 接口兼容；Codex 仅收到明确 JSON 请求和本任务输入白名单。
+    runFactcheck: async (_prompt, context) => runCodexFactcheck(context, config, {
+      runWorkflow,
+      repoRoot,
+      env: process.env,
+      onChild: (child) => { currentChild = child; },
+      isCancelled: () => stopping,
+      log: (message) => console.log(message),
+    }),
     attempts: makeAttemptsStore(),
     doneCache: makeDoneCache(),
     qcResult,   // 结果文件轻量质检：问题只进日志（见 runner.js）

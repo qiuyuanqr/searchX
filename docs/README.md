@@ -1,5 +1,7 @@
 # docs — 开发文档
 
+**切换审批入口**：[Codex 后台切换步骤](maintenance/CODEX_RUNTIME_SWITCH.md) — 先同步代码并保持停用，单条生产及周期启用分别验收。
+
 **当前维护入口**：根 [HANDOFF.md](../HANDOFF.md)、[项目背景与维护上下文](maintenance/PROJECT_CONTEXT.md)、[2026-10-02 Codex 接管证据](progress/2026-10-02-codex-takeover.md)。旧设计/计划/进度保留原文；当前状态与已标出的冲突先看这三个文件。
 
 存 searchX **自身**的开发过程文档（与 `research/` 的调研产出无关）。
@@ -18,6 +20,7 @@
 ## 现有文档（按时间）
 
 **设计稿（specs）**
+- [2026-10-03 Codex 后台迁移：实测现状与方案](superpowers/specs/2026-10-03-codex-runtime-migration-design.md) — 固定 6.1 Sol / 至少 high；Stocks 导入已接住 Codex 报告，两条 searchX runner 尚待迁移
 - [2026-06-03 searchX 网站化设计稿](superpowers/specs/2026-06-03-searchx-website-design.md)
 - [2026-06-04 股票深度分析 skill 设计](superpowers/specs/2026-06-04-stock-analysis-skill-design.md)
 - [2026-06-06 上线前独立核验设计](superpowers/specs/2026-06-06-上线前独立核验-设计.md)
@@ -33,6 +36,7 @@
 - [2026-07-21 Obsidian 全文同步 + 中文文件名设计](superpowers/specs/2026-07-21-obsidian-full-sync-chinese-names-design.md)
 
 **实现计划（plans）**
+- [2026-10-03 Codex 后台隔离测试计划](superpowers/plans/2026-10-03-codex-runtime-isolated-test.md)
 - [2026-06-03 M1 · 信息流站](superpowers/plans/2026-06-03-m1-feed-site.md)
 - [2026-06-03 M2a · 提交入队流程](superpowers/plans/2026-06-03-m2a-intake-loop.md)
 - [2026-06-03 M2b · Runner](superpowers/plans/2026-06-03-m2b-runner.md)
@@ -42,6 +46,7 @@
 - [2026-07-06 factcheck 网页查看结果](superpowers/plans/2026-07-06-factcheck网页查看结果.md)
 
 **进度记录（progress）**
+- [2026-10-03 Codex 执行层隔离测试](progress/2026-10-03-codex-runtime-tests.md) — 真实模型、图片、Stocks、失败边界与生产未迁移事项
 - [2026-06-04 自动 runner + 全项目审计修复](progress/2026-06-04-runner-automation-and-audit.md)
 - [2026-06-09 股票查重（不重复调研）+ 提交侧安全加固](progress/2026-06-09-dedup-and-intake-hardening.md)
 - [2026-08-16 机器质检补第二条腿：联网数字回链核验](progress/2026-08-16-web-number-verification.md) — 挂了外链的数字回到那页搜一遍；不是闸，只出待质证清单喂给 Step 5.5

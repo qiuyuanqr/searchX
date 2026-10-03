@@ -122,7 +122,13 @@ export async function runOnce(config, deps) {
         try { await markStart(t.id); } catch (err) { log(`标记开跑失败 ${t.id}（${err.message}），继续核查`); }
       }
       log(`→ 开始核查 ${t.id}`);
-      const code = await runFactcheck(prompt);
+      const code = await runFactcheck(prompt, {
+        task: t,
+        imagePaths,
+        parentImagePaths,
+        resultPath: verdict?.resultPath,
+        previousPath: verdict?.previousPath,
+      });
       if (code !== 0) {
         fail++;
         recordFailure(t.id);

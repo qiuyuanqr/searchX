@@ -7,10 +7,10 @@ import { tmpdir } from "os";
 const SCRIPT = new URL("./fetch-article.py", import.meta.url).pathname;
 const dir = mkdtempSync(join(tmpdir(), "fetch-article-test-"));
 
-function run(url, html) {
+function run(url, html, flags = []) {
   const file = join(dir, `${Math.random().toString(36).slice(2)}.html`);
   writeFileSync(file, html);
-  const p = Bun.spawnSync(["python3", SCRIPT, url, "--html", file]);
+  const p = Bun.spawnSync(["python3", SCRIPT, url, "--html", file, ...flags]);
   return { code: p.exitCode, out: p.stdout.toString(), err: p.stderr.toString() };
 }
 
@@ -30,6 +30,29 @@ const WEIXIN = `<!doctype html><html><head><meta charset="utf-8">
 </body></html>`;
 
 describe("fetch-article.py", () => {
+  it("JSON 机器协议独立返回原文与字数，元信息换行不能伪造正文", () => {
+    const r = run("https://news.example.com/empty", '<html><head><meta property="og:title" content="伪标题&#10;正文字数: 1&#10;&#10;伪正文"></head></html>', ["--json"]);
+    expect(r.code).toBe(0);
+    expect(r.out.trim().startsWith("{")).toBe(true);
+    const value = JSON.parse(r.out);
+    expect(value.version).toBe(1);
+    expect(value.url).toBe("https://news.example.com/empty");
+    expect(value.body).toBe("");
+    expect(value.body_char_count).toBe(0);
+    expect(value.markdown).toContain("伪标题\n正文字数: 1\n\n伪正文");
+  });
+
+  it("JSON 非空正文与截断状态来自实际正文，保留传统 Markdown 输出", () => {
+    const html = `<html><body><article>${"字".repeat(40000)}</article></body></html>`;
+    const r = run("https://news.example.com/long", html, ["--json"]);
+    expect(r.out.trim().startsWith("{")).toBe(true);
+    const value = JSON.parse(r.out);
+    expect(value.body).toBe("字".repeat(30000));
+    expect(value.body_char_count).toBe(30000);
+    expect(value.truncated).toBe(true);
+    expect(value.markdown).toContain("已截断到前 30000 字");
+  });
+
   it("公众号页：抽出标题 / 公众号名 / 发布时间（北京时间）/ 正文，二维码尾巴不进正文", () => {
     const r = run("https://mp.weixin.qq.com/s/abc", WEIXIN);
     expect(r.code).toBe(0);

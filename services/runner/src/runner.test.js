@@ -1,6 +1,7 @@
 // services/runner/src/runner.test.js
 import { test, expect } from "bun:test";
 import { runOnce } from "./runner.js";
+import { runCodexResearch } from "./codex-research.js";
 
 const CONFIG = {
   owner: "o", repo: "r", githubToken: "T",
@@ -13,6 +14,53 @@ const CONFIG = {
 const ISSUE_LIST = [
   { number: 7, title: "稳定币清结算", body: "### 侧重点\n```\n清算所\n```", labels: [{ name: "approved" }] },
 ];
+
+test('Codex已核验缓存连续4次交付阻塞仍可重试，恢复后只完成一次且模型失败预算不被消耗',async()=>{
+  const fetchImpl=makeFetch(),dirs=[],sent=[],logs=[];
+  let failures={7:2},generated=0,cached=null,deliveryAttempts=0,scanCalls=0,parkReads=0;
+  const runWorkflow=async()=>{
+    if(!cached){generated++;cached={status:'isolated_reviewed'};}
+    return cached;
+  };
+  const deliverResearch=async()=>{
+    deliveryAttempts++;
+    if(deliveryAttempts<=4)throw Object.assign(Error('temporary lock/build/vault/push blocked'),{code:'EEXIST'});
+    dirs.push({dir:'2026-10-03_stablecoin',title:'稳定币清结算',tldr:'清算研究',href:'r/2026-10-03_stablecoin/'});
+    return {published:true,parked:false};
+  };
+  const deps={fetchImpl,scanDirs:()=>{scanCalls++;return dirs.slice();},
+    runResearch:async(_prompt,context)=>runCodexResearch(context,{model:'gpt-6.1-sol',reasoningEffort:'high'}, {runWorkflow,deliverResearch,log:line=>logs.push(line)}),
+    sendEmail:async value=>sent.push(value),log:line=>logs.push(line),
+    loadFailures:async()=>({...failures}),saveFailures:async value=>{failures={...value};},
+    readParkSignal:async()=>{parkReads++;return null;},
+  };
+  for(let attempt=1;attempt<=4;attempt++){
+    const summary=await runOnce({...CONFIG,maxFailures:3},deps);
+    expect(summary.failed).toBe(1);expect(summary.published).toBe(0);expect(summary.parked).toBe(0);
+    expect(failures).toEqual({7:2});expect(sent).toEqual([]);
+    expect(fetchImpl.calls.some(call=>/\/(labels|comments)$/.test(call.url))).toBe(false);
+  }
+  expect(scanCalls).toBe(4);expect(parkReads).toBe(0);
+  const summary=await runOnce({...CONFIG,maxFailures:3},deps);
+  expect(summary.published).toBe(1);expect(summary.emailed).toBe(1);expect(summary.failed).toBe(0);
+  expect(failures).toEqual({});expect(deliveryAttempts).toBe(5);expect(generated).toBe(1);expect(sent).toHaveLength(1);
+  expect(fetchImpl.calls.filter(call=>/\/labels$/.test(call.url))).toHaveLength(1);
+  expect(logs.some(line=>line.includes('交付延期'))).toBe(true);
+});
+
+test('parked交付延期在读取park信号与产出扫描前退出，不误报搁置或完成',async()=>{
+  const fetchImpl=makeFetch();let scans=0,parkReads=0,saved;
+  const summary=await runOnce(CONFIG,{
+    fetchImpl,scanDirs:()=>{scans++;return [];},
+    runResearch:async()=>({status:'delivery_deferred',workflow_status:'parked',error_code:'EEXIST'}),
+    readParkSignal:async()=>{parkReads++;return {reason:'foreign signal'};},
+    loadFailures:async()=>({7:1}),saveFailures:async value=>{saved={...value};},
+    sendEmail:async()=>{throw Error('must not notify');},log:()=>{},
+  });
+  expect(summary.failed).toBe(1);expect(summary.parked).toBe(0);expect(summary.published).toBe(0);
+  expect(scans).toBe(1);expect(parkReads).toBe(0);expect(saved).toEqual({7:1});
+  expect(fetchImpl.calls.some(call=>/\/(labels|comments)$/.test(call.url))).toBe(false);
+});
 
 // 路由假 fetch：list / labels / comments / sub
 function makeFetch({ subEmail = "u@x.com", subOk = true } = {}) {

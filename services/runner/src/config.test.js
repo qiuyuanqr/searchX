@@ -11,7 +11,21 @@ const FULL = {
   RUNNER_SUB_SECRET: "sek",
   RUNNER_SMTP_USER: "me@gmail.com",
   RUNNER_SMTP_PASS: "app-pass",
+  SEARCHX_CODEX_DELIVERY_ENABLED: "1",
+  RUNNER_OBSIDIAN_VAULT: "/tmp/searchx-test-vault",
 };
+
+test("Codex 固定模型/最低high/交付授权与笔记路径必须显式配置", () => {
+  const c=loadRunnerConfig(FULL);
+  expect(c.model).toBe("gpt-6.1-sol");
+  expect(c.reasoningEffort).toBe("high");
+  expect(c.obsidianVault).toBe("/tmp/searchx-test-vault");
+  for (const change of [
+    {SEARCHX_CODEX_DELIVERY_ENABLED:""}, {RUNNER_OBSIDIAN_VAULT:""},
+    {SEARCHX_CODEX_MODEL:"gpt-5.6-sol"}, {SEARCHX_CODEX_EFFORT:"medium"},
+  ]) expect(() => loadRunnerConfig({...FULL,...change})).toThrow();
+  expect(loadRunnerConfig({...FULL,SEARCHX_CODEX_EFFORT:"xhigh"}).reasoningEffort).toBe("xhigh");
+});
 
 test("齐全 → 返回配置；URL 去尾斜杠；含默认 owner/repo/siteBase/claudeArgs/dedupWindowDays", () => {
   const c = loadRunnerConfig(FULL);

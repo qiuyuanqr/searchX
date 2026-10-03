@@ -1,17 +1,18 @@
 # searchX
 
-> **维护开工入口（Claude / Codex 共用）**：[HANDOFF.md](HANDOFF.md) → [项目背景与维护上下文](docs/maintenance/PROJECT_CONTEXT.md) → [架构手册](docs/ARCHITECTURE.md)。Codex 读取根 `AGENTS.md`，项目技能位于 `.agents/skills/`；Claude 的规则与技能继续保留。后台仍调用 Claude CLI，实际装载与部署状态以 HANDOFF 的日期快照为准。
+> **维护开工入口（Claude / Codex 共用）**：[HANDOFF.md](HANDOFF.md) → [项目背景与维护上下文](docs/maintenance/PROJECT_CONTEXT.md) → [架构手册](docs/ARCHITECTURE.md)。Codex 读取根 `AGENTS.md`，项目技能位于 `.agents/skills/`；Claude 的规则与技能继续保留。本地两个后台入口已接 Codex，固定 `gpt-6.1-sol`、思考至少 `high`；尚未部署或启用生产服务，实际状态与测试证据见 HANDOFF。
 
-通用深度调研引擎，跑在 Claude Code 上——给它一个**调研目标**（概念 / 人物 / 方法论 / 事件 / 板块 / 单只股票），它会自动检索、深入分析、挖掘真实案例，产出可离线阅读的 HTML 报告 + 来源清单，同时在 Obsidian 里保存一份带双向链接（`[[双链]]`）的笔记，并**自动发布**到公开信息流站。
+通用深度调研引擎：给它一个**调研目标**（概念 / 人物 / 方法论 / 事件 / 板块 / 单只股票），自动检索、分析，产出可离线阅读的 HTML 报告和来源清单，并转换成带双向链接（`[[双链]]`）的 Obsidian 笔记。项目保留 Claude 交互技能，新后台由受控 Codex 工作流生成和核验，宿主负责归档、发布与通知。
 
 🌐 公开站：**https://qiuyuanqr.github.io/searchX/**
 
-围绕这个引擎还配套了一条**半自动流水线**：朋友在站内提交选题 → 作者在手机上一键审核 → 常驻机器自动跑调研 → 自动发布 + 邮件通知。其中只有「跑一次调研」会消耗 Claude 额度，其余环节都是行为固定、不调用 AI 的脚本。
+围绕这个引擎还配套了一条**半自动流水线**：站内提交选题 → 规则审核或人工审核 → 常驻机器调研与独立核验 → 发布和邮件通知。分类、取证、写作、核验、必要修订会调用模型；其余环节由脚本执行。生产切换完成前，不能将本地测试通过理解为这条后台流水线已恢复运行。
 
 ## 仓库结构（各目录职责）
 
 ```
 searchX/
+├── .agents/skills/          ← Codex 的 research / stock / factcheck 能力与报告模板
 ├── .claude/skills/          ← 三个能力（skill）
 │   ├── research/            通用深度调研：SKILL.md + templates/report.html（报告模板）
 │   ├── stock/               单只股票深度投研（13 周情景 + 条件触发）；research 判定为股票时自动转交，也可直接 /stock
@@ -24,6 +25,7 @@ searchX/
 │   ├── build/              构建脚本 + 单测（扫 research/ → 渲染卡片 + 报告页）
 │   └── dist/               构建产物（gitignore，CI 部署用）
 ├── services/                ← 半自动流水线后端
+│   ├── codex-runtime/      受控模型调用、Stocks只读工具、阶段恢复、质检与独立核验
 │   ├── intake-worker/      Cloudflare Worker：站内提交 → 建 GitHub pending Issue（详见其 README）
 │   ├── runner/             常驻机脚本：取 approved Issue → 跑 /research → 上线 → 发信（详见其 README）
 │   ├── check-runner/       常驻机脚本：取核查任务 → 跑 /factcheck → 笔记落本机 Obsidian（详见其 README）

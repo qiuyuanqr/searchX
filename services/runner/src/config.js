@@ -3,6 +3,8 @@
 // 机密只在本机环境变量 / 未入库的 .env，绝不入库。
 
 import { DEFAULT_DEDUP_WINDOW_DAYS } from "./dedup.js";
+import { homedir } from "node:os";
+import { join, isAbsolute } from "node:path";
 
 const REQUIRED = [
   "RUNNER_GITHUB_TOKEN", // 作者 fine-grained PAT：仅 searchX、Issues 读写
@@ -40,7 +42,21 @@ export function loadRunnerConfig(env) {
       `缺少 Runner 必需环境变量：${missing.join(", ")}（放进未入库的 .env 或 export，绝不入库）`
     );
   }
+  if (String(env.SEARCHX_CODEX_DELIVERY_ENABLED || "").trim() !== "1") {
+    throw new Error("Codex 生产交付尚未启用：需明确配置 SEARCHX_CODEX_DELIVERY_ENABLED=1，当前不取队列");
+  }
+  const model=t(env.SEARCHX_CODEX_MODEL || "gpt-6.1-sol");
+  const reasoningEffort=t(env.SEARCHX_CODEX_EFFORT || "high");
+  if (model!=="gpt-6.1-sol" || !["high","xhigh","max","ultra"].includes(reasoningEffort)) {
+    throw new Error("searchX 必须使用 gpt-6.1-sol、思考至少 high，不降级或回退");
+  }
+  const obsidianVault=t(env.RUNNER_OBSIDIAN_VAULT || "");
+  if (!obsidianVault || !isAbsolute(obsidianVault)) throw new Error("必须配置 RUNNER_OBSIDIAN_VAULT 绝对路径");
+  const codexStateRoot=t(env.SEARCHX_CODEX_STATE_ROOT || join(homedir(),"Library","Application Support","searchx-codex-jobs"));
+  const stocksRoot=t(env.SEARCHX_STOCKS_ROOT || join(homedir(),"Coding","Stocks"));
+  if (!isAbsolute(codexStateRoot) || !isAbsolute(stocksRoot)) throw new Error("Codex 状态与 Stocks 目录必须是绝对路径");
   return {
+    model, reasoningEffort, obsidianVault, codexStateRoot, stocksRoot,
     githubToken: t(env.RUNNER_GITHUB_TOKEN),
     workerUrl: trimUrl(env.RUNNER_WORKER_URL),
     subSecret: t(env.RUNNER_SUB_SECRET),
