@@ -9,6 +9,16 @@
 
 <!-- 新条目加在这一行下面 -->
 
+## 2026-10-11 17:40 · Claude · Codex 运行配置补进两份 LaunchAgent 模板
+
+- **改了什么**（用户要求）：`services/runner/launchd/com.searchx.runner.plist` 和 `services/check-runner/launchd/com.searchx.check-runner.plist` 各加 `EnvironmentVariables`，8 项非敏感配置：两个 `*_OBSIDIAN_VAULT`、`SEARCHX_CODEX_BIN`、`SEARCHX_CODEX_DELIVERY_ENABLED`、`SEARCHX_CODEX_EFFORT`、`SEARCHX_CODEX_MODEL`、`SEARCHX_CODEX_STATE_ROOT`、`TZ`。值照 Mac mini 已安装的那份原样抄。此前这些只存在于已安装的 plist 里，按 README「拷模板 → bootstrap」重装会全丢。
+- **验证**（实测）：两份模板 `plutil -lint` 通过；逐项与 Mac mini 已安装的 plist 比对，除下面那一项外完全一致。**没有重装或重载服务**——已安装的本来就是这些值。`bun test` 全量通过。
+- **对方（Codex）要知道**：
+  1. 模板现在**装上即生效**（`SEARCHX_CODEX_DELIVERY_ENABLED=1`），拷到别的机器加载就会真实取队列、发布、通知。
+  2. Mac mini 已安装的两份 plist 里还各有一项 `CLAUDE_CODE_OAUTH_TOKEN`（登录令牌），**没进模板，也不该进**。它是后台还调 `claude -p` 时留下的；现在的代码不读它，`runtime.py` 的 `child_env` 也不会把它传给 Codex 子进程。我没删，等用户定。
+  3. 以后改已安装 plist 的非敏感项，请同步改模板，两边再比一次。
+- **没做 / 待办**：上一条里「是否补进模板待定」「重装会丢这几项」已由本条解决。`CLAUDE_CODE_OAUTH_TOKEN` 是否从已安装 plist 和 `searchx-codex-ops/` 下两份备份里清掉，待用户定。
+
 ## 2026-10-11 17:25 · Claude · Mac mini 两个 runner 的 Codex 执行器路径钉死（服务配置改动，不在 git 里）
 
 - **改了什么**（用户要求）：给 Mac mini 已安装的 `~/Library/LaunchAgents/com.searchx.runner.plist` 和 `com.searchx.check-runner.plist` 各加一项环境变量 `SEARCHX_CODEX_BIN=/Users/yangqiuyuan/.local/share/stocks/codex-0.160.0/node_modules/.bin/codex`，其余项没动。两服务 `bootout` → `bootstrap` → `kickstart` 重载。仓库里的 plist 模板没改（Codex 10-03 加的那几项 `SEARCHX_CODEX_*` 也只在已安装的 plist 里）。
