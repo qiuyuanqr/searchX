@@ -5,7 +5,7 @@ type: 事件
 tags: [research, 华为, 问界, 赛力斯, 鸿蒙智行]
 related: []
 source_count: 9
-archive: "research/2026-10-03_task-ecd329686721b6bdb25d/"
+archive: "research/2026-10-03_huawei-aito-cooperation/"
 ---
 
 # 华为与问界的合作调整
