@@ -32,7 +32,33 @@ REVIEW_SCHEMA = object_schema({
 PATCH_SCHEMA = object_schema({'changes':{'type':'array', 'items':object_schema({
     'file':STRING, 'old':STRING, 'new':STRING, 'count':{'type':'integer'},
 })}})
-CLASSIFY_SCHEMA = object_schema({'kind':{'type':'string','enum':['stock','research']},'subject':STRING})
+CLASSIFY_SCHEMA = object_schema({'kind':{'type':'string','enum':['stock','research']},'subject':STRING,'slug':STRING})
+
+
+def topic_slug(text):
+    """把模型给的英文主题名规整成归档目录名的主题段；规整后不可用返回 None，调用方退回宿主标识。
+
+    模型输出不可信：只留小写字母、数字和连字符，限长。6 位以上的连续数字一律去掉——runner 查重
+    （services/runner/src/dedup.js 的 extractCodes）会把目录名里任何 6 位数字当成股票代码，
+    模型凭记忆写的代码不能进目录名；股票代码只由 stock_code() 从取证后的封面标题里取。
+    """
+    if not isinstance(text,str): return None
+    value=re.sub(r'[^a-z0-9]+','-',text.lower())
+    value=re.sub(r'\d{6,}','',value)
+    value=re.sub(r'-+','-',value).strip('-')[:48].strip('-')
+    # stock-<代码> 是 Stocks 搬运（services/stocks-import）的目录命名，主题名叫 stock 再追加代码会撞进它的地盘。
+    if (len(value)<3 or not re.search(r'[a-z]{2}',value)
+            or value.startswith('task-') or value=='stock' or value.startswith('stock-')): return None
+    return value
+
+
+def stock_code(title):
+    """从封面标题取股票代码：A 股 6 位，港股补足 5 位（沿用存量目录 zhipu-02513 的写法）。取不到返回 None。"""
+    if not isinstance(title,str): return None
+    hk=re.search(r'(?<!\d)(\d{4,5})\.HK(?![A-Za-z])',title,flags=re.I)
+    if hk: return hk.group(1).zfill(5)
+    a=re.search(r'(?<!\d)(\d{6})(?!\d)',title)
+    return a.group(1) if a else None
 
 
 def parse_object(text, fields):
@@ -121,6 +147,29 @@ class Workflow:
             except OSError:pass  # durable pending marker makes any residual unreadable
             raise
 
+    def archive_slug(self,host_slug,topic=None,code=None):
+        """归档目录名 research/<日期>_<slug>/ 里的 slug：优先用主题名，只定一次并落盘。
+
+        恢复、重试、重新校验都读回同一个值：正文里的归档路径、产物目录、宿主交付都以它为准，
+        中途改名会让已生成的检查点和已交付的目录对不上。所以「目录是否已被占用」只在第一次定名时
+        看；定名之后仓库里出现同名目录（多半就是本任务自己交付的）不再改名。
+        主题名不可用时退回宿主标识 task-<哈希>——那是 2026-10-11 之前的唯一行为，网址不可读但不会错。
+        """
+        path=self.job.path('archive-slug.json')
+        if path.exists() and not self.job.path('controls/commit-'+path.name+'.json').exists():
+            return json.loads(path.read_text())['slug']
+        slug,source=host_slug,'host'
+        base=topic_slug(topic)
+        if base:
+            name=base+('-'+code if code else '')
+            # 同日同名已被别的报告占用：追加本任务宿主标识的短哈希，仍可读且确定。
+            for option in (name,name+'-'+digest(host_slug.encode())[:6]):
+                if not (self.repo/'research'/f'{self.date}_{option}').exists():
+                    slug,source=option,'topic';break
+        self.commit(path,{'slug':slug,'source':source})
+        print(json.dumps({'archive_slug':slug,'source':source}),flush=True)
+        return slug
+
     def stage(self,name,prompt,inputs,*,schema=CONTENT_SCHEMA,validator=validate_content,web=True,images=(),audit=None,audit_policy=None):
         print(json.dumps({'stage':name,'status':'starting_or_resuming',
                           'model':self.job.identity['model'],'reasoning_effort':self.job.identity['reasoning_effort']}),flush=True)
@@ -194,7 +243,7 @@ class Workflow:
                 files[name]=content
         return files
 
-    def stock(self,request,slug,attachments=None,images=()):
+    def stock(self,request,slug,attachments=None,images=(),topic=None):
         from assembly import COVER_SCHEMA,validate_cover,validate_fragment,assemble_stock
         common={**self.rules,'request.json':encoded(request),**(attachments or {})}
         finance=self.stage('stock-finance',
@@ -225,6 +274,8 @@ class Workflow:
             '最终JSON严格按给定schema，不写HTML。',
             {**self.rules,'body.html':'\n'.join(parts).encode()},schema=COVER_SCHEMA,validator=validate_cover,web=False)
         template=(self.repo/'.agents/skills/research/templates/report.html').read_text()
+        # 代码取自取证之后的封面标题，不取分类阶段模型凭记忆给的（那一步不联网、不查库）。
+        slug=self.archive_slug(slug,topic,stock_code(cover['value'].get('title')))
         bundle=assemble_stock(parts,cover['value'],template,self.date,slug)
         files=self.bundle_files(bundle,'research')
         files.update(evidence)
@@ -236,15 +287,21 @@ class Workflow:
         images=['attachments/'+safe_name(name) for name in images]
         common={**self.rules,'request.json':encoded(request),**attachments}
         if kind=='factcheck':common.update(prepare_link_sources(self.job,self.repo,request))
+        topic=None
         if kind=='auto':
             def classify(text):
-                value=parse_object(text,{'kind','subject'})
-                if value['kind'] not in ('stock','research') or not isinstance(value['subject'],str):raise ValueError('Invalid subject classification')
+                value=parse_object(text,{'kind','subject','slug'})
+                if (value['kind'] not in ('stock','research') or not isinstance(value['subject'],str)
+                        or not isinstance(value['slug'],str)):raise ValueError('Invalid subject classification')
                 return value
-            result=self.stage('classify','按research Step 0判断请求是否以单只上市公司股票为主。只返回kind=stock或research和主对象subject。',
+            result=self.stage('classify','按research Step 0判断请求是否以单只上市公司股票为主。返回kind=stock或research、主对象subject，'
+                              '以及slug：主对象的英文短名，用作公开网址的一段——小写英文单词以连字符连接，不超过5个词，'
+                              '如 cpo-co-packaged-optics、huawei-aito-cooperation；公司用常用英文名或拼音，如 moutai、haiguang-xinxi。'
+                              'slug不含日期、不含股票代码或其他长数字、不含中文。',
                               common,schema=CLASSIFY_SCHEMA,validator=classify,web=False,images=images)
-            kind=result['value']['kind']
-        if kind=='stock':return self.stock(request,slug,attachments,images),'research'
+            kind=result['value']['kind'];topic=result['value']['slug']
+        if kind=='stock':return self.stock(request,slug,attachments,images,topic),'research'
+        if kind=='research':slug=self.archive_slug(slug,topic)
         schema=bundle_schema(kind)
         common['template.html']=(self.repo/'.agents/skills/research/templates/report.html').read_bytes()
         location=(f'宿主固定归档标识 research/{self.date}_{slug}/。' if kind=='research'
@@ -272,6 +329,8 @@ class Workflow:
         if self.job.path('result.json').exists():
             self.commit(self.job.path('result.json'),{'status':'revalidating','published':False})
         files,kind=self.generate(request,kind,slug,extra_inputs or {},images)
+        # generate 里定下的目录名从落盘记录读回；没走分类的路径（显式指定类型、核查）落的就是宿主标识。
+        if kind=='research':slug=self.archive_slug(slug)
         for revision in range(3):
             version=f'v{revision}/{self.date}_{slug}'
             artifact=self.artifacts(version,files)

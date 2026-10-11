@@ -9,6 +9,25 @@
 
 <!-- 新条目加在这一行下面 -->
 
+## 2026-10-11 17:35 · Claude · 修根因：自动研究的报告目录改用主题名，不再是任务号
+
+- **改了什么**（用户要求我来修）：只动 `services/codex-runtime/workflow.py` 和它的测试、README。
+  - 分类阶段多返回一个 `slug`（英文主题短名）。新增 `topic_slug()` 规整模型输出：只留小写字母 / 数字 / 连字符，最长 48，**去掉 6 位以上连续数字**，拒绝 `task-` / `stock` / `stock-` 开头。
+  - 新增 `stock_code()`：股票目录名的代码从**取证之后的封面标题**取（A 股 6 位、港股补 5 位），不用分类阶段模型凭记忆给的。
+  - 新增 `Workflow.archive_slug()`：目录名只定一次，写进任务目录 `archive-slug.json`，恢复 / 重试 / 重新校验都读回同一个。定名时若 `research/<日期>_<名>` 已存在，追加 6 位短哈希。主题名不可用就退回适配器传的 `task-<哈希>`（即原行为）。
+  - `adapter.js` 没动：它传的 `--slug task-<哈希>` 现在只是兜底值。任务身份哈希、回执校验、宿主交付都没改——交付层本来就是从产物目录名取 `folder`。
+- **为什么不止是好看**：`services/runner/src/dedup.js` 的 `extractCodes` 会把目录名里任何 6 位数字当成股票代码。`task-ecd329686721…` 这种哈希里的「329686」就成了那篇报告的候选代码，哈希撞上真代码时会把别人提交的股票误判成「已调研过」。
+- **验证**：
+  - Python 104 项、Bun 1428 项全过（退出码都是 0）。新增 8 项测试，含走真实 `generate` / `run` 的整条传递（分类结果 → 生成提示里的归档路径 → 回执里的产物目录）。
+  - **Mac mini 真实模型实测**（生产同款 `~/.local/bin/codex` 0.160.0、`gpt-6.1-sol/high`，独立临时目录，只跑分类这一步，跑完已删）：「华为和问界的分家了吗」→ `huawei-aito-cooperation`；「芯原股份」→ stock / `verisilicon`；「CPO、NPO、LPO…」→ `cpo-npo-lpo`。新的输出结构被真实 CLI 接受。
+  - **没验证**：整条真实研究从分类跑到上线（要花一次完整研究的额度和 1–3 小时）。股票「封面标题取代码」这一步只有替身测试，没有真实模型产出验证。下一条自然任务上线后看目录名。
+- **对方（Codex）要知道**：
+  1. 分类阶段的提示和输出结构变了，旧任务目录里的分类检查点不会被复用。当时队列为空、无在途任务。
+  2. 试跑时我先误用了 `/opt/homebrew/bin/codex`（0.144.6，模型目录里没有 `gpt-6.1-sol`），报「Pinned model/effort unavailable」。生产不受影响（`scheduled-run.sh` 的 PATH 里 `~/.local/bin` 排在前面，用的是 0.160.0）。**但这台机器上有两个版本的 codex，谁要是调了 PATH 顺序，生产会在第一步直接失败**，要不要把绝对路径用 `SEARCHX_CODEX_BIN` 钉死，你定。
+  3. `archive_slug` 打印的那行进度不带 `stage` 字段，`adapter.js` 的日志过滤会丢掉它，所以 runner 日志里看不到定名结果，只能从交付日志的目录名看。
+  4. Obsidian 笔记文件名仍是 `调研-<标题>-<目录名>.md`（交付层定的，我没动），目录名可读之后它也可读了；但和 research SKILL Step 5 写的「`<中文对象名>.md`」仍不一致，哪个为准待你和用户定。
+- **没做 / 待办**：定名之后、交付之前，如果别的途径在同一天发布了同名目录，交付会报「Existing archive is not owned by this job」并一直延期。改名前的哈希目录不存在这种可能；概率很低，没处理。
+
 ## 2026-10-11 16:45 · Claude · #52 报告目录从任务号改成主题名（网址变了）
 
 - **改了什么**：用户要求。`research/2026-10-03_task-ecd329686721b6bdb25d/` → `research/2026-10-03_huawei-aito-cooperation/`（`git mv`，三件套内容没动），`notes.md` 的 `archive` 字段和 `research/INDEX.md` 那一行同步。Mac mini 的 Obsidian 笔记文件名与正文里的旧目录名、Issue #52 评论里的链接也跟着改了。
