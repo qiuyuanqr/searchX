@@ -4,7 +4,7 @@
 
 ## Codex 开工阅读入口（2026-10-02 接管补充）
 
-1. 先读根目录 `HANDOFF.md`，再读 `docs/maintenance/PROJECT_CONTEXT.md`；需要接管证据时读 `docs/progress/2026-10-02-codex-takeover.md`。它们记录当前状态，不能用旧聊天里的“已上线”替代实测。
+1. 先跑 `scripts/whats-new.sh codex` 看开工简报（Claude 和后台自上次以来改了什么，规则见下文「两个维护者怎么互相知会」），再读根目录 `HANDOFF.md`，再读 `docs/maintenance/PROJECT_CONTEXT.md`；需要接管证据时读 `docs/progress/2026-10-02-codex-takeover.md`。它们记录当前状态，不能用旧聊天里的“已上线”替代实测。
 2. 改代码前读 `docs/ARCHITECTURE.md`，按目标读 `web/README.md` 或对应 `services/*/README.md`；研究、股票、核查分别读 `.agents/skills/{research,stock,factcheck}/SKILL.md`。Claude 的 `.claude/skills/` 与钩子继续保留，不互相覆盖。
 3. 需要路径时显式读取未入库的 `CLAUDE.local.md` 中 `ARCHIVE_ROOT`、`OBSIDIAN_VAULT`、`STOCKS_DB` 相关说明。它是两边共用配置；不存在 `Codex.local.md`，不要假设它已自动加载。读取路径不代表授权读取凭据；不读取或输出 `.env`、密钥、密码、验证码及凭据文件。
 4. 项目历史记忆入口为 `.claude-memory/MEMORY.md`，只按主题读需要的条目。它在 Claude 项目目录有软链；Codex 的聊天导入、规则适配、自动记忆导入和后台服务迁移分别核实。不得手工编辑 Codex 自动生成的记忆库。
@@ -71,6 +71,18 @@
 > 下面这条来自 2026-08-19 的修复。
 
 - **抄别的项目的取数惯例时，最容易漏的是连接参数**。读 Stocks 活库一律要显式设 `PRAGMA busy_timeout`（现行口径 30 秒，见 `services/stocks-import/src/index.js` 的 `sqliteJsonLines()`，要排在 `query_only` **前面**）。`sqlite3` CLI 的默认值是 **0**，比 Python sqlite3 的 5 秒还激进，撞上人家正常的写事务当场 `database is locked (5)`、一秒都不等——stocks-import 每 5 分钟一 tick，而 Stocks 一整天都有定时任务在写（compute-factors 每交易日 18:35 起写 3.3 万行、耗时 15 秒），**撞上是必然而非异常，错峰治不了本**。Stocks 自己早解决过（`database.py` 的 `get_conn` timeout=30），只有 searchX 这条 CLI 直查漏了这层：当初照搬的是 `query_only` 那半句，参数那半句没跟过来，平时完全看不出来。两个连带要点：① busy handler 在"等下去可能死锁"的场合根本不会被调用，所以 busy_timeout 之外还得兜一次重试；② **等锁失败必须照常抛**——这层只消误报，不许把真故障一起吞掉。
+
+## 两个维护者怎么互相知会（Claude 与 Codex）
+
+> 2026-10-11 起本项目由 Claude 与 Codex 共同维护，用户不当传话人。这一节两份规则文件（`CLAUDE.md` / `AGENTS.md`）逐字相同，由 `scripts/agent-rules-sync.test.js` 把关。
+
+- **开工先看简报**：`scripts/whats-new.sh <claude|codex>` 列出自己上次开工以来的全部人工提交（谁、何时、动了哪些文件）、同步状态（落后 / 没推 / 工作区有别人未提交的文件）和 `docs/CHANGES.md` 最新几条。Claude 由 SessionStart 钩子自动跑；Codex 开工手动跑一次。然后才读 `HANDOFF.md`。
+- **改完写流水，和改动放进同一个提交**：凡改了代码、规则、技能、钩子、CI、文档里的现行口径，往 `docs/CHANGES.md` **顶部**加一条（格式见该文件头）。**Mac mini 上不进 git 的改动更要写**——LaunchAgent 配置、服务启停、装卸依赖、登录态、仓外状态目录——对方从提交里完全看不到。后台自动产出的报告 / 行情提交不用写。
+- **提交要认得出是谁的**：正常写提交信息（`fix(...)` / `feat(...)` / `docs(...)`），末尾署名——Claude 用 `Co-Authored-By: Claude …`，Codex 用 `Agent: Codex`。别把有内容的改动留给收工钩子的「自动同步」提交带走，那种提交没有说明。
+- **改完就推**：只留在本机的提交，对方和 Mac mini 都看不到（2026-10-03 的一个文档提交在 MacBook 上躺了 8 天没推，期间本机也落后 28 个提交）。推不上去要当场说，不要留给下次。部署、启停服务、删数据仍按各自的授权规则，不因这条放宽。
+- **共用内容改一边必须同步另一边**：`CLAUDE.md` ↔ `AGENTS.md` 从「全局约定」起到文末；`.claude/skills/` ↔ `.agents/skills/` 三份 SKILL（除 Codex 平台适配段和路径替换外）与报告模板；`.claude/hooks/` ↔ `.codex/hooks/` 三个脚本。上面那个测试会在不一致时挂掉——CI 部署前也跑这套测试，所以**漂移不修，新报告就上不了线**。
+- **同一工作树可能同时有对方在干活**：只暂存、提交自己这次任务的文件；看到不认识的未提交改动先当成对方进行中的活，不提交、不还原、不清理。收工钩子是 `git add -A`，对方有半成品时别让它替你收尾，改用按文件精准提交。
+- **对方写的「已修复 / 已验证 / 已上线」同样是待核实的说法**，与本文件「改代码时的约定」同一标准：要依赖它之前自己复现一遍。
 
 ## 五大常关注板块（双链与关联判断用）
 
