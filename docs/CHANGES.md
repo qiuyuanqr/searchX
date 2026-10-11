@@ -9,7 +9,18 @@
 
 <!-- 新条目加在这一行下面 -->
 
-## 2026-10-11 17:35 · Claude · 修根因：自动研究的报告目录改用主题名，不再是任务号
+## 2026-10-11 17:25 · Claude · Mac mini 两个 runner 的 Codex 执行器路径钉死（服务配置改动，不在 git 里）
+
+- **改了什么**（用户要求）：给 Mac mini 已安装的 `~/Library/LaunchAgents/com.searchx.runner.plist` 和 `com.searchx.check-runner.plist` 各加一项环境变量 `SEARCHX_CODEX_BIN=/Users/yangqiuyuan/.local/share/stocks/codex-0.160.0/node_modules/.bin/codex`，其余项没动。两服务 `bootout` → `bootstrap` → `kickstart` 重载。仓库里的 plist 模板没改（Codex 10-03 加的那几项 `SEARCHX_CODEX_*` 也只在已安装的 plist 里）。
+- **为什么**：这台机器上有两个 codex——`/opt/homebrew/bin/codex` 是 0.144.6（模型目录没有 `gpt-6.1-sol`），`~/.local/bin/codex` 是指向 0.160.0 的软链。之前靠 `scheduled-run.sh` 里 PATH 的先后顺序选中后者。钉的是**带版本号的真实目录**而不是 `~/.local/bin/codex` 软链：软链被改指到新版本时生产会悄悄换版本，而 README 写明只验证过 0.160.0、升级必须重测。
+- **验证**（实测）：改前无锁、无在跑进程；钉的路径可执行、`--version` 为 0.160.0；`launchctl print` 两服务都读到新变量、仍为 enabled；重载后首轮 runner 17:24:37、check-runner 17:24:33 均 exit=0（每轮启动预检都会用这个路径做 `Bun.which`）；`Bun.which` 对不存在的绝对路径返回 null，即路径失效时预检会报「执行器不可用：SEARCHX_CODEX_BIN」并拒绝取队列。plist 权限仍为 0600。**没验证**：用这个路径跑一条完整真实任务（队列为空）。
+- **对方（Codex）要知道**：
+  1. **升级 codex 时要同时改这两个 plist 的这一项**，否则旧目录一删，两条 runner 每轮都会在预检失败（会响，不会静默）。那个目录在 `~/.local/share/stocks/` 下，看名字是 Stocks 那边装的——Stocks 侧升级或清理时会连带影响 searchX。
+  2. 改前的 plist 备份在 Mac mini `~/Library/Application Support/searchx-codex-ops/20261011-172433/`（目录 0700、文件 0600）。回退：拷回去再 `bootout` / `bootstrap`。
+  3. 重装服务（`setup-macmini.sh` 或手动拷模板）会丢掉这一项和 10-03 那几项，因为模板里都没有。
+- **没做 / 待办**：`SEARCHX_PYTHON_BIN`、`SEARCHX_BUN_BIN` 没钉，仍按 PATH 找（各只有一个版本，暂无同类风险）。是否把这些 `SEARCHX_CODEX_*` 项补进仓库模板，待定。
+
+## 2026-10-11 17:23 · Claude · 修根因：自动研究的报告目录改用主题名，不再是任务号
 
 - **改了什么**（用户要求我来修）：只动 `services/codex-runtime/workflow.py` 和它的测试、README。
   - 分类阶段多返回一个 `slug`（英文主题短名）。新增 `topic_slug()` 规整模型输出：只留小写字母 / 数字 / 连字符，最长 48，**去掉 6 位以上连续数字**，拒绝 `task-` / `stock` / `stock-` 开头。
@@ -28,7 +39,7 @@
   4. Obsidian 笔记文件名仍是 `调研-<标题>-<目录名>.md`（交付层定的，我没动），目录名可读之后它也可读了；但和 research SKILL Step 5 写的「`<中文对象名>.md`」仍不一致，哪个为准待你和用户定。
 - **没做 / 待办**：定名之后、交付之前，如果别的途径在同一天发布了同名目录，交付会报「Existing archive is not owned by this job」并一直延期。改名前的哈希目录不存在这种可能；概率很低，没处理。
 
-## 2026-10-11 16:45 · Claude · #52 报告目录从任务号改成主题名（网址变了）
+## 2026-10-11 17:14 · Claude · #52 报告目录从任务号改成主题名（网址变了）
 
 - **改了什么**：用户要求。`research/2026-10-03_task-ecd329686721b6bdb25d/` → `research/2026-10-03_huawei-aito-cooperation/`（`git mv`，三件套内容没动），`notes.md` 的 `archive` 字段和 `research/INDEX.md` 那一行同步。Mac mini 的 Obsidian 笔记文件名与正文里的旧目录名、Issue #52 评论里的链接也跟着改了。
 - **验证**：`bun test` 全量通过；`bun run build` 后新目录生成报告页、`reports.json` 里是新名字、旧名字 0 处。线上新旧网址的实测结果见本条所在提交之后的用户汇报。
@@ -38,21 +49,21 @@
   3. 仓外状态目录 `searchx-codex-jobs` 里这条任务的交付记录仍指向旧目录名，我没碰。#52 已 done 不会再交付；如果你的代码有地方会回头核对已交付目录，要知道它已改名。
 - **没做 / 待办**：旧网址现在是 404，站点没有旧网址跳转的机制。当时发给提交者的完成邮件里是旧链接。
 
-## 2026-10-11 16:30 · Claude · 服务启停也放开：改完直接做
+## 2026-10-11 17:01 · Claude · 服务启停也放开：改完直接做
 
 - **改了什么**：用户追加裁决「服务启停也放开，一样改完直接做」。共用节那条把 Mac mini 上 `com.searchx.*` 后台服务的启停、重启、配置调整并入常规收尾；`AGENTS.md` 开工第 6 条、`PROJECT_CONTEXT.md` 冲突表同步。
 - **验证**：`bun test scripts/agent-rules-sync.test.js` 通过。只改了文字，没有动任何服务。
 - **对方（Codex）要知道**：启停本项目服务不用再问用户，但**动了必须在这里写一条**（哪个服务、前后状态、原配置备份位置），否则另一方无从知道。仍要当次同意的只剩：删数据、覆盖别人可见的线上内容、改网络与账号设置、碰本项目以外的服务（如 Stocks 的）。
 - **没做 / 待办**：`AGENTS.md` 开工第 7 条「不要在 MacBook 上直接跑 runner / 定时包装脚本来验收」没改——那是防止开发机误消费生产队列，与授权无关，仍然有效。
 
-## 2026-10-11 16:20 · Claude · 推送与部署口径统一：改完直接做
+## 2026-10-11 17:00 · Claude · 推送与部署口径统一：改完直接做
 
 - **改了什么**：用户裁决「推送口径统一成改完就推，部署也一样」。`CLAUDE.md` / `AGENTS.md` 共用节那条改成：提交、推送、Pages 部署、Worker 部署都是常规收尾，做完再汇报，不必每个会话再问。`AGENTS.md` 开工第 6 条和「狗不理」那条、`PROJECT_CONTEXT.md` 冲突表对应行同步改了。
 - **验证**：`bun test scripts/agent-rules-sync.test.js` 通过（两份规则共用部分仍逐字相同）。只改了文字，没有部署任何东西。
 - **对方（Codex）要知道**：以后 push 和部署不用再向用户单独确认。**不包括**启停或改配 Mac mini 后台服务、删数据、覆盖别人可见的线上内容、改网络与账号设置——这些仍要当次同意。
 - **没做 / 待办**：上一条里「推送授权口径两边不一致」已由本条解决，其余三项待办不变。
 
-## 2026-10-11 16:00 · Claude · 建立两个维护者的互相知会机制
+## 2026-10-11 15:55 · Claude · 建立两个维护者的互相知会机制
 
 - **改了什么**：
   - 新增 `scripts/whats-new.sh <claude|codex> [--peek]`：开工简报——自己上次开工以来的人工提交（谁、何时、哪些文件）、同步状态、本文件最新 3 条。「读到哪」记在 `.git/searchx-seen-<谁>`，各记各的。
@@ -68,5 +79,5 @@
   3. 三份 `.agents/skills/*/SKILL.md` 的「Codex 平台适配」段里还写着「后台仍调用 `claude -p`」，10-03 之后已不成立。这段是你的，我没动，请你更新。
   4. `HANDOFF.md` 顶部「#52 正文生成中、尚未验收」是 10-03 16:39 的快照。我今天只读核对的结果：#52 已带 done 标签（10-03 16:57 提交 `6f11554`），报告页 HTTP 200；Mac mini 五个服务都已加载、两个 runner 为 enabled，今天 15:48 的 tick 均 exit=0、队列为空；Mac mini 与 GitHub 同为 `32ed319`、工作区干净。邮件是否送达、Obsidian 笔记是否落库我没核。
 - **没做 / 待办**：
-  - #52 的目录名是任务号而不是主题名——已于同日 16:45 那条改名，根因见那条。
+  - #52 的目录名是任务号而不是主题名——已于同日 17:14 那条改名，根因见那条。
   - 推送授权口径两边不一致：Claude 侧记忆是「提交 / 推送 / wrangler deploy 一条龙做完再汇报」，`AGENTS.md` 第 6 条是「新聊天不继承授权，push 单独核对」。本次按用户「改完要实时同步」的要求把「改完就推」写进了共用规则；部署与服务启停两边仍各按原口径，待用户统一。

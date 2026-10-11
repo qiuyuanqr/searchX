@@ -4,6 +4,7 @@
 
 ## 固定契约
 
+- 执行器路径：Mac mini 两个 runner 的 LaunchAgent 自 2026-10-11 起设了 `SEARCHX_CODEX_BIN`，指向带版本号的 0.160.0 真实目录（该机另有一个 0.144.6，模型目录里没有 `gpt-6.1-sol`）。升级 codex 必须同时改这一项，详见 `docs/CHANGES.md` 同日条目。
 - 所有调用固定 `gpt-6.1-sol`，默认 `high`；可设 `SEARCHX_CODEX_EFFORT=high|xhigh|max|ultra`，须经实时模型目录确认。其他模型、低档或未知档立即拒绝，不降级、不回退 API。
 - 复用常驻机已有 ChatGPT 登录。子进程仅继承必要系统、证书与代理变量；业务/API 密钥不继承。忽略个人配置、仓库隐式指令、插件、Hooks 和 Apps。
 - 使用独立工作目录、只读沙箱、关闭 Shell/补丁/子代理；全新写作和核验会话由外层逐个启动。每个调用必须明确完成回合、exit 0、有最终结果，失败与超时回收整个子进程组。
