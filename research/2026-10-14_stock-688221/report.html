@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>前沿生物（688221.SH） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>前沿生物（688221.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-10-14（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 化学制药</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 医药电商 · 创新药 · 医疗器械概念</span>
+      <span><b>来源</b> 6 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    前沿生物（688221）主要做的是针对未满足重大临床需求的创新药研究、开发、生产及销售。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。当前判断的方向是震荡。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度低。支撑在于创新药主营基础（置信度：中）；一季收入增长（置信度：高）；行业政策支持（置信度：中）。主要风险是半年金额缺失（置信度：高）；持续盈利待核（置信度：高）；卖方口径待核（置信度：高）。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>创新药主营基础（置信度：中）</li>
+      <li>一季收入增长（置信度：高）</li>
+      <li>行业政策支持（置信度：中）</li>
+    </ul>
+  </div>
+
+  <main>
+    <p>研究基准日：2026-10-14 观察周期：2026-10-14 至 2027-01-12，共十三周。 资料口径：本轮冻结材料为数字基准；只读查库结果与冻结材料一致。新增联网材料仅用于政策及预期核验，不替换库内行情、财务或估值数据。金额除另注外均为人民币。</p>
+<p><strong>复核状态：待复核。</strong> 半年报关键金额缺失、净利率口径未明确、卖方预测期间及机构统计不一致，限制了盈利持续性和估值判断。</p>
+<h2>A. 核心结论</h2>
+<p><strong>方向：震荡（置信度：低）。</strong></p>
+<p><strong>一句话逻辑：一季收入2.97亿元，持续盈利待核。</strong></p>
+<p>2026年一季度收入2.97亿元、归母净利润2.27亿元；半年累计收入同比指标为434.272%，但半年收入及归母净利润金额缺失。因此，不能重算二季度单季业绩，也不能确认一季度盈利是否具有持续性。（置信度：高，指本轮资料边界）</p>
+<p><strong>核心驱动：</strong></p>
+<ol>
+<li>公司快照记载已有上市创新药，创新药标签有主营依据；当前销售结构及产品收入贡献尚待核验。（置信度：中）</li>
+<li>一季度收入同比948.8909%，盈利金额明确；增长来源、经常性利润与现金回收情况尚未取得。（置信度：中）</li>
+<li>已核验政策分别支持创新药研发和支付准入，但不能据此确认公司收入将增加。（置信度：中）</li>
+</ol>
+<p><strong>核心风险：</strong></p>
+<ol>
+<li>半年金额及现金流、应收、存货、预付款、研发明细缺失，盈利质量无法完整评估。（置信度：高）</li>
+<li>卖方预测存在期间标签及机构统计待复核事项，不能建立可靠的全年预测估值。（置信度：高）</li>
+<li>近期与创新药走势接近，同时相关热点记录的资金支持不足；这种关联可能增加波动，不能证明未来继续同步。（置信度：中）</li>
+</ol>
+<p><strong>最该盯的信号：</strong> 先补齐半年报金额和利润构成；在库内计划的2026-10-31三季报披露后，核验第三季度单季收入、归母及扣非归母净利润、累计经营现金流。</p>
+<p><strong>最可能出错的地方：</strong> 如果后续资料证明一季度盈利主要来自可持续业务且现金回收充分，本报告对积极情景的判断可能过于保守；如果属于集中确认或非经常性收益，则当前盈利不能代表后续期间。（置信度：低）</p>
+<p><strong>当前条件式倾向：</strong> 如果没有已证实重大反面证据，但上述关键财务缺口或口径问题仍未解决，那么观望。（置信度：高，指条件选择）</p>
+<h2>B. 公司快照</h2>
+<div class="callout">主行业：化学制剂 近期和「创新药」走势接近 沾边的热点：创新药与医药（它在「医药生物」行业名单里） 在名单里不等于主营，也不等于跟着涨 走势接近不代表主营，也不代表以后还跟</div>
+<p>以上为2026-10-14热点资料的固定展示口径。公司快照和估值资料另采用“生物制药”分类；历史涨停记录使用“化学制药”。这些分类来自不同资料体系，本报告分别保留，不将其静默统一。（置信度：高）</p>
+<ul>
+<li><strong>证券身份：</strong> 前沿生物，代码688221，科创板；上市日期2020-10-28，上市状态为正常上市。</li>
+<li><strong>主营：</strong> 针对未满足重大临床需求的创新药研究、开发、生产及销售。</li>
+<li><strong>产品基础：</strong> 快照记载艾博韦泰，商品名“艾可宁”，于2018年5月获批、2018年8月开始在中国销售。介绍中的临床阶段、专利及竞争地位描述没有独立更新日期，不作为2026年最新状态证明。（置信度：中）</li>
+<li><strong>组织资料：</strong> 员工314人，注册资本37,457.8653万元；不以注册资本代替当前总股本或摊薄股本。</li>
+</ul>
+<p><strong>当前报价资料：</strong></p>
+<ul>
+<li>价格14.19元，涨跌幅−3.01%，成交额1.00亿元。</li>
+<li>报价附带的最高、最低涨跌幅分别为−0.55%、−3.55%。</li>
+<li>数据时点仅为“15:00”，<strong>完整交易日期缺失，不能认定为2026-10-14收盘行情</strong>。（置信度：高）</li>
+</ul>
+<p><strong>估值资料：</strong></p>
+<ul>
+<li>估值日期2026-10-14，总市值53.15亿元，市净率5.1411倍。</li>
+<li>滚动市盈率、股息率、行业市盈率分位均缺失。</li>
+<li>“生物制药”行业公司数量82家，库内行业市盈率中位数约49.79倍；有效市盈率样本的具体构成未提供。</li>
+</ul>
+<p>只从估值看，当前不能判断公司处于行业市盈率的便宜或昂贵位置；市净率也不能替代对研发资产质量和持续盈利能力的核验。（置信度：高）</p>
+<h2>C. 财务健康</h2>
+<h3>四期财务记录</h3>
+<p>以下期间均为累计口径，不能当成连续四个单季度。归母口径采用本轮可重算材料明确指定的金额；其余未经说明的利润字段保留原始名称。</p>
+<ul>
+<li><strong>2026年上半年｜公告日期2026-08-31：</strong> 收入金额缺失；归母净利润金额缺失；收入同比434.272%；库内利润同比指标252.9796%；ROE 15.5887%；毛利率84.0534%；库内净利率指标47.5364%；每股收益0.40元；资产负债率40.7722%。</li>
+<li><strong>2026年一季度｜公告日期2026-04-25：</strong> 收入2.97亿元；归母净利润2.27亿元；收入同比948.8909%；库内利润同比指标615.3806%；ROE 22.9095%；毛利率94.0063%；库内净利率指标76.5296%；每股收益0.61元；资产负债率40.1077%。</li>
+<li><strong>2025年全年｜公告日期2026-04-25：</strong> 收入1.23亿元；归母净利润−2.68亿元；收入同比−4.7008%；库内利润同比指标−33.1063%；ROE −26.5638%；毛利率33.2181%；库内净利率指标−217.2464%；每股收益−0.72元；资产负债率44.4426%。</li>
+<li><strong>2025年前三季度｜公告日期2025-10-31：</strong> 收入1.03亿元；库内净利润金额−1.60亿元；收入同比12.7996%；库内利润同比指标17.3936%；ROE −15.0562%；毛利率34.8422%；库内净利率指标−154.5927%；每股收益−0.43元；资产负债率40.0558%。</li>
+</ul>
+<p><strong>事实与判断：</strong></p>
+<ol>
+<li>2025全年亏损、2026一季度盈利已经记录，但期间长度不同，不能据此写成“一季度同比扭亏为盈”；需要上年同季度归母净利润原值。（置信度：高）</li>
+<li>半年累计收入同比低于一季度累计同比，不能直接替代二季度单季同比，也不能据此给出二季度最低达标值。（置信度：高）</li>
+<li>半年累计毛利率84.0534%与一季度毛利率94.0063%覆盖的期间不同，不能当作连续单季毛利率下降幅度。（置信度：高）</li>
+<li>半年每股收益0.40元低于一季度0.61元，但缺少加权股数及半年归母金额，不通过每股收益差额推断二季度盈亏。（置信度：高）</li>
+<li>半年资产负债率较上年末下降约3.67个百分点，公式为40.7722%−44.4426%。这项变化不能证明回款改善，也不能排除流动性风险。（置信度：高）</li>
+<li>ROE不机械年化，不跨全年、一季度、半年直接比较经营效率。（置信度：高）</li>
+</ol>
+<h3>本轮可重算财务分析</h3>
+<p><strong>已能重算：</strong></p>
+<ul>
+<li><strong>2026年一季度归母净利率：76.5296%。</strong></li>
+</ul>
+<p>据冻结原始金额推算：227,393,754.18÷297,131,734.61×100%。期间为2026年一季度，单位为%。这明确是归母净利率；不能因其与库内净利率指标相近，就认定全部期间的净利率字段都采用归母口径。（置信度：高）</p>
+<ul>
+<li><strong>2025年第四季度单季收入：约0.2001亿元。</strong></li>
+</ul>
+<p>据累计金额推算：（123,386,656.86−103,373,939.22）÷1亿。期间为2025年10—12月，单位为亿元，前提是两期营业收入统计口径一致。（置信度：高）</p>
+<p>2025年前三季度利润金额未获独立的归母／合并口径说明，因此不将其与年度归母金额相减推算第四季度归母净利润。</p>
+<p><strong>最新单季为2026年第二季度，以下项目不能重算：</strong></p>
+<ul>
+<li><strong>单季营业收入：</strong> 半年累计收入−一季度累计收入；缺半年累计收入。一季度有效输入为297,131,734.61元。</li>
+<li><strong>单季归母净利润：</strong> 半年累计归母净利润−一季度累计归母净利润；缺半年累计归母净利润。一季度有效输入为227,393,754.18元。</li>
+<li><strong>单季收入同比及环比：</strong> 缺本年二季度单季收入；同比另缺2025年半年累计收入。</li>
+<li><strong>单季归母净利润同比及环比：</strong> 缺本年二季度单季归母净利润；同比另缺2025年半年累计归母净利润。</li>
+<li><strong>单季毛利率：</strong></li>
+</ul>
+<p>（半年收入×半年毛利率−一季度收入×一季度毛利率）÷（半年收入−一季度收入）。缺半年收入；毛利率采用同一百分比单位，结果单位为%。</p>
+<ul>
+<li><strong>半年累计归母净利率：</strong> 半年归母净利润÷半年收入×100%；两个金额均缺失。</li>
+<li><strong>半年末滚动四季归母净利润：</strong></li>
+</ul>
+<p>（2025全年归母净利润＋2026半年归母净利润−2025半年归母净利润）÷1亿。已知年度输入−268,053,032.03元，缺两期半年归母金额；覆盖2025年第三季度至2026年第二季度，单位为亿元。</p>
+<p>这些缺口使最新单季盈利及滚动盈利判断不能成立。（置信度：高）</p>
+<p>本轮同比倒算材料将2025年一季度收入估计为约2,832.82万元、归母利润估计为约3,178.64万元，并标记为估算。它们依赖上游同比公式、符号处理及四舍五入，存在倒算误差；不作为上年原始财报金额，也不据此确定盈亏变化。（置信度：低）</p>
+<h3>现金流与经营资产逐项解释</h3>
+<ul>
+<li><strong>经营现金流：</strong> 未取得2026半年同口径金额及上年同期比较值。无法判断账面盈利转为现金的程度。即使后续取得负值，也需结合研发支出、结算周期、现金余额及债务到期结构分析，不能直接推成偿债危机。（置信度：高）</li>
+<li><strong>应收账款：</strong> 未取得半年末余额、上年末余额、账龄及减值明细。无法计算较上年末变化或判断回款风险；资产负债率变化不能替代这项核验。（置信度：高）</li>
+<li><strong>存货：</strong> 未取得余额、分类和跌价准备。无法区分正常备货、产品销售放缓或减值风险；备货不等于订单兑现。（置信度：高）</li>
+<li><strong>预付款：</strong> 未取得余额、交易对象及用途。无法判断是否对应研发服务、材料采购或其他业务，不能归因为产能扩张。（置信度：高）</li>
+<li><strong>研发：</strong> 未取得研发费用、资本化金额及项目分布。不能把毛利率或利润变化归因于研发费用增减，也不能确认管线推进速度。（置信度：高）</li>
+</ul>
+<p>上述项目的公司解释及公告附注本次均未取得。后续余额比较应写“较上年末”，期间流量比较应写“同比”，不混用。</p>
+<p><strong>合并净利率与归母净利率分开：</strong> 本轮仅能独立重算一季度归母净利率；未取得合并净利润原值，不能独立重算合并净利率。半年47.5364%等库内指标保留记录，但不赋予未经核验的口径。</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>以下为库内“生物制药”分类下的比较样本，财务期均为2026年上半年；对比估值数据未逐项提供估值日期。</p>
+<ul>
+<li><strong>百济神州（688235）</strong> · 市值3,526.12亿元 · 市盈率82.3568倍 · 市净率9.9533倍 · 收入222.20亿元 · 净利润32.71亿元 · ROE 9.901%。</li>
+<li><strong>石药创新（300765）</strong> · 市值605.80亿元 · 市盈率59.2293倍 · 市净率15.389倍 · 收入32.40亿元 · 净利润12.61亿元 · ROE 38.1951%。</li>
+<li><strong>凯莱英（002821）</strong> · 市值590.34亿元 · 市盈率57.0066倍 · 市净率3.3277倍 · 收入36.07亿元 · 净利润5.20亿元 · ROE 2.9425%。</li>
+</ul>
+<p>前沿生物市值53.15亿元，低于上述三个样本；市净率低于前两个、高于第三个。这只是规模及账面估值差异，不能据此确定投资价值优劣。（置信度：高）</p>
+<p>同属库内行业分类不代表直接竞争。本轮没有共同适应症、同类产品、价格、市场份额或研发外包业务结构的可比资料，不能把三家公司直接当作前沿生物的产品竞争对手。（置信度：高）</p>
+<p>前沿生物半年收入及利润金额缺失，最新同期间盈利横向比较无法完成；行业市盈率也不能解释公司所处经营周期。（置信度：高）</p>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>商业模式：</strong> 公司快照描述了从创新药研发、临床开发、生产到商业销售的业务链。已有上市产品提供商业化基础，但本轮没有取得药品销售、授权收入及其他收入拆分，不能确认一季度收入增长由哪类业务贡献。（置信度：中）</p>
+<p><strong>结构性护城河候选：</strong></p>
+<ul>
+<li>快照记载原创药物及专利保护。专利可能构成保护基础，但有效地域、剩余期限、权利稳定性及替代产品情况均未核验。（置信度：中）</li>
+<li>快照记载长效多肽研发能力及生产设施。这可以支持研发和生产能力判断，不能独立证明技术领先、成本领先或难以替代。（置信度：中）</li>
+</ul>
+<p><strong>阶段性优势候选：</strong> 已有上市产品及推广团队，可能积累临床使用和渠道经验；缺少覆盖医院、持续用药、患者数量及收入贡献证据，不能确认优势规模。（置信度：低）</p>
+<p><strong>尚不能确认的经济价值：</strong> 专利或临床差异化能否转为持续收入，需要同时验证支付覆盖、实际使用、产品收入和现金回收。公司介绍中的“首个”“唯一”等表述没有最新竞争资料支持，不作为2026年排他性优势结论。（置信度：高）</p>
+<h2>F. 政策与监管</h2>
+<h3>创新药研发及支付支持：两份独立政策依据</h3>
+<p><strong>第一份依据：</strong> 国家医保局2025-07-01发布会原文介绍，相关措施覆盖研发支持、医保及商业健康保险创新药目录、临床应用和多元支付。原始发布者为国家医保局，发布日期与发布会事件日均为2025-07-01；通知附件本次读取失败，具体内容以已打开的发布会正文为证据。<a href="https://www.nhsa.gov.cn/art/2025/7/1/art_14_17065.html" target="_blank" rel="noopener">国家医保局发布会实录</a></p>
+<p><strong>第二份依据：</strong> 国家药监局官方公告规定，符合条件的创新药临床试验申请可以进入30个工作日审评审批通道，并规定品种、申报及风险管理条件。原始发布者为国家药监局，英文页面更新日为2025-10-14，正文落款为2025-09-09；不能混同页面更新日与文件落款日。<a href="https://english.nmpa.gov.cn/2025-10/14/c_1132769.htm" target="_blank" rel="noopener">国家药监局官方公告</a></p>
+<p>两份不同主管机关、不同政策文件共同支持“研发和支付制度提供支持”这一有限概括，独立政策依据数量为2；它们不能相互证明具体条款执行效果，更不能证明前沿生物已获得相应资格或收入。（置信度：中）</p>
+<p><strong>可能传导：</strong> 合格项目研发程序改善、合格产品支付渠道增加，可能改善商业化条件；公司是否满足资格、实际使用量与收入是否增长，仍须公司经营资料核验。公司直接受益判断为低置信度。</p>
+<h3>医疗服务价格预立项：不能直接等同药品销售利好</h3>
+<p>国家医保局2026-09-15政策解读明确：适宜作为药品或医用耗材收费且无需配套价格立项的产品不在预立项范围；预立项也不等于已获正式收费立项。原始发布者、发布日期为国家医保局、2026-09-15，解读所对应制度事件按该日记录，另无独立实施日证据。<a href="https://www.nhsa.gov.cn/art/2026/9/15/art_105_22143.html" target="_blank" rel="noopener">国家医保局政策解读</a></p>
+<p>支持范围仅为制度适用边界；独立来源数量为1，<strong>单源未交叉验证·置信度低</strong>。未取得前沿生物产品适用资格或新增收费项目依据，因此不把这条热点消息作为收入增长前提。</p>
+<p>热点库在2026-10-14收录该方向新闻，不代表制度于当天首次出台。（置信度：高）</p>
+<h2>G. 题材与产业链关联</h2>
+<div class="callout">主行业：化学制剂 近期和「创新药」走势接近 沾边的热点：创新药与医药（它在「医药生物」行业名单里） 在名单里不等于主营，也不等于跟着涨 走势接近不代表主营，也不代表以后还跟</div>
+<p><strong>热点记录日期：2026-10-14。系统阶段：退潮（原始标签）。</strong> 起始日期与持续天数未提供，不能补写“第几天”。</p>
+<p>热点记录关注医疗服务价格预立项及沃森生物疫苗临床消息；同时记录仿制药一致性评价方向资金净流出3.3亿元、生物疫苗方向资金接近零。后两项是热点系统的板块资金描述，具体统计口径未单独提供，不能解释为前沿生物自身资金或经营变化。（置信度：高，指资料边界）</p>
+<p>走势关联已经计算：统计日期和最新判断日期均为2026-10-14，记录为匹配且非旧结果；与创新药的20日、40日相关系数分别约0.7282、0.7741。相关性说明历史共同波动，不证明主营，也不预测未来持续跟随。（置信度：高）</p>
+<p><strong>概念逐项分级：</strong></p>
+<ul>
+<li><strong>创新药：真有业务。</strong> 主营及已上市产品描述支持；具体收入占比未取得。（置信度：中）</li>
+<li><strong>医疗器械概念：仅概念标签，未见营收佐证。</strong> 经营范围含医疗器械许可及相关业务，不能代替已发生收入。（置信度：高）</li>
+<li><strong>医药电商：仅概念标签，未见营收佐证。</strong> 未取得平台、渠道或相关收入资料。（置信度：高）</li>
+<li><strong>沪股通：交易制度标签。</strong> 不代表主营收入；本轮未核验最新资格状态。（置信度：高）</li>
+<li><strong>融资融券：交易制度标签。</strong> 不代表经营业务或营收。（置信度：高）</li>
+</ul>
+<p>热点方向的其他别名不能全部视作公司的概念或业务。</p>
+<p><strong>产业链位置：</strong> 研发资源及原材料／服务供应 → 公司研发、临床开发和生产 → 医疗及销售渠道 → 患者使用。具体供应商、客户名单和集中度未取得；公司同时承担研发和商业化环节，有主营依据。（置信度：中）</p>
+<p>议价能力取决于临床差异化、替代选择及支付条件，当前没有足够资料确定议价能力主要落在哪一端。（置信度：低）</p>
+<h2>H. 消息面与市场情绪</h2>
+<div class="callout">主行业：化学制剂 近期和「创新药」走势接近 沾边的热点：创新药与医药（它在「医药生物」行业名单里） 在名单里不等于主营，也不等于跟着涨 走势接近不代表主营，也不代表以后还跟</div>
+<h3>先看相关热点</h3>
+<p>截至2026-10-14，系统阶段仍为“退潮（原始标签）”，持续天数和起始日期未提供；走势关联为同日计算的有效结果。</p>
+<ul>
+<li><strong>2026-10-14 11:30:47收录：</strong> 医疗服务价格预立项新闻。制度适用边界见F节，不能认定公司药品销售将受益。（置信度：低）</li>
+<li><strong>2026-10-14 17:56:00收录：</strong> 沃森生物冻干带状疱疹病毒mRNA疫苗启动Ⅰ期临床试验新闻。本轮未打开对应原始公告，事件日期及详情未交叉核验；属于其他公司的临床事件，不能作为前沿生物订单或收入依据。（置信度：低）</li>
+</ul>
+<p>热点系统提示资金支持不足。这是板块情绪记录，不等于公司的盈利情况。（置信度：高）</p>
+<h3>公司自身新闻</h3>
+<p>本轮近60天只有两条公司新闻，且可能对应同一权益变动事项，不扩写成多个独立事件。</p>
+<ul>
+<li><strong>库内发布时间2026-09-29 20:05:23：</strong> 持股5%以上股东权益变动触及1%及5%刻度的提示性公告。<a href="http://static.cninfo.com.cn/finalpage/2026-09-30/1225588316.PDF" target="_blank" rel="noopener">公告链接</a></li>
+<li><strong>库内发布时间2026-09-29 20:04:36：</strong> 陆荣健简式权益变动报告书。<a href="http://static.cninfo.com.cn/finalpage/2026-09-30/1225588318.PDF" target="_blank" rel="noopener">报告书链接</a></li>
+</ul>
+<p>本次仅取得库内标题和链接，正文未核验。链接路径包含2026-09-30，不能据此静默替换库内发布时间或认定公告正文日期。变动方向、原因、数量、后续安排及控制权影响均为信息缺口；标题本身不足以确定基本面影响。（置信度：高）</p>
+<h3>历史涨停与资金</h3>
+<ul>
+<li><strong>历史记录：</strong> 2026-04-27曾涨20.0%，一连板；首次封板09:33:55，最后封板14:45:31，开板20次，封单金额0.22亿元。该日记录说明曾有短线关注及封板反复，不能代表当前情绪强度。（置信度：中）</li>
+<li><strong>近20个交易日资金统计：</strong> 2026-09-09至2026-10-14，资金净流出1.94亿元，其中特大单净流出0.54亿元；净流入为正7天、为负13天。它们是成交分类统计，不能推断实际参与者身份或未来方向。（置信度：高）</li>
+<li><strong>筹码：</strong> 筹码数据库内仅覆盖关注票，该票暂无。没有获利盘比例或成本分位，不能建立筹码价位触发。</li>
+<li><strong>股东户数：</strong> 截至2026-06-30为20,043户；缺少上期值，不能判断集中或分散，且季度数据滞后。（置信度：高）</li>
+</ul>
+<p>这些资料仅作情绪佐证，不进入盈利逻辑链的决定性环节，也不单独触发操作动作。</p>
+<h2>I. 未来十三周事件日历</h2>
+<p>以下按研究日起每七天分组，覆盖完整十三周。“本周无已知事件”指本轮资料没有确定事件，不代表期间不会发生事件。</p>
+<ul>
+<li><strong>W1（2026-10-14—10-20）：</strong> 本周无已知未来公司事件。</li>
+<li><strong>W2（2026-10-21—10-27）：</strong> 本周无已知事件。</li>
+<li><strong>W3（2026-10-28—11-03）：</strong> 2026-10-31计划披露三季报 · 财报 · 重要性高 · 核验第三季度单季收入、利润、现金流及研发情况。日期来自库内交易所披露计划，实际是否按期披露仍需更新。（置信度：中）</li>
+<li><strong>W4（2026-11-04—11-10）：</strong> 本周无已知事件。</li>
+<li><strong>W5（2026-11-11—11-17）：</strong> 本周无已知事件。</li>
+<li><strong>W6（2026-11-18—11-24）：</strong> 本周无已知事件。</li>
+<li><strong>W7（2026-11-25—12-01）：</strong> 本周无已知事件。</li>
+<li><strong>W8（2026-12-02—12-08）：</strong> 本周无已知事件。</li>
+<li><strong>W9（2026-12-09—12-15）：</strong> 本周无已知事件。</li>
+<li><strong>W10（2026-12-16—12-22）：</strong> 本周无已知事件。</li>
+<li><strong>W11（2026-12-23—12-29）：</strong> 本周无已知事件。</li>
+<li><strong>W12（2026-12-30—2027-01-05）：</strong> 本周无已知事件。</li>
+<li><strong>W13（2027-01-06—01-12）：</strong> 本周无已知事件。</li>
+</ul>
+<p>本轮没有取得可核验的公司临床结果公布日、授权交易完成日或其他政策落地日，不补写推测日期。（置信度：高）</p>
+<h2>J. 机构观点与可证伪逻辑链</h2>
+<h3>卖方观点单列</h3>
+<p>〔卖方预期〕来源：开源证券研报（库内） · 日期：2026-09-02 · 观点：标题称“2026H1营收高增，双靶点siRNA研发持续推进” · 置信度：低。原文链接两次打开均失败，不能确认标题对应的收入来源、研发阶段或全年预测细节。<a href="https://pdf.dfcfw.com/pdf/H3_AP202609021828907058_1.pdf" target="_blank" rel="noopener">研报链接</a></p>
+<p>〔卖方预期〕来源：浙商证券研报（库内） · 日期：2026-09-15 · 观点：原标签2026Q4、2027Q4、2028Q4，每股收益分别为−0.10、−0.36、−0.50元；原记录市盈率分别为−161.7、−44.86、−31.89倍；预测归母净利润金额均缺失 · 置信度：低。负市盈率不具有通常盈利估值比较意义，也不是本轮估值日重算结果。</p>
+<p>〔卖方预期〕来源：国联民生证券研报（库内） · 日期：2026-09-03 · 观点：原标签2026Q2、2027Q2、2028Q2，每股收益分别为0.07、−0.26、−0.24元；利润预测分别为2,500、−9,900、−8,800万元；2026Q2附带原记录市盈率251.0倍，其余缺失 · 置信度：低。万元转换为亿元分别为0.25、−0.99、−0.88，但期间标签未核实，不能当作全年利润。</p>
+<p>库内汇总为2篇、2家机构，但标题及预测记录涉及三个不同机构，属于统计范围待复核事项。不能据此计算完整机构共识或认为市场已充分定价。（置信度：高）</p>
+<h3>全年预测隐含余期增速</h3>
+<p><strong>2026年下半年隐含归母利润同比公式：</strong></p>
+<p>〔（预测2026全年归母净利润−2026半年归母净利润）÷（2025全年归母净利润−2025半年归母净利润）−1〕×100%。</p>
+<p>单位为%，预测及实际利润须统一为元。当前不能计算，具体缺失为：</p>
+<ul>
+<li>浙商证券2026全年归母净利润预测金额；</li>
+<li>2026半年实际归母净利润；</li>
+<li>2025半年实际归母净利润；</li>
+<li>国联民生证券预测是否属于全年口径的原文确认。</li>
+</ul>
+<p>不以每股收益乘注册资本补出预测利润，不把半年或余期增速当作第三季度最低增速。（置信度：高）</p>
+<p>若上年剩余期间利润为负或为零，常规增长率还可能失去直观意义，应同时展示绝对盈亏变化。（置信度：高）</p>
+<h3>估值日对应预测市盈率</h3>
+<p><strong>公式：</strong> 2026-10-14总市值53.15亿元×1亿÷预测2026全年归母净利润，结果单位为倍。</p>
+<p>全年预测利润金额或期间口径未核实，不能重算。国联民生证券0.25亿元的记录不能因金额齐全就直接当全年分母；券商原记录的251.0倍或负市盈率也不能替代估值日结果。（置信度：高）</p>
+<h3>可证伪逻辑链</h3>
+<ol>
+<li><strong>已有创新药业务基础</strong> → 有商业化对象，但不能确定当前收入规模与产品结构。（置信度：中）</li>
+<li><strong>一季度收入及归母利润金额明确</strong> → 该期间出现盈利，但半年金额缺失，不能确认连续盈利。（置信度：高）</li>
+<li><strong>政策改善研发和支付条件</strong> → 提供行业层面的支持，尚不能证明公司实际受益。（置信度：中）</li>
+<li><strong>如果盈利主要由可重复业务贡献</strong> → 后续应能观察到产品收入、单季扣非盈利和现金回收的共同验证。（置信度：低）</li>
+<li><strong>如果上述验证完成且没有重大反证</strong> → 才具备讨论积极动作的证据条件。（置信度：中）</li>
+</ol>
+<p><strong>最弱的一环：</strong> 一季度盈利是否具有可重复性。收入构成、非经常性损益和现金回收证据均未取得，不能把高同比直接延长到未来十三周。（置信度：高）</p>
+<h2>K. 三情景推演</h2>
+<p>以下概率为研究者主观分配，合计100%，不是统计模型结果，也不是库内财务数字。</p>
+<p>全篇采用同一优先级：<strong>已证实重大反面证据优先；其次检查关键证据缺失或冲突；全部必要条件满足后才讨论积极动作。</strong></p>
+<p>本报告将以下经正式资料证实的事项定义为重大反面证据：核心产品销售资格受到实质限制、关键研发项目因安全或疗效原因终止、公司披露债务不能按期偿付，或第三季度单季收入同比下降且单季归母净利润为负。这里只定义未来核验条件，未认定这些事项已经发生。</p>
+<p>“证据齐全”包括：半年收入及归母金额、上年同期比较金额、现金流及经营资产明细、利润构成、最新单季重算、报价完整日期，以及影响估值使用的卖方期间与来源问题得到解释。</p>
+<ul>
+<li><strong>乐观（20%）</strong>｜触发：没有重大反面证据；关键证据齐全且无未解决冲突；第三季度单季收入同比为正、单季归母及扣非归母净利润均为正、前三季度经营现金流非负，全部满足。｜路径：持续盈利与现金回收获得验证，可能支持偏强表现。｜置信度：低。</li>
+<li><strong>中性（55%）</strong>｜触发：没有重大反面证据，但关键证据仍缺失或存在未解决冲突；或证据齐全而乐观必要条件未全部满足。｜路径：盈利质量未获完整验证，可能继续围绕财报和行业消息波动。｜置信度：低。</li>
+<li><strong>悲观（25%）</strong>｜触发：出现上述任一已证实重大反面证据；不以资料缺失替代负面事实。｜路径：经营或研发前提受到否定，可能承受估值下调及更大波动。｜置信度：低。</li>
+</ul>
+<p>乐观条件中的零值边界，是研究者为确认盈利与现金回收设置的主观保守门槛，不是行业标准。研发付款、结算节奏及收入确认可能具有季节性，单期未达标不自动证明经营恶化；没有重大反证时仍归入中性情景。</p>
+<h2>L. 决策与风控</h2>
+<p><strong>条件式操作倾向：</strong></p>
+<ol>
+<li>如果出现K节定义的任一已证实重大反面证据，那么回避。（置信度：高，指规则优先级）</li>
+<li>如果没有重大反面证据，但关键证据缺失或冲突未解决，那么观望。（置信度：高）</li>
+<li>如果没有重大反面证据、关键证据齐全且无未解决冲突，并且第三季度单季收入同比为正、单季归母及扣非归母净利润均为正、前三季度经营现金流非负，那么少量尝试；如果证据齐全但这些必要条件未全部满足，那么观望。（置信度：中）</li>
+</ol>
+<p><strong>当前对应第二条。</strong> 半年金额和经营明细缺失，卖方口径问题尚未解释，因此当前不具备第三条全部前提。（置信度：高）</p>
+<p><strong>推翻条件：</strong></p>
+<ul>
+<li>如果正式财务更正使本报告使用的一季度收入或归母利润依据失效，那么停止使用相关推导，重新研究。（置信度：高）</li>
+<li>如果后续核验满足全部乐观条件，那么当前保守判断需要调整。（置信度：中）</li>
+<li>如果发生重大反面证据，那么优先执行第一条，不以政策新闻、走势相关或资金变化抵消。（置信度：高）</li>
+</ul>
+<p><strong>仓位思路：</strong> 如果处于当前证据不足状态，那么观望；如果全部乐观条件满足，那么仅讨论轻仓、少量尝试。没有完整日期的报价、缺失均线及缺失筹码，不建立当前价位触发。（置信度：高）</p>
+<h2>M. 逻辑自查与信息缺口</h2>
+<h3>先复核财务与预测可算项</h3>
+<ul>
+<li>一季度归母净利率已用原始金额重算；历史第四季度收入已作累计差额推算。</li>
+<li>最新第二季度收入、归母净利润、同比、环比、单季毛利率、半年归母净利率及半年末滚动利润，均逐项列出具体缺失输入，没有用累计指标代替。</li>
+<li>全年预测隐含余期同比及估值日预测市盈率均给出公式；预测利润金额缺失或期间未核实，停用推导。</li>
+<li>同比倒算材料已说明估算属性及误差；没有把注册资本作为股数，没有机械年化ROE。</li>
+<li>库内净利率指标没有被自动解释为合并或归母口径。（置信度：高，指上述复核范围）</li>
+</ul>
+<h3>最依赖的假设及反面证据</h3>
+<p>最依赖的假设是盈利能由可重复业务贡献。如果它不成立，单季度高利润就不能支持持续盈利判断。（置信度：低）</p>
+<p>保留的反面信息包括：2025全年亏损、相关热点资金支持不足、卖方样本中的负每股收益预期，以及半年关键金额缺失。前三项不能替代最新财务验证；最后一项是缺口，不是亏损事实。（置信度：高）</p>
+<h3>关键外部论断复核</h3>
+<ul>
+<li><strong>研发及支付制度存在支持方向：</strong> 原始发布者分别为国家医保局、国家药监局；已阅读2025-07-01发布会正文及2025-10-14更新的官方英文公告。事件日分别为发布会当日和公告正文落款2025-09-09；独立政策依据2份。支持范围仅限制度方向，公司适用资格和收入效果未核。（置信度：中）原文见<a href="https://www.nhsa.gov.cn/art/2025/7/1/art_14_17065.html" target="_blank" rel="noopener">医保局发布会</a>、<a href="https://english.nmpa.gov.cn/2025-10/14/c_1132769.htm" target="_blank" rel="noopener">药监局公告</a>。</li>
+<li><strong>医疗服务价格预立项存在适用边界：</strong> 原始发布者国家医保局，发布日期2026-09-15；已阅读解读正文，独立来源1个。支持制度范围，不支持公司药品新增收入结论；单源未交叉验证·置信度低。<a href="https://www.nhsa.gov.cn/art/2026/9/15/art_105_22143.html" target="_blank" rel="noopener">政策解读原文</a></li>
+<li><strong>热点中的其他公司临床消息：</strong> 仅取得2026-10-14库内新闻记录，原始公告、实际事件日未核，未作为A、J、K、L的确定前提。（置信度：低）</li>
+<li><strong>卖方研发及盈利观点：</strong> 已保留库内原始记录，相关研报正文打开失败；没有用标题补财务或确认产品临床进度。（置信度：低）</li>
+</ul>
+<p>同一机关的通知、解读及转载不重复计作独立来源。本报告未引入采购比例、订单、量产或外部灾害受益等未经原文支持的前提。</p>
+<h3>信息缺口分三类</h3>
+<p><strong>一、已披露但本次未取得</strong></p>
+<ul>
+<li>半年收入、归母净利润、上年同期金额及相关成本原值。</li>
+<li>半年经营现金流、应收、存货、预付款、研发费用及资本化明细；相应比较值、账龄和减值附注。</li>
+<li>收入构成、非经常性损益、扣非归母利润、现金余额和债务到期结构；是否均有单列披露，需要进一步核验报表及附注。</li>
+<li>权益变动公告正文，以及卖方原文中的预测期间、利润口径与估值基准。</li>
+</ul>
+<p><strong>影响：</strong> 最新单季、滚动盈利、现金回收及全年预测估值不能完成。 <strong>补法：</strong> 由研究库补入同口径财报原值，或增加逐项核验的一手公告材料，保留原文链接、公告日期、页码和报告期后重算。（置信度：高）</p>
+<p><strong>二、尚待披露</strong></p>
+<ul>
+<li>2026三季报：库内计划披露日2026-10-31，本轮未取得提前披露资料。</li>
+<li>后续临床结果及授权事件：未取得确定公布日，不列推测时间。</li>
+</ul>
+<p><strong>补法：</strong> 跟踪正式披露及预约变更，不能把“本轮没有资料”写成“没有发生”。（置信度：高）</p>
+<p><strong>三、口径／来源冲突或待复核</strong></p>
+<ul>
+<li>研报汇总2篇、2家机构，与详细记录涉及三个机构的范围不一致。</li>
+<li>卖方Q4、Q2标签的财年及累计期间未核实。</li>
+<li>库内净利率指标、2025年前三季利润金额的归母／合并口径未明确。</li>
+<li>行业分类体系不同，分别保留；不能据此判定主营发生变化。</li>
+<li>报价仅有15:00，完整交易日期缺失；不得借用估值日期。</li>
+<li>权益变动新闻发布时间与链接路径日期不同，正文日期未核验。</li>
+</ul>
+<p><strong>补法：</strong> 对照原始报告和字段定义解释范围，补齐日期；不能静默改标签、覆盖原值或恢复依赖争议输入的推导。（置信度：高）</p>
+<p>公司快照的已核验公告补充列表为空，本轮没有可用的页码级公告补充材料。公告真实性核验也不等于财报经过审计。</p>
+<h3>动作条件复核与下一步</h3>
+<p>K、L及结构化摘要统一采用“重大反证优先、关键缺口其次、全部必要条件满足后才讨论少量尝试”的顺序。当前明确对应观望，没有用新品新闻或资金变化绕开财务条件。（置信度：高）</p>
+<p><strong>下一步最值得做的是先补齐半年报原值和利润构成，再在计划三季报披露后重算最新单季及滚动利润。</strong> 这能直接回答盈利能否持续、是否转化为现金；继续增加未经核验的题材消息不能解决当前核心缺口。（置信度：高）</p>
+<p>本报告完成A–M框架及十三周日历；重要财务和卖方口径仍待复核，不声称已经完成全部严格测试。</p>
+<h3>自动核对（程序检查，不是 AI 判断）</h3>
+<div class="callout">程序只检查报告中的数字、格式和措辞，内容还需要人工核实。数字相近不代表公司、时间、单位、来源或原因解释正确。</div>
+<ul>
+<li>格式：A–M 十三节齐全 · 没有表格 · 没有「买入/卖出」字样</li>
+<li>⚠️ 措辞：「退潮」是比喻、不是标准说法，建议改成「热度回落 / 资金流出 / 板块回调」——上下文：…# 先看相关热点截至2026-10-14，系统阶段仍为“退潮（原始标签）”，持续天数和起始日期未提供…</li>
+<li>⚠️ 数据库里有、报告未找到相关内容：<strong>估值</strong>（如 53.15）。请确认是否已经说明省略的原因</li>
+<li>报告里有 107 处数字，86 处能在数据库材料里找到相近值，21 处未找到（重复的合并后共 16 项）。网上查到或自行计算的数字也可能未找到，需要逐项核实
+<ul>
+<li>这次核对的可信度：高。程序试查一批随机数字，能识别其中 94% 不在材料里（材料共含 151 个不同数字）。这只说明程序发现可疑数字的能力，不是报告准确率</li>
+<li>（全文 2 处） — …<strong>证券身份：</strong> 前沿生物，代码688221，科创板；上市日期2020-10-28，上市状态为正常上市。 - <strong>主营：</strong>…</li>
+<li>— …新状态证明。（置信度：中） - <strong>组织资料：</strong> 员工314人，注册资本37,457.8653万元；不以注册资本代替当前总股本或摊薄股本。…</li>
+<li>（全文 4 处） — …资产负债率40.7722%。 - <strong>2026年一季度｜公告日期2026-04-25：</strong> 收入2.97亿元；归母净利润2.27…</li>
+<li>— …入：<strong> 半年累计收入−一季度累计收入；缺半年累计收入。一季度有效输入为297,131,734.61元。 - </strong>单季归母净利润： 半年累计…</li>
+<li>— …归母净利润−一季度累计归母净利润；缺半年累计归母净利润。一季度有效输入为227,393,754.18元。 - <strong>单季收入同比及环比：</strong> 缺本…</li>
+<li>— …断不能成立。（置信度：高）本轮同比倒算材料将2025年一季度收入估计为约2,832.82万元、归母利润估计为约3,178.64万元，…</li>
+<li>— …倒算材料将2025年一季度收入估计为约2,832.82万元、归母利润估计为约3,178.64万元，并标记为估算。它们依赖上游同比公式、符…</li>
+<li>— …值数据未逐项提供估值日期。 - <strong>百济神州（688235）</strong> · 市值3,526.12亿元 · 市盈率82.3568倍 · 市净率…</li>
+<li>（全文 2 处） — …- <strong>历史记录：</strong> 2026-04-27曾涨20.0%，一连板；首次封板 :55，最后封板 :31，开板20次，封单金额0.…</li>
+<li>— …不能建立筹码价位触发。 - <strong>股东户数：</strong> 截至2026-06-30为20,043户；缺少上期值，不能判断集中或分散，且季度数…</li>
+<li>— …4—10-20）：<strong> 本周无已知未来公司事件。 - </strong>W2（2026-10-21—10-27）： 本周无已知事件。 -…</li>
+<li>— …11-11—11-17）：<strong> 本周无已知事件。 - </strong>W6（2026-11-18—11-24）： 本周无已知事件。 -…</li>
+<li>（另有 4 条，同类从略）</li>
+</ul></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-10-14），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>半年金额缺失（置信度：高）</li>
+      <li>持续盈利待核（置信度：高）</li>
+      <li>卖方口径待核（置信度：高）</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>非经常性损益</dt><dd>与主营业务无关、偶发的收益或损失，如处置资产、政府补助、金融资产公允价值变动。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>经营现金流</dt><dd>经营活动产生的现金流量净额。利润是账面数，这个是真金白银进出。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.nhsa.gov.cn/art/2025/7/1/art_14_17065.html" target="_blank" rel="noopener">国家医保局发布会实录</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="https://english.nmpa.gov.cn/2025-10/14/c_1132769.htm" target="_blank" rel="noopener">国家药监局官方公告</a></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.nhsa.gov.cn/art/2026/9/15/art_105_22143.html" target="_blank" rel="noopener">国家医保局政策解读</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://static.cninfo.com.cn/finalpage/2026-09-30/1225588316.PDF" target="_blank" rel="noopener">公告链接</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://static.cninfo.com.cn/finalpage/2026-09-30/1225588318.PDF" target="_blank" rel="noopener">报告书链接</a></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://pdf.dfcfw.com/pdf/H3_AP202609021828907058_1.pdf" target="_blank" rel="noopener">研报链接</a></li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-10-14 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
