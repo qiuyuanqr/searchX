@@ -9,6 +9,13 @@
 
 <!-- 新条目加在这一行下面 -->
 
+## 2026-10-17 03:46 · Codex · 修复章节误报和导入器误删财务公式
+
+- **改了什么**：质检识别真实 J 节标题「可证伪逻辑」，仍只认章节标题，不用正文提及代替缺节；导入器保留中文/数字与数学标点构成的行内公式，SQL、内部字段元组和源码路径继续过滤。补三条回归测试。
+- **为什么**：`2026-10-16_stock-601999`（Stocks report 196）已有完整逻辑链，原检查因 J 节措辞变化误报；另发现 `mapCodeSpan()` 把非英文标识符开头的公式删除，已归档正文多处只剩「公式为。」。没有原始正文不能可靠恢复，不能仅删 `.parked`。
+- **验证**：先复现失败再修复；定向测试 109 pass；全量 Bun 1431 pass / 1 skip / 0 fail（4037 assertions）；231 篇存量质检硬阻断从 2 篇降为 0，差异仅本篇和 `2026-10-05_stock-002837` 的同类 J 节误报。构建 229 篇、Pagefind 99 页，两个 `.parked` 仍被排除。缺 data 的数字对账未跑，不等同全文事实验收。
+- **没做 / 待办**：Mac mini SSH 两次均在认证前关闭连接，生产日志、原始 report 196、生产部署版本未取得；未修改其服务/配置。两份报告均继续搁置、正文未改。恢复连接后从 Stocks 原始报告重导到隔离目录，核对公式与来源、通过检查与独立核验，再恢复发布并刷新 Obsidian。部署结果另见本次交接记录。
+
 ## 2026-10-11 17:40 · Claude · Codex 运行配置补进两份 LaunchAgent 模板
 
 - **改了什么**（用户要求）：`services/runner/launchd/com.searchx.runner.plist` 和 `services/check-runner/launchd/com.searchx.check-runner.plist` 各加 `EnvironmentVariables`，8 项非敏感配置：两个 `*_OBSIDIAN_VAULT`、`SEARCHX_CODEX_BIN`、`SEARCHX_CODEX_DELIVERY_ENABLED`、`SEARCHX_CODEX_EFFORT`、`SEARCHX_CODEX_MODEL`、`SEARCHX_CODEX_STATE_ROOT`、`TZ`。值照 Mac mini 已安装的那份原样抄。此前这些只存在于已安装的 plist 里，按 README「拷模板 → bootstrap」重装会全丢。

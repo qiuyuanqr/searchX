@@ -6,6 +6,23 @@ import {
 
 // ========== 术语映射 ==========
 
+test("行内中文和数字公式保留原始操作数，不因缺少英文标识符而删空", () => {
+  for (const formula of [
+    "（半年累计784,644,746.46－一季度487,226,361.30）÷1亿",
+    "（32,204,133.50－6,637,232.38）÷1亿",
+    "45.45÷全年预测归母净利润",
+    "（全年预测－上半年实际）÷上年下半年－1",
+  ]) {
+    expect(mapCodeSpan(formula)).toBe(formula);
+    expect(sanitize(`# 报告\n\n公式：\`${formula}\`。`).md).toContain(`公式：${formula}。`);
+  }
+});
+
+test("保留公式时仍删除内部字段元组、空数组、SQL 和路径", () => {
+  for (const token of ["[]", "(trade_date, ts_code)", "(SELECT 1 FROM daily_basic)", "lib/stock_research.py:346"])
+    expect(mapCodeSpan(token)).toBeNull();
+});
+
 test("取数函数名换成中文口径名，而不是删掉（溯源信息不能丢）", () => {
   expect(mapCodeSpan("financials_recent")).toBe("库内财务");
   expect(mapCodeSpan("industry_peers(\"603009\", n=3)")).toBe("库内同业对比（取 3 家）");

@@ -166,6 +166,14 @@ test("checkCoverage 不拿小整数当探针（1/2/3 满篇都是，等于恒命
 
 // ========== 格式：章节 ==========
 
+test("识别出版传媒实际 J 节的可证伪逻辑标题，真正缺节仍阻断", () => {
+  const original = stockHtml();
+  const reportHtml = original.replace("<h2>逻辑链推导</h2>", "<h2>J. 机构观点、盈利要求与可证伪逻辑</h2>");
+  expect(checkFormat({ reportHtml, type: "股票" }).blocking).toEqual([]);
+  const missing = original.replace("<h2>逻辑链推导</h2>", "<h2>J. 机构观点与盈利要求</h2><p>以后补充可证伪逻辑</p>");
+  expect(checkFormat({ reportHtml: missing, type: "股票" }).blocking.join()).toContain("逻辑链推导");
+});
+
 test("股票缺章节 → 硬红线；节名写法不同也认（存量有三种写法）", () => {
   const full = checkFormat({ reportHtml: stockHtml(), type: "股票" });
   expect(full.blocking).toEqual([]);

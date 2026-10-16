@@ -156,8 +156,13 @@ export function mapCodeSpan(inner) {
   if (CODE_LIKE_RE.test(raw)) return null;
 
   const base = baseName(raw);
-  // `[]`、`(trade_date, ts_code)` 这类：不是标识符，一律删
-  if (!base) return null;
+  // 中文/数字开头的财务公式也没有英文标识符，不能当内部代码删掉。
+  // 只放行中文、数字和数学标点；字段元组、空数组、路径仍不放行。
+  if (!base) {
+    return /[\p{Script=Han}\d]/u.test(raw)
+      && /^[\p{Script=Han}\d\s.,，。:：()（）+＋\-－−×*÷/＝=％%亿元万元、]+$/u.test(raw)
+      ? raw : null;
+  }
   if (FUNC_MAP[base]) return FUNC_MAP[base] + windowSuffix(base, raw);
   if (TABLE_MAP[base]) return TABLE_MAP[base];
   if (INTERNAL_TOKEN_RE.test(raw)) return null;
