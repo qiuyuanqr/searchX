@@ -1,3 +1,4 @@
+import { originHeaders } from "./cors.js";
 // services/intake-worker/src/handler.js
 // 提交主流程：token 鉴权 → 校验内容 → 安全初筛 → 限频 → 建 Issue（红旗降级 pending、否则 approved）
 // → 私存提交者邮箱（runner 取来发信）。全部副作用经 deps 注入，离线可测。
@@ -13,7 +14,7 @@ export async function handleIntake(request, env, deps = {}) {
   const now = deps.now || new Date();
 
   const cors = {
-    "access-control-allow-origin": env.ALLOWED_ORIGIN,
+    ...originHeaders(request, env),
     "access-control-allow-methods": "POST, OPTIONS",
     "access-control-allow-headers": "content-type",
     vary: "origin",

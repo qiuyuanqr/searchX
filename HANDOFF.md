@@ -1,5 +1,9 @@
 # searchX 维护交接
 
+## 2026-10-18 国内静态站接入实施中
+
+用户已授权实际接入（含发布脚本、接口适配、验证后新域名及回滚）。代码在隔离工作树实现，部署前全量Bun 1456通过/1跳过/0失败；21项Python故障与打包测试、完整232篇构建、真实CI制品回放和最终独立代码复审通过。具体见 [实施记录](docs/progress/2026-10-18-vps-site-rollout.md)。本条写入时尚未修改生产站点；下方“仅勘察”是此前快照，后续状态看实施记录增量。
+
 ## 2026-10-18 国内服务器接入：勘察完成，尚未变更线上
 
 用户要求先看如何复用 qiuyuan.net 的服务器，并保护 Stocks。已只读核对 VPS、Caddy 活动路由、DNS、Mac mini 工具和 Worker CORS，在临时干净 Git 镜像完整构建 232 篇、约 28.5 MB；候选新增 `search.qiuyuan.net` 站点经服务器现有 Caddy 语法解析，原 Stocks/通知路由逐项相同。勘察前后 Caddy 配置哈希、PID/启动时间未变，Stocks `/api/health` 均 200/ok。新子域名权威 DNS 当前 NXDOMAIN；Worker 目前仍只允许 GitHub Pages Origin。**没有修改 DNS、VPS、Mac mini 服务或 Worker，没有上线新入口。**

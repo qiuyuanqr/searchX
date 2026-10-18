@@ -176,3 +176,8 @@ git push origin main          # 触发既有 Action 部署
 - KV：`sub:<issue号>`=提交者邮箱（runner 取，60 天）；`invite:<token>`/`allow:<email>`=授权名单（永久，admin 管理）。
 - `/admin/*`（`ADMIN_KEY`）、`/verify`（`x-invite-token` 头或 `?k=`）、`/sub/<n>`（`SUB_READ_SECRET`）。
 - runner 用受限 token 拉 `approved` 未 `done` 的 Issue（不变）。
+
+
+## 双站点浏览器来源（2026-10-18）
+
+`ALLOWED_ORIGIN` 保留旧单来源兼容；`ALLOWED_ORIGINS` 是逗号分隔的明确允许来源，当前为 `https://qiuyuanqr.github.io,https://search.qiuyuan.net`。所有浏览器接口、预检和错误响应按请求 Origin 精确选择，只返回一个匹配值并带 Vary: Origin；未知来源、null 或相似恶意域名不返回允许来源头。不使用通配符，不放宽 token/密钥鉴权或限频。没有 Origin 的服务端调用保持旧响应兼容。默认配置以 wrangler.toml 为准，手工从控制台部署时也需同步 ALLOWED_ORIGINS。

@@ -1,3 +1,4 @@
+import { originHeaders } from "./cors.js";
 // services/intake-worker/src/verify.js
 // GET /verify → 提交前确认 token 有效，回显「打码邮箱」（不泄露完整邮箱）。
 // 前端打开个人链接时调它：有效则回显授权身份并放开提交，无效则提示去找作者要链接。
@@ -10,7 +11,7 @@ import { maskEmail } from "./issue-format.js";
 
 export async function handleVerify(request, env) {
   const cors = {
-    "access-control-allow-origin": env.ALLOWED_ORIGIN,
+    ...originHeaders(request, env),
     "access-control-allow-methods": "GET, OPTIONS",
     "access-control-allow-headers": "content-type, x-invite-token",
     "access-control-max-age": "86400",

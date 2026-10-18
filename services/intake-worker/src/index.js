@@ -1,3 +1,4 @@
+import { originHeaders, withOrigin } from "./cors.js";
 // services/intake-worker/src/index.js
 import { handleIntake } from "./handler.js";
 import { handleSubRead } from "./sub-read.js";
@@ -12,9 +13,9 @@ import { handleCheckSubmit, handleCheckPending, handleCheckDone, handleCheckImag
 // 判定成网络错误、读不到任何原因。这里统一兜成带 CORS 的结构化 JSON 500。对纯服务端路由
 // （/sub、/people、/check/pending 等只有 runner 用共享密钥调用）加这层 CORS 头无害——反正
 // 不会有浏览器读它。
-function internalErrorResponse(env) {
+function internalErrorResponse(request, env) {
   const cors = {
-    "access-control-allow-origin": env.ALLOWED_ORIGIN,
+    ...originHeaders(request, env),
     "access-control-allow-methods": "GET, POST, OPTIONS",
     "access-control-allow-headers": "content-type, x-check-key, x-admin-key",
     vary: "origin",
@@ -25,7 +26,7 @@ function internalErrorResponse(env) {
   });
 }
 
-export default {
+const router = {
   async fetch(request, env) {
     try {
       // 注意：这里每个 handler 调用都必须 await 后再 return——在 async 函数里 `return
@@ -110,7 +111,14 @@ export default {
 
       return await handleIntake(request, env);                                // 站内表单提交（token 鉴权）
     } catch {
-      return internalErrorResponse(env);
+      return internalErrorResponse(request, env);
     }
+  },
+};
+
+// 覆盖路由层直接返回的 404/405；handler 的鉴权和限频逻辑保持原样。
+export default {
+  async fetch(request, env) {
+    return withOrigin(await router.fetch(request, env), request, env);
   },
 };

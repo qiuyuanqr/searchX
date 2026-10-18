@@ -11,6 +11,7 @@ on:
       - '.github/workflows/deploy.yml'
       # build 会把这份查重源复制进 web/dist/assets/，改它必须重新部署站点（2026-07-14 修查重误拦时发现漏了）
       - 'services/runner/src/dedup.js'
+      - 'services/site-publisher/**'
   workflow_dispatch:  # 手动触发 / 补跑部署：Actions 页「Run workflow」或 `gh workflow run deploy.yml`。GitHub Pages 偶发 5xx 打掉部署的场景已由 deploy-retry.yml 自动补跑（最多 2 次），这里只留给自动补跑也救不回来时人工兜底
 permissions:
   contents: read
@@ -31,6 +32,11 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun test            # 构建检查：单测全绿才部署（含报告残留 token / 半成品目录等防护）
       - run: bun run build
+      # 同一次 CI 生成公开静态包；Mac mini 无需新增 GitHub Actions 下载凭据。
+      - name: Export public static bundle
+        run: >-
+          python3 services/site-publisher/bundle.py --site web/dist
+          --sha "$GITHUB_SHA" --run "$GITHUB_RUN_NUMBER" --run-id "$GITHUB_RUN_ID"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web/dist

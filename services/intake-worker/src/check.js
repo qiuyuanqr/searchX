@@ -1,3 +1,4 @@
+import { originHeaders } from "./cors.js";
 // services/intake-worker/src/check.js
 // 私密事实核查任务路由：/check、/check/pending、/check/<id>/done。
 // 两把密钥完全隔离：CHECK_KEY（作者提交）/ CHECK_RUNNER_SECRET（runner 取/标任务）。
@@ -205,7 +206,7 @@ async function readRebuiltAt(env) {
 // 浏览器前端跨域调用：所有响应带 CORS、并处理 OPTIONS 预检（allow-headers 必含 x-check-key）。
 export async function handleCheckSubmit(request, env, { now }) {
   const cors = {
-    "access-control-allow-origin": env.ALLOWED_ORIGIN,
+    ...originHeaders(request, env),
     "access-control-allow-methods": "POST, OPTIONS",
     "access-control-allow-headers": "content-type, x-check-key",
     vary: "origin",
@@ -303,7 +304,7 @@ async function createTaskFromRequest(request, env, { now, extra = {}, allowEmpty
 // 绝不回 text/link 全文、更不回图片字节。浏览器跨域调用，带 CORS + OPTIONS 预检。
 export async function handleCheckRecent(request, env, opts = {}) {
   const cors = {
-    "access-control-allow-origin": env.ALLOWED_ORIGIN,
+    ...originHeaders(request, env),
     "access-control-allow-methods": "GET, OPTIONS",
     "access-control-allow-headers": "content-type, x-check-key",
     vary: "origin",
@@ -409,7 +410,7 @@ export async function handleCheckStart(request, env, id, opts = {}) {
 // 作者端（CHECK_KEY）接口共用的 CORS + 鉴权前置。返回 Response 表示已拦截，返回 null 放行。
 async function authorGate(request, env, methods) {
   const cors = {
-    "access-control-allow-origin": env.ALLOWED_ORIGIN,
+    ...originHeaders(request, env),
     "access-control-allow-methods": `${methods}, OPTIONS`,
     "access-control-allow-headers": "content-type, x-check-key",
     vary: "origin",
@@ -527,7 +528,7 @@ export async function handleCheckDone(request, env, id, opts = {}) {
 // 浏览器跨域调用，带 CORS + OPTIONS 预检 + 复用密钥错限频。无结果（旧任务 / 回传失败 / 超期）→ 404。
 export async function handleCheckResult(request, env, id) {
   const cors = {
-    "access-control-allow-origin": env.ALLOWED_ORIGIN,
+    ...originHeaders(request, env),
     "access-control-allow-methods": "GET, OPTIONS",
     "access-control-allow-headers": "content-type, x-check-key",
     vary: "origin",

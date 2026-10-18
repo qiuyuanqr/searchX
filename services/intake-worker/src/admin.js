@@ -1,3 +1,4 @@
+import { originHeaders } from "./cors.js";
 // services/intake-worker/src/admin.js
 // 管理路由 /admin/*：ADMIN_KEY 鉴权 + 失败限流锁定 + 增/查/删/轮换授权白名单。
 // 安全要点：管理凭证（ADMIN_KEY，请求头）与朋友的提交 token 完全隔离；定长比较防时序侧信道；
@@ -17,7 +18,7 @@ const hourKey = (ms) =>
 export async function handleAdmin(request, env, deps = {}) {
   const now = deps.now || (() => Date.now());
   const cors = {
-    "access-control-allow-origin": env.ALLOWED_ORIGIN,
+    ...originHeaders(request, env),
     "access-control-allow-methods": "GET, POST, OPTIONS",
     "access-control-allow-headers": "content-type, x-admin-key",
     vary: "origin",
