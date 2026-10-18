@@ -9,6 +9,13 @@
 
 <!-- 新条目加在这一行下面 -->
 
+## 2026-10-18 23:10 · Codex · 通知入口已部署 Mac mini，配置备份与回滚说明补齐
+
+- **改了什么**：`05b6f8e` 已推送 main 并在互斥锁保护下快进同步 Mac mini；两条空闲定时服务先 bootout，精确增设 `RUNNER_SITE_BASE=https://search.qiuyuan.net` / `CHECK_RUNNER_CHECK_PAGE_URL=https://search.qiuyuan.net/check.html` 后 bootstrap。原 plist 私密备份在 `~/Library/Application Support/searchx-codex-ops/20261018-230846-notification-links/`，模板对应键相同。
+- **为什么**：让现有 `.env` 不同历史配置下的业务通知也明确采用新入口，保留全部其他生产配置；原 plist 没有 URL 键，补充“只恢复旧 plist 不足以回退”的实际回滚条件。
+- **验证**：launchctl 已加载两项新 URL，服务均空闲、300秒周期、RunAtLoad=false；未 kickstart。Mac mini 仓外定向/规则测试 96 pass / 0 fail、410 assertions；checkout 干净，GitHub main ref 实核，旧 Pages 发布包源不变，Stocks 健康接口再次200/ok。
+- **没做 / 待办**：未发真实测试邮件/Bark、未创建业务任务，首个重载后的自然 tick 与下一封真实通知仍待自然验收。本次无网页改动，不额外触发静态站部署；不改 Stocks、DNS、代理或 VPS。并行会话的未提交修改原样保留。
+
 ## 2026-10-18 23:09 · Codex · 通知与邮件使用国内主站并保留 Pages 备用
 
 - **改了什么**：新增公开站点链接模块，runner 主链接、探活和邀请默认改为 `https://search.qiuyuan.net`；完成/已有/作者汇总/待确认超龄邮件附同篇 GitHub Pages 备用阅读链接。补发前迁移已知旧站报告 URL，保留时间戳及状态；查重也先确认主站可达。核查 Bark 默认打开新站 `check.html`；两条 LaunchAgent 模板钉住非敏感入口，双份研究/股票技能说明同步。

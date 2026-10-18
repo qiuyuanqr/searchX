@@ -22,8 +22,21 @@
 
 ## 回滚
 
-在服务空闲且无 runner 锁时，恢复本次备份的两条 plist 并重新加载。代码也保留显式覆盖：`RUNNER_SITE_BASE=https://qiuyuanqr.github.io/searchX`；`CHECK_RUNNER_CHECK_PAGE_URL=https://qiuyuanqr.github.io/searchX/check.html`。已知主站队列 URL 会随当前配置映射回旧站，不重研。不要撤掉旧站 CI/部署或修改 VPS 发布器的 Pages 源。
+保留本次代码时，必须在两条服务空闲时显式设置旧入口并重载：`RUNNER_SITE_BASE=https://qiuyuanqr.github.io/searchX`；`CHECK_RUNNER_CHECK_PAGE_URL=https://qiuyuanqr.github.io/searchX/check.html`。原 plist 没有这两个 URL 键，**单独恢复备份 plist 仍会采用新代码的新站默认值，不能完成回滚**。如选择原 plist 恢复，必须同时回退本次代码。已知主站队列 URL 会随当前配置映射回旧站，不重研。不要撤掉旧站 CI/部署或修改 VPS 发布器的 Pages 源。
 
 ## 生产部署
 
-本文件初次提交时待同步与安装；完成后补充 commit、备份路径、配置有效值和服务状态。未涉及 Stocks 服务、数据、DNS、代理、SSH 配置或 VPS 路由。
+代码 `05b6f8eba4c98b0d5e3545a2ace7e8be337433f2` 已推送 GitHub main（远端 ref 实核）并快进同步至 Mac mini。同步时获取 Git/importer 互斥目录与两条 runner 的 PID 锁；两条服务均空闲才停用旧定时器，没有打断真实任务。
+
+生产 plist 私密备份：`~/Library/Application Support/searchx-codex-ops/20261018-230846-notification-links/`（目录 0700、文件 0600）。仅增两项非敏感 URL，其余配置原样保留；没有读取 `.env`、输出凭据或复制敏感配置进仓库。模板与已安装键一致，bootstrap 后用 launchctl 核对加载值：
+
+- `com.searchx.runner`：`RUNNER_SITE_BASE=https://search.qiuyuan.net`。
+- `com.searchx.check-runner`：`CHECK_RUNNER_CHECK_PAGE_URL=https://search.qiuyuan.net/check.html`。
+- 两者 `RunAtLoad=false`、周期 300 秒，已恢复定时加载；未额外 kickstart 消费任务。重载后即时状态均 not running / runs 0，首个自然 tick 尚待观察。
+- Mac mini 从仓外执行同组定向/一致性测试：96 pass / 0 fail、410 assertions。生产 checkout 干净，Pages 下载源不变，Stocks 健康接口再次 200/ok。
+
+本轮没有网页或构建改动，不额外触发 Pages 部署；当前公开内容仍沿用已验证发布版本 1791。旧 GitHub Pages 入口仍保留，正常后续报告继续经原 CI→Pages→VPS 流水线更新。
+
+当前主工作区另一会话的 hooks、AGENTS、CHANGES 条目及新增 session-end 脚本原样保留，未提交；只精准集成本任务文件与流水条目。隔离工作树成果逐文件核对进入 main 后归档，未删除分支。
+
+未涉及 Stocks 服务、数据、DNS、代理、SSH 配置或 VPS 路由。真实下一封业务邮件和 Bark 点击仍需随自然任务验收，不以离线邮件替身或配置加载成功代替已送达。

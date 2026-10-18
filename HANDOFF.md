@@ -1,5 +1,11 @@
 # searchX 维护交接
 
+## 2026-10-18 通知与邮件已切换国内主站，Pages 备用保留
+
+代码 `05b6f8e` 已推送 main 并同步 Mac mini；研究完成/已有报告/作者汇总/待确认超龄邮件主链改为 `https://search.qiuyuan.net`，附同篇 GitHub Pages 备用阅读链接。旧队列在补发探活前迁移；新主站不可达时不发完成信，查重也先探主站。核查 Bark 默认打开新站 `/check.html`；两条定时服务的已加载非敏感 URL 均已核对为新入口，300 秒、RunAtLoad=false，原配置有私密备份。没有额外触发真实任务或发送测试邮件/推送。
+
+全量离线 1466 pass / 1 skip / 0 fail，独立复审无实质问题，Mac mini 定向 96 pass。真实报告主备页均 200 且正文哈希一致，Stocks 健康接口再次 200/ok。旧站 CI、部署及 VPS 发布包源未变；本次无网页变更，不额外发布静态站。回滚必须显式指定两项旧 URL 并空闲重载，或同时回退代码与原 plist，不能只恢复不含 URL 键的旧 plist。详细配置备份、验证与下一次自然通知验收见 [本次记录](docs/progress/2026-10-18-notification-links.md)。以下前次部署记录中的“通知仍用旧地址”属于本次切换前快照。
+
 ## 2026-10-18 国内静态站已上线，Stocks 健康对照通过
 
 新入口 **https://search.qiuyuan.net/** 已上线；原 GitHub Pages 保留。源码 `9d28aa6`，Pages run `39137277469`（1791）build/deploy/smoke 全成功；VPS 发布为 `1791-9d28aa6d666b347be0b9c4ccc69b9df3ea3a592e`，232篇完整报告。Worker 版本 `3335e0ef-618c-4d79-992d-d3dfdec0c64b` 已支持两个明确 Origin，24个真实预检通过。新域名真浏览器首页/搜索/报告/判断档案及未授权提交/核查门禁通过，没有触发真实研究任务。
