@@ -316,8 +316,8 @@ async function main() {
       repoRoot:process.cwd(),env:process.env,onChild:(child)=>{currentChild=child;},isCancelled:()=>stopping,
       log:(message)=>console.log(message),
     }),
-    // 部署探活：Step6 push 后 GitHub Actions 才 build+deploy（约 1–2 分钟）；偶发 Pages 5xx
-    // 会打掉部署 → 报告子页 404。轮询报告 URL 直到 200（含单次硬超时，防连接卡死永久占锁）。
+    // 主站探活：GitHub Actions build+deploy 后 VPS 每 5 分钟同步。
+    // 轮询实际要发给读者的主站 URL；备用站可达不能替代主站确认。
     verifyPublished: async (url) => {
       console.log(`→ 探活（等部署上线，最多 8 分钟）：${url}`);
       return pollUntilOk(url, { log: (m) => console.log(m) });

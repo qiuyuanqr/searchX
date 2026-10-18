@@ -3,6 +3,7 @@
 // 拉 /people 授权列表 → 对比本地「已见」→ 新 token 逐条自检（主端点 /verify + 站点 + 备用域）
 // → 邮件告知作者「✅ 可发 / ❌ 先别发」。首次运行只纳管存量、不发信（防对着老授权轰一轮）。
 // 事件驱动、极低频（只有新增/换钥才发信），不需要限频。
+import { resolveSiteBase } from "../../site-links.js";
 import nodemailer from "nodemailer";
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
@@ -14,7 +15,7 @@ const trim = (u) => (u || "").trim().replace(/\/+$/, "");
 
 const primary = trim(process.env.RUNNER_WORKER_URL);
 const fallback = trim(process.env.RUNNER_WORKER_FALLBACK_URL) || "https://searchx-intake.qiuyuanqr.workers.dev";
-const site = trim(process.env.RUNNER_SITE_BASE) || "https://qiuyuanqr.github.io/searchX";
+const site = resolveSiteBase(process.env.RUNNER_SITE_BASE);
 const subSecret = (process.env.RUNNER_SUB_SECRET || "").trim();
 const smtpUser = (process.env.RUNNER_SMTP_USER || "").trim();
 const smtpPass = (process.env.RUNNER_SMTP_PASS || "").trim();

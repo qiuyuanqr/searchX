@@ -22,7 +22,7 @@ export async function pollUntilOk(url, {
       const res = await fetchImpl(url, { redirect: "follow", signal: AbortSignal.timeout(perTryMs) });
       if (res.ok) { log(`✓ 已确认上线（第 ${n} 次探测 200）`); return true; }
     } catch { /* 单次超时 / 网络错误 / 连接卡死：吞掉，由下面的总时限决定是否继续 */ }
-    if (now() >= deadline) { log("✗ 超时未确认上线（疑似 Pages 部署故障）"); return false; }
+    if (now() >= deadline) { log("✗ 超时未确认上线（待 GitHub Pages 部署或主站同步）"); return false; }
     await sleep(intervalMs);
   }
 }

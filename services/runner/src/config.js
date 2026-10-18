@@ -2,6 +2,7 @@
 // 从 process.env 读 Runner 配置；缺必填即抛清晰错误（列出所有缺的键）。
 // 机密只在本机环境变量 / 未入库的 .env，绝不入库。
 
+import { resolveSiteBase } from "../../site-links.js";
 import { DEFAULT_DEDUP_WINDOW_DAYS } from "./dedup.js";
 import { homedir } from "node:os";
 import { join, isAbsolute } from "node:path";
@@ -65,7 +66,7 @@ export function loadRunnerConfig(env) {
     owner: t(env.RUNNER_OWNER || "qiuyuanqr"),
     repo: t(env.RUNNER_REPO || "searchX"),
     authorEmail: t(env.RUNNER_AUTHOR_EMAIL || env.RUNNER_SMTP_USER), // 缺省=发信账号，不在代码里硬写个人邮箱
-    siteBase: trimUrl(env.RUNNER_SITE_BASE || "https://qiuyuanqr.github.io/searchX"),
+    siteBase: resolveSiteBase(env.RUNNER_SITE_BASE),
     dedupWindowDays: parseDedupWindow(env.RUNNER_DEDUP_WINDOW_DAYS),
     maxFailures: parseMaxFailures(env.RUNNER_MAX_FAILURES),
     claudeArgs: (env.RUNNER_CLAUDE_ARGS || "--permission-mode bypassPermissions")

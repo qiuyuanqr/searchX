@@ -72,7 +72,7 @@ bun test /绝对路径/searchX/services/check-runner   # 离线，不读仓库 .
 | `CHECK_RUNNER_TIMEOUT_MINUTES` | — | 整个 Codex workflow 的绝对硬超时（含质检和核验，分钟），默认 `30`。到点先 TERM、宽限 10 秒再 KILL，按失败计入重试计数。没有它，一次挂死的 workflow 会一直持有单实例锁、让整条管道停摆 |
 | `CHECK_RUNNER_BARK_URL` | — | Bark（iOS 推送）地址，形如 `https://api.day.app/<device_key>`；配了才在核查完成 / 失败时推送。默认正文只说"有一条核查完成"，不带内容 |
 | `CHECK_RUNNER_BARK_DETAIL` | — | 设 `1` 才把内容标题与一行结论带进推送（内容会经 Bark 服务器与 APNs 中转，默认不带；用户原文任何模式都不进推送） |
-| `CHECK_RUNNER_CHECK_PAGE_URL` | — | 核查页地址（如 `https://qiuyuanqr.github.io/check.html`），配了则点推送直达该页 |
+| `CHECK_RUNNER_CHECK_PAGE_URL` | — | 核查页地址（默认 `https://search.qiuyuan.net/check.html`，可显式覆盖回滚为 `https://qiuyuanqr.github.io/searchX/check.html`），配了则点推送直达该页 |
 | `CHECK_RUNNER_OBSIDIAN_VAULT` | ✅ | 真实 Obsidian 库绝对路径；必须已存在且不是软链，不允许在公开仓库。未挂载在取队列前退出，Factcheck 子目录由宿主创建 |
 
 写到仓库根的 `.env`（已 gitignore，bun 自动加载）：

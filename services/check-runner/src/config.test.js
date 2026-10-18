@@ -32,6 +32,7 @@ describe("loadCheckRunnerConfig", () => {
   it("必填齐全时正常加载", () => {
     const cfg = loadCheckRunnerConfig(BASE);
     expect(cfg.workerUrl).toBe("https://worker.dev");
+    expect(cfg.checkPageUrl).toBe("https://search.qiuyuan.net/check.html");
     expect(cfg.secret).toBe("secret123");
     expect(cfg.smtpEnabled).toBe(false);
     expect(cfg.claudeArgs).toEqual(["--permission-mode", "bypassPermissions"]);
@@ -121,4 +122,8 @@ describe("loadCheckRunnerConfig", () => {
     expect(() => loadCheckRunnerConfig({ ...BASE, CHECK_RUNNER_OBSIDIAN_VAULT: "" })).toThrow("CHECK_RUNNER_OBSIDIAN_VAULT");
     expect(loadCheckRunnerConfig({ ...BASE, CHECK_RUNNER_OBSIDIAN_VAULT: " /Volumes/SS_SSD/obsidian " }).obsidianVault).toBe("/Volumes/SS_SSD/obsidian");
   });
+});
+
+it("核查入口可显式覆盖以回滚", () => {
+  expect(loadCheckRunnerConfig({ ...BASE, CHECK_RUNNER_CHECK_PAGE_URL: " https://qiuyuanqr.github.io/searchX/check.html " }).checkPageUrl).toBe("https://qiuyuanqr.github.io/searchX/check.html");
 });

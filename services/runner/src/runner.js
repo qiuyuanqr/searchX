@@ -3,6 +3,7 @@
 // → 贴 done → 探活确认上线 → 取提交者邮箱 → 发极简邮件（抄作者）→ 评论留痕。
 // 全部副作用经 deps 注入，离线可测。
 
+import { migrateReportUrl } from "../../site-links.js";
 import { listApprovedIssues, addLabel, commentIssue, fetchIssueState } from "./issues.js";
 import { isTransientQueueError } from "./alert.js";
 import { parseIssueRequest } from "./parse-issue.js";
@@ -103,7 +104,7 @@ export async function runOnce(config, deps) {
   // —— 1) 先补发「上线待确认」队列 ——
   // 这些条目研究早已 push 并贴了 done（防重研），只是当轮部署探活没通过。重新探活，
   // 一旦确认上线就补发提交者邮件；仍未上线 / 补发失败的留到下一轮再试。绝不重跑 /research。
-  let pending = await loadPending();
+  let pending = (await loadPending()).map((p) => ({ ...p, url: migrateReportUrl(p.url, config.siteBase) }));
   if (pending.length) {
     log(`上线待确认（补发探活）：${pending.length} 条`);
     const stillPending = [];
@@ -233,6 +234,12 @@ export async function runOnce(config, deps) {
       summary.deduped++;
       const url = `${config.siteBase}/${dup.entry.href}`;
       log(`#${issue.number} 已有报告（${dup.ageDays} 天内 · 命中${dup.matchedBy === "code" ? "代码" : "名称"}），不重复调研：${url}`);
+      // 归档存在不等于主站已同步。仍保留 approved，下轮只查重和复探，不重研、不发 404 链接。
+      if (!(await verifyPublishedQuick(url))) {
+        summary.pendingPublish++;
+        log(`#${issue.number} 已有报告尚未确认主站上线，下轮复探：${url}`);
+        continue;
+      }
       // 先贴 done（幂等标记）：与正常完成路径同一顺序——若持续贴不上而 SMTP 正常，
       // 先发信会导致每 5 分钟一 tick 都重新命中查重、再发一封「已有报告」信，轰炸提交者邮箱。
       try {
@@ -470,7 +477,7 @@ export async function runOnce(config, deps) {
       continue; // 绝不让异常冒泡中止整批，保证同批后续 Issue 仍被处理
     }
 
-    // 部署探活：Step6 push 后 GitHub Actions 才 build+deploy，Pages 偶发 5xx 会打掉部署
+    // 部署探活：Step6 push 后 GitHub Actions build+deploy，再由 VPS 同步；任一阶段未完成
     // → 报告子页 404。未确认上线就不发"已上线"邮件（免得给提交者发 404 链接）。
     // 计 pendingPublish 而非 failed：研究本身已成功，部署慢/等 deploy-retry.yml 自动补跑是
     // 常态（补跑常超出这里的探活窗口），pending 队列会每轮自动重探补发、超龄才专信告警——
@@ -494,7 +501,7 @@ export async function runOnce(config, deps) {
       try {
         await commentIssue(
           { ...gh, number: issue.number,
-            body: `⚠️ 研究已完成并推送，但暂未确认上线（疑似 GitHub Pages 部署故障）：${url}。已暂缓发信；后续每轮会自动重探，确认上线后将自动补发邮件给提交者（也可在 Actions → deploy.yml → Run workflow 手动补跑部署加速）。` },
+            body: `⚠️ 研究已完成并推送，但暂未确认主站上线（待 GitHub Pages 部署或 VPS 同步）：${url}。已暂缓发信；后续每轮会自动重探，确认上线后将自动补发邮件给提交者（也可在 Actions → deploy.yml → Run workflow 手动补跑部署加速）。` },
           fetchImpl
         );
       } catch (e) {

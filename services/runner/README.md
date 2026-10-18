@@ -188,7 +188,7 @@ Codex 输出隔离产物，宿主核验回执/hash、写 `Research/` 笔记和�
 | `SEARCHX_STOCKS_ROOT` | — | 默认 `~/Coding/Stocks`；必须完整 Stocks 项目绝对路径，仅白名单只读共享数据 |
 | `SEARCHX_CODEX_BIN` / `SEARCHX_PYTHON_BIN` / `SEARCHX_BUN_BIN` | — | 执行器路径，默认 `codex` / `python3` / `bun`；适配器校验，不传旧 Claude flags |
 | `RUNNER_CLAUDE_ARGS` | — | 仅保留旧配置兼容，不执行、不生效 |
-| `RUNNER_SITE_BASE` | — | 站点基址，默认 `https://qiuyuanqr.github.io/searchX` |
+| `RUNNER_SITE_BASE` | — | 通知与发信探活的站点基址，默认 `https://search.qiuyuan.net`；可显式改回 `https://qiuyuanqr.github.io/searchX` 回滚 |
 | `RUNNER_DEDUP_WINDOW_DAYS` | — | 查重时效窗口（天），默认 `20`；空/非法/负数回退 20 |
 | `RUNNER_MAX_FAILURES` | — | 失败停跑阈值：同一 Issue 连续「研究未产出」达此次数即自动贴 `done` 停跑止损，默认 `3`；空/非法/小于 1 回退 3 |
 | `RUNNER_TIMEOUT_MINUTES` | — | 整个 Codex workflow（写作、质检、独立核验和修订）的绝对硬超时（分钟），默认 `180`。到点先 TERM、宽限 10 秒再 KILL，按「研究未产出」计入失败退避。也是单实例锁「存活但超龄」判定的基数（超龄上限＝本值 + 30 分钟） |
@@ -283,3 +283,9 @@ bun run runner:log    # 看最近 80 行日志
 3. 核对待处理量、失败缓存、旧服务停用及实际部署 SHA；获得单条真实队列、发布和通知授权后验完整链路：宿主精准推送、报告页可达、Issue done/评论、提交者邮件。
 4. 验证同任务重试复用检查点；模拟交付或回传失败时不会重新花额度研究，也不会误提交其他改动。仅 pending 的 Issue 不处理。
 5. 完成单条验收后才按启停授权恢复周期执行，再观察首个自然任务。后台退出 0、loaded 或历史“已上线”均不是本次迁移完成证据。
+
+### 公开报告主备入口（2026-10-18）
+
+完成、已有报告、作者汇总、待确认超龄邮件以 `https://search.qiuyuan.net` 为主链接，并附同篇 GitHub Pages 备用阅读链接。Issue 完成评论和邀请链接同样使用主站。旧待确认队列中的本站报告 URL 在探活前转换到当前 `RUNNER_SITE_BASE`，原时间戳和补发状态保留；未知第三方地址不重写。查重命中的已有报告也要先确认主站可达，才贴 done 和回信，否则保留 approved 下轮复探，不重新研究。
+
+新报告必须等主站 URL 可达才发完成邮件；Pages 已上线但 VPS 未同步时仍进入待确认队列。GitHub Pages 部署、CI 冒烟以及 `services/site-publisher/publisher.py` 的公开包下载源继续用旧站，避免发布循环依赖。回滚通知入口可将常驻机 `com.searchx.runner` 的非敏感 `RUNNER_SITE_BASE` 改回旧站并在空闲时重载，或回退本次代码；不会删除两个站点的内容。

@@ -34,7 +34,7 @@ test("齐全 → 返回配置；URL 去尾斜杠；含默认 owner/repo/siteBase
   expect(c.owner).toBe("qiuyuanqr");
   expect(c.repo).toBe("searchX");
   expect(c.authorEmail).toBe("me@gmail.com"); // 缺省回退到 RUNNER_SMTP_USER
-  expect(c.siteBase).toBe("https://qiuyuanqr.github.io/searchX");
+  expect(c.siteBase).toBe("https://search.qiuyuan.net");
   expect(c.dedupWindowDays).toBe(DEFAULT_DEDUP_WINDOW_DAYS); // 默认查重时效窗口
   expect(c.claudeArgs).toEqual(["--permission-mode", "bypassPermissions"]);
 });

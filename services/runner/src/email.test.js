@@ -151,3 +151,12 @@ test("sendEmail 调用注入的 transport.sendMail", async () => {
   await sendEmail({ to: "u@x.com" }, { transport });
   expect(sent.to).toBe("u@x.com");
 });
+
+for (const compose of [composeEmail, composeExistingEmail, composeAuthorDigest, composePendingExpiredNotice]) {
+  test(`${compose.name}：新站为主链接，GitHub Pages 同篇报告作为备用`, () => {
+    const m = compose({topic:"测试", url:"https://search.qiuyuan.net/r/2026-10-18_test/", count:1});
+    expect(m.text).toContain("https://search.qiuyuan.net/r/2026-10-18_test/");
+    expect(m.text).toContain("备用阅读（GitHub Pages）：https://qiuyuanqr.github.io/searchX/r/2026-10-18_test/");
+    expect(m.text.indexOf("https://search.qiuyuan.net/")).toBeLessThan(m.text.indexOf("https://qiuyuanqr.github.io/"));
+  });
+}

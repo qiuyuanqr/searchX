@@ -211,7 +211,7 @@ test("部署探活失败：研究已完成→贴 done 防重研，但不发信�
   )).toBe(true);
   // 评论点明"未确认上线"，提示作者手动补跑部署
   expect(fetchImpl.calls.some((c) =>
-    /\/issues\/7\/comments$/.test(c.url) && JSON.parse(c.opts.body).body.includes("未确认上线")
+    /\/issues\/7\/comments$/.test(c.url) && JSON.parse(c.opts.body).body.includes("未确认主站上线")
   )).toBe(true);
 });
 
@@ -1036,4 +1036,41 @@ test("目录带 .parked 标记但没写 .parked.json 信号 → 仍按搁置处�
   )).toBe(true);
   expect(sent.length).toBe(1);                                // 搁置通知发给作者
   expect(sent[0].to).toBe("me@g.com");
+});
+
+test("旧待补发链接迁至新站后再探活；新站未上线则保留，恢复后只发一次主备链接", async () => {
+  const old = "https://qiuyuanqr.github.io/searchX/r/2026-10-18_test/";
+  const primary = "https://search.qiuyuan.net/r/2026-10-18_test/";
+  let store = [{number:7,topic:"测试",title:"测试",url:old,firstSeen:1000}];
+  const sent = [], probed = [];
+  let ready = false;
+  const deps = {
+    fetchImpl: async (url,opts) => String(url).includes("/issues?") ? {ok:true,json:async()=>[]} : makeFetch()(url,opts),
+    scanDirs:()=>[], runResearch:async()=>{throw Error("不得重研");},
+    loadPending:async()=>store, savePending:async value=>{store=value;},
+    verifyPublishedQuick:async url=>{probed.push(url);return ready;},
+    sendEmail:async msg=>sent.push(msg), now:()=>2000, log:()=>{},
+  };
+  const config = {...CONFIG,siteBase:"https://search.qiuyuan.net"};
+  await runOnce(config,deps);
+  expect(probed).toEqual([primary]); expect(sent).toHaveLength(0);
+  expect(store).toEqual([{number:7,topic:"测试",title:"测试",url:primary,firstSeen:1000}]);
+  ready = true;
+  await runOnce(config,deps); await runOnce(config,deps);
+  expect(sent).toHaveLength(1); expect(store).toEqual([]);
+  expect(sent[0].text).toContain(`完整报告：${primary}`);
+  expect(sent[0].text).toContain(`备用阅读（GitHub Pages）：${old}`);
+});
+
+test("已有报告尚未同步新站：不发完成信、不贴 done、不重研，下轮可再探", async () => {
+  const fetchImpl = makeStockFetch([{number:9,title:"芯原股份",body:"",labels:[{name:"approved"}]}]);
+  let sent=0, ran=0, probed;
+  const summary = await runOnce({...CONFIG,siteBase:"https://search.qiuyuan.net"}, {
+    fetchImpl,scanDirs:()=>[STOCK_ENTRY],today:()=>"2026-06-10",
+    runResearch:async()=>{ran++;},sendEmail:async()=>{sent++;},log:()=>{},
+    verifyPublishedQuick:async url=>{probed=url;return false;},
+  });
+  expect(probed).toBe("https://search.qiuyuan.net/"+STOCK_ENTRY.href);
+  expect(sent).toBe(0);expect(ran).toBe(0);expect(summary.pendingPublish).toBe(1);
+  expect(fetchImpl.calls.some(c=>/\/labels$/.test(c.url))).toBe(false);
 });

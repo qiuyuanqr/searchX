@@ -67,7 +67,7 @@ disable-model-invocation: false
 
 调研前先查归档：`ARCHIVE_ROOT/INDEX.md` 的「对象」列里有没有同一个对象（名称完全相同，或双方都 ≥3 字且一方包含另一方，比对时忽略括号里的英文别名与空格；概念类还要把中英文名都比一遍，如「CPO」与「共封装光学」）。
 
-- **已有报告且生成日期在 20 天内**（默认值，runner 侧可用 `RUNNER_DEDUP_WINDOW_DAYS` 调整，权威常量在 `services/runner/src/dedup.js`）：不重复调研。直接告诉用户已有报告的位置——文件夹路径 + 站点链接 `https://qiuyuanqr.github.io/searchX/r/<文件夹>/`，并说明"20 天内已做过"。交互式调用下，用户明确说"仍要重做"才继续；用户只是想看，就到此为止。
+- **已有报告且生成日期在 20 天内**（默认值，runner 侧可用 `RUNNER_DEDUP_WINDOW_DAYS` 调整，权威常量在 `services/runner/src/dedup.js`）：不重复调研。直接告诉用户已有报告的位置——文件夹路径 + 站点链接 `https://search.qiuyuan.net/r/<文件夹>/`（备用：`https://qiuyuanqr.github.io/searchX/r/<文件夹>/`），并说明"20 天内已做过"。交互式调用下，用户明确说"仍要重做"才继续；用户只是想看，就到此为止。
 - **报告已超过 20 天**、**查无报告**、或**侧重点明显不同**（`| 侧重点` 问的是旧篇没覆盖的角度）：正常往下调研；侧重点不同的新篇在正文开头用一句链接旧篇（`r/<旧文件夹>/`），别重写旧篇已讲清的部分。
 - **无人值守下不反问**：命中就按"已做过"处理，把旧报告路径写进对话输出即结束。
 
@@ -351,7 +351,7 @@ bun run scripts/check-web-numbers.js --dir <本次目录> --challenge
 
 ## Step 6 — 自动同步上线（每次必做）
 
-调研三件套写完、INDEX 更新、**且通过 Step 5.5 独立核验后**，**把本次成果提交并推送到 `main`，触发 GitHub Pages 自动部署**，让它出现在公开站 https://qiuyuanqr.github.io/searchX/ 。站点构建逻辑：CI 扫描 `research/` 下所有 `<YYYY-MM-DD>_<slug>/` 文件夹（须含 `notes.md`），渲染成信息流卡片 + 报告页。`push: branches:[main]` 即自动 build+deploy（见 `.github/workflows/deploy.yml`），**无需手动 dispatch**。
+调研三件套写完、INDEX 更新、**且通过 Step 5.5 独立核验后**，**把本次成果提交并推送到 `main`，触发 GitHub Pages 自动部署**，再由 VPS 同步到公开主站 https://search.qiuyuan.net/ ，原 https://qiuyuanqr.github.io/searchX/ 保留备用。完成通知须等主站报告页可达，不能只以备用站已部署为准。站点构建逻辑：CI 扫描 `research/` 下所有 `<YYYY-MM-DD>_<slug>/` 文件夹（须含 `notes.md`），渲染成信息流卡片 + 报告页。`push: branches:[main]` 即自动 build+deploy（见 `.github/workflows/deploy.yml`），**无需手动 dispatch**。
 
 执行顺序（**不要跳步，构建不过不许推**）：
 

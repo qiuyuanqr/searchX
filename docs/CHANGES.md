@@ -9,6 +9,13 @@
 
 <!-- 新条目加在这一行下面 -->
 
+## 2026-10-18 23:09 · Codex · 通知与邮件使用国内主站并保留 Pages 备用
+
+- **改了什么**：新增公开站点链接模块，runner 主链接、探活和邀请默认改为 `https://search.qiuyuan.net`；完成/已有/作者汇总/待确认超龄邮件附同篇 GitHub Pages 备用阅读链接。补发前迁移已知旧站报告 URL，保留时间戳及状态；查重也先确认主站可达。核查 Bark 默认打开新站 `check.html`；两条 LaunchAgent 模板钉住非敏感入口，双份研究/股票技能说明同步。
+- **为什么**：国内入口上线后业务通知仍指向旧站；防止只改默认值遗漏持久化队列，或 Pages 已上线但 VPS 未同步就发送主站 404。显式配置仍支持回滚，GitHub Pages 部署、CI probe 和 VPS 公开包下载源保持不变。
+- **验证**：无 `.env` 的隔离源码镜像全量 Bun 1466 pass / 1 skip / 0 fail，4160 assertions；最终定向含规则/技能一致性 96 pass / 0 fail；独立代码复审无 Critical/Important/Minor。真实出版传媒报告两站均 200、99705 字节且 SHA256 一致；新核查页 200，Stocks 健康接口 200/ok。
+- **没做 / 待办**：本条提交时尚待同步 Mac mini 和空闲重载 `com.searchx.runner` / `com.searchx.check-runner`；部署后另补实际记录及配置备份路径。不读取/修改 `.env`，不发测试邮件、不创建真实研究/核查任务，不改 Stocks、DNS、代理或 VPS 路由。
+
 ## 2026-10-18 22:57 · Codex · 国内静态站上线并核对 Stocks 原入口
 
 - **改了什么**：`9d28aa6` 已合入main、推送并同步Mac mini；CI原有Pages成功且产出公开包。VPS新增root管理的强制接收程序、仅可发布静态内容的`searchx-publish`账号及`/srv/searchx`，Mac mini生成专用key并安装`com.searchx.site-publisher`（300秒，首轮及自然定时检查均退出0）。DNS仅新增search A记录；Caddy只追加独立站点并平滑reload。Worker已部署双Origin版本。

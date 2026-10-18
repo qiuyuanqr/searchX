@@ -6,6 +6,7 @@
 // 报警规则见 alert.js 的 evaluateProbe：连续断满 PROBE_CONFIRM_TICKS 个 tick 才报警——
 // 墙内瞬时抖动（断 1~3 tick 即自愈）是常态，单次失败即报只会轰炸邮箱（2026-07-06~09 实测）。
 // 连续失败计数跨 tick 落盘（每个 tick 是独立进程）；发信走 alert-cli.js（同 key 6 小时限频）。
+import { resolveSiteBase } from "../../site-links.js";
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 import { evaluateProbe, nextStreaks } from "./alert.js";
@@ -41,7 +42,7 @@ async function reachable(url) {
 }
 
 const trim = (u) => (u || "").trim().replace(/\/+$/, "");
-const site = trim(process.env.RUNNER_SITE_BASE) || "https://qiuyuanqr.github.io/searchX";
+const site = resolveSiteBase(process.env.RUNNER_SITE_BASE);
 const primary = trim(process.env.RUNNER_WORKER_URL);
 const fallback = trim(process.env.RUNNER_WORKER_FALLBACK_URL) || "https://searchx-intake.qiuyuanqr.workers.dev";
 

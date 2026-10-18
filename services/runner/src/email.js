@@ -2,6 +2,13 @@
 // 极简结果邮件：一句话摘要 + 网站链接，抄送作者。纯脚本、零 token。
 // 隐私红线：只含报告标题 / 已公开的 TLDR / 公开链接，绝不含任何私人信息。
 
+import { backupReportUrl } from "../../site-links.js";
+
+const backupLines = (url) => {
+  const backup = backupReportUrl(url);
+  return backup ? [`备用阅读（GitHub Pages）：${backup}`] : [];
+};
+
 export function composeEmail({ topic, title, tldr, url, toEmail, authorEmail, fromEmail }) {
   const subject = `【调研完成】${title || topic}`;
   const lines = [
@@ -9,6 +16,7 @@ export function composeEmail({ topic, title, tldr, url, toEmail, authorEmail, fr
     ...(tldr ? ["", `一句话结论：${tldr}`] : []),
     "",
     `完整报告：${url}`,
+    ...backupLines(url),
     "",
     "—— searchX 深度调研引擎",
   ];
@@ -24,6 +32,7 @@ export function composeExistingEmail({ topic, title, tldr, url, ageDays, toEmail
     `你提交的调研「${topic}」此前已经做过，站点上已有现成报告，就不重复调研了，可直接查看：`,
     "",
     `完整报告：${url}`,
+    ...backupLines(url),
     ...(tldr ? ["", `一句话结论：${tldr}`] : []),
     "",
     "如你认为该报告已较旧、希望基于最新情况重新调研，回复本邮件说明即可。",
@@ -43,6 +52,7 @@ export function composeAuthorDigest({ topic, title, url, date, count, authorEmai
     "",
     `· 报告：${name}`,
     `· 链接：${url}`,
+    ...backupLines(url),
     "",
     `📊 今日（${date}）累计完成 ${count} 篇。`,
     "",
@@ -98,8 +108,9 @@ export function composePendingExpiredNotice({ topic, issueNumber, url, ageHours,
     `调研「${topic}」（Issue #${issueNumber}）已完成研究并推送，但部署探活持续 ${ageHours} 小时仍未确认上线，已停止自动重探。`,
     "",
     `报告地址（可能仍未生效）：${url}`,
+    ...backupLines(url),
     "",
-    "常见原因：报告被 validate-report 拦死、GitHub Pages 持续部署故障、或链接本身有误。",
+    "常见原因：报告被 validate-report 拦死、GitHub Pages 构建部署或 VPS 同步故障、或链接本身有误。",
     "请人工核对：确认已上线可手动补发提交者邮件；确认未上线需排查部署或重新发布。",
     "",
     "—— searchX 自动调研流水线",
