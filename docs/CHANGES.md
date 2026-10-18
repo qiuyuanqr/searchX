@@ -9,6 +9,13 @@
 
 <!-- 新条目加在这一行下面 -->
 
+## 2026-10-18 22:57 · Codex · 国内静态站上线并核对 Stocks 原入口
+
+- **改了什么**：`9d28aa6` 已合入main、推送并同步Mac mini；CI原有Pages成功且产出公开包。VPS新增root管理的强制接收程序、仅可发布静态内容的`searchx-publish`账号及`/srv/searchx`，Mac mini生成专用key并安装`com.searchx.site-publisher`（300秒，首轮及自然定时检查均退出0）。DNS仅新增search A记录；Caddy只追加独立站点并平滑reload。Worker已部署双Origin版本。
+- **为什么**：提供 https://search.qiuyuan.net/ 国内静态入口，保留GitHub Pages、私有研究数据边界和可回退配置；自动发布不需要新增GitHub下载登录或日常root权限。
+- **验证**：Pages run39137277469的build/deploy/smoke成功；VPS232篇/466公开文件身份与CI一致；24项真实CORS预检、新域名浏览器搜索/报告/档案/无授权门禁通过。Caddy旧配置逐项核对，PID始终796，Stocks健康前后200/ok。首次证书等待超时真实触发原配置恢复，延长等待后新HTTPS200。三台机器Python21项通过，独立代码复审通过，本机全量Bun1456通过/1跳过/0失败。
+- **没做 / 待办**：未改Stocks代码/库/服务/隧道，未发真实研究请求/通知、未迁移通知链接或已有授权凭证；手机蜂窝网络未验收。VPS原配置/活动配置备份`/var/backups/searchx/20261018-224412/`；新LaunchAgent此前不存在，因此无旧plist备份。当前首发只有一个正文版本，后续发布才产生上一版正文；首发撤回用已验证的Caddy配置回退。具体版本、路径和命令见实施记录。
+
 ## 2026-10-18 22:43 · Codex · 实现国内静态发布与双域名接口
 
 - **改了什么**：新增独立静态制品打包、发布/接收、原子generation和回滚、Mac mini launchd模板；同一次CI导出公开包，身份/大小/哈希绑定成功main run。Worker共用双Origin适配所有浏览器路由及错误响应。补实施计划、验证记录和交接。
