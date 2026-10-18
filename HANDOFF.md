@@ -1,5 +1,11 @@
 # searchX 维护交接
 
+## 2026-10-18 国内服务器接入：勘察完成，尚未变更线上
+
+用户要求先看如何复用 qiuyuan.net 的服务器，并保护 Stocks。已只读核对 VPS、Caddy 活动路由、DNS、Mac mini 工具和 Worker CORS，在临时干净 Git 镜像完整构建 232 篇、约 28.5 MB；候选新增 `search.qiuyuan.net` 站点经服务器现有 Caddy 语法解析，原 Stocks/通知路由逐项相同。勘察前后 Caddy 配置哈希、PID/启动时间未变，Stocks `/api/health` 均 200/ok。新子域名权威 DNS 当前 NXDOMAIN；Worker 目前仍只允许 GitHub Pages Origin。**没有修改 DNS、VPS、Mac mini 服务或 Worker，没有上线新入口。**
+
+具体接法、候选配置、发布隔离和回滚见 [勘察记录](docs/progress/2026-10-18-vps-site-survey.md)。下一步确认新增域名/静态目录及发布账号、Worker 双 Origin、首次 Caddy 平滑 reload 的实际接入范围。建议复用 CI 的公开静态制品；勿将 Mac mini 带私有 `data/` 的工作区直接构建并上传。当前 GitHub Pages 入口和通知地址暂按既有配置运行。
+
 ## 2026-10-18 出版传媒报告 601999 已从原文重导并恢复发布
 
 用户要求修好 `2026-10-16_stock-601999`。已从 Mac mini Stocks 活库只读取出 report 196（`content_md` 17899 字节），备份残缺 HTML 到 `/tmp/searchx-601999-recovery-20261018181416/old-broken/`，用当前已修复导入器重导；正文空公式已消失，原文反引号公式抽查对齐。`research-qc --strict` 退出 0；删除 `.parked`；本机构建 232 篇且 `reports.json` 含本篇；本机 Obsidian 已写 `出版传媒（601999.SH） · 2026-10-16.md`。notes/sources 与重导前一致，仅 `report.html` 与搁置标记变化。未重跑 LLM 独立核验（内容未改写结论，只恢复被误删公式）。Mac mini 上 Obsidian 库未刷新。`2026-10-05_stock-002837` 仍不恢复。详情见 [恢复记录](docs/progress/2026-10-17-stock-601999-recovery.md) 增量段。
