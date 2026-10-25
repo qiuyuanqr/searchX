@@ -38,6 +38,13 @@
 - **验证**：无 `.env` 的隔离源码镜像全量 Bun 1466 pass / 1 skip / 0 fail，4160 assertions；最终定向含规则/技能一致性 96 pass / 0 fail；独立代码复审无 Critical/Important/Minor。真实出版传媒报告两站均 200、99705 字节且 SHA256 一致；新核查页 200，Stocks 健康接口 200/ok。
 - **没做 / 待办**：本条提交时尚待同步 Mac mini 和空闲重载 `com.searchx.runner` / `com.searchx.check-runner`；部署后另补实际记录及配置备份路径。不读取/修改 `.env`，不发测试邮件、不创建真实研究/核查任务，不改 Stocks、DNS、代理或 VPS 路由。
 
+## 2026-10-18 23:00 · Codex · 会话结束改为限时本地只读检查
+
+- **改了什么**：`.codex/hooks.json` 的两项 SessionEnd 自动同步改为一个 3 秒本地状态检查，Git 内部预算 1.5 秒；新增检查脚本、隔离测试和 Codex 收尾说明，在 AGENTS 的 Codex 专用入口补充完成并验证后才精准提交、显式同步及核实结果的要求。SessionStart、Claude 配置/脚本、三份共享脚本均未改。
+- **为什么**：当前 Codex 将 SessionEnd 的 30/20 秒强制压回 3 秒；用户明确反对每轮回答完成就自动提交半成品，采用关闭会话只检查的方案，不新增 Stop 自动提交或后台服务。
+- **验证**：8 项 Python 隔离测试通过；无凭据临时镜像内 Bun 定向测试 7 pass / 0 fail（包含上述 Python 测试及规则/技能/钩子一致性检查），20 assertions。覆盖脏工作区、并行暂存/未暂存改动、无 upstream、领先提交、记忆失败、检查超时与 Git 错误；检查前后临时仓库全部文件含 index/ref 哈希一致，网络命令被替身阻断。复现旧记忆脚本 rsync 失败 23 仍返回 0，因此只报告“记忆同步结果未知”。
+- **没做 / 待办**：按本次要求未提交/推送、运行真实同步或访问 Mini；未触碰 VPS 工作树及其他会话改动。重新加载配置后适用，若应用提示信任新命令须用户审阅；实际自动触发/UI 展示未验收。关闭 Codex 不再自动备份未完成代码或未显式同步的记忆；旧记忆脚本返回码问题因两边共享约束保留，不能据退出 0 宣称同步成功。
+
 ## 2026-10-18 22:57 · Codex · 国内静态站上线并核对 Stocks 原入口
 
 - **改了什么**：`9d28aa6` 已合入main、推送并同步Mac mini；CI原有Pages成功且产出公开包。VPS新增root管理的强制接收程序、仅可发布静态内容的`searchx-publish`账号及`/srv/searchx`，Mac mini生成专用key并安装`com.searchx.site-publisher`（300秒，首轮及自然定时检查均退出0）。DNS仅新增search A记录；Caddy只追加独立站点并平滑reload。Worker已部署双Origin版本。
