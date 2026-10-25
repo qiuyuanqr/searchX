@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>奥比中光（688322.SH） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>奥比中光（688322.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-10-25（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>关联板块</b> 机器人 · AI应用</span>
+      <span><b>申万行业</b> 光学光电子</span>
+      <span style="flex-basis:100%"><b>概念标签</b> MLOps概念 · 空间计算 · 移动支付 · 英伟达概念 · 蚂蚁集团概念 · 人脸识别 · 在线教育 · 3D打印</span>
+      <span><b>来源</b> 13 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    奥比中光（688322）主要做的是3D视觉感知产品的设计、研发、生产和销售。公司介绍涉及结构光、飞行时间测距、双目视觉等技术，以及芯片、算法、模组、整机和应用支持。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。当前判断的方向是震荡。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度低。支撑在于3D视觉主营明确（置信度：高）；机器人热点延续（置信度：中）；商业应用推进（置信度：中）。主要风险是二季度利润下滑（置信度：高）；估值倍数偏高（置信度：高）；现金流明细缺失（置信度：高）。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>3D视觉主营明确（置信度：高）</li>
+      <li>机器人热点延续（置信度：中）</li>
+      <li>商业应用推进（置信度：中）</li>
+    </ul>
+  </div>
+
+  <main>
+    <p>研究日期：2026-10-25 行情与估值基准：2026-10-23 最新财务报告期：2026年半年度，公告日期为2026-08-22 观察窗口：2026-10-26至2027-01-24，共13周</p>
+<p><strong>资料说明</strong>：公司、财务、估值、行情、行业和概念事实来自本轮冻结材料及只读研究库查询。派生数字注明公式；本轮补查未替换冻结数字。联网仅核对政策、产业需求和事件时点。公告标题、公司介绍、卖方观点与已核验财务事实分别使用。</p>
+<h2>A. 核心结论</h2>
+<p><strong>方向：震荡（置信度：低）。</strong></p>
+<p><strong>一句话逻辑：二季度净利降约70%，估值偏高。</strong></p>
+<p>2026年二季度营业收入约2.3472亿元，同比下降约3.97%；归母净利润约0.1064亿元，同比下降约70.33%，仍然盈利。2026-10-23收盘价108.00元，当日涨幅18.97%；同日市盈率为407.70倍。利润下滑与行情上涨同时存在，当前财务证据不足以确认持续增长能够支撑这一估值。（置信度：高；单季同比为倒算估计）</p>
+<p><strong>核心驱动</strong></p>
+<ol>
+<li>主营为3D视觉感知产品，机器视觉、传感器具有主营依据，区别于只有概念标签的关联。（置信度：高）</li>
+<li>截至2026-10-23，机器人等相关热点仍被系统记录为“延续”，可能维持市场关注，但没有走势明显接近板块的识别结果。（置信度：中）</li>
+<li>外部原文显示机器人商业应用与实景验证正在推进；能否转化为公司收入，仍缺公司层面的订单、交付和分项收入证据，见F节。（置信度：中）</li>
+</ol>
+<p><strong>核心风险</strong></p>
+<ol>
+<li>二季度归母净利润同比、环比均下降，单季毛利率却与一季度接近，利润变化原因尚未核清。（置信度：高）</li>
+<li>市盈率明显高于库内元器件行业中位数，后续盈利验证不足时存在估值下调风险。（置信度：中）</li>
+<li>经营现金流、应收、存货、预付款、研发五项关键数据缺失；部分事件日历与主办方原文冲突，<strong>本报告存在待复核项</strong>。（置信度：高）</li>
+</ol>
+<p><strong>最该盯的信号</strong>：计划于2026-10-27披露的三季报，重点核验第三季度单季收入、归母净利润、毛利率，以及前三季度经营现金流和营运资金明细。</p>
+<p><strong>最可能出错的地方</strong>：后续真实交付及盈利增长可能明显好于现有材料，当前报告尚未取得足以判断这一变化的公司证据。（置信度：低）</p>
+<p><strong>当前条件式倾向</strong>：如果后续核验的最新单季归母净利润由盈转亏，那么回避；如果未出现这一反面证据，那么观望，待关键资料补齐后重新评估。（置信度：中）</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>身份</strong>：奥比中光，代码688322，科创板，2022-07-07上市；库内上市状态为正常上市。</li>
+<li><strong>主营</strong>：3D视觉感知产品的设计、研发、生产和销售。公司介绍涉及结构光、飞行时间测距、双目视觉等技术，以及芯片、算法、模组、整机和应用支持。</li>
+<li><strong>当前主行业</strong>：热点资料为“光学元件”；公司快照、估值和同行筛选使用“元器件”。两套分类并存，后文行业估值比较使用后者，不混作同一层级。</li>
+<li><strong>行情</strong>：2026-10-23收盘108.00元，涨幅18.97%，成交额27.70亿元。报价含完整交易日期，无须推定日期。</li>
+<li><strong>估值</strong>：2026-10-23总市值445.86亿元，滚动市盈率407.6979倍，市净率11.1642倍，换手率8.987%。股息率为空，不能据此认定没有分红。</li>
+<li><strong>行业参照</strong>：元器件行业样本312家，市盈率中位数60.59825倍；本公司库内市盈率排序为215。排序方向及有效样本规则未提供，不能直接解释成“第215便宜”或精确估值分位。</li>
+</ul>
+<p>据库内数字计算，407.6979÷60.59825≈6.73，即公司滚动市盈率约为行业中位数的6.73倍。<strong>只从估值倍数看，公司定价明显高于该宽口径行业参照；这一比较不能代替直接竞对分析，也不能推出合理价格。</strong>（置信度：高）</p>
+<h2>C. 财务健康与可重算分析</h2>
+<h3>近四期财务事实</h3>
+<p>以下收入、归母净利润单位均为亿元；各期为累计口径。</p>
+<ul>
+<li><strong>2025年前三季度</strong>：收入7.14，同比增长103.4963%；归母净利润1.08，库内同比279.1166%；毛利率42.7960%；库列净利率15.0846%；累计ROE为3.6967%；资产负债率12.3804%。</li>
+<li><strong>2025年全年</strong>：收入9.41，同比增长66.6629%；归母净利润1.28，库内同比303.3320%；毛利率43.7555%；库列净利率13.5659%；全年ROE为4.3774%；资产负债率12.2671%。</li>
+<li><strong>2026年第一季度</strong>：收入2.03，同比增长6.1917%；归母净利润0.31，同比增长27.4791%；毛利率48.5843%；库列净利率14.9380%；累计ROE为1.0382%；资产负债率10.9020%。</li>
+<li><strong>2026年半年度</strong>：收入4.38，同比增长0.4906%；归母净利润0.42，同比下降30.8178%；毛利率48.5492%；库列净利率9.3203%；累计ROE为1.1948%；资产负债率9.4988%。</li>
+</ul>
+<p>2026年上半年收入增速较一季度放缓，累计归母净利润同比由增长转为下降，属于增收不增利。上述不同长度的累计毛利率、ROE不能当作连续单季度序列；ROE不作机械年化。（置信度：高）</p>
+<h3>二季度单季：收入仍增于一季度，利润明显下降</h3>
+<p>计算使用库内以元计的原始数值，以下结果四舍五入。</p>
+<ol>
+<li><strong>营业收入：2.3472亿元。</strong></li>
+</ol>
+<p>公式：第二季度收入＝半年度累计收入－第一季度收入。 即：（437,605,886.25－202,887,914.06）÷1亿。环比增长15.69%，同比下降约3.97%。</p>
+<ol>
+<li><strong>归母净利润：0.1064亿元。</strong></li>
+</ol>
+<p>公式：第二季度归母净利润＝半年度累计归母净利润－第一季度归母净利润。 即：（41,640,865.93－30,996,569.30）÷1亿。环比下降65.66%，同比下降约70.33%。</p>
+<ol>
+<li><strong>单季毛利率：48.5189%。</strong></li>
+</ol>
+<p>公式： 第二季度毛利率＝〔半年度收入×半年度毛利率－第一季度收入×第一季度毛利率〕÷第二季度收入。 与第一季度48.5843%相比，下降约0.07个百分点，变化较小。</p>
+<ol>
+<li><strong>单季归母净利率：4.5349%。</strong></li>
+</ol>
+<p>公式：第二季度归母净利润÷第二季度营业收入×100%。</p>
+<p>单季收入和利润的同比计算使用倒算的上年同期累计值：上年同期累计＝本期累计÷（1＋累计同比增速），再以累计差额得到上年单季。<strong>这两项同比属于估计值，上游同比四舍五入会带来误差。</strong></p>
+<p>二季度仍然盈利，不能写成由盈转亏。收入环比增长、归母净利润环比下降，而毛利率基本稳定，说明仅凭毛利率变化不足以解释利润下降；具体费用、减值、补助或其他损益影响尚不能确定。（置信度：高）</p>
+<h3>半年度归母净利率与库列净利率分开使用</h3>
+<ul>
+<li><strong>半年度归母净利率：9.5156%。</strong></li>
+</ul>
+<p>公式：41,640,865.93÷437,605,886.25×100%。</p>
+<ul>
+<li>库内另列“净利率”9.3203%，但未说明其利润分子是否为合并净利润。</li>
+</ul>
+<p>两者不相同。本报告不把9.3203%直接称作归母净利率，也不在缺乏口径说明时断言它就是合并净利率。需要核对原始利润表及指标说明；相关净利率趋势推导停用。（置信度：高）</p>
+<h3>滚动四季：利润约1.0936亿元</h3>
+<p>截至2026-06-30：</p>
+<ul>
+<li><strong>滚动四季归母净利润约1.0936亿元。</strong></li>
+</ul>
+<p>公式：2025年全年归母净利润＋2026年上半年归母净利润－2025年上半年归母净利润。</p>
+<ul>
+<li><strong>滚动四季营业收入约9.4288亿元。</strong></li>
+</ul>
+<p>公式：2025年全年收入＋2026年上半年收入－2025年上半年收入。</p>
+<p>上述上年半年度基数均含同比倒算，因此滚动结果也是估计值，存在四舍五入误差。</p>
+<p>用2026-10-23市值核算：445.86÷1.09360696≈407.70倍，与库内滚动市盈率基本一致。这只是估值数值对照，不能证明后续盈利预测成立。（置信度：高）</p>
+<h3>五项必须补齐的财务证据</h3>
+<ul>
+<li><strong>经营现金流</strong>：未取得2026年半年度同口径金额，也缺上年同期比较值，无法判断利润转化为现金的情况。补齐后应比较累计经营现金流与归母、合并净利润，并拆解营运资金影响。即使现金流为负，也不能直接推定偿债危机。（置信度：高）</li>
+<li><strong>应收账款</strong>：未取得本期、上年末和上年同期余额，以及账龄、坏账准备和客户集中度。无法判断余额较上年末或同比如何变化，更不能确认回款改善。（置信度：高）</li>
+<li><strong>存货</strong>：未取得同口径余额、构成、跌价准备和周转数据。新闻提问标题涉及存货减值，但内容截断且无完整回答，不能作为已核验减值金额。即使后续证实备货增加，也不能等同于订单兑现。（置信度：高）</li>
+<li><strong>预付款</strong>：未取得余额、供应商、账龄及用途。无法判断是否较上年末增加，或是否存在履约风险；需要结合采购合同和交付情况解释。（置信度：高）</li>
+<li><strong>研发</strong>：未取得研发费用、研发投入及资本化明细，不能量化研发对利润的影响，也不能把卖方“新业务投入影响盈利”的观点当作公告确认的原因。（置信度：高）</li>
+</ul>
+<p>半年度资产负债率9.4988%，较2025年末12.2671%下降约2.77个百分点。账面负债比例较低，但现金、债务期限及受限资产资料未取得，不能据此排除回款或流动性风险。（置信度：高）</p>
+<h2>D. 竞争格局与同行比较</h2>
+<p>以下为库内“元器件”分类筛出的同行，<strong>尚未证明是直接竞争对手</strong>。收入、归母净利润和ROE均对应2026年半年度；市值和估值使用本轮库内返回值。</p>
+<ul>
+<li><strong>奥比中光（688322）</strong> · 市值445.86亿元 · PE 407.70倍 · PB 11.16倍 · 收入4.38亿元 · 归母净利润0.42亿元 · ROE 1.1948%。</li>
+<li><strong>立讯精密（002475）</strong> · 市值3,904.13亿元 · PE 21.94倍 · PB 4.19倍 · 收入1,745.04亿元 · 归母净利润78.43亿元 · ROE 8.7859%。</li>
+<li><strong>生益科技（600183）</strong> · 市值2,691.58亿元 · PE 51.82倍 · PB 14.55倍 · 收入190.26亿元 · 归母净利润32.87亿元 · ROE 18.6626%。</li>
+<li><strong>东山精密（002384）</strong> · 市值2,092.06亿元 · PE 58.36倍 · PB 8.59倍 · 收入277.98亿元 · 归母净利润29.57亿元 · ROE 12.9044%。</li>
+</ul>
+<p>奥比中光的收入、利润规模及同期ROE均低于这三个样本，PE明显更高；PB则低于生益科技、高于另外两个样本。可以确认其估值结构不同，但无法仅凭这些数字判断技术优势或竞争胜负。（置信度：高）</p>
+<p><strong>信息缺口</strong>：缺少直接面向3D视觉感知产品的竞对名单、同类产品价格、性能、市场份额及毛利率。补法是由研究库补充同产品层面的可比资料；现有同行PE不用于判断行业周期位置。（置信度：高）</p>
+<h2>E. 护城河与商业模式</h2>
+<p>公司主营覆盖设计、研发、生产和销售，产品及技术描述从芯片、算法延伸到模组和整机。其商业模式具备“感知产品＋方案支持”的特征，但软件、硬件及服务各自收入占比未取得。（置信度：中）</p>
+<ul>
+<li><strong>结构性护城河：尚未充分证明。</strong> 公司介绍提及专利、全栈技术和多路线布局，但缺专利质量、可替代性、客户迁移成本与市场份额证据。介绍中的领先性表述属于公司资料中的自我描述，不能直接升级为独立结论。（置信度：低）</li>
+<li><strong>阶段性优势：存在技术积累线索。</strong> 多技术路线和从芯片到应用支持的覆盖，可能帮助适配不同场景；能否形成较强议价能力，需要同类产品价格、持续订单和客户复购数据验证。（置信度：中）</li>
+<li><strong>商业化约束：盈利改善还未形成连续单季证据。</strong> 二季度收入环比增加，但利润环比下降，说明技术覆盖广并不自动等于当期盈利增长。（置信度：高）</li>
+</ul>
+<p>缺少客户集中度、合同期限、产品生命周期、销售单价及分产品盈利数据，当前无法确认客户关系具有多强的持续性。（置信度：高）</p>
+<h2>F. 政策与监管</h2>
+<h3>科技兴商：扩大应用场景，尚不能直接确认公司受益</h3>
+<p>商务部等九部门发布《关于加快推进科技兴商的意见》，文件成文于2026-10-13，官网发布于2026-10-19。正文涉及机器人及智能终端供给、具身智能商贸应用、智能物流，并要求加强商业数据安全治理。它直接证明政策内容，不证明公司取得项目或收入。来源：<a href="https://www.mofcom.gov.cn/zwgk/zcfb/art/2026/art_787f0441da1f4c0e8b5bad10118247f3.html" target="_blank" rel="noopener">商务部原文</a>。（置信度：高，限政策内容）</p>
+<p>可能的传导链为：应用场景增加→整机及系统方案验证→感知产品需求→公司交付和收入。后两环缺公司订单及收入证据，因此对公司的实际影响仍待验证。（置信度：低）</p>
+<h3>实景实训：政策目标与已实现结果分开</h3>
+<p>工信部、国务院国资委联合通知成文于2026-06-03，发布于2026-06-08，要求推进真实场景验证，并规定2026-11-30前报送成效总结。文件中的年末部署安排是政策目标，不能当作已经实现的采购量。来源：<a href="https://www.miit.gov.cn/zwgk/zcwj/wjfb/tz/art/2026/art_f291ccd3da4c47ce95741de63cc088e6.html" target="_blank" rel="noopener">两部门通知原文</a>。（置信度：高，限政策安排）</p>
+<h3>两个独立原始发布者支持的有限产业判断</h3>
+<ul>
+<li>工信部2026-10-20发布的答记者问，记录2026-10-19发布会内容：相关产品正在300多个重点场景推进验证和部署。来源：<a href="https://www.miit.gov.cn/xwfb/xwfbh/gxbxwfbh/art/2026/art_213c82c9bf69441ab42252e6fcbc9f1f.html" target="_blank" rel="noopener">工信部发布会正文</a>。</li>
+<li>国际机器人联合会于2026-09-30发布：2025年全球专业服务机器人出货量同比增长24%，接近25万台；同时指出人形机器人仍受安全、训练维护成本及商业可行性约束。来源：<a href="https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent" target="_blank" rel="noopener">国际机器人联合会原文</a>。</li>
+</ul>
+<p>两者属于独立原始发布者，但统计对象、地域、期间不同，只共同支持“商业应用在推进、成熟度仍有差异”的有限判断，不能交叉证明同一产量，也不能相加。更不能据此推定奥比中光的客户采购比例、订单或量产收入。（置信度：中）</p>
+<h2>G. 题材与产业链关联</h2>
+<div class="callout">主行业：光学元件 近期没有走势明显接近的板块 沾边的热点：机器人（它在「机器视觉」「新型工业化」概念名单里） 沾边的热点：端侧AI与消费电子（它在「虚拟现实」概念名单里） 沾边的热点：AI应用（它在「虚拟数字人」概念名单里） 沾边的热点：汽车与智能驾驶（它在「传感器」概念名单里） 在名单里不等于主营，也不等于跟着涨 走势接近不代表主营，也不代表以后还跟</div>
+<p>以上记录日期及最新走势判断日期均为2026-10-23，状态为当期“无匹配”，未标记过期。它表示系统近期未识别到明显接近的板块，不表示未来没有关联。（置信度：高，限系统记录）</p>
+<h3>沾边热点的状态与风险</h3>
+<ul>
+<li><strong>机器人</strong>：系统阶段“延续”，第29天，起始2026-09-07。系统理由涉及机器人方向活跃、标准和海外量产消息；风险摘要提醒部分关联公司实际收入较少。标准发布及量产说法未在本轮取得充分原文核验，不作为公司收入前提。（置信度：中，限热点状态；具体消息置信度：低）</li>
+<li><strong>端侧AI与消费电子</strong>：系统阶段“延续”，第4天，起始2026-10-20。记录理由涉及虚拟现实、智能穿戴等方向活跃；风险是概念关联与实际业务贡献不一致。公司与该热点的名单依据只有本节所列标签关系，不能外推为特定终端订单。（置信度：中）</li>
+<li><strong>AI应用</strong>：系统阶段“延续”，第66天，起始2026-07-16。记录理由涉及模型、应用和政策消息；风险摘要提醒实际业务收入可能有限。虚拟数字人标签不证明公司具有相应软件收入。（置信度：中）</li>
+<li><strong>汽车与智能驾驶</strong>：系统阶段“延续”，第6天，起始2026-10-16。记录理由涉及传感器及汽车方向活跃；风险摘要提示部分相关方向资金表现并不一致。传感器名单关联不能证明公司已有大规模车载收入。（置信度：中）</li>
+</ul>
+<p>上述系统摘要涉及的板块涨幅、资金金额和其他股票表现，未当作当前行情引用。</p>
+<h3>概念逐项分级</h3>
+<p><strong>主营或技术描述有直接支持，但分项收入仍缺：</strong></p>
+<ul>
+<li><strong>机器视觉</strong>：3D视觉感知就是主营方向，具有业务依据。（置信度：高）</li>
+<li><strong>传感器</strong>：主营及经营范围涉及3D感知、传感器和相关产品，具有业务依据。（置信度：高）</li>
+<li><strong>人工智能</strong>：公司介绍涉及AI芯片、算法与行业应用，具备技术和产品关联；不能等同于大模型服务收入。（置信度：高）</li>
+<li><strong>芯片概念</strong>：公司介绍涉及芯片设计和技术开发；没有证据据此认定其从事晶圆制造。（置信度：高）</li>
+</ul>
+<p><strong>应用方向有描述支持，但本期收入贡献未核实：</strong></p>
+<ul>
+<li><strong>消费电子概念</strong>：公司介绍列有移动终端应用方向，但本期相关收入、客户和占比未取得。（置信度：中）</li>
+</ul>
+<p><strong>以下逐项均仅按概念标签处理，未见本期营收佐证：</strong></p>
+<ul>
+<li><strong>3D打印</strong>：经营范围包含相关项目，不能证明已经贡献收入。</li>
+<li><strong>MLOps概念</strong>：未见对应产品及收入明细。</li>
+<li><strong>东数西算（算力）</strong>：未见算力服务收入佐证。</li>
+<li><strong>人形机器人</strong>：未取得该类客户交付及收入明细。</li>
+<li><strong>人脸识别</strong>：未取得对应产品收入。</li>
+<li><strong>元宇宙</strong>：未取得分项收入。</li>
+<li><strong>华为概念</strong>：未取得具体合作及本期收入证据。</li>
+<li><strong>在线教育</strong>：未取得对应收入。</li>
+<li><strong>数字孪生</strong>：未取得对应收入。</li>
+<li><strong>新型工业化</strong>：属于宽泛应用主题，未取得分项收入。</li>
+<li><strong>新能源汽车</strong>：未取得车载产品收入。</li>
+<li><strong>无人驾驶</strong>：未取得对应量产及收入证据。</li>
+<li><strong>智能座舱</strong>：经营范围的车载描述不足以确认收入。</li>
+<li><strong>智能物流</strong>：未取得相关项目收入。</li>
+<li><strong>机器人概念</strong>：应用可能性不能替代交付和收入。</li>
+<li><strong>移动支付</strong>：公司介绍中的相关客户名称不能证明本期支付业务收入。</li>
+<li><strong>空间计算</strong>：未取得对应收入。</li>
+<li><strong>英伟达概念</strong>：未取得采购比例、独家关系或本期收入证据。</li>
+<li><strong>虚拟数字人</strong>：未取得对应收入。</li>
+<li><strong>虚拟现实</strong>：标签与经营范围不能替代收入确认。</li>
+<li><strong>蚂蚁集团概念</strong>：历史介绍中的客户关联不能证明本期收入规模。</li>
+<li><strong>阿里巴巴概念</strong>：未取得具体业务及收入证据。</li>
+</ul>
+<p>以上“仅标签”的证据分级置信度为高；对相关业务实际贡献的判断置信度为低。</p>
+<p><strong>其余标签不作为独立收入业务：</strong></p>
+<ul>
+<li><strong>专精特新、同花顺新质50、中证500成份股、沪股通、融资融券、粤港澳大湾区</strong>：分别涉及资质、指数或名单、交易属性及地域。库内有这些标签，但它们本身不证明收入增长。（置信度：高）</li>
+</ul>
+<h3>产业链位置</h3>
+<p>按库内主营和经营范围，可作如下业务结构推断：</p>
+<p>光学器件及芯片等投入→3D视觉感知产品、模组与方案→终端设备及行业应用。</p>
+<p>上游供应商结构、下游各场景收入、客户认证周期均未取得。公司处于感知产品与方案环节的判断有依据；议价权到底在公司还是客户一端，目前无法确认。（置信度：中）</p>
+<h2>H. 消息面与市场情绪</h2>
+<div class="callout">主行业：光学元件 近期没有走势明显接近的板块 沾边的热点：机器人（它在「机器视觉」「新型工业化」概念名单里） 沾边的热点：端侧AI与消费电子（它在「虚拟现实」概念名单里） 沾边的热点：AI应用（它在「虚拟数字人」概念名单里） 沾边的热点：汽车与智能驾驶（它在「传感器」概念名单里） 在名单里不等于主营，也不等于跟着涨 走势接近不代表主营，也不代表以后还跟</div>
+<p>截至2026-10-23，四个方向均被系统记录为“延续”，具体阶段及风险见G节。它们可以解释相关消息为何受到关注，不能证明公司当日上涨由某一条消息造成。（置信度：中）</p>
+<h3>公司及相关消息：按证据强弱区分</h3>
+<ol>
+<li><strong>2026-10-21：股票交易异常波动公告。</strong> 库内有公告记录，可确认存在该信息入口；本轮未逐页核验正文，不能据标题认定出现重大经营变化。来源：<a href="http://static.cninfo.com.cn/finalpage/2026-10-21/1225612232.PDF" target="_blank" rel="noopener">公告链接</a>。（置信度：高，限库内记录；经营影响置信度：低）</li>
+<li><strong>2026-10-20：第三季度业绩说明会公告。</strong> 是后续获取经营解释的入口，但标题没有提供会议召开时间，也不等同于三季报已经披露。来源：<a href="http://static.cninfo.com.cn/finalpage/2026-10-20/1225610218.PDF" target="_blank" rel="noopener">公告链接</a>。（置信度：高，限库内记录）</li>
+<li><strong>2026-10-23 17:30：涉及存货减值的互动提问。</strong> 只有截断标题，缺完整问题、回答及原文链接，不据此确认存货余额、减值金额或原因。（置信度：低）</li>
+<li><strong>2026-10-16：首次回购股份公告。</strong> 标题反映回购执行信息，但金额、用途、资金来源及进度未取得，不能把它推导为盈利改善。来源：<a href="http://static.cninfo.com.cn/finalpage/2026-10-16/1225606179.PDF" target="_blank" rel="noopener">公告链接</a>。（置信度：中）</li>
+<li><strong>2026-10-15：股份回购报告书。</strong> 需与执行公告分别核对，计划规模不能当作实际完成规模。来源：<a href="http://static.cninfo.com.cn/finalpage/2026-10-15/1225605162.PDF" target="_blank" rel="noopener">报告书链接</a>。（置信度：中）</li>
+<li><strong>2026-10-21：回购事项相关股东情况公告。</strong> 属于程序性信息，标题本身不提供新增订单或收入证据。来源：<a href="http://static.cninfo.com.cn/finalpage/2026-10-21/1225612216.PDF" target="_blank" rel="noopener">公告链接</a>。（置信度：中）</li>
+<li><strong>2026-10-23：物理AI开发平台相关报道。</strong> 库内记录了产业叙事，但本轮未核验平台升级原文及公司参与范围，不计入确定的公司业务增量。来源：<a href="https://finance.eastmoney.com/a/202610233906147713.html" target="_blank" rel="noopener">库内新闻链接</a>。（置信度：低）</li>
+</ol>
+<p>新闻标题中的历史盘中涨幅未用作当前行情。当前涨幅只采用2026-10-23收盘的18.97%。</p>
+<h3>涨停、资金与筹码</h3>
+<ul>
+<li><strong>涨停记录</strong>：近180天查询返回空列表，即库内无对应记录。它不能证明没有短线交易或情绪关注；单日涨幅18.97%本身已表明明显价格波动。（置信度：高）</li>
+<li><strong>资金流</strong>：2026-09-18至2026-10-23的近20个交易日，主力净流入合计5.33亿元，其中特大单净流入1.30亿元；净流入为正8天、为负12天。两种金额口径存在包含关系，不相加。累计净流入与负值天数较多同时存在，不能据此认定持续资金支持。（置信度：高）</li>
+<li><strong>历史筹码</strong>：2026-10-22模型获利比例45.54%，加权平均成本90.73元，成本15%、50%、85%分位分别为78.40元、91.20元、98.40元。这是前一交易日的模型快照，不作为当前动作触发。（置信度：高）</li>
+<li><strong>筹码两面性</strong>：模型中获利部分可能有兑现压力，未获利部分可能在反弹时形成阻力；不能把该模型当作全体持有者真实成本分布。（置信度：中）</li>
+<li><strong>股东户数</strong>：2026-06-30为48,628户，2026-03-31为26,463户，库内变动为增加83.8%。可作为当时筹码分散倾向的线索，但季度数据滞后，不能代表10月的结构。（置信度：中）</li>
+</ul>
+<p>这些都是盘面现象，不进入J节基本面逻辑链的决定性环节。</p>
+<h2>I. 未来13周事件日历</h2>
+<p><strong>日历使用规则</strong>：公司三季报日期为库内计划；宽泛概念匹配的外部财报和销量日期，尚未逐项取得原始日程，均列为待核观察项，不作为确定催化。海外日程还存在当地时间与北京时间差异。</p>
+<p>两项明确冲突保留如下：</p>
+<ul>
+<li><strong>GTC华盛顿大会</strong>：库内日期为2026-10-27；主办方正文列2026-11-30至12-03，其中11-30为工作坊、12-01至12-03为会议及展览。原页面未标发布日期，本轮核验日期为2026-10-25。停用库内10-27这一前提。来源：<a href="https://www.nvidia.com/gtc/dc/faq/" target="_blank" rel="noopener">主办方日程</a>。（置信度：高，限主办方自身安排；单一原始来源）</li>
+<li><strong>云栖大会</strong>：库内日期为2026-10-28；大会官网正文列2026-09-22至09-24，已在本报告观察窗口之前。页面未标发布日期，本轮核验日期为2026-10-25。停用10-28这一前提。来源：<a href="https://yunqi.aliyun.com/2026/guide" target="_blank" rel="noopener">大会官方指南</a>。（置信度：高，限主办方自身安排；单一原始来源）</li>
+</ul>
+<h3>分周安排</h3>
+<ul>
+<li><strong>W1｜2026-10-26—11-01</strong>：10-27奥比中光三季报计划披露，重要性高，核验C节单季盈利与五项财务缺口。库内另列10-28 SK海力士、10-29英特尔、11-01博通财报及汽车销量信息，均为日期待核、间接关联项。原GTC及云栖大会记录停用。（公司计划日期置信度：中；其他待核项：低）</li>
+<li><strong>W2｜2026-11-02—11-08</strong>：库内列11-02苹果、11-03 AMD、11-04高通及ARM、11-05中芯国际、11-06华虹半导体财报；另列11-06汽车销量数据和世界互联网大会。均需核验官方日期，主要用于观察终端或产业需求，不能直接映射公司订单。（置信度：低）</li>
+<li><strong>W3｜2026-11-09—11-15</strong>：库内列11-10台积电月度收入、11-14高交会，日期及公司参与情况待核；重要性低至中。（置信度：低）</li>
+<li><strong>W4｜2026-11-16—11-22</strong>：库内列11-17百度、11-18英伟达及小米财报、11-20广州车展，日期待核。即使发生，也需另有公司参与或业务证据，才能提高关联强度。（置信度：低）</li>
+<li><strong>W5｜2026-11-23—11-29</strong>：本周无已知事件。持续检查三季报后是否补充经营解释，不预设公告日。</li>
+<li><strong>W6｜2026-11-30—12-06</strong>：主办方日程列GTC华盛顿大会11-30至12-03；另据两部门通知，11-30为实景实训成效总结报送期限，属于行政报送节点，不等于当天公开结果。公司是否参与、是否取得订单未知。来源：<a href="https://www.nvidia.com/gtc/dc/faq/" target="_blank" rel="noopener">GTC原文</a>、<a href="https://www.miit.gov.cn/zwgk/zcwj/wjfb/tz/art/2026/art_f291ccd3da4c47ce95741de63cc088e6.html" target="_blank" rel="noopener">两部门通知</a>。（日程安排置信度：高；公司影响：低）</li>
+<li><strong>W7｜2026-12-07—12-13</strong>：本周无已知事件。</li>
+<li><strong>W8｜2026-12-14—12-20</strong>：本周无已知事件。</li>
+<li><strong>W9｜2026-12-21—12-27</strong>：本周无已知事件。</li>
+<li><strong>W10｜2026-12-28—2027-01-03</strong>：无已知公司事件。两部门政策的2026年末目标期结束，可在后续正式总结中核验实施结果，不预设公开日期。来源：<a href="https://www.miit.gov.cn/zwgk/zcwj/wjfb/tz/art/2026/art_f291ccd3da4c47ce95741de63cc088e6.html" target="_blank" rel="noopener">政策原文</a>。（置信度：中）</li>
+<li><strong>W11｜2027-01-04—01-10</strong>：本周无已知事件。</li>
+<li><strong>W12｜2027-01-11—01-17</strong>：本周无已知事件。</li>
+<li><strong>W13｜2027-01-18—01-24</strong>：本周无已知事件。观察窗口结束时复核收入、利润、现金流及行业验证进展，不推定期间一定发布业绩预告。</li>
+</ul>
+<p>“无已知事件”只表示本轮材料没有对应记录，不表示届时不会发生事件。</p>
+<h2>J. 可证伪逻辑链与卖方预期</h2>
+<h3>基本面逻辑链</h3>
+<ol>
+<li><strong>事实：公司确有3D视觉感知主营。</strong> 传感器及机器视觉关联具备主营依据。（置信度：高）</li>
+<li><strong>外部事实：商业应用与实景验证正在推进。</strong> 工信部和国际机器人联合会分别提供了应用验证与出货信息；二者不能证明公司的订单份额，来源见F节。（置信度：中）</li>
+<li><strong>当前经营事实：二季度收入同比约下降3.97%，归母净利润同比约下降70.33%。</strong> 现有财务没有证明上述产业进展已转化为公司当期盈利增长。（置信度：高，单季同比为估计）</li>
+<li><strong>估值事实：445.86亿元市值对应约407.70倍滚动市盈率。</strong> 若后续收入及利润不能持续改善，估值压力可能继续存在。（前半为事实，置信度：高；后半为推论，置信度：中）</li>
+<li><strong>可证伪观察：</strong> 如果“产业进展带来公司增长”成立，应逐步看到公司同口径单季收入、归母净利润、现金回收以及可核验交付的共同改善；只有新品新闻或行业出货增长不足以完成验证。（置信度：中）</li>
+</ol>
+<p><strong>最弱的一环</strong>：产业应用推进如何转化为公司的有效交付、确认收入和现金回款。当前缺少这一环的直接证据。（置信度：高）</p>
+<h3>卖方观点单列</h3>
+<p>〔卖方预期〕来源：交银国际证券研报（库内） · 日期：2026-08-26 · 观点：二季度收入低于其预期，短期盈利仍受新业务投入影响，并下调盈利预测 · 置信度：低。</p>
+<p>该观点来自库内研报标题摘要，原报告未逐页核验；不能把其中的费用因果作为公司公告事实。资料链接：<a href="https://pdf.dfcfw.com/pdf/H3_AP202608261828451235_1.pdf?1787736244000.pdf" target="_blank" rel="noopener">研报原文入口</a>。</p>
+<p>近90天库内只有1家机构、1篇报告，结构化盈利预测为空。不能据此判断市场一致预期，更不能判断预期已充分反映。（置信度：高）</p>
+<h3>全年预测隐含增速：公式可列，结果不可算</h3>
+<p>按库内原始值及同比倒算：</p>
+<ul>
+<li>2025年下半年收入约为<strong>5.0527亿元</strong>。</li>
+</ul>
+<p>公式：2025年全年收入－倒算的2025年上半年收入。</p>
+<ul>
+<li>2025年下半年归母净利润约为<strong>0.6772亿元</strong>。</li>
+</ul>
+<p>公式：2025年全年归母净利润－倒算的2025年上半年归母净利润。</p>
+<p>两项基数含同比倒算误差。</p>
+<p>若取得某机构2026年全年收入预测，记为R亿元：</p>
+<ul>
+<li>隐含2026年下半年收入＝R－4.3760588625亿元；</li>
+<li>隐含下半年收入同比＝〔（R－4.3760588625）÷5.0527416463－1〕×100%。</li>
+</ul>
+<p>若取得2026年全年归母净利润预测，记为N亿元：</p>
+<ul>
+<li>隐含2026年下半年归母净利润＝N－0.4164086593亿元；</li>
+<li>隐含下半年归母净利润同比＝〔（N－0.4164086593）÷0.6771982963－1〕×100%；</li>
+<li>以2026-10-23市值计算的预测PE＝445.86÷N，前提为N为正且口径一致。</li>
+</ul>
+<p><strong>具体缺失项</strong>：卖方全年收入预测R、全年归母净利润预测N、预测报告对应版本及调整口径。因此本轮不能给出隐含增速或预测PE数值，也不能使用研报历史PE代替估值日PE。</p>
+<p>上述隐含增速对应整个下半年，不能当作第三季度单季最低达标值。（置信度：高）</p>
+<h2>K. 未来13周三情景推演</h2>
+<p>概率为研究者主观权重，不是统计模型结果：乐观20%、中性50%、悲观30%，合计100%；概率判断置信度均为低。</p>
+<p><strong>统一边界与顺序：</strong></p>
+<ul>
+<li><strong>反面条件</strong>：后续取得并核验的最新单季归母净利润由盈转亏。</li>
+<li><strong>证据齐全</strong>：取得最新财报的单季收入、归母净利润、毛利率，以及经营现金流、应收、存货、预付款、研发及比较基数；关键利润口径和实际用于判断的事件来源冲突已经解决。</li>
+<li><strong>改善组合</strong>：最新单季收入、归母净利润同比均为正，单季毛利率不低于2026年二季度约48.52%，最新累计经营现金流为正。</li>
+</ul>
+<p>改善组合是主观研究筛选标准，不是公司指引。毛利率参照本报告最近可重算单季，现金流正值用于要求现金回收证据；季度季节性和项目验收节奏尚缺，不能把这些条件理解为普遍适用的达标线。</p>
+<ul>
+<li><strong>乐观｜20%</strong></li>
+</ul>
+<p><strong>触发</strong>：未出现反面条件，证据齐全，并且全部改善组合同时满足。 <strong>路径</strong>：盈利与现金回收改善，市场可能提高对后续增长的认可；现有高估值仍需要持续验证。 <strong>失效条件</strong>：任一必要条件不满足，转入中性；出现反面条件，优先转入悲观。（置信度：低）</p>
+<ul>
+<li><strong>中性｜50%</strong></li>
+</ul>
+<p><strong>触发</strong>：未出现反面条件，但证据不齐、存在未解决的关键冲突，或改善组合任一条件未满足。包括利润仍为正但同比下降、财务表现分化等其余情况。 <strong>路径</strong>：题材消息与财报验证交替影响定价，可能宽幅震荡；不能据缺口本身认定经营恶化。（置信度：低）</p>
+<ul>
+<li><strong>悲观｜30%</strong></li>
+</ul>
+<p><strong>触发</strong>：后续核验的最新单季归母净利润由盈转亏；这一条件优先于资料完整性及利好消息。 <strong>路径</strong>：盈利预期下调，高估值承受进一步调整压力。（置信度：低）</p>
+<p>三种边界互不重叠并覆盖其余情况。本轮尚未取得三季度财务和五项明细，未满足乐观情景的证据要求。</p>
+<h2>L. 决策与风控</h2>
+<p><strong>条件优先级：已核验反面证据优先，其次检查资料缺失和冲突，最后才评估改善。</strong></p>
+<ol>
+<li><strong>如果后续核验的最新单季归母净利润由盈转亏，那么回避。</strong> 行业会议、回购或新品消息不覆盖这一条件。（置信度：中）</li>
+<li><strong>如果未出现上述反面证据，但关键财务资料缺失或关键来源冲突未解决，那么观望。</strong> 这是本轮适用条件。（置信度：高，限条件是否满足）</li>
+<li><strong>如果关键证据齐全且乐观组合全部满足，那么观望至完成一次新的盈利与估值评估。</strong> 本报告没有有效全年预测PE，也没有完整现金回收证据，不预先设置积极动作。（置信度：中）</li>
+</ol>
+<p><strong>推翻当前判断的证据</strong>：收入、归母净利润和经营现金流共同改善，会削弱当前谨慎判断；最新单季归母净利润由盈转亏，则强化回避条件。单独的资金净流入、概念名单、历史筹码或会议新闻都不足以推翻财务判断。（置信度：中）</p>
+<p><strong>相对参与思路</strong>：如果本轮关键缺口仍未补齐，那么观望并暂不参与。本报告不以历史筹码数据设置当前价格触发，也不提供具体金额或股数。（置信度：中）</p>
+<h2>M. 逻辑自查与待复核清单</h2>
+<h3>先复核财务及预测计算</h3>
+<ul>
+<li><strong>C节可算项已展开</strong>：二季度收入、归母净利润及同比环比，单季毛利率、单季和累计归母净利率、滚动四季收入及利润。单季同比和滚动数据已注明倒算误差。</li>
+<li><strong>J节未用缺失预测造数</strong>：全年预测为空，已列剩余期间增速和估值日预测PE的公式、基数及具体缺失输入。</li>
+<li><strong>口径保留</strong>：库列净利率与重算归母净利率不同，未静默覆盖，也未将库列字段强行解释为合并口径。</li>
+<li><strong>公告补充材料为空</strong>：本轮没有已逐项核验的一手财务补充公告可用。库内公告标题不等于正文核验，核对公告真实性也不等于财务报告经过审计。</li>
+<li><strong>因果限制</strong>：没有把费用、研发或存货变化写成利润下滑的已证实原因，也没有把备货、合同负债变化或资金流当成订单证明。</li>
+</ul>
+<h3>关键外部论断复核</h3>
+<ol>
+<li><strong>主张：科技兴商政策包含相关应用场景。</strong></li>
+</ol>
+<p>原始发布者：商务部等九部门；发布日期2026-10-19，成文日2026-10-13；正文已读取。支持范围限政策内容。独立原始来源1个，转载不重复计数；未核公司是否获得项目。原文：<a href="https://www.mofcom.gov.cn/zwgk/zcfb/art/2026/art_787f0441da1f4c0e8b5bad10118247f3.html" target="_blank" rel="noopener">商务部文件</a>。（政策事实置信度：高；公司受益：低）</p>
+<ol>
+<li><strong>主张：商业应用在推进，但不能认定普遍成熟。</strong></li>
+</ol>
+<p>原始发布者分别为工信部和国际机器人联合会；前者发布2026-10-20、对应2026-10-19发布会，后者发布2026-09-30、统计期为2025年；正文均已读取。独立来源2个，仅共同支持有限方向判断，不能互证同一数量。未核公司订单、采购比例和收入。原文：<a href="https://www.miit.gov.cn/xwfb/xwfbh/gxbxwfbh/art/2026/art_213c82c9bf69441ab42252e6fcbc9f1f.html" target="_blank" rel="noopener">工信部发布会</a>、<a href="https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent" target="_blank" rel="noopener">国际机器人联合会</a>。（置信度：中）</p>
+<ol>
+<li><strong>主张：实景实训存在11月末报送节点。</strong></li>
+</ol>
+<p>原始发布者为工信部、国务院国资委；发布2026-06-08，成文2026-06-03，报送期限为2026-11-30；正文已读取。属于联合文件这一原始来源，不能按部门数算成多个独立来源。它支持行政安排，不证明届时公开成果或公司参与。原文：<a href="https://www.miit.gov.cn/zwgk/zcwj/wjfb/tz/art/2026/art_f291ccd3da4c47ce95741de63cc088e6.html" target="_blank" rel="noopener">专项通知</a>。（安排置信度：高；公司影响：低）</p>
+<ol>
+<li><strong>主张：两项会议日期与库内冲突。</strong></li>
+</ol>
+<p>原始发布者为各自主办方；网页未标发布日期，本轮读取日期2026-10-25。GTC官方安排为11-30至12-03，云栖官网为09-22至09-24；分别只有1个原始日程来源，其他转述不增加独立性。主办方可直接证明自身安排，不能证明公司参加或受益。原文：<a href="https://www.nvidia.com/gtc/dc/faq/" target="_blank" rel="noopener">GTC</a>、<a href="https://yunqi.aliyun.com/2026/guide" target="_blank" rel="noopener">云栖大会</a>。<strong>库内旧日期已停用，数据修正仍待复核。</strong></p>
+<p>国家统计局相关检索线索的原始正文抓取失败，未将搜索摘要中的数字纳入本报告证据链。其他未找到充分原文支持的量产、采购比例和订单说法，也未成为A、J、K、L节确定前提。</p>
+<h3>信息缺口分三类</h3>
+<p><strong>一、已披露但本次未取得</strong></p>
+<ul>
+<li>2026年半年度经营现金流、应收、存货、预付款、研发及比较基数。影响是无法确认盈利质量和营运资金变化。补法：由研究库补充经核验公告材料，注明报告期、公告日期、页码和原文链接。</li>
+<li>完整互动问答、回购方案及执行细节、异常波动公告正文、业绩说明会实际时间。补法：补入完整原文，分别核对事项、时间、金额和公司解释。</li>
+<li>卖方研报中的全年预测数值。结构化预测为空不等于原文必定没有预测。补法：取得对应版本的核验数据后，按J节公式计算。</li>
+<li>直接竞对、分产品收入、客户集中度和订单交付。补法：先核公告是否披露，再区分确实未披露与本轮未取得。</li>
+</ul>
+<p><strong>二、尚未取得披露结果的未来事项</strong></p>
+<ul>
+<li>本轮三季报结果尚不可用，库内计划披露日为2026-10-27；不能把计划当成已披露。</li>
+<li>未来会议合作、政策实施总结及第四季度经营结果，未取得结果性材料，不能预设发生时间或内容。</li>
+</ul>
+<p><strong>三、口径或来源冲突</strong></p>
+<ul>
+<li>GTC和云栖日期：保留库内原记录与官网证据，停用旧日期。</li>
+<li>净利率：9.3203%与归母净利率9.5156%存在口径待核，不能认定同口径矛盾后自行覆盖。</li>
+<li>行业分类：当前主行业“光学元件”与估值分类“元器件”分开标注。</li>
+<li>PE排序：缺排序方向与样本规则，不输出伪精确分位。</li>
+</ul>
+<h3>最依赖的假设与反面证据</h3>
+<p>本报告最依赖“当前盈利尚不足以确认高估值具有持续支撑”这一判断；如果后续交付、利润和现金回收共同改善，该判断需要更新。（置信度：中）</p>
+<p>已保留的反面证据包括：二季度收入环比增长、毛利率较稳定、资产负债率较低，以及相关热点仍在延续。它们使单向偏跌判断也缺乏充分依据，但不能替代缺失的现金回收和全年预测证据。（置信度：中）</p>
+<p><strong>下一步</strong>：在2026-10-27计划披露节点后，优先补齐三季报、上年同期基数和五项财务明细，再重算第三季度单季、滚动利润及预测隐含增速。本轮结论为<strong>震荡、低置信度，关键资料与日历冲突待复核</strong>；L节与下方结构化动作条件保持一致。</p>
+<h3>自动核对（程序检查，不是 AI 判断）</h3>
+<div class="callout">程序只检查报告中的数字、格式和措辞，内容还需要人工核实。数字相近不代表公司、时间、单位、来源或原因解释正确。</div>
+<ul>
+<li>格式：A–M 十三节齐全 · 没有表格 · 没有「买入/卖出」字样</li>
+<li>措辞：没有发现检查清单中的不规范说法</li>
+<li>⚠️ 数据库里有、报告未找到相关内容：<strong>当前行情</strong>（如 108.0）。请确认是否已经说明省略的原因</li>
+<li>⚠️ 数据库里有、报告未找到相关内容：<strong>资金筹码</strong>（如 45.54、90.73、5.33、1.3）。请确认是否已经说明省略的原因</li>
+<li>报告里有 141 处数字，117 处能在数据库材料里找到相近值，24 处未找到（重复的合并后共 18 项）。网上查到或自行计算的数字也可能未找到，需要逐项核实
+<ul>
+<li>这次核对的可信度：高。程序试查一批随机数字，能识别其中 88% 不在材料里（材料共含 238 个不同数字）。这只说明程序发现可疑数字的能力，不是报告准确率</li>
+<li>25（全文 4 处） — …# 奥比中光（688322）深度调研报告研究日期：2026-10-25 行情与估值基准：2026-10-23…</li>
+<li>24（全文 4 处） — …日期为2026-08-22 观察窗口：2026-10-26至2027-01-24，共13周 <strong>资料说明</strong>：公司、财务、…</li>
+<li>6.73 — …5便宜”或精确估值分位。据库内数字计算，407.6979÷60.59825≈6.73，即公司滚动市盈率约为行业中位数的6.73倍…</li>
+<li>2.3472 — …下降计算使用库内以元计的原始数值，以下结果四舍五入。 1. <strong>营业收入：2.3472亿元。</strong> 公式：第二季度收入＝半…</li>
+<li>4.5349 — …5843%相比，下降约0.07个百分点，变化较小。 4. <strong>单季归母净利率：4.5349%。</strong> 公式：第二季度归母净利润…</li>
+<li>9.5156 — …） ### 半年度归母净利率与库列净利率分开使用 - <strong>半年度归母净利率：9.5156%。</strong> 公式：41,640,865…</li>
+<li>1.09360696 — …也是估计值，存在四舍五入误差。用2026-10-23市值核算：445.86÷1.09360696≈407.70倍，与库内滚动市盈率基本一致。…</li>
+<li>904.13 — …· ROE 1.1948%。 - <strong>立讯精密（002475）</strong> · 市值3,904.13亿元 · PE 21.94倍 · PB 4.…</li>
+<li>745.04 — …3,904.13亿元 · PE 21.94倍 · PB 4.19倍 · 收入1,745.04亿元 · 归母净利润78.43亿元 · RO…</li>
+<li>691.58 — …· ROE 8.7859%。 - <strong>生益科技（600183）</strong> · 市值2,691.58亿元 · PE 51.82倍 · PB 14…</li>
+<li>092.06 — …ROE 18.6626%。 - <strong>东山精密（002384）</strong> · 市值2,092.06亿元 · PE 58.36倍 · PB 8.…</li>
+<li>85 — …0-22模型获利比例45.54%，加权平均成本90.73元，成本15%、50%、85%分位分别为78.40元、91.20元、98…</li>
+<li>（另有 6 条，同类从略）</li>
+</ul></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-10-25），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>二季度利润下滑（置信度：高）</li>
+      <li>估值倍数偏高（置信度：高）</li>
+      <li>现金流明细缺失（置信度：高）</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>经营现金流</dt><dd>经营活动产生的现金流量净额。利润是账面数，这个是真金白银进出。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>换手率</dt><dd>当日成交股数 ÷ 流通股本。衡量交易活跃度与筹码换手速度。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>业绩预告</dt><dd>上市公司在正式财报前发布的盈利区间预告，达到规定变动幅度时强制披露。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>一致预期</dt><dd>多家券商盈利预测的平均值。是别人的观点，不是事实。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.mofcom.gov.cn/zwgk/zcfb/art/2026/art_787f0441da1f4c0e8b5bad10118247f3.html" target="_blank" rel="noopener">商务部原文</a></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.miit.gov.cn/zwgk/zcwj/wjfb/tz/art/2026/art_f291ccd3da4c47ce95741de63cc088e6.html" target="_blank" rel="noopener">两部门通知原文</a></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.miit.gov.cn/xwfb/xwfbh/gxbxwfbh/art/2026/art_213c82c9bf69441ab42252e6fcbc9f1f.html" target="_blank" rel="noopener">工信部发布会正文</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://ifr.org/ifr-press-releases/news/global-sales-of-professional-service-robots-surge-24-percent" target="_blank" rel="noopener">国际机器人联合会原文</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://static.cninfo.com.cn/finalpage/2026-10-21/1225612232.PDF" target="_blank" rel="noopener">公告链接</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://static.cninfo.com.cn/finalpage/2026-10-20/1225610218.PDF" target="_blank" rel="noopener">公告链接</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://static.cninfo.com.cn/finalpage/2026-10-16/1225606179.PDF" target="_blank" rel="noopener">公告链接</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://static.cninfo.com.cn/finalpage/2026-10-15/1225605162.PDF" target="_blank" rel="noopener">报告书链接</a></li>
+      <li><span class="src-tag src-disc">披露</span> <a href="http://static.cninfo.com.cn/finalpage/2026-10-21/1225612216.PDF" target="_blank" rel="noopener">公告链接</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.eastmoney.com/a/202610233906147713.html" target="_blank" rel="noopener">库内新闻链接</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.nvidia.com/gtc/dc/faq/" target="_blank" rel="noopener">主办方日程</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://yunqi.aliyun.com/2026/guide" target="_blank" rel="noopener">大会官方指南</a></li>
+      <li><span class="src-tag src-research">研究</span> <a href="https://pdf.dfcfw.com/pdf/H3_AP202608261828451235_1.pdf?1787736244000.pdf" target="_blank" rel="noopener">研报原文入口</a></li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-10-25 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
