@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>贵州茅台（600519.SH） · 调研报告</title>
+<style>
+  /* 2026-08-26 起与站点首页同一套调色板（中性暖灰底 + 珊瑚橙主色），改值要与 web/src/assets/feed.css
+     和 web/build/inject-report-nav.js 里的存量覆盖段三处同步 */
+  :root{
+    --paper:#f7f6f3; --paper-2:#eceae4; --ink:#2b2926; --ink-soft:#6e6a63;
+    --muted:#7d786f; --rule:#e5e2da; --seal:#b4543a; --seal-soft:#c97a62;
+    --card:#ffffff; --accent-bg:#fbeae4;
+    --measure:42rem;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1b1a18; --paper-2:#252320; --ink:#ece9e3; --ink-soft:#b9b4ab;
+      --muted:#8f8a80; --rule:#35322c; --seal:#d97e5c; --seal-soft:#c97a62;
+      --card:#242220; --accent-bg:#33261f;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{max-width:100%; overflow-x:hidden} /* 锁横向滚动：手机端只能上下滚，不能左右拖动 */
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","New York",Palatino,"Palatino Linotype",Georgia,"Songti SC","Noto Serif CJK SC",serif;
+    font-size:18px; line-height:1.72; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    touch-action:manipulation; /* 移动端禁双击放大；电脑端缩放不受影响 */
+  }
+  /* 宽内容不撑破视口：图片自适应；超宽表格 / 代码块各自内部横向滚动，而非整页可拖 */
+  img,video,iframe{max-width:100%; height:auto}
+  pre{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  /* 表格：手机上列不再被压成竖排逐字（给最小列宽）；超宽时整张表可左右拖动查看；
+     首列冻结，横向拖动看后面列时行名/字段名始终可见；表头加底色、隔行浅纹，更易读。 */
+  table{display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    border-collapse:separate; border-spacing:0; margin:1.6rem 0; font-size:.9rem; line-height:1.5;
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule)}
+  table th,table td{border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:.5rem .7rem; vertical-align:top; text-align:left; min-width:5em; max-width:17em;
+    overflow-wrap:break-word}
+  table thead th{background:var(--paper-2); color:var(--ink); font-weight:600; white-space:nowrap} /* 表头用中性灰而非主色调，accent-bg 现在是珊瑚橙调、满页表头会太吵 */
+  table tbody tr:nth-child(even) td{background:rgba(127,127,127,.05)}
+  /* 首列冻结：sticky 需要不透明底色盖住滚到下面的内容，右侧 1px 投影作分隔。 */
+  table th:first-child,table td:first-child{position:sticky; left:0; z-index:1;
+    min-width:6.5em; background:var(--card); font-weight:600; box-shadow:1px 0 0 var(--rule)}
+  /* 隔行底色特异性比首列规则高，会令偶数行首列变半透明、滚动内容透出来——这条盖回不透明 */
+  table tbody tr:nth-child(even) td:first-child{background:var(--card)}
+  table thead th:first-child{z-index:2; background:var(--paper-2)}
+  /* 长链接 / 长串（如来源 URL）强制换行，避免撑出横向滚动条 */
+  .wrap a,.wrap p,.wrap li,.wrap dt,.wrap dd,.wrap h1,.wrap h2,.wrap h3{overflow-wrap:break-word; word-break:break-word}
+  .wrap{max-width:var(--measure); margin:0 auto; padding:5rem 1.5rem 7rem}
+  /* 报头 */
+  header.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.4rem; margin-bottom:2.6rem}
+  .kicker{display:flex; align-items:center; gap:.7rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .seal{display:inline-flex; align-items:center; justify-content:center; width:1.7rem; height:1.7rem;
+    background:var(--accent-bg); color:var(--seal); border-radius:8px; font-size:.78rem; font-weight:700;
+    letter-spacing:0; transform:rotate(-4deg)}
+  h1{font-size:2.7rem; line-height:1.12; margin:.7rem 0 .2rem; font-weight:600; letter-spacing:-.01em}
+  .meta{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.82rem;
+    color:var(--muted); display:flex; flex-wrap:wrap; gap:.4rem 1.1rem; margin-top:.6rem}
+  .meta b{color:var(--ink-soft); font-weight:600}
+  /* 先说人话（给完全不懂这行的人，排第一块） */
+  .plain{background:var(--card); border-left:3px solid var(--seal-soft); border-radius:0 12px 12px 0; padding:1rem 1.3rem;
+    margin:0 0 2.6rem; font-size:1.02rem; color:var(--ink-soft)}
+  /* TL;DR（紧跟其后，负上边距收拢两块间距） */
+  .tldr{background:var(--accent-bg); border-left:3px solid var(--seal); border-radius:0 12px 12px 0; padding:1.1rem 1.3rem;
+    margin:-1.4rem 0 2.6rem; font-size:1.05rem; color:var(--ink)}
+  .tldr .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal); display:block; margin-bottom:.35rem}
+  .plain .lbl{font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.7rem;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--seal-soft); display:block; margin-bottom:.35rem}
+  /* 关键发现 */
+  .findings{background:var(--card); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:0 1px 2px rgba(50,45,38,.05), 0 6px 18px rgba(50,45,38,.05);
+    padding:1.3rem 1.5rem 1.3rem 1.4rem; margin-bottom:3rem}
+  .findings h2{margin:.1rem 0 .7rem; font-size:1.05rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    letter-spacing:.04em; color:var(--ink-soft)}
+  .findings ul{margin:0; padding-left:1.15rem}
+  .findings li{margin:.45rem 0; line-height:1.6}
+  /* 正文 */
+  main h2{font-size:1.55rem; margin:3rem 0 .8rem; padding-top:1.3rem; border-top:1px solid var(--rule); font-weight:600; letter-spacing:-.005em}
+  main h2:first-child{border-top:none; padding-top:0; margin-top:0}
+  main h3{font-size:1.18rem; margin:1.8rem 0 .5rem; color:var(--ink-soft); font-weight:600}
+  main p{margin:.9rem 0}
+  main ul,main ol{padding-left:1.3rem}
+  main li{margin:.4rem 0}
+  a{color:var(--seal); text-underline-offset:2px; text-decoration-thickness:1px}
+  a:hover{color:var(--seal-soft)}
+  strong{font-weight:600}
+  /* 案例块 */
+  .case{background:var(--paper-2); border-radius:12px; padding:1rem 1.25rem; margin:1.2rem 0; border:1px solid var(--rule)}
+  .case::before{content:"案例"; display:inline-block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--seal); margin-bottom:.4rem}
+  .case p:first-of-type{margin-top:0}
+  .case p:last-child{margin-bottom:0}
+  /* 通用提示 */
+  .callout{border-left:3px solid var(--seal-soft); padding:.3rem 0 .3rem 1.1rem; margin:1.3rem 0; color:var(--ink-soft); font-style:italic}
+  /* 行内元信息注（来源口径 / 置信度 / 拉取日期）：淡化显示，主句先读通、注可跳过 */
+  small.src-note{font-size:.82em; color:var(--muted)}
+  /* 局限声明 */
+  .limitation{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .limitation::before{content:"⚠ 数据局限"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 更正说明（报告上线后发现硬错、就地更正时用；样式同局限框，标签不同） */
+  .correction{background:var(--accent-bg); border:1px dashed var(--seal-soft); border-radius:12px;
+    padding:.9rem 1.2rem; margin:1.6rem 0; font-size:.92rem; color:var(--ink-soft)}
+  .correction::before{content:"✎ 更正说明"; display:block; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif;
+    font-size:.68rem; letter-spacing:.14em; color:var(--seal); margin-bottom:.35rem; font-style:normal}
+  /* 名词小抄（术语→人话对照） */
+  .glossary{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  .glossary h2{font-size:1.3rem; margin:0 0 .8rem}
+  .glossary dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:.55rem 1.1rem}
+  .glossary dt{font-weight:600; color:var(--ink); font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; font-size:.92rem; line-height:1.5}
+  .glossary dd{margin:0; color:var(--ink-soft); font-size:.92rem; line-height:1.6}
+  @media (max-width:560px){ .glossary dl{grid-template-columns:1fr; gap:.1rem .5rem} .glossary dt{margin-top:.5rem} }
+  /* 风险 */
+  section.risks{margin-top:3rem; padding-top:1.3rem; border-top:1px solid var(--rule)}
+  section.risks h2{font-size:1.3rem; margin:0 0 .6rem}
+  /* 来源 */
+  section.sources{margin-top:3.5rem; padding-top:1.4rem; border-top:2px solid var(--ink)}
+  section.sources h2{font-size:1.1rem; font-family:ui-sans-serif,-apple-system,"PingFang SC",sans-serif; letter-spacing:.04em; margin:0 0 1rem}
+  section.sources ol{list-style:none; counter-reset:s; padding:0; margin:0; font-size:.9rem}
+  section.sources li{counter-increment:s; padding:.55rem 0 .55rem 2.1rem; position:relative; border-bottom:1px solid var(--rule); line-height:1.5}
+  section.sources li::before{content:counter(s); position:absolute; left:0; top:.55rem; font-family:ui-sans-serif,sans-serif;
+    font-size:.72rem; color:var(--muted); width:1.5rem; text-align:right}
+  .src-tag{display:inline-block; font-family:ui-sans-serif,-apple-system,sans-serif; font-size:.64rem; letter-spacing:.08em;
+    padding:.08rem .4rem; border-radius:3px; margin-right:.5rem; vertical-align:.08em; font-style:normal}
+  .src-reg{background:#1f5130;color:#eafff0} .src-disc{background:#27406b;color:#e9f0ff}
+  .src-media{background:#6b4a1f;color:#fff4e3} .src-research{background:#4a2c6b;color:#f3e9ff}
+  .src-comm{background:#5a554a;color:#f2efe8}
+  section.sources em{color:var(--muted); font-style:normal; font-size:.82rem; margin:0 .3rem}
+  footer{margin-top:4rem; text-align:center; font-family:ui-sans-serif,sans-serif; font-size:.74rem; color:var(--muted); letter-spacing:.04em}
+  @media (max-width:560px){ body{font-size:17px} h1{font-size:2.1rem} .wrap{padding:3rem 1.1rem 5rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="seal">研</span> 深度调研 · 股票</div>
+    <h1>贵州茅台（600519.SH）</h1>
+    <div class="meta">
+      <span><b>生成</b> 2026-10-28（北京时间）</span>
+      <span><b>类型</b> 股票</span>
+      <span><b>申万行业</b> 白酒Ⅱ</span>
+      <span style="flex-basis:100%"><b>概念标签</b> 白酒概念 · 超级品牌</span>
+      <span><b>来源</b> 7 条</span>
+    </div>
+  </header>
+
+  <div class="plain">
+    <span class="lbl">先说人话</span>
+    贵州茅台（600519）主要做的是茅台酒及系列酒的生产与销售；经营范围还包括饮料、包装材料、防伪技术、酒店等。这份报告不预测具体股价，只回答一件事：往后约三个月，哪些<strong>可以核验的事实</strong>会决定它往哪边走，以及什么情况出现时该重新想一遍。当前判断的方向是震荡。
+  </div>
+
+  <div class="tldr">
+    <span class="lbl">核心结论</span>
+    未来约 13 周方向震荡、置信度低。支撑在于账面盈利能力仍高；市盈率低于行业中位数；三季报提供验证窗口。主要风险是二季度收入利润同比下降；现金流等五项资料缺失；下半年增长预期尚待兑现。
+  </div>
+
+  <div class="findings">
+    <h2>关键发现</h2>
+    <ul>
+      <li>账面盈利能力仍高</li>
+      <li>市盈率低于行业中位数</li>
+      <li>三季报提供验证窗口</li>
+    </ul>
+  </div>
+
+  <main>
+    <p>研究基准日：2026-10-28 观察周期：2026-10-28 至 2027-01-26，共十三周 资料口径：本轮冻结材料；补查结果与冻结材料一致，未替换数字基准。</p>
+<p><strong>阅读说明</strong>：财务金额默认单位为亿元。事实、卖方预测和本报告推断分别列示；“高置信度”表示库内证据明确或计算可复核，不表示财报经过审计，也不表示未来结果确定。</p>
+<h2>A. 核心结论</h2>
+<p><strong>方向：震荡（置信度：低）。</strong></p>
+<p><strong>一句话逻辑：二季度净利降6.90%，修复待验证。</strong></p>
+<p>2026年二季度收入375.75亿元、归母净利润172.74亿元，同比分别下降约5.23%、6.90%；2026-10-28估值为20.43倍滚动市盈率，低于行业中位数24.89倍。盈利下降与相对估值较低并存，尚不足以确认未来十三周的明确方向。（财务同比含倒算误差；事实置信度：中，方向判断置信度：低）</p>
+<p><strong>核心驱动</strong></p>
+<ol>
+<li>上半年累计毛利率89.56%、归母净利率48.24%，账面盈利能力仍高；但这不能替代回款质量核验。（置信度：高）</li>
+<li>滚动市盈率在19家行业样本中排序第5，低于行业中位数；只从该估值指标看，定价存在相对折让。（置信度：高）</li>
+<li>库内计划于2026-10-31披露三季报，近期存在验证单季盈利变化的明确窗口；该日期仍须核对交易所预约原始记录。（置信度：中）</li>
+</ol>
+<p><strong>核心风险</strong></p>
+<ol>
+<li>二季度收入与归母净利润同比均下降，上半年出现增收不增利。（置信度：中）</li>
+<li>经营现金流、应收账款、存货、预付款、研发费用五项关键资料未取得，盈利质量结论不完整。（置信度：高）</li>
+<li>卖方全年预测隐含下半年归母净利润同比增长约5.11%—6.60%，而二季度利润同比下降，恢复增长仍待兑现。（预测实现置信度：低）</li>
+</ol>
+<p><strong>最该盯的信号</strong>：三季报实际披露时，重算三季度收入、归母净利润及毛利率；同时补齐前三季度经营现金流和资产质量资料。</p>
+<p><strong>最可能错在哪里</strong>：只看利润表，可能低估渠道与回款问题，也可能低估经营恢复速度。（置信度：低）</p>
+<p><strong>当前状态：待复核。</strong> 行情完整交易日期缺失、五项财务资料缺失、部分预测期间口径不清。若这些关键缺口仍未解决，那么观望；不能以估值较低或新品新闻绕过核验。</p>
+<h2>B. 公司快照</h2>
+<ul>
+<li><strong>名称与代码</strong>：贵州茅台，600519。</li>
+<li><strong>上市状态</strong>：库内状态为正常上市；主板，上市日期2001-08-27。</li>
+<li><strong>行业</strong>：公司资料为“白酒”；热点资料中的当前主行业为“白酒Ⅲ”，属于不同层级的行业表达。</li>
+<li><strong>主营</strong>：茅台酒及系列酒的生产与销售；经营范围还包括饮料、包装材料、防伪技术、酒店等。</li>
+<li><strong>员工人数</strong>：34,992人；快照未附该项统计日期，不用于判断最新人员变化。</li>
+<li>快照介绍中的产量和市场地位表述没有明确统计期间，本报告不将其视为最新产能或竞争排名。（资料适用性判断置信度：高）</li>
+</ul>
+<p><strong>当前行情返回值</strong></p>
+<p>价格1,330.75元，涨跌幅－1.85%，成交额51.90亿元；返回的最高、最低相对涨跌幅分别为－0.07%、－2.46%。</p>
+<p><strong>行情时点仅为15:34，完整交易日期缺失。</strong> 因此不能称为“2026-10-28收盘价”，也不能通过估值日期或交易日安排推定报价日期。（置信度：高）</p>
+<p><strong>估值日期：2026-10-28</strong></p>
+<ul>
+<li>总市值16,635.46亿元。</li>
+<li>滚动市盈率20.4282倍，市净率6.621倍。</li>
+<li>库内股息率3.8876%；其统计口径未进一步说明，不等于未来分红承诺。</li>
+<li>白酒行业样本19家，市盈率中位数24.89485倍，公司排序第5。</li>
+<li>据库内数据计算，公司市盈率较行业中位数低约17.94%，公式为20.4282÷24.89485－1。</li>
+</ul>
+<p>只从市盈率看，公司低于行业中位数；但利润增长、现金分配和资产质量尚未完整核验，不能直接把折让解释成低估。（置信度：中）</p>
+<h2>C. 财务健康与可重算分析</h2>
+<h3>近四期财务事实</h3>
+<p>以下均为各报告期<strong>累计数据</strong>，不是四个连续单季：</p>
+<ul>
+<li><strong>2025年前三季度</strong>｜公告日2025-10-30｜收入1,309.04，同比增长6.32%；归母净利润646.27，同比增长6.25%；毛利率91.29%；累计ROE 26.37%；资产负债率12.81%。</li>
+<li><strong>2025全年</strong>｜公告日2026-04-17｜收入1,720.54，同比下降1.20%；归母净利润823.20，同比下降4.53%；毛利率91.18%；全年ROE 34.46%；资产负债率16.42%。</li>
+<li><strong>2026年一季度</strong>｜公告日2026-04-25｜收入547.03，同比增长6.34%；归母净利润272.43，同比增长1.47%；毛利率89.76%；累计ROE 10.57%；资产负债率12.12%。</li>
+<li><strong>2026年上半年</strong>｜公告日2026-08-15｜收入922.78，同比增长1.30%；归母净利润445.17，同比下降1.95%；毛利率89.56%；累计ROE 17.95%；资产负债率15.19%。</li>
+</ul>
+<p>上半年收入增速低于一季度累计增速，归母净利润由同比增长转为同比下降，表现为增速放缓、增收不增利。（置信度：高）</p>
+<p>不同长度期间的累计ROE不能直接排序判断改善，也不能机械年化。上半年与一季度资产负债率属于不同期末余额，可描述变化，但不能据此推断偿债或回款已经改善。（置信度：高）</p>
+<h3>最新单季：2026年二季度</h3>
+<p>以下差额使用库内未四舍五入的元值计算，展示结果保留两位小数。</p>
+<ol>
+<li><strong>营业收入375.75亿元。</strong></li>
+</ol>
+<p>公式：（上半年累计收入－一季度累计收入）÷1亿。</p>
+<p>同比约－5.23%，环比－31.31%。同比分母由上年累计同比倒算，存在上游四舍五入误差；环比为本期累计差额计算。（金额及环比置信度：高；同比置信度：中）</p>
+<ol>
+<li><strong>归母净利润172.74亿元。</strong></li>
+</ol>
+<p>公式：（上半年累计归母净利润－一季度累计归母净利润）÷1亿。</p>
+<p>同比约－6.90%，环比－36.59%。同比同样含倒算误差。（金额及环比置信度：高；同比置信度：中）</p>
+<ol>
+<li><strong>单季毛利率89.26%。</strong></li>
+</ol>
+<p>公式：（上半年收入×上半年毛利率－一季度收入×一季度毛利率）÷二季度收入。</p>
+<p>与一季度同口径单季毛利率89.76%相比，下降约0.50个百分点。计算依赖两期收入、成本口径一致，且累计毛利率本身已有精度限制。（置信度：中）</p>
+<ol>
+<li><strong>二季度归母净利率45.97%。</strong></li>
+</ol>
+<p>公式：二季度归母净利润÷二季度收入×100%。</p>
+<p>一季度同口径约49.80%，二季度较其下降约3.83个百分点。（置信度：高）</p>
+<p>二季度收入和利润同比均下降，是比上半年累计增速更直接的经营变化信号；环比下降还受季节性影响，不能单独解释为经营持续恶化。（置信度：中）</p>
+<h3>累计归母净利率与滚动四季</h3>
+<ul>
+<li><strong>2026年上半年归母净利率48.24%。</strong></li>
+</ul>
+<p>公式：445.168804÷922.780721×100%。（置信度：高）</p>
+<ul>
+<li><strong>截至2026年二季度，滚动四季归母净利润约814.34亿元。</strong></li>
+</ul>
+<p>期间为2025年三季度至2026年二季度。</p>
+<p>公式：2025全年归母净利润＋2026上半年归母净利润－2025上半年归母净利润。</p>
+<p>上年同期归母净利润约454.03亿元，由同比倒算，因此本项属于估算，存在四舍五入误差。（置信度：中）</p>
+<ul>
+<li><strong>同期间滚动四季收入约1,732.38亿元。</strong></li>
+</ul>
+<p>公式：1,720.541719＋922.780721－910.937621。</p>
+<p>上年同期收入同样由同比倒算，本项属于估算。（置信度：中）</p>
+<p>这些计算显示，滚动利润仍为正且规模较大，但最新单季收入、利润和毛利率均弱于上述比较基准；“盈利能力较高”与“增长承压”可以同时成立。（置信度：中）</p>
+<h3>净利率口径边界</h3>
+<p>财务接口另返回净利率序列：2025年前三季度52.0801%、2025全年50.5279%、2026年一季度52.2245%、2026年上半年50.7516%。</p>
+<p>该字段未提供足以确认合并净利润范围的口径说明，<strong>本报告不把它直接称为合并净利率，也不把它与归母净利率混用</strong>。上半年48.24%的归母净利率来自明确公式；两者差异不能直接认定为数据错误。（置信度：高）</p>
+<h3>五项盈利质量检查</h3>
+<ul>
+<li><strong>经营现金流</strong>：上半年同口径金额未取得，无法计算经营现金流与归母净利润的比例，也无法验证利润现金含量。即使后续出现负值，也须拆分税费、结算时点等原因，不能直接推成偿债危机。（置信度：高）</li>
+<li><strong>应收账款</strong>：余额、上年末及上年同期比较值、账龄与减值资料均未取得，不能判断回款速度。补查后，“较上年末”与“同比”必须分别计算。（置信度：高）</li>
+<li><strong>存货</strong>：余额、分类、库龄和跌价准备未取得，不能区分生产储备与销售压力，更不能把备货当作订单兑现。（置信度：高）</li>
+<li><strong>预付款</strong>：余额、对象、账龄及比较值未取得，不能推断采购扩张或资金占用方向。（置信度：高）</li>
+<li><strong>研发费用</strong>：本期金额、是否单列、费用化与资本化口径未取得，不能判断研发强度或其变化对利润的贡献。（置信度：高）</li>
+</ul>
+<p>目前没有经过核验的公司解释可以说明二季度毛利率下降究竟来自产品结构、价格、原料成本还是费用变化；卖方观点不能替代公告证据。（置信度：高）</p>
+<h2>D. 竞争格局与竞对对比</h2>
+<p>以下为库内同行业比较样本，财务期间并不完全一致：</p>
+<ul>
+<li><strong>贵州茅台（600519）</strong>｜市值16,635.46亿元·PE 20.43倍·PB 6.62倍·2026上半年收入922.78亿元·归母净利润445.17亿元·累计ROE 17.95%。</li>
+<li><strong>五粮液（000858）</strong>｜市值2,810.28亿元·PE 23.05倍·PB 2.37倍·2026年前三季度收入328.58亿元·归母净利润97.11亿元·累计ROE 8.15%。</li>
+<li><strong>山西汾酒（600809）</strong>｜市值1,361.48亿元·PE 13.37倍·PB 3.57倍·2026上半年收入、归母净利润缺失·累计ROE 16.57%。</li>
+<li><strong>泸州老窖（000568）</strong>｜市值1,018.26亿元·PE 13.56倍·PB 2.23倍·2026上半年收入104.72亿元·归母净利润43.39亿元·累计ROE 9.09%。</li>
+</ul>
+<p>贵州茅台在这组样本中的市值最大；PE低于五粮液，高于山西汾酒与泸州老窖，PB则高于三家比较公司。因此，“低于行业PE中位数”不等于所有估值指标都低。（置信度：高）</p>
+<p>贵州茅台与泸州老窖的上半年财务期间一致，可以比较规模；五粮液为前三季度，不能直接用其累计利润或ROE与半年数据判断经营效率。山西汾酒收入、利润缺失，相关比较停用。（置信度：高）</p>
+<p>同属白酒行业只提供初步比较范围。缺少产品结构、价格带、渠道重合度和区域数据，不能确认每家公司在所有细分市场均为直接竞争者，也不能靠PE高低判断行业周期位置。（置信度：高）</p>
+<h2>E. 护城河与商业模式</h2>
+<p><strong>已证实的业务基础</strong>：主营明确包含茅台酒及系列酒生产销售，上半年毛利率89.56%、归母净利率48.24%，说明本期账面盈利能力较强。（置信度：高）</p>
+<p><strong>优势分级：存在品牌与经营优势的迹象，但结构性护城河证据不足。</strong></p>
+<p>高毛利率支持产品具有较高附加值的判断；但库内缺少品牌溢价的持续性、终端复购、渠道利润分配、核心工艺或资源排他性资料，不能仅凭公司介绍证明永久定价权。（置信度：中）</p>
+<p><strong>商业模式的关键验证点</strong>是生产销售能否持续转化为现金，以及公司投放与终端消费是否匹配。当前缺少直销与经销占比、产品收入拆分、渠道库存和现金流数据，无法确认利润变化由哪一环驱动。（置信度：高）</p>
+<p>外部原始研究对消费场景变化提供了交叉证据：</p>
+<ul>
+<li>美国农业部驻沈阳农业贸易办公室2025-12-19报告，讨论酒类消费从公务及正式宴饮向个人场景调整；报告也记录了部分私人客户型酒店受影响有限的反例。</li>
+<li>IWSR于2026-06-25发布研究，认为消费正更多转向个人享用、休闲社交、居家和小规模饮用。</li>
+</ul>
+<p>两份资料来自不同发布机构，支持“需求场景正在变化”，不能证明贵州茅台已经完成渠道转型，更不能量化其新增收入。（置信度：中）</p>
+<p>来源：<a href="https://apps.fas.usda.gov/newgainapi/api/Report/DownloadReportByFileName?fileName=Effect+of+China%27s+Frugality+Law+on+Alcohol+and+HRI+Consumption_Shenyang+ATO_China+-+People%27s+Republic+of_CH2025-0243.pdf" target="_blank" rel="noopener">美国农业部原报告，第1—4页</a>、<a href="https://www.theiwsr.com/insight/china-transformed-growth-opportunities-in-a-reshaped-market/" target="_blank" rel="noopener">IWSR原文，2026-06-25</a>。</p>
+<h2>F. 政策与监管</h2>
+<p><strong>核实的政策事实</strong>：修订后的《党政机关厉行节约反对浪费条例》在国内公务接待条款中明确工作餐不上酒。文件署明2025-05-02发布，新华社于2025-05-18播发，已读取的官方全文载体发布日期为2025-05-19。（置信度：高）</p>
+<p>该条款约束的是相应公务接待场景，不能扩写成全社会、所有私人或商务聚餐均不得饮酒。（置信度：高）</p>
+<p><strong>可能的传导链条</strong>：公务接待用酒受限→相关消费场景减少→可能影响部分酒类需求。美国农业部2025-12-19报告提供宴饮渠道变化观察，IWSR 2026-06-25研究提供商务饮酒转弱的独立行业观察。两者支持需求风险方向，但没有给出公司相关收入占比，不能据此解释全部业绩变化。（置信度：中）</p>
+<p>来源：<a href="https://www.beijing.gov.cn/ywdt/dzyjs/202505/t20250519_4091780.html" target="_blank" rel="noopener">条例官方全文载体</a>、<a href="https://apps.fas.usda.gov/newgainapi/api/Report/DownloadReportByFileName?fileName=Effect+of+China%27s+Frugality+Law+on+Alcohol+and+HRI+Consumption_Shenyang+ATO_China+-+People%27s+Republic+of_CH2025-0243.pdf" target="_blank" rel="noopener">美国农业部原报告</a>、<a href="https://www.theiwsr.com/insight/china-transformed-growth-opportunities-in-a-reshaped-market/" target="_blank" rel="noopener">IWSR原文</a>。</p>
+<p><strong>证据限制</strong>：政策文本只有一个原始发布主体，不把多个政府网站转载算成独立证据；两份行业报告也不能单独识别政策、经济环境及消费偏好各自贡献。此次未完成截至研究日的全部地方执行变化核查。（置信度：高）</p>
+<h2>G. 题材与产业链关联</h2>
+<p><strong>主行业：白酒Ⅲ。</strong> <strong>近期没有走势明显接近的板块。</strong> <strong>热点方向判断从10月26日起已暂停，没有这部分资料，不能写成“没有沾边的热点”。</strong></p>
+<p>走势接近资料对应2026-10-28，最近判断日2026-10-23，系统未标记过期；这一状态只说明库内匹配结果。热点方向本身没有有效交易日期，当前不能判断是否存在正在启动或延续的沾边方向。（置信度：高）</p>
+<p>在名单里不等于主营，也不等于跟着涨；走势接近不代表主营，也不代表以后还跟。</p>
+<p><strong>概念标签逐项分级</strong></p>
+<ol>
+<li><strong>白酒概念</strong>：真有业务，主营直接支持；本轮缺产品细分收入。（置信度：高）</li>
+<li><strong>上证180成份股</strong>：指数样本标签，不是营收业务。（置信度：高）</li>
+<li><strong>上证50样本股</strong>：指数样本标签，不是营收业务。（置信度：高）</li>
+<li><strong>沪深300样本股</strong>：指数样本标签，不是营收业务。（置信度：高）</li>
+<li><strong>同花顺漂亮100</strong>：名单标签，不证明新增业务或收入。（置信度：高）</li>
+<li><strong>沪股通</strong>：交易机制标签，不是业务收入来源。（置信度：高）</li>
+<li><strong>融资融券</strong>：交易机制标签，不是业务收入来源。（置信度：高）</li>
+<li><strong>证金持股</strong>：库内概念标签，不能替代最新股东名册。（置信度：高）</li>
+<li><strong>超级品牌</strong>：仅概念标签，未见该标签对应的独立营收佐证，也不证明品牌排名。（置信度：高）</li>
+<li><strong>国企改革</strong>：仅概念标签，未见具体改革项目及收入贡献佐证。（置信度：高）</li>
+<li><strong>乡村振兴</strong>：仅概念标签，未见专项业务收入佐证。（置信度：高）</li>
+<li><strong>西部大开发</strong>：仅概念标签，未见专项项目及收入贡献佐证。（置信度：高）</li>
+</ol>
+<p><strong>产业链位置</strong></p>
+<p>行业的一般链条为原料及包装→酒类生产→流通渠道→终端消费。主营资料可以确认公司位于生产销售环节；但供应商名单、采购比例、渠道库存和终端消费结构未取得，不能填写具体合作方或采购占比。（置信度：中）</p>
+<p>高毛利率只能支持本期产品附加值较高，不能单独证明上下游议价能力永久稳定。（置信度：中）</p>
+<h2>H. 消息面与市场情绪</h2>
+<p><strong>主行业：白酒Ⅲ。</strong> <strong>近期没有走势明显接近的板块。</strong> <strong>热点方向判断从10月26日起已暂停，当前没有这部分资料。</strong></p>
+<p>走势接近资料日期为2026-10-28、最近判断日为2026-10-23；没有可引用的热点阶段、持续天数和名单依据。在名单里不等于主营或未来涨幅，走势接近也不代表主营或以后继续跟随。（资料状态置信度：高）</p>
+<h3>新闻筛选</h3>
+<p>以下为库内新闻摘要。新闻正文未逐一核验，不能升级为已证实经营事实。</p>
+<ol>
+<li><strong>2026-10-15 20:32，东方财富</strong>：标题称华茅酒计划于10月16日上架i茅台。这里只确认库内存在该报道；实际履约、合并主体归属及收入贡献未核，不能成为盈利修复的确定前提。（置信度：低）</li>
+</ol>
+<p><a href="https://finance.eastmoney.com/a/202610153897124562.html" target="_blank" rel="noopener">库内所附新闻链接</a></p>
+<ol>
+<li><strong>2026-10-21 07:30，东方财富</strong>：报道市场注销式回购现象。摘要不足以确认公司本轮回购规模和进度，不推导每股收益改善。（置信度：低）</li>
+</ol>
+<p><a href="https://finance.eastmoney.com/a/202610213901748052.html" target="_blank" rel="noopener">库内所附新闻链接</a></p>
+<ol>
+<li><strong>2026-10-25 21:01，财联社</strong>：资本市场事项提醒涉及指数规则和海外事件，但未提供公司经营变化证据。（置信度：低）</li>
+<li><strong>2026-10-27 14:39，财联社</strong>：关于高股价股票数量的报道，属于股价排名话题，不证明盈利能力变化；标题中的历史行情数字不作为当前行情。（置信度：高）</li>
+<li><strong>2026-10-20 02:25，东方财富</strong>：讨论市场高股价股票轮动，属于市场叙事，不能代替行业需求或公司订单证据。（置信度：高）</li>
+</ol>
+<p><a href="https://finance.eastmoney.com/a/202610203900319668.html" target="_blank" rel="noopener">库内所附新闻链接</a></p>
+<ol>
+<li><strong>2026-10-13 02:07，东方财富</strong>：标题同时提及茅台和其他公司的业绩预增，不能把其他主体的业绩预测归给茅台。（置信度：高）</li>
+</ol>
+<p><a href="https://finance.eastmoney.com/a/202610133893054131.html" target="_blank" rel="noopener">库内所附新闻链接</a></p>
+<p>新闻集合中存在其他公司的资金、行情和业绩消息，说明相关性标签不能替代主体核验；本报告不据此增加公司所属概念。（置信度：高）</p>
+<h3>涨停、资金与筹码</h3>
+<ul>
+<li><strong>近180天涨停记录为空</strong>：只能表述为“库内未返回涨停记录”，不能推出没有短线炒作或情绪交易。（置信度：高）</li>
+<li><strong>2026-09-23至2026-10-28，近20个交易日</strong>：主力资金统计净流入66.07亿元，正值14天、负值6天；其中特大单统计净流出8.23亿元。不同资金分组方向并不一致，不能把总净流入解释为所有大额资金一致看多。（置信度：高）</li>
+<li><strong>2026-10-27筹码快照</strong>：获利比例57.2%，加权平均成本1,380.13元；15%、50%、85%分位成本分别为1,247.40元、1,339.80元、1,478.40元。这是历史模型快照，不是完整可见的实际成本分布，不用作当前动作触发。（置信度：高）</li>
+<li>获利比例一方面意味着模型估算中部分筹码已获利，另一方面也可能带来短期兑现压力；不能据57.2%单独判断上涨或下跌。（置信度：低）</li>
+<li><strong>股东户数</strong>：2026-06-30为296,404户，2026-03-31为243,159户，库内增幅21.9%。这支持当时持有人数量增加、筹码趋于分散的描述，但季度资料滞后，不能代表10月分布。（置信度：中）</li>
+</ul>
+<p>以上均为市场交易现象，不作为J节盈利逻辑的决定性证据。</p>
+<h2>I. 未来十三周事件日历</h2>
+<p>采用从研究日起连续七天为一周的滚动划分。除第一周计划披露事项外，其余周没有本轮已知、具备确切日期的事件；“无已知事件”不等于不会出现新公告。</p>
+<ul>
+<li><strong>W1｜2026-10-28—11-03</strong>：库内计划2026-10-31披露三季报·重要性高·核验单季收入、归母净利润、毛利率与现金流。预约原始页面未完成核对，以实际披露和改期公告为准。（日期置信度：中）</li>
+<li><strong>W2｜2026-11-04—11-10</strong>：本周无已知事件。</li>
+<li><strong>W3｜2026-11-11—11-17</strong>：本周无已知事件。</li>
+<li><strong>W4｜2026-11-18—11-24</strong>：本周无已知事件。</li>
+<li><strong>W5｜2026-11-25—12-01</strong>：本周无已知事件。</li>
+<li><strong>W6｜2026-12-02—12-08</strong>：本周无已知事件。</li>
+<li><strong>W7｜2026-12-09—12-15</strong>：本周无已知事件。</li>
+<li><strong>W8｜2026-12-16—12-22</strong>：本周无已知事件。</li>
+<li><strong>W9｜2026-12-23—12-29</strong>：本周无已知事件。</li>
+<li><strong>W10｜2026-12-30—2027-01-05</strong>：本周无已知事件。</li>
+<li><strong>W11｜2027-01-06—01-12</strong>：本周无已知事件。</li>
+<li><strong>W12｜2027-01-13—01-19</strong>：本周无已知事件。</li>
+<li><strong>W13｜2027-01-20—01-26</strong>：本周无已知事件。</li>
+</ul>
+<p>W2—W13的表述只描述库内资料覆盖状态，不对未来事件作概率判断。</p>
+<p><strong>固定复核安排</strong>：三季报实际披露后重算C、J；第十三周复盘情景条件是否发生。以上属于研究安排，不是公司已公告事件。</p>
+<h2>J. 卖方预期与可证伪逻辑链</h2>
+<h3>卖方样本边界</h3>
+<p>近90天库内有42份报告、涉及36家机构。评级分类存在中英文及相近表述，本报告不展示评级，也不将样本态度推成全市场已经充分定价。（置信度：高）</p>
+<p><strong>以下均为卖方观点，不是已实现业绩：</strong></p>
+<ul>
+<li>〔卖方预期〕来源：诚通证券研报（库内）·日期：2026-09-21·观点：标题强调以动销决定投放、缓解市场压力及低速发展；本次未读取报告正文·置信度：低。</li>
+<li>〔卖方预期〕来源：西南证券研报（库内）·日期：2026-08-21·观点：标题认为茅台酒相对稳健、系列酒主动调整；本次未核实分产品证据·置信度：低。</li>
+<li>〔卖方预期〕来源：中银证券研报（库内）·日期：2026-08-21·观点：标题将短期业绩变化与市场化改革联系，并认为基本面有韧性；这一因果尚未由本轮公告证明·置信度：低。</li>
+<li>〔卖方预期〕来源：万联证券研报（库内）·日期：2026-08-19·观点：标题强调提价、直销与改革；本次缺少对应经营拆分核验·置信度：低。</li>
+<li>〔卖方预期〕来源：群益证券研报（库内）·日期：2026-08-18·观点：标题认为核心产品稳健，并推进面向终端消费者的经营调整·置信度：低。</li>
+</ul>
+<h3>全年预测隐含了什么</h3>
+<p>下列金额由预测归母净利润的万元数除以10,000换算。预测PE统一使用<strong>2026-10-28总市值16,635.46亿元</strong>重算，不使用研报发布时的PE替代。</p>
+<ul>
+<li>〔卖方预期〕来源：中金公司研报（库内）·日期：2026-09-01·观点：2026全年归母净利润833.19亿元；据此计算全年同比约增长1.21%，下半年需实现388.02亿元、同比约增长5.11%；估值日预测PE约19.97倍·置信度：低。</li>
+<li>〔卖方预期〕来源：国海证券研报（库内）·日期：2026-08-23·观点：2026全年归母净利润838.69亿元；据此计算全年同比约增长1.88%，下半年需实现393.52亿元、同比约增长6.60%；估值日预测PE约19.84倍·置信度：低。</li>
+<li>〔卖方预期〕来源：中银证券研报（库内）·日期：2026-08-21·观点：2026全年归母净利润838.37亿元；据此计算全年同比约增长1.84%，下半年需实现393.20亿元、同比约增长6.51%；估值日预测PE约19.84倍·置信度：低。</li>
+</ul>
+<p><strong>派生公式与期间</strong></p>
+<ul>
+<li>全年预测同比：预测2026全年归母净利润÷2025全年实际归母净利润－1。</li>
+<li>下半年所需利润：预测2026全年归母净利润－2026上半年实际归母净利润。</li>
+<li>2025下半年比较基数约369.17亿元：2025全年实际－倒算的2025上半年实际。</li>
+<li>下半年隐含同比：下半年所需利润÷2025下半年比较基数－1。</li>
+<li>预测PE：估值日总市值÷预测全年归母净利润。</li>
+</ul>
+<p>下半年隐含同比的比较基数含同比倒算误差，因此属于估算。上述5.11%—6.60%是<strong>半年整体要求，不是三季度单季最低达标值</strong>。（计算适用性置信度：高）</p>
+<p><strong>其他预测的处理</strong></p>
+<ul>
+<li>〔卖方预期〕来源：中金公司研报（库内）·日期：2026-09-01·观点：2027全年归母净利润866.58亿元；超出本轮十三周主要验证范围，仅保留为远期预期·置信度：低。</li>
+<li>〔卖方预期〕来源：国海证券研报（库内）·日期：2026-08-23·观点：2027、2028全年归母净利润分别为870.27亿元、933.05亿元；不作为近期业绩事实·置信度：低。</li>
+<li>〔卖方预期〕来源：光大证券研报（库内）·日期：2026-09-03·观点：库内标记2026Q2、2027Q2的EPS分别为66.86元、70.56元；预测期间含义不清且缺全年归母净利润，本次停用其全年增长和预测PE推导·置信度：低。</li>
+</ul>
+<h3>逻辑链</h3>
+<ol>
+<li>二季度收入375.75亿元、归母净利润172.74亿元，同比均下降，说明最近单季增长承压。（置信度：中）</li>
+<li>单季毛利率89.26%，低于一季度89.76%；但缺少公告分解，不能确认具体原因。（置信度：中）</li>
+<li>当前PE低于行业中位数，只能说明相对定价较低，不能证明利润下降已经全部反映在价格中。（置信度：中）</li>
+<li>如果后续同口径收入、归母净利润恢复同比增长，且现金流得到验证，那么可以提高盈利恢复的可信度；若只有新品宣传，逻辑链仍不成立。（置信度：中）</li>
+</ol>
+<p><strong>最弱的一环</strong>：二季度利润下降究竟是暂时调整，还是终端需求变化的持续影响。缺少现金流、渠道与产品结构资料，目前无法区分。（置信度：低）</p>
+<h2>K. 十三周三情景推演</h2>
+<p>概率为本报告的<strong>主观研究权重</strong>，不是库内统计结果或历史模型胜率。</p>
+<p>先定义全篇统一条件：</p>
+<ul>
+<li><strong>负面条件N</strong>：后续已核验公告确认重大财务差错并下调已披露利润；或者三季度单季收入、归母净利润同比均下降，且单季毛利率低于二季度89.26%。</li>
+<li><strong>资料条件Q</strong>：完整交易日期已补齐；三季报及上年同期同口径资料可核验；经营现金流、应收、存货、预付款、研发及比较口径已经逐项补齐解释；影响判断的来源冲突已解决。</li>
+<li><strong>改善条件O</strong>：在N不成立、Q成立的前提下，三季度收入和归母净利润同比均增长，单季毛利率不低于二季度89.26%，且前三季度经营现金流为正、同比不下降。</li>
+</ul>
+<p>同比零增长用于区分增长与下降；89.26%采用最近单季可复核毛利率。这些是<strong>主观观察标准</strong>，并非行业公认门槛。跨季度毛利率可能受季节性与产品结构影响，需要结合公告解释；不将卖方下半年隐含增长套给单季度。（置信度：中）</p>
+<ul>
+<li><strong>乐观｜25%</strong></li>
+</ul>
+<p>触发：N不成立、Q成立、O成立。 路径：盈利恢复与现金回款相互印证，市场可能提高对后续经营的信任，表现转强。 证伪：后续更正推翻单季增长，或经营现金流不能支持利润。 （置信度：低）</p>
+<ul>
+<li><strong>中性｜50%</strong></li>
+</ul>
+<p>触发：N不成立，且Q不成立或O不成立，覆盖其余全部情况。 路径：相对估值与业绩不确定性并存，价格反复，等待更多经营证据。 当前关键资料缺失，暂归这一情景；这是证据状态，不是负面事实。 （置信度：低）</p>
+<ul>
+<li><strong>悲观｜25%</strong></li>
+</ul>
+<p>触发：N成立，无论其他条件如何均优先处理。 路径：盈利可信度或持续增长能力受到进一步质疑，市场可能重新评估原有盈利预期。 证伪：负面公告被正式更正，或经核验的单季数据不再满足N。 （置信度：低）</p>
+<p>三种触发边界互斥且覆盖所有情况；路径不包含未来具体价位。</p>
+<h2>L. 决策与风控</h2>
+<p><strong>按以下顺序执行条件判断：</strong></p>
+<ol>
+<li><strong>如果N成立，那么回避。</strong> 已证实的重大差错或经营恶化证据优先，不能用较低估值、资金流或新品消息抵消。（置信度：中）</li>
+<li><strong>否则，如果Q不成立，那么观望。</strong> 当前五项财务资料与行情完整日期仍缺，因此本轮适用这一条。（置信度：高）</li>
+<li><strong>否则，如果O成立，那么少量尝试；如果O不成立，那么观望。</strong> 当前不满足这条积极动作的资料前提。（置信度：低）</li>
+</ol>
+<p><strong>风控边界</strong></p>
+<ul>
+<li>如果已披露利润被正式下调，那么推翻依赖该利润的估值与盈利恢复判断，并重算相关指标。（置信度：高）</li>
+<li>如果利润增长而经营现金流同比下降，那么改善条件O不成立；但仍须解释结算和税费时点，不能直接判为偿债危机。（置信度：中）</li>
+<li>如果只有股价变化、历史筹码或资金统计改善，那么这些证据不足以使Q或O成立。（置信度：高）</li>
+</ul>
+<p><strong>仓位思路</strong>：如果资料尚未齐全，那么观望；只有全部必要条件满足，才讨论轻仓的少量尝试。本轮没有足以支持加仓的完整证据。（置信度：中）</p>
+<h2>M. 逻辑自查、证据清单与补法</h2>
+<h3>先复核C、J的可算项</h3>
+<ul>
+<li><strong>已计算</strong>：二季度收入、归母净利润、两项同比与环比、单季毛利率、累计归母净利率，以及滚动四季收入和归母净利润。</li>
+<li><strong>已计算</strong>：三家期间明确的卖方全年预测对应的下半年所需利润、隐含同比和估值日预测PE。</li>
+<li><strong>估算标记</strong>：单季同比、滚动四季及卖方隐含余期增速使用倒算同期数，保留四舍五入误差说明。</li>
+<li><strong>停用项</strong>：期间含义不清的EPS预测；未明确利润范围的净利率字段；不同长度期间的ROE直接比较与机械年化。</li>
+<li><strong>未补造</strong>：现金流及四项资产、费用资料，没有用媒体数字填充。</li>
+</ul>
+<p>上述复核只确认本报告计算与使用边界，不代表原始财报已被独立审计。（置信度：高）</p>
+<h3>关键外部论断逐项复核</h3>
+<ol>
+<li><strong>主张：国内公务接待工作餐存在不上酒的明确约束。</strong></li>
+</ol>
+<p>原始发布者：中共中央、国务院；新华社播发。 发布与事件日期：文件署明2025-05-02，新华社2025-05-18播发，已读取官方全文载体为2025-05-19。 <a href="https://www.beijing.gov.cn/ywdt/dzyjs/202505/t20250519_4091780.html" target="_blank" rel="noopener">全文链接</a>。 支持范围：相关公务接待规定。独立原始政策来源数量：1；官方转载不重复计数。 未核部分：截至研究日各地执行变化及公司收入暴露比例。 （政策内容置信度：高；公司影响量化置信度：低）</p>
+<ol>
+<li><strong>主张：正式宴饮和商务场景承压，个人消费场景的重要性上升。</strong></li>
+</ol>
+<p>原始发布者：美国农业部驻沈阳农业贸易办公室、IWSR。 发布日期：2025-12-19、2026-06-25；观察期间分别涉及2025年政策后变化及2026年发布的市场分析，并无单一事件日。 <a href="https://apps.fas.usda.gov/newgainapi/api/Report/DownloadReportByFileName?fileName=Effect+of+China%27s+Frugality+Law+on+Alcohol+and+HRI+Consumption_Shenyang+ATO_China+-+People%27s+Republic+of_CH2025-0243.pdf" target="_blank" rel="noopener">美国农业部原报告</a>、<a href="https://www.theiwsr.com/insight/china-transformed-growth-opportunities-in-a-reshaped-market/" target="_blank" rel="noopener">IWSR原文</a>。 支持范围：行业消费场景的方向变化。独立发布来源数量：2；无法审计其全部底层样本是否重合。 未核部分：2026年10月即时变化、贵州茅台自身受影响程度、因果贡献比例。 （置信度：中）</p>
+<ol>
+<li><strong>主张：2026-10-31为计划三季报披露日。</strong></li>
+</ol>
+<p>来源：库内事件日历，标记依据为交易所官方披露计划。 本次没有取得可直接核对该预约日的原始页面；搜索结果不替代正文，不能视为完成独立验证。 补法：核对交易所最新预约及实际公告。 （置信度：中，待复核）</p>
+<ol>
+<li><strong>主张：新品上架可能改善业绩。</strong></li>
+</ol>
+<p>目前只有库内新闻标题，没有完成产品归属、实际交付和收入贡献核验，独立经营证据不足。 因而该主张未进入A、J、K、L的确定前提。 （置信度：低）</p>
+<h3>信息缺口分类</h3>
+<p><strong>一、已披露但本次未取得</strong></p>
+<ul>
+<li>上半年完整现金流及应收、存货、预付款资料；研发是否单列及其具体口径也未核。</li>
+<li>2025年同期原始财务比较值，目前部分数值只能倒算。</li>
+<li>合并净利率所需的明确利润范围说明。</li>
+<li>同行业部分可比公司同期间财务数据。</li>
+<li>已知预约披露事项的原始记录。</li>
+</ul>
+<p><strong>影响</strong>：限制盈利质量、单季同比精度和同行效率比较。 <strong>补法</strong>：将财报对应科目、报告期、公告日期、页码与原文链接通过库内已核验公告补充材料返回，再重算；不能由模型自行从媒体补数。（置信度：高）</p>
+<p><strong>二、尚未披露</strong></p>
+<p>按本轮库内状态，2026年三季报尚未进入财务数据，库内只有计划披露日；2026全年实际利润也尚未形成可用实际值。</p>
+<p><strong>影响</strong>：三季度改善条件与全年预测兑现程度仍未验证。 <strong>补法</strong>：以实际披露为准更新，不能用预约日、卖方预测代替已实现业绩。（置信度：高）</p>
+<p><strong>三、口径、来源或时点待核</strong></p>
+<ul>
+<li>行情只有15:34，缺完整交易日期；不与2026-10-28估值强行视为同时点。</li>
+<li>光大证券预测期间标记不清，相关全年推导停用。</li>
+<li>净利率字段的利润范围不明，与归母净利率分开保留。</li>
+<li>热点计算暂停，空列表不作“没有热点”的结论。</li>
+<li>本轮冻结财务分析没有登记财务来源冲突，已核验公告补充材料为空；这不等于已经完成公告原文交叉验证。</li>
+</ul>
+<p><strong>补法</strong>：由数据源补齐日期、期间和口径；若发现冲突，保留双方原始证据并停止依赖冲突输入的推导。（置信度：高）</p>
+<h3>假设、反证与动作一致性</h3>
+<p>本报告最依赖的假设是：下一份同口径财报能够帮助区分暂时调整与持续需求变化。若渠道影响存在更长滞后，即使三季度利润恢复，仍不能证明长期问题已经解决。（置信度：低）</p>
+<p>没有忽略的反面证据包括：2025全年收入与归母净利润下降、2026年二季度收入利润同比下降、二季度毛利率较一季度下降；也没有把资金净流入当作经营恢复。（置信度：高）</p>
+<p><strong>最终状态仍为待复核</strong>：N优先；N未成立时，关键缺口未解决则观望；只有Q与O全部满足，才讨论少量尝试。L节与下方结构化摘要采用同一顺序。</p>
+<p><strong>下一步</strong>：优先在三季报实际披露后，补齐现金流等五项资料并重新计算C、J。这比继续增加市场排名或新品新闻更能改变当前判断。（置信度：中）</p>
+<p><strong>资料说明</strong>：公司、行情、估值、财务、竞对、概念、新闻、事件、卖方及资金资料分别来自本轮库内公司档案、库内行情、库内估值、库内财务、库内同业对比、库内概念标签、库内新闻、库内事件日历、库内研报、库内资金筹码、库内涨停记录；空的跨市场比较资料不用于推导。可重算结果以本轮冻结财务分析及其原始输入为准。本报告不声称通过调用方尚未执行的自动质检。</p>
+<h3>自动核对（程序检查，不是 AI 判断）</h3>
+<div class="callout">程序只检查报告中的数字、格式和措辞，内容还需要人工核实。数字相近不代表公司、时间、单位、来源或原因解释正确。</div>
+<ul>
+<li>格式：A–M 十三节齐全 · 没有表格 · 没有「买入/卖出」字样</li>
+<li>措辞：没有发现检查清单中的不规范说法</li>
+<li>⚠️ 数据库里有、报告未找到相关内容：<strong>当前行情</strong>（如 1330.75）。请确认是否已经说明省略的原因</li>
+<li>⚠️ 数据库里有、报告未找到相关内容：<strong>资金筹码</strong>（如 57.2、1380.13、66.07、-8.23）。请确认是否已经说明省略的原因</li>
+<li>报告里有 128 处数字，93 处能在数据库材料里找到相近值，35 处未找到（重复的合并后共 21 项）。网上查到或自行计算的数字也可能未找到，需要逐项核实
+<ul>
+<li>这次核对的可信度：高。程序试查一批随机数字，能识别其中 88% 不在材料里（材料共含 233 个不同数字）。这只说明程序发现可疑数字的能力，不是报告准确率</li>
+<li>28（全文 11 处） — …# 贵州茅台（600519）深度调研报告研究基准日：2026-10-28 观察周期：2026-10-28 至 2…</li>
+<li>6.90（全文 2 处） — …季度收入375.75亿元、归母净利润172.74亿元，同比分别下降约5.23%、6.90%；2026-10-28估值为20.43倍滚…</li>
+<li>6.60（全文 2 处） — …整。（置信度：高） 3. 卖方全年预测隐含下半年归母净利润同比增长约5.11%—6.60%，而二季度利润同比下降，恢复增长仍待兑现。…</li>
+<li>330.75 — …能或竞争排名。（资料适用性判断置信度：高） <strong>当前行情返回值</strong> 价格1,330.75元，涨跌幅－1.85%，成交额51.90亿元…</li>
+<li>635.46（全文 3 处） — …期。（置信度：高） <strong>估值日期：2026-10-28</strong> - 总市值16,635.46亿元。 - 滚动市盈率20.4282倍，市净…</li>
+<li>309.04 — …续单季： - <strong>2025年前三季度</strong>｜公告日2025-10-30｜收入1,309.04，同比增长6.32%；归母净利润646.27…</li>
+<li>720.54 — …率12.81%。 - <strong>2025全年</strong>｜公告日2026-04-17｜收入1,720.54，同比下降1.20%；归母净利润823.20…</li>
+<li>5.23 — …公式：（上半年累计收入－一季度累计收入）÷1亿。同比约－5.23%，环比－31.31%。同比分母由上年累计同…</li>
+<li>31.31 — …（上半年累计收入－一季度累计收入）÷1亿`。同比约－5.23%，环比－31.31%。同比分母由上年累计同比倒算，存在上游四舍…</li>
+<li>36.59 — …归母净利润－一季度累计归母净利润）÷1亿`。同比约－6.90%，环比－36.59%。同比同样含倒算误差。（金额及环比置信度：…</li>
+<li>732.38 — …项属于估算，存在四舍五入误差。（置信度：中） - <strong>同期间滚动四季收入约1,732.38亿元。</strong> 公式：`1,720.541…</li>
+<li>910.937621 — ….38亿元。 公式：1,720.541719＋922.780721－910.937621。上年同期收入同样由同比倒算，本项…</li>
+<li>（另有 9 条，同类从略）</li>
+</ul></li>
+</ul>
+    <div class="limitation">本篇为个股深度投研档案，判断口径「未来约 13 周」，<b>不给目标价、不给买卖评级</b>，操作倾向一律为可核验的条件式表述。行情 / 估值 / 财务基准数字取自本地行情库（信息截止 2026-10-28），政策、产业链、预期差、事件时点四类为联网补充并逐条标注来源与日期；两者在正文中严格分开陈述。报告随时间失效——文中"当前""目前"均以信息截止日为准。</div>
+  </main>
+
+  <section class="risks">
+    <h2>风险与争议</h2>
+    <ul>
+      <li>二季度收入利润同比下降</li>
+      <li>现金流等五项资料缺失</li>
+      <li>下半年增长预期尚待兑现</li>
+    </ul>
+  </section>
+
+  <section class="glossary"><h2>名词小抄</h2><dl><dt>PB</dt><dd>市净率。股价 ÷ 每股净资产，重资产行业常用它替代 PE。</dd><dt>PS</dt><dd>市销率。市值 ÷ 营业收入，用于还没稳定盈利的成长股。</dd><dt>ROE</dt><dd>净资产收益率。净利润 ÷ 净资产，衡量自有资本的赚钱效率。</dd><dt>毛利率</dt><dd>（营收 − 营业成本）÷ 营收。反映产品本身赚不赚钱，不含期间费用。</dd><dt>净利率</dt><dd>净利润 ÷ 营收。毛利率扣掉销售、管理、研发、财务费用与税之后剩下的比例。</dd><dt>资产负债率</dt><dd>总负债 ÷ 总资产。衡量杠杆水平。</dd><dt>经营现金流</dt><dd>经营活动产生的现金流量净额。利润是账面数，这个是真金白银进出。</dd><dt>分位</dt><dd>把历史数值从小到大排序后当前值所处的位置。「PB 处 90% 分位」= 历史上九成时间比现在便宜。</dd><dt>筹码</dt><dd>不同价位上持股的分布。「获利盘」指当前价高于其成本的那部分持股。</dd><dt>主力资金</dt><dd>按单笔成交金额划分出的大单与特大单净流入流出，用来观察大资金动向（口径由数据商定义，非官方数据）。</dd><dt>三季报</dt><dd>第三季度报告。法定披露截止日为 10 月 31 日。</dd><dt>置信度</dt><dd>本报告对每条结论标注的把握程度，由证据的数量、独立性与时效决定，不是概率保证。</dd><dt>产业链</dt><dd>从上游原材料到下游终端的完整链条。判断议价能力要看公司卡在链条的哪一环。</dd></dl></section>
+
+  <section class="sources">
+    <h2>来源清单（按可信度优先级排序）</h2>
+    <ol>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://apps.fas.usda.gov/newgainapi/api/Report/DownloadReportByFileName?fileName=Effect+of+China%27s+Frugality+Law+on+Alcohol+and+HRI+Consumption_Shenyang+ATO_China+-+People%27s+Republic+of_CH2025-0243.pdf" target="_blank" rel="noopener">美国农业部原报告，第1—4页</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://www.theiwsr.com/insight/china-transformed-growth-opportunities-in-a-reshaped-market/" target="_blank" rel="noopener">IWSR原文，2026-06-25</a> <em>2026-06-25</em></li>
+      <li><span class="src-tag src-reg">监管</span> <a href="https://www.beijing.gov.cn/ywdt/dzyjs/202505/t20250519_4091780.html" target="_blank" rel="noopener">条例官方全文载体</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.eastmoney.com/a/202610153897124562.html" target="_blank" rel="noopener">库内所附新闻链接</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.eastmoney.com/a/202610213901748052.html" target="_blank" rel="noopener">库内所附新闻链接</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.eastmoney.com/a/202610203900319668.html" target="_blank" rel="noopener">库内所附新闻链接</a></li>
+      <li><span class="src-tag src-media">媒体</span> <a href="https://finance.eastmoney.com/a/202610133893054131.html" target="_blank" rel="noopener">库内所附新闻链接</a></li>
+    </ol>
+  </section>
+
+  <footer>
+    searchX · 调研于 2026-10-28 · 内容以生成时点为准，此后的变化未反映在本报告中
+  </footer>
+
+</div>
+</body>
+</html>
