@@ -46,6 +46,7 @@
 - [2026-07-06 factcheck 网页查看结果](superpowers/plans/2026-07-06-factcheck网页查看结果.md)
 
 **进度记录（progress）**
+- [2026-11-07 Stocks 报告同步停用 + 旧报告撤下](progress/2026-11-07-stocks-import-retired.md) — 用户决定：Stocks 调研改检查清单、不再判涨跌；导入任务已停、220 篇已撤、恢复前须先改已导判据
 - [2026-10-03 Codex 执行层隔离测试](progress/2026-10-03-codex-runtime-tests.md) — 真实模型、图片、Stocks、失败边界与生产未迁移事项
 - [2026-06-04 自动 runner + 全项目审计修复](progress/2026-06-04-runner-automation-and-audit.md)
 - [2026-06-09 股票查重（不重复调研）+ 提交侧安全加固](progress/2026-06-09-dedup-and-intake-hardening.md)
