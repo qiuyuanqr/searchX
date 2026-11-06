@@ -9,6 +9,13 @@
 
 <!-- 新条目加在这一行下面 -->
 
+## 2026-11-07 01:45 · Claude · 撤下全部 Stocks 导入报告
+
+- **改了什么**：用户明确要求「之前的报告撤掉吧」。从 `research/` 删除 `notes.md` 带 `source_system: stocks` 的 220 篇报告目录，以及 19 个只剩 `.dropped` 标记的 Stocks 作废目录；`research/INDEX.md` 删掉对应的 220 行（逐行按文件夹列精确匹配，数量与目录数一致）；`research/_series/prices.json` 用 `series-prices.js` 自带的 `seriesTargets()` + `serialize()` 裁到仍有档案页的 3 只票（300285 / 300476 / 688521，都是 searchX 自己 /stock 的报告，各两篇），数据截至日不变。原文仍在 Stocks 库和 git 历史里；MacBook 上 Obsidian 的私人全文笔记没动。
+- **为什么**：接上一条，Stocks 的调研逻辑已根本改变，旧的方向判断报告不再保留在公开站。
+- **验证**：本机全量构建前后对比——报告页 274 → 55（少 219 篇；第 220 篇 `2026-10-05_stock-002837` 原本就是 `.parked`、没上线），`reports.json` 99 → 52，判断档案页 51 → 3；产物里所有 `r/<目录>` 链接都指向仍存在的页面，没有指向已删报告的死链；`bun test` 1467 pass / 1 skip / 0 fail。线上验证见下一步部署结果。
+- **注意**：导入器靠扫 `research/` 判断哪篇导过，现在一篇都不在——若将来恢复 stocks-import，它会把 Stocks 库里的旧报告整批重新导入上线，恢复前必须先改判据（已写进 `services/stocks-import/README.md` 顶部）。剩下 3 个档案页的行情停在 2026-11-06，不再刷新。
+
 ## 2026-11-07 01:20 · Claude · 停用 Stocks→searchX 报告同步（com.searchx.stocks-import）
 
 - **改了什么**：用户 2026-11-07 决定停止把 Stocks 的个股调研同步到公开站（由 Stocks 项目会话经用户同意转达）。Mac mini 上先把已装 plist 备份到 `~/Library/Application Support/searchx-codex-ops/20261107-stocks-import-retired/`（目录 0700，`.installed` 为原装文件），再 `launchctl bootout gui/501/com.searchx.stocks-import`，并把 plist 移出 `~/Library/LaunchAgents`。仓库里 `scheduled-run.sh` 开头加了直接退出的一段，plist 模板、该服务 README、ARCHITECTURE、PROJECT_CONTEXT、README、CLAUDE.md/AGENTS.md 结构速览都标了停用。autopull 只拉代码、不装 plist，所以不会把它带回来。

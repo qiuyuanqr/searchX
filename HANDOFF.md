@@ -2,7 +2,7 @@
 
 ## 2026-11-07 Stocks→searchX 报告同步已停用
 
-用户决定停止把 Stocks 的个股调研同步到公开站（Stocks 调研改成每只票一份检查清单、不再判断涨跌，公开站追踪的方向判断逻辑已不存在）。Mac mini 上 `com.searchx.stocks-import` 已 bootout、plist 移出 LaunchAgents（备份在 `~/Library/Application Support/searchx-codex-ops/20261107-stocks-import-retired/`），`scheduled-run.sh` 开头直接退出。判断档案页行情快照随之冻结在 2026-11-06。**待用户决定**：已发布的 220 篇 Stocks 报告和 51 个判断档案页留还是撤（档案页上共 226 条判断，其中 23 条来自 searchX 自己的 /stock 报告，它们的行情也一起停了）。详见 `docs/CHANGES.md` 同日条目。
+用户决定停止把 Stocks 的个股调研同步到公开站（Stocks 调研改成每只票一份检查清单、不再判断涨跌，公开站追踪的方向判断逻辑已不存在）。Mac mini 上 `com.searchx.stocks-import` 已 bootout、plist 移出 LaunchAgents（备份在 `~/Library/Application Support/searchx-codex-ops/20261107-stocks-import-retired/`），`scheduled-run.sh` 开头直接退出。判断档案页行情快照随之冻结在 2026-11-06。同日用户决定撤下已发布的全部 Stocks 报告：220 篇及 19 个 `.dropped` 目录已删、INDEX 同步，判断档案页只剩 searchX 自己 /stock 的 3 只票（行情停在 2026-11-06）。**若将来恢复导入，必须先改「扫 research/ 判断已导」的判据，否则旧报告会整批重新上线。**详见 `docs/CHANGES.md` 同日条目。
 
 ## 2026-10-18 通知与邮件已切换国内主站，Pages 备用保留
 

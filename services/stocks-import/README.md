@@ -8,7 +8,10 @@
 > 停掉的范围：Mac mini 上的 `com.searchx.stocks-import` 已 bootout 并移出 `~/Library/LaunchAgents`；
 > `scheduled-run.sh` 开头直接退出；随它一起停的还有判断档案页行情快照 `research/_series/prices.json`
 > 的刷新（`series-prices.js` 只由这条任务调用），快照停在 2026-11-06，档案页照常显示「数据截至」日期。
-> 已导入的报告目前**原样保留在线上**，留还是撤由用户另行决定。下面的说明保留作历史记录。
+> 2026-11-07 用户又决定把已导入的报告**全部撤下**：220 篇（`notes.md` 带 `source_system: stocks`）和 19 个只剩
+> `.dropped` 的目录已从 `research/` 删除、INDEX.md 对应行同删，原文仍在 Stocks 库与 git 历史里。
+> **注意**：导入器靠「扫 research/ 看哪些 id 已落盘」判断导没导过，现在一个都不在了——如果哪天恢复这条任务，
+> 它会把 Stocks 库里的旧报告整批重新导入上线。恢复前必须先改这个判据。下面的说明保留作历史记录。
 
 Stocks 是本机另一个项目（专业股票工具），它每晚自动跑个股深度调研，把 A–M 全文存在自己的
 SQLite 库里。那些报告写得很完整，但**只给自己人看**：正文里到处是取数函数名、库表字段、
