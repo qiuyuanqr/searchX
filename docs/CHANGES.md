@@ -9,6 +9,13 @@
 
 <!-- 新条目加在这一行下面 -->
 
+## 2026-11-07 02:05 · Claude · 推送 Codex 的「会话结束只读检查」改动
+
+- **改了什么**：没有改内容。下方 2026-10-18 23:00 Codex 那条（`.codex/hooks.json` 的 SessionEnd 改为 3 秒只读检查，及配套脚本、测试、说明）当时按要求只留在 MacBook 工作区，10-25 被 Claude 侧收工钩子自动打包成提交 `40f0406`「chore(sync): 自动同步 · macbook-m5pro · 2026-10-25 08:53」（无说明），一直没推。用户 11-07 让 Claude 自行判断，这次原样推送，本条即那个提交的说明。
+- **为什么敢推**：后台 runner 调 Codex 时显式关了钩子（`services/codex-runtime/runtime.py` 的 `features.hooks: False`），这个改动只影响手动开的 Codex 会话；内容已完成并有测试。
+- **验证**：本机全量 `bun test` 1467 pass / 1 skip / 0 fail（含 `scripts/session-end-status.test.js` 与规则一致性测试）。
+- **对方注意**：Mac mini / 其他机器拉到后，Codex 应用可能要求重新信任新的 SessionEnd 命令，需用户在应用里审阅。
+
 ## 2026-11-07 01:45 · Claude · 撤下全部 Stocks 导入报告
 
 - **改了什么**：用户明确要求「之前的报告撤掉吧」。从 `research/` 删除 `notes.md` 带 `source_system: stocks` 的 220 篇报告目录，以及 19 个只剩 `.dropped` 标记的 Stocks 作废目录；`research/INDEX.md` 删掉对应的 220 行（逐行按文件夹列精确匹配，数量与目录数一致）；`research/_series/prices.json` 用 `series-prices.js` 自带的 `seriesTargets()` + `serialize()` 裁到仍有档案页的 3 只票（300285 / 300476 / 688521，都是 searchX 自己 /stock 的报告，各两篇），数据截至日不变。原文仍在 Stocks 库和 git 历史里；MacBook 上 Obsidian 的私人全文笔记没动。
