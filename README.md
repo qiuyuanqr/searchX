@@ -29,7 +29,7 @@ searchX/
 │   ├── intake-worker/      Cloudflare Worker：站内提交 → 建 GitHub pending Issue（详见其 README）
 │   ├── runner/             常驻机脚本：取 approved Issue → 跑 /research → 上线 → 发信（详见其 README）
 │   ├── check-runner/       常驻机脚本：取核查任务 → 跑 /factcheck → 笔记落本机 Obsidian（详见其 README）
-│   └── stocks-import/      每日把 Stocks 项目的个股深度调研搬进 research/ 并上线（过滤系统参数，详见其 README）
+│   └── stocks-import/      【2026-11-07 起停用】原先把 Stocks 项目的个股深度调研搬进 research/ 并上线（详见其 README）
 ├── scripts/                 ← 生产脚本（各带单测，计入 bun test）
 │   ├── report-to-obsidian.js   把 report.html 全文转成 Obsidian 笔记（中文文件名、带双链）
 │   ├── backfill-obsidian.js    一次性全量回填（带演练与备份；日常刷新用上面那个）

@@ -9,6 +9,14 @@
 
 <!-- 新条目加在这一行下面 -->
 
+## 2026-11-07 01:20 · Claude · 停用 Stocks→searchX 报告同步（com.searchx.stocks-import）
+
+- **改了什么**：用户 2026-11-07 决定停止把 Stocks 的个股调研同步到公开站（由 Stocks 项目会话经用户同意转达）。Mac mini 上先把已装 plist 备份到 `~/Library/Application Support/searchx-codex-ops/20261107-stocks-import-retired/`（目录 0700，`.installed` 为原装文件），再 `launchctl bootout gui/501/com.searchx.stocks-import`，并把 plist 移出 `~/Library/LaunchAgents`。仓库里 `scheduled-run.sh` 开头加了直接退出的一段，plist 模板、该服务 README、ARCHITECTURE、PROJECT_CONTEXT、README、CLAUDE.md/AGENTS.md 结构速览都标了停用。autopull 只拉代码、不装 plist，所以不会把它带回来。
+- **为什么**（用户的理由）：Stocks 的调研 skill 正在根本重做，不再判断涨跌（旧报告 93% 是「震荡」，分不出好坏），改成每只票一份检查清单草稿（上涨靠什么、跟哪些外部因素联动、哪些事件会直接打破这个理由、什么时候该兑现成收入），直接驱动持仓的卖出提醒。公开站导入、追踪的方向判断逻辑已不存在；主要原因不是要不要公开展示。
+- **验证**：Mac mini 上 bootout 后 `launchctl list` 已无该项，`launchctl print` 报找不到服务；LaunchAgents 里只剩 autopull / check-runner / runner / site-publisher / worker-deploy 五项，均未动。停之前最后一轮 01:09:33 正常退出、锁目录为空，没有半截导入。
+- **随之停掉 / 没动的下游**：① 判断档案页行情快照 `research/_series/prices.json` 只由这条任务刷新，已随之冻结在 20261106（51 只票）；档案页本来就写「数据截至」日期，不会显示成实时。注意这 51 个档案页上共 226 条判断，其中 23 条是 searchX 自己 /stock 跑的报告，它们的行情也一起停了。② 搁置报警 `stocks-import-parked` / `stocks-import-failed` / `stocks-import-prices` 都只由这个脚本发，随之停。③ 已发布的 220 篇 Stocks 报告、INDEX.md 行、档案页**原样保留在线**，留还是撤等用户决定；`2026-10-05_stock-002837` 仍是 `.parked`、本来就不上线。④ CI 与 `services/stocks-import` 的测试不受影响（代码没删）。⑤ 手动的 `bun run stocks-import` 还能用（只导到本地、不提交），README 顶部已写明停用。
+- **恢复办法**：先有新决定；删掉 `scheduled-run.sh` 开头那段，再把备份 plist 拷回 `~/Library/LaunchAgents` 并 `launchctl bootstrap`。
+
 ## 2026-10-18 23:10 · Codex · 通知入口已部署 Mac mini，配置备份与回滚说明补齐
 
 - **改了什么**：`05b6f8e` 已推送 main 并在互斥锁保护下快进同步 Mac mini；两条空闲定时服务先 bootout，精确增设 `RUNNER_SITE_BASE=https://search.qiuyuan.net` / `CHECK_RUNNER_CHECK_PAGE_URL=https://search.qiuyuan.net/check.html` 后 bootstrap。原 plist 私密备份在 `~/Library/Application Support/searchx-codex-ops/20261018-230846-notification-links/`，模板对应键相同。

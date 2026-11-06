@@ -1,5 +1,9 @@
 # searchX 维护交接
 
+## 2026-11-07 Stocks→searchX 报告同步已停用
+
+用户决定停止把 Stocks 的个股调研同步到公开站（Stocks 调研改成每只票一份检查清单、不再判断涨跌，公开站追踪的方向判断逻辑已不存在）。Mac mini 上 `com.searchx.stocks-import` 已 bootout、plist 移出 LaunchAgents（备份在 `~/Library/Application Support/searchx-codex-ops/20261107-stocks-import-retired/`），`scheduled-run.sh` 开头直接退出。判断档案页行情快照随之冻结在 2026-11-06。**待用户决定**：已发布的 220 篇 Stocks 报告和 51 个判断档案页留还是撤（档案页上共 226 条判断，其中 23 条来自 searchX 自己的 /stock 报告，它们的行情也一起停了）。详见 `docs/CHANGES.md` 同日条目。
+
 ## 2026-10-18 通知与邮件已切换国内主站，Pages 备用保留
 
 代码 `05b6f8e` 已推送 main 并同步 Mac mini；研究完成/已有报告/作者汇总/待确认超龄邮件主链改为 `https://search.qiuyuan.net`，附同篇 GitHub Pages 备用阅读链接。旧队列在补发探活前迁移；新主站不可达时不发完成信，查重也先探主站。核查 Bark 默认打开新站 `/check.html`；两条定时服务的已加载非敏感 URL 均已核对为新入口，300 秒、RunAtLoad=false，原配置有私密备份。没有额外触发真实任务或发送测试邮件/推送。

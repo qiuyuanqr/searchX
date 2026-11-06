@@ -19,6 +19,16 @@
 # 立刻触发定时任务：launchctl kickstart gui/$(id -u)/com.searchx.stocks-import
 set -u
 
+# —— 2026-11-07 起停用 ——
+# 用户决定停止把 Stocks 的个股调研同步到公开站。用户原话的理由：Stocks 的调研 skill 正在根本重做，
+# 不再判断涨跌（旧报告 93% 是「震荡」，分不出好坏），改成每只票一份「检查清单」草稿，直接驱动持仓的
+# 卖出提醒——公开站导入、追踪的那套方向判断逻辑已经不存在了。主要原因不是「要不要公开展示」。
+# Mac mini 上的 LaunchAgent 已 bootout 并移出 ~/Library/LaunchAgents（备份见 docs/CHANGES.md 同日条目）。
+# 这里再拦一道：即使有人照旧 README 把 plist 装回去，也不会再导入、提交、推送或刷新行情快照。
+# 要恢复必须先有新的决定，再删掉这一段。
+echo "stocks-import 已于 2026-11-07 停用（见 docs/CHANGES.md），本次不运行。" >&2
+exit 0
+
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 LOG_DIR="$HOME/Library/Logs/searchx-stocks-import"
 LOG="$LOG_DIR/stocks-import.log"

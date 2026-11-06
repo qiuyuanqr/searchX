@@ -18,8 +18,8 @@ searchX 产出中文深度调研报告与来源，并发布为静态信息流站
 | `services/intake-worker/src/index.js` | Cloudflare 写入口：token 授权、校验、限频、公开 Issues、私密核查 KV |
 | `services/runner/src/index.js` | approved Issue → 股票查重 → Claude 研究 → done → 确认发布 → 邮件；副作用集中装配层 |
 | `services/check-runner/src/index.js` | 私密任务 → 附图/前作 → Claude 核查 → result.md → 回传；失败缓存/退休与通知 |
-| `services/stocks-import/src/index.js` | 只读 Stocks → 清洗系统术语 → 价位改写 → 三件套；定时包装负责质检、构建、精准提交推送 |
-| `services/stocks-import/src/series-prices.js` | 常驻机唯一写 `research/_series/prices.json`；其他机器不得用过期副本回写 |
+| `services/stocks-import/src/index.js` | **2026-11-07 起停用**（见该目录 README 顶部）。原职责：只读 Stocks → 清洗系统术语 → 价位改写 → 三件套；定时包装负责质检、构建、精准提交推送 |
+| `services/stocks-import/src/series-prices.js` | 随 stocks-import 一起停用，快照停在 2026-11-06。原职责：常驻机唯一写 `research/_series/prices.json`；其他机器不得用过期副本回写 |
 | `scripts/` | Obsidian 全文转换、来源检查、机械质检、联网数字回链、锚名分诊、网页直抓与一次性回填 |
 | `.github/workflows/` | Pages 部署、失败有限重试、海外探活；Worker 另走常驻机自动部署 |
 
