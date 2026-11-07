@@ -248,6 +248,17 @@ const FAILURE_PATTERNS = [
     hint: "Stocks 侧正在写库、等锁超时。下个 tick 会自动重试；若整天反复出现，查 Stocks 那边有没有长事务。",
   },
   {
+    // 只认防抖后的「持续故障」结论行；单次瞬时失败那行本轮不报警，不该凭它归类。
+    // 结论行本身不含报错原因，原因在前面的「拉 approved 队列失败（外部瞬时故障：…）」里，拼进关键错误行。
+    re: /拉 approved 队列连续 \d+ 个 tick 不可达/,
+    causeRe: /拉 approved 队列失败（外部瞬时故障：(.+?)）/,
+    type: "网络不通（连 GitHub 持续失败）",
+    hint:
+      "Mac mini 连不上 GitHub 已持续 15 分钟以上（连续 4 个 tick），流水线本身没坏；网络恢复后下个 tick 自动续上，提交不会丢。" +
+      "报错含 certificate 多是网络被劫持或代理/网关异常。先在 Mac mini 上跑 curl -sSI https://api.github.com 看通不通。" +
+      "报警邮件走同一条网络，可能比故障开始晚到很多。",
+  },
+  {
     re: /push 失败/,
     type: "git push 失败",
     hint: "内容已在本地提交、没有丢。多为网络或远端拒绝，下个 tick 会重试；持续失败就手动 push 一次看真实报错。",
@@ -268,9 +279,13 @@ export function classifyFailure(logTail) {
   // claude 顺手打印的 `database is locked` / `401` 之类会劫持分类，而本轮真正的失败结论
   // 总在末尾。认不出来仍退回「未知错误」+ 日志末尾，不会比旧版给的少。
   const lines = all.slice(-CLASSIFY_SCAN_LINES);
-  for (const { re, type, hint } of FAILURE_PATTERNS) {
+  for (const { re, causeRe, type, hint } of FAILURE_PATTERNS) {
     const i = lines.findIndex((l) => re.test(l));
-    if (i >= 0) return { type, summary: redactSecrets(keyErrorLine(lines, i)), hint };
+    if (i < 0) continue;
+    let summary = keyErrorLine(lines, i);
+    const cause = causeRe && lines.map((l) => l.match(causeRe)).filter(Boolean).pop();
+    if (cause) summary = `${summary}｜报错：${cause[1]}`;
+    return { type, summary: redactSecrets(summary), hint };
   }
   return {
     type: UNKNOWN_TYPE,

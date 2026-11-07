@@ -195,6 +195,28 @@ test("classifyFailure：Stocks 库被占 / git push 失败（stocks-import 的�
   expect(classifyFailure("[2026-08-17 14:50:43] push 失败").type).toContain("push");
 });
 
+// 2026-11-07 实例：Mac mini 14:00–16:00 外网 HTTPS 整体证书校验失败，防抖到第 21 个 tick 才把邮件发出去，
+// 邮件却写「未知错误」、关键错误行是没用的「结束 (exit=1)」——runner 自己早判明了是外部网络故障。
+test("classifyFailure：拉 approved 队列持续不可达 → 网络类，关键错误行带上真实报错", () => {
+  const v = classifyFailure(`链接自检：取授权列表失败（主备域均不通）——端点可达性由探活负责报警，本轮跳过
+$ bun run services/runner/src/index.js
+网络请求失败（第 1/3 次：UNKNOWN_CERTIFICATE_VERIFICATION_ERROR），2s 后重试：https://api.github.com/repos/o/r/issues?state=open
+拉 approved 队列失败（外部瞬时故障：unknown certificate verification error）——本轮不处理，交由防抖判定是否报警
+✗ 拉 approved 队列连续 21 个 tick 不可达，判为持续故障 → exit 1 报警
+error: script "runner" exited with code 1
+[2026-11-07 15:57:23] ──────── 结束 (exit=1)`);
+  expect(v.type).not.toBe("未知错误");
+  expect(v.type).toContain("网络");
+  expect(v.summary).toContain("连续 21 个 tick");
+  expect(v.summary).toContain("unknown certificate verification error");
+  expect(v.hint).toContain("curl");
+});
+
+test("classifyFailure：只是单次瞬时失败（没到持续故障）不归网络类", () => {
+  const v = classifyFailure("拉 approved 队列失败（外部瞬时故障：timeout）——本轮不处理，交由防抖判定是否报警\nsomething else broke");
+  expect(v.type).toBe("未知错误");
+});
+
 test("classifyFailure：关键错误行与日志一起脱敏（summary 也会进邮件）", () => {
   const v = classifyFailure("error: list issues failed: 401 Bad credentials (token=github_pat_11ABCDEFG0fakefakefake)");
   expect(v.summary).not.toContain("github_pat_11ABCDEFG0fakefakefake");

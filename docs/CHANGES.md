@@ -9,6 +9,13 @@
 
 <!-- 新条目加在这一行下面 -->
 
+## 2026-11-07 20:45 · Claude · runner 报警认出「连 GitHub 持续失败」，不再报「未知错误」
+
+- **改了什么**：`services/runner/src/alert.js` 的故障模式表加一类「网络不通（连 GitHub 持续失败）」，只认防抖后的结论行「拉 approved 队列连续 N 个 tick 不可达」，并把前面那行的真实报错（如 `unknown certificate verification error`）拼进【关键错误】；`classifyFailure` 支持可选的 `causeRe` 补原因。配两条测试（持续失败归网络类；单次瞬时失败不归）。
+- **为什么**：11-07 14:00–16:00 Mac mini 外网 HTTPS 整体失败（GitHub API 与两个 Worker 域都是证书校验错误，SMTP 也断，github.io 站点探活倒是通的），16:02 自动恢复，期间无待处理提交、没有丢东西。防抖第 4 个 tick 就该报警，但邮件发不出去，拖到 15:57 第 21 个 tick 才发出；发出来的邮件却写「未知错误 / 没匹配到已知故障模式」，关键错误行是没用的「结束 (exit=1)」——runner 自己早已判明是外部网络故障。断网原因（疑似线路或网关劫持 TLS）事后查不到更多痕迹，Mac mini 上只有 Tailscale，无代理软件。
+- **验证**：用当天真实日志那一轮重放 `composeAlert`，主题变为「网络不通（连 GitHub 持续失败）」、关键错误带出证书报错；全量 `bun test` 1469 pass / 1 skip / 0 fail。没有在真断网时实测发信。
+- **对方注意**：check-runner 同时段也是同一个证书错误（`未捕获异常`），它的报警没走这张表，没改。
+
 ## 2026-11-07 02:05 · Claude · 推送 Codex 的「会话结束只读检查」改动
 
 - **改了什么**：没有改内容。下方 2026-10-18 23:00 Codex 那条（`.codex/hooks.json` 的 SessionEnd 改为 3 秒只读检查，及配套脚本、测试、说明）当时按要求只留在 MacBook 工作区，10-25 被 Claude 侧收工钩子自动打包成提交 `40f0406`「chore(sync): 自动同步 · macbook-m5pro · 2026-10-25 08:53」（无说明），一直没推。用户 11-07 让 Claude 自行判断，这次原样推送，本条即那个提交的说明。
